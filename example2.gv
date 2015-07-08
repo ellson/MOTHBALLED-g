@@ -1,0 +1,9 @@
+// a clustered graph
+digraph {
+	A [shape=circle]
+	subgraph cluster_C {
+		{ node [shape=circle]; a b }
+		a -> b 
+	}
+	A -> a
+}

@@ -1,0 +1,12 @@
+1. Incremental graph creation, modifications throush a stream of "acts"
+  - no beginning, no end,  the "graph" is what you see as a result.
+
+2. Edges, Nodes, Clusters, Subgraphs - unified into Objects
+  - Any object can have properties
+  - Any object can contain graphs (eliminating subgraphs and clusters)
+
+3. Edges can have more than two endpoints,  i.e. netlist support
+
+4. Both nodes and edges can be "multi"
+
+5. MetaObjects with pattern patching for "class" properties

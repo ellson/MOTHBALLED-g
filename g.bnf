@@ -1,0 +1,116 @@
+# A graph structure is built incrementally with a series of <acts>.   There is no hard start or end.
+# Each act operates on a <subject>.  Only the <subject> is essential to an act.
+
+    <act> ::= <action>? <subject> <properties>? <contents>? <terminator>?
+
+# the default <action> is to add (or add to) a <subject>,   '~' is to delete
+
+    <action> ::= '~'
+
+# the <subject> of an <act> is one or more objects:
+
+    <subject> ::=  <obj> | <objlist> | <metaobj>
+
+    <obj> ::= <node> | <edge>
+
+    <objlist> ::= '(' <obj>+ ')'
+
+    <metaobj> ::= <nodepattern> | <edgepattern>
+
+# <metaobj> are stored, and can be deleted, but they are never rendered directly.
+# They represent <properties> and <contents> to be automatically applied to all existing
+# and future objects that match the pattern, until the <metaobj> is deleted.
+
+
+
+
+# Any <subject> can have <properties> which are to be
+# added (or deleted) from all the objects implied by the <subject>
+
+# If <value_assign> is not provided then it defaults to the empty string 
+
+    <properties> ::= '[' <attribute_value>+ ']'
+
+    <attribute_value> ::= <attribute> <value_assign>?
+
+    <attribute> ::= <name_string>
+
+    <value_assign> ::= '=' <name_string> | <integer> | <float> | <boolean>
+
+
+
+# Any <subject> can have <contents> which are to be
+# added (or deleted) from all the objects implied by the <subject>
+
+    <contents> ::= '{' <act>+ '}'
+
+# The <terminator> is mostly optional since it is rarely needed syntactically
+# it takes two forms:
+#  1 The first form is just for people that like to end statements with a terminator.
+#  2 The second form is used when a stream of <acts> stops, to indicate that the last <act> is finished.
+#    Normally in a stream, the last <act> is syntactically terminated when the next <act> starts. 
+#    An <EOF> condition on the input filestream is to be implicitly considered a <sync_terminator>.
+
+    <terminator> ::= <noise_terminator> | <sync_terminator>
+
+    <noise_terminator> ::= ';'
+
+    <sync_terminator> ::= ';;'
+
+
+# A <node> can be simple, or multi (think "layers" of node, all in the same place, all with the
+# same <properties>, all with the same <contents>)
+
+    <node> ::= <node_name> <disambiguator>?
+
+    <disambiguator> ::= '::' <name_string>
+
+# An <edge> is a relationship between a set of two or more <nodes>, or more strictly <ports>.
+# An <edge> can be simple, or multi (think "parallel" edges, all with the same endpoints, all with the
+# same <properties>, all with the same <contents>)
+
+    <edge> ::= '<' <endpointlist> '>' <disambiguator>?
+
+    <endpointlist> ::= <endpoint> <endpoint>+
+
+    <endpoint> ::= <node_port> | <container_port> 
+
+    <node_port> ::= <node> <port>?
+
+    <container_port> ::= <port>
+
+    <port> ::= ':' <port_name>
+
+# compass points
+    <port_name> ::= 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw'
+# leg number (primarily for edge containers where the number of the leg is fixed by the containing edge name
+                | <integer>
+# given name
+                | <name_string>
+
+# if <port> is not provided it defaults to the center of the shape, with the edge clipped back to the boundary.
+
+
+# finally,  <name string>
+
+    <name_string> ::= <simple_string> | '"' <quoted_string> '"'
+
+# special characters, need to be quoted:
+
+    <special> ::= <whitespace>
+		| '{' | '}'
+		| '(' | ')'
+		| '[' | ']'
+		| '<' | '>'
+		| '~' | '"' | ''' | '=' | ':' | ';' | '\' | '/' | '#' | '*'
+
+    <comments> ::= '//' ... EOL
+		| '#' ... EOL
+    		| '/*' ... '*/'
+
+# FIXME - additional detail needed for html-like label strins....
+
+
+
+
+
