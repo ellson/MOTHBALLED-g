@@ -1,114 +1,194 @@
-# A graph structure is built incrementally with a series of <acts>.   There is no hard start or end.
+# A graph structure is built incrementally with a series of <acts>.
+# There is no hard start or end.
 # Each act operates on a <subject>.  Only the <subject> is essential to an act.
 
-    <act> ::= <action>? <subject> <properties>? <contents>? <terminator>?
+                <act> ::= <action>? <subject> <properties>? <contents>? <term>?
 
-# the default <action> is to add (or add to) a <subject>,   '~' is to delete
+# The default <action> is to add (or add to) a <subject>,   '~' is to delete
 
-    <action> ::= '~'
+             <action> ::= '~'
 
-# the <subject> of an <act> is one or more objects:
+# The <subject> of an <act> is one or more <obj> or <metaobj>
 
-    <subject> ::=  <obj> | <objlist> | <metaobj>
+            <subject> ::= <obj>
+                        | <objlist>
+                        | <metaobj>
 
-    <obj> ::= <node> | <edge>
+                <obj> ::= <node>
+                        | <edge>
 
-    <objlist> ::= '(' <obj>+ ')'
+            <objlist> ::= '(' <obj>+ ')'
 
-    <metaobj> ::= <nodepattern> | <edgepattern>
+            <metaobj> ::= <nodepattern>
+                        | <edgepattern>
 
-# <metaobj> are stored, and can be deleted, but they are never rendered directly.
-# They represent <properties> and <contents> to be automatically applied to all existing
-# and future objects that match the pattern, until the <metaobj> is deleted.
-
-
-
+# <metaobj> are stored, and can be deleted, but they are not rendered
+# directly. They represent <properties> and <contents> to be
+# automatically added to the <obj> of any future <act>.
+# When the <metaobject> is deleted, no further obhjects are modified,
+# but all current modicication from the <metaobject> remain.
 
 # Any <subject> can have <properties> which are to be
 # added (or deleted) from all the objects implied by the <subject>
 
-# If <value_assign> is not provided then it defaults to the empty string 
+# If <value> is not provided then it defaults to aasigning the empty string 
 
-    <properties> ::= '[' <attribute_value>+ ']'
+         <properties> ::= '[' <attribute_value>+ ']'
 
     <attribute_value> ::= <attribute> <value_assign>?
 
-    <attribute> ::= <name_string>
+          <attribute> ::= <name_string>
 
-    <value_assign> ::= '=' <name_string> | <integer> | <float> | <boolean>
+       <value_assign> ::= '=' <value>
 
-
+              <value> ::= <name_string>
+                        | <integer>
+                        | <float>
+                        | <boolean>
 
 # Any <subject> can have <contents> which are to be
 # added (or deleted) from all the objects implied by the <subject>
 
-    <contents> ::= '{' <act>+ '}'
+           <contents> ::= '{' <act>+ '}'
 
-# The <terminator> is mostly optional since it is rarely needed syntactically
+# The <term> is mostly optional since it is rarely needed syntactically,
 # it takes two forms:
-#  1 The first form is just for people that like to end statements with a terminator.
-#  2 The second form is used when a stream of <acts> stops, to indicate that the last <act> is finished.
-#    Normally in a stream, the last <act> is syntactically terminated when the next <act> starts. 
-#    An <EOF> condition on the input filestream is to be implicitly considered a <sync_terminator>.
+#    - The first form is just for people that like to end statements
+#      with a terminator.
+#    - The second form is used when a stream of <acts> stops,
+#      to indicate that the last <act> is finished.
+#      Normally in a stream, the last <act> is syntactically terminated
+#      when the next <act> starts. When the stream stops, there is no next <act>#      and so the last <act> gets stuck,  unless forced with the <sync_term>
+# An <EOF> condition on the input filestream is to be implicitly considered
+# a <sync_term>.
 
-    <terminator> ::= <noise_terminator> | <sync_terminator>
+               <term> ::= <noise_term>
+                        | <sync_term>
 
-    <noise_terminator> ::= ';'
+         <noise_term> ::= ';'
 
-    <sync_terminator> ::= ';;'
-
-
-# A <node> can be simple, or multi (think "layers" of node, all in the same place, all with the
-# same <properties>, all with the same <contents>)
-
-    <node> ::= <node_name> <disambiguator>?
-
-    <disambiguator> ::= '::' <name_string>
-
-# An <edge> is a relationship between a set of two or more <nodes>, or more strictly <ports>.
-# An <edge> can be simple, or multi (think "parallel" edges, all with the same endpoints, all with the
-# same <properties>, all with the same <contents>)
-
-    <edge> ::= '<' <endpointlist> '>' <disambiguator>?
-
-    <endpointlist> ::= <endpoint> <endpoint>+
-
-    <endpoint> ::= <node_port> | <container_port> 
-
-    <node_port> ::= <node> <port>?
-
-    <container_port> ::= <port>
-
-    <port> ::= ':' <port_name>
-
-# compass points
-    <port_name> ::= 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw'
-# leg number (primarily for edge containers where the number of the leg is fixed by the containing edge name
-                | <integer>
-# given name
-                | <name_string>
-
-# if <port> is not provided it defaults to the center of the shape, with the edge clipped back to the boundary.
+          <sync_term> ::= ';;'
 
 
-# finally,  <name string>
+# A <node> can be simple, or multi (think "layers" of node, all in the same
+# place, all with the same <properties>, all with the same <contents>)
 
-    <name_string> ::= <simple_string> | '"' <quoted_string> '"'
+               <node> ::= <node_name> <disambiguator>?
 
-# special characters, need to be quoted:
+      <disambiguator> ::= '::' <name_string>
 
-    <special> ::= <whitespace>
-		| '{' | '}'
-		| '(' | ')'
-		| '[' | ']'
-		| '<' | '>'
-		| '~' | '"' | ''' | '=' | ':' | ';' | '\' | '/' | '#' | '*'
+# An <edge> is a relationship between a set of two or more <nodes>, or more
+# stricly <ports>. A <port> is a named-place on the outside of a <node>,
+# and also if the <obj> has <contents>, then it is a named-place refered to
+# from inside the container.
 
-    <comments> ::= '//' ... EOL
-		| '#' ... EOL
-    		| '/*' ... '*/'
+# If the containing <obj> is a <node>  then the external name is, e.g "A:w"
+# ( the west compass port on node "A" ).  The internal name for that same port 
+# is just ":w"
+#
+# If the containing <obj> is an <edge>  then the external name is the
+# <node> at the external end of the <edge>.  The internal name for that
+# same port is the 1-based index on the <node> in the containing edge
+# name.  i.e the "leg" number.
+# This may seem awkward, but it allows the edge's <content> to be reused
+# for multiple edges.
+#
+# Note that for <edge>s drawn as lines, the internal <port> and the <edge>'s
+# endpoint on an external <node>'s <port> are typically not in the same place.  # However, they are logically the same, since the drawing can always be
+# distorted so that they are the same point with no change in semantics.
 
-# FIXME - additional detail needed for html-like label strins....
+# An <edge> can be simple, or multi (think "parallel" edges, all with the
+# same <endpoints> (modulo disambiguation), all with the same <properties>,
+# all with the same <contents>)
+
+               <edge> ::= '<' <endpointlist> '>' <disambiguator>?
+
+       <endpointlist> ::= <endpoint> <endpoint>+
+
+           <endpoint> ::= <node_port>
+                        | <container_port> 
+
+          <node_port> ::= <node> <port>?
+
+     <container_port> ::= <port>
+
+               <port> ::= ':' <port_name>
+
+# if <port> is not provided for a <node_port> then it defaults to the
+# center of the shape, with the line representing the <edge? clipped back
+# to the boundary of the shape.
+
+# <port> can be: compass points, leg number, or arbitrarily named
+          <port_name> ::= 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw'
+                        | <integer>
+                        | <name_string>
+
+
+# Finally, <name string>
+
+        <name_string> ::= <simple_string>
+                        | <singlequote> <singlequote_string> <singlequote>
+                        | <doublequote> <doublequote_string> <doublequote>
+
+      <simple_string> ::= <simple_char>+
+
+        <simple_char> ::= <alpha_uppercase>
+                        | <alpha_lowercase>
+                        | <digit>
+                        | <not_special>
+                        | <escape> <special_char>
+                        | <escape> <single_quote_char>
+                        | <escape> <double_quote_char>
+
+<singlequoted_string> ::= <singlequoted_char>+
+
+  <singlequoted_char> ::= <alpha_uppercase>
+                        | <alpha_lowercase>
+                        | <digit>
+                        | <not_special_char>
+                        | <special_char>
+                        | <escape> <singlequote>
+                        | <escape> <escape>
+                        
+<doublequoted_string> ::= <doublequoted_char>+
+
+  <doublequoted_char> ::= <alpha_uppercase>
+                        | <alpha_lowercase>
+                        | <digit>
+                        | <not_special_char>
+                        | <special_char>
+                        | <escape> <doublequote>
+                        | <escape> <escape>
+                        
+             <escape> ::= '\'
+        <singlequote> ::= '''
+        <doublequote> ::= '"'
+    <alpha_uppercase> ::= A...Z
+    <alpha_lowercase> ::= a...z
+              <digit> ::= 0...9
+   <not_special_char> ::= '_' | '.'
+                        | '-' | '+'
+                        | '&' | '^'
+                        | '$' | '@'
+                        | '!' | '|'
+                        | '`' | '?'
+                        | '%'
+       <special_char> ::= <whitespace> | <newline>
+                        | '{' | '}'
+                        | '(' | ')'
+                        | '[' | ']'
+                        | '<' | '>'
+                        | '~' | '='
+                        | ':' | ';'
+                        | '/' | '#'
+                        | '*'
+
+           <comments> ::= '//' ... EOL
+                        | '#' ... EOL
+                        | '/*' ... '*/'
+
+# FIXME - additional detail needed for html-like label strings....
+# FIXME - specify substitutions:  \N  \E  \C  ???
 
 
 
