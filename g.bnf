@@ -22,11 +22,18 @@
             <metaobj> ::= <nodepattern>
                         | <edgepattern>
 
+# The scope of <metaobj> is the current container.
+#
 # <metaobj> are stored, and can be deleted, but they are not rendered
 # directly. They represent <properties> and <contents> to be
-# automatically added to the <obj> of any future <act>.
-# When the <metaobject> is deleted, no further obhjects are modified,
-# but all current modicication from the <metaobject> remain.
+# automatically added to the <obj> of any following <act>.
+#
+# When the <metaobject> is deleted, no further <obj> are modified,
+# but all current modifications from the <metaobj> remain.
+
+        <nodepattern> ::= '*'
+
+        <edgepattern> ::= '<*>'
 
 # Any <subject> can have <properties> which are to be
 # added (or deleted) from all the objects implied by the <subject>
@@ -57,8 +64,8 @@
 #      with a terminator.
 #    - The second form is used when a stream of <acts> stops,
 #      to indicate that the last <act> is finished.
-#      Normally in a stream, the last <act> is syntactically terminated
-#      when the next <act> starts. When the stream stops, there is no next <act>#      and so the last <act> gets stuck,  unless forced with the <sync_term>
+#      Normally in a stream, the an <act> is syntactically terminated
+#      when the next <act> starts. When the stream stops, there is no next <act>#      and so the last <act> gets stuck; unless forced with the <sync_term>.
 # An <EOF> condition on the input filestream is to be implicitly considered
 # a <sync_term>.
 
@@ -77,18 +84,18 @@
 
       <disambiguator> ::= '::' <name_string>
 
-# An <edge> is a relationship between a set of two or more <nodes>, or more
-# stricly <ports>. A <port> is a named-place on the outside of a <node>,
-# and also if the <obj> has <contents>, then it is a named-place refered to
+# An <edge> is a relationship between a set of two or more <node>s, or more
+# stricly, <port>s. A <port> is a named-place on the outside of a <node>,
+# and also, if the <obj> has <contents>, then it is a named-place refered to
 # from inside the container.
 
-# If the containing <obj> is a <node>  then the external name is, e.g "A:w"
+# If the containing <obj> is a <node>  then the external name is, e.g. "A:w"
 # ( the west compass port on node "A" ).  The internal name for that same port 
 # is just ":w"
 #
 # If the containing <obj> is an <edge>  then the external name is the
 # <node> at the external end of the <edge>.  The internal name for that
-# same port is the 1-based index on the <node> in the containing edge
+# same port is the 1-based index of the <node> in the containing <edge>'s
 # name.  i.e the "leg" number.
 # This may seem awkward, but it allows the edge's <content> to be reused
 # for multiple edges.
@@ -115,64 +122,68 @@
                <port> ::= ':' <port_name>
 
 # if <port> is not provided for a <node_port> then it defaults to the
-# center of the shape, with the line representing the <edge? clipped back
+# center of the shape, with the line representing the <edge> clipped back
 # to the boundary of the shape.
 
-# <port> can be: compass points, leg number, or arbitrarily named
+# <port_name> can be: compass points, or leg index,  or cell index.
           <port_name> ::= 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw'
-                        | <integer>
-                        | <name_string>
+                        | <leg_index>
+                        | <cell_index>
 
+           <leg_index> ::= <digit>+
 
-# Finally, <name string>
+          <cell_index> ::= <digit>+ '.' <digit>+
 
-        <name_string> ::= <simple_string>
-                        | <singlequote> <singlequote_string> <singlequote>
-                        | <doublequote> <doublequote_string> <doublequote>
+# Finally, <name string> (Note that quoted strings can be empty)
 
-      <simple_string> ::= <simple_char>+
+        <name_string> ::= <simple_char>+
+                        | ''' <singlequoted_char>* '''
+                        | '"' <doublequoted_char>* '"'
 
-        <simple_char> ::= <alpha_uppercase>
-                        | <alpha_lowercase>
-                        | <digit>
-                        | <not_special>
+        <simple_char> ::= <not_special_char>
                         | <escape> <special_char>
-                        | <escape> <single_quote_char>
-                        | <escape> <double_quote_char>
+                        | <escape> '''
+                        | <escape> '"'
+                        | <escape> <escape>
 
-<singlequoted_string> ::= <singlequoted_char>+
-
-  <singlequoted_char> ::= <alpha_uppercase>
-                        | <alpha_lowercase>
-                        | <digit>
-                        | <not_special_char>
+  <singlequoted_char> ::= <not_special_char>
                         | <special_char>
-                        | <escape> <singlequote>
+                        | '"'
+                        | <escape> '''
                         | <escape> <escape>
                         
-<doublequoted_string> ::= <doublequoted_char>+
-
-  <doublequoted_char> ::= <alpha_uppercase>
-                        | <alpha_lowercase>
-                        | <digit>
-                        | <not_special_char>
+  <doublequoted_char> ::= <not_special_char>
                         | <special_char>
-                        | <escape> <doublequote>
+                        | '''
+                        | <escape> '"'
                         | <escape> <escape>
                         
              <escape> ::= '\'
-        <singlequote> ::= '''
-        <doublequote> ::= '"'
-    <alpha_uppercase> ::= A...Z
-    <alpha_lowercase> ::= a...z
-              <digit> ::= 0...9
-   <not_special_char> ::= '_' | '.'
+
+# Note:  A few <alpha_uppercase> characters, when escaped, are used
+# as substitution variables:
+#
+#  \O is the name of the object
+#  \C is the name of the containing object
+#
+# Any other character that is escaped, but which doesn't normally need
+# to be escaped, is taken as itself.
+
+   <not_special_char> ::= <alpha_uppercase>
+                        | <alpha_lowercase>
+                        | <digit>
+                        | '_' | '.'
                         | '-' | '+'
                         | '&' | '^'
                         | '$' | '@'
                         | '!' | '|'
                         | '`' | '?'
                         | '%'
+
+    <alpha_uppercase> ::= A...Z
+    <alpha_lowercase> ::= a...z
+              <digit> ::= 0...9
+
        <special_char> ::= <whitespace> | <newline>
                         | '{' | '}'
                         | '(' | ')'
@@ -188,7 +199,6 @@
                         | '/*' ... '*/'
 
 # FIXME - additional detail needed for html-like label strings....
-# FIXME - specify substitutions:  \N  \E  \C  ???
 
 
 

@@ -10,3 +10,6 @@
 4. Both nodes and edges can be "multi"
 
 5. MetaObjects with pattern patching for "class" properties
+
+6. '-' is not a special character, so now number strings can be used 
+   as simple strings.  
