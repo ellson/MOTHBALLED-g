@@ -4,25 +4,24 @@
 
                 <act> ::= <action>? <subject> <properties>? <contents>? <term>?
 
-# The default <action> is to add (or add to) a <subject>,   '~' is to delete
+# The default <action> is to add (or, add to) a <subject>,  '~' is to delete
 
              <action> ::= '~'
 
-# The <subject> of an <act> is one or more <obj> or <metaobj>
+# The <subject> of an <act> is one or more <node>s or <edges>s
 
-            <subject> ::= <obj>
-                        | <objlist>
-                        | <metaobj>
-
-                <obj> ::= <node>
+            <subject> ::= <node>
+                        | <nodelist>
+                        | <nodepattern>
                         | <edge>
-
-            <objlist> ::= '(' <obj>+ ')'
-
-            <metaobj> ::= <nodepattern>
+                        | <edgelist>
                         | <edgepattern>
 
-# The scope of <metaobj> is the current container.
+           <nodelist> ::= '(' <node>+ ')'
+
+           <edgelist> ::= '(' <edge>+ ')'
+
+# The scope of <nodepattern> or <edgepattern> is the current container.
 #
 # <metaobj> are stored, and can be deleted, but they are not rendered
 # directly. They represent <properties> and <contents> to be
@@ -56,26 +55,27 @@
 # Any <subject> can have <contents> which are to be
 # added (or deleted) from all the objects implied by the <subject>
 
-           <contents> ::= '{' <act>+ '}'
+           <contents> ::= '{' <properties>? <act>+ '}'
 
-# The <term> is mostly optional since it is rarely needed syntactically,
-# it takes two forms:
-#    - The first form is just for people that like to end statements
-#      with a terminator.
-#    - The second form is used when a stream of <acts> stops,
-#      to indicate that the last <act> is finished.
-#      Normally in a stream, the an <act> is syntactically terminated
-#      when the next <act> starts. When the stream stops, there is no next <act>#      and so the last <act> gets stuck; unless forced with the <sync_term>.
-# An <EOF> condition on the input filestream is to be implicitly considered
-# a <sync_term>.
+# The optional properties at the beginning of the container, are properties
+# that apply to the inside of the container only.  Think "graph" attributes
+# from dot,  Properties such as layout engine selection.
 
-               <term> ::= <noise_term>
-                        | <sync_term>
+# There is no top-level container, other than the interpreting program itself
+# so top-level layout properties must come from the program, or perhaps
+# command line options. 
 
-         <noise_term> ::= ';'
+# The <term> is mostly optional since it is rarely needed.
+# It serves two purposes.
+#   1) for people that like to end statements with a terminator.
+#   2) for when a stream of <act>s stop, to indicate that the
+#      last <act> is finished. Normally in a stream, an <act> is adequately
+#      syntactically terminated when the next <act> starts. but while the
+#      stream is stopped the last <act> gets stuck, unless forced out with
+#      a <term>.  Think of it like a "flush" operator.
+# An <EOF> condition on the input filestream is implicitly a <term>.
 
-          <sync_term> ::= ';;'
-
+               <term> ::= ';'
 
 # A <node> can be simple, or multi (think "layers" of node, all in the same
 # place, all with the same <properties>, all with the same <contents>)
@@ -172,13 +172,13 @@
    <not_special_char> ::= <alpha_uppercase>
                         | <alpha_lowercase>
                         | <digit>
-                        | '_' | '.'
+                        | '_' | '%'
+                        | '.' | ','
                         | '-' | '+'
                         | '&' | '^'
                         | '$' | '@'
                         | '!' | '|'
                         | '`' | '?'
-                        | '%'
 
     <alpha_uppercase> ::= A...Z
     <alpha_lowercase> ::= a...z
@@ -197,6 +197,14 @@
            <comments> ::= '//' ... EOL
                         | '#' ... EOL
                         | '/*' ... '*/'
+
+# Note that  '+' '-' '.' ','  Are not special.  So numbers 
+# are usable as simple strings in names and values.
+
+# FIXME - do we want a restricted form of ID for node names and attribute names?
+#
+# FIXME - should the scope of <nodepattern> <edgepattern> <container_properties>
+#         extend into sub containers?
 
 # FIXME - additional detail needed for html-like label strings....
 
