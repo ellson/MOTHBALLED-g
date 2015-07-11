@@ -1,69 +1,15 @@
 # A graph structure is built incrementally with a series of <acts>.
-# There is no hard start or end.
-# Each act operates on a <subject>.  Only the <subject> is essential to an act.
+# There is no hard beginning or end, permitting any "graph" to be interpreted in the context
+# of any other graph,  where it may be used prepended, appended, or contained.
 
-                <act> ::= <action>? <subject> <properties>? <contents>? <term>?
+                <act> ::= <action>? <subj_prop_cont> <term>?
 
-# The default <action> is to add (or, add to) a <subject>,  '~' is to delete
+     <subj_prop_cont> ::= <nodesubject> <nodeproperties>? <nodecontents>?
+                        | <edgesubject> <edgeproperties>? <edgecontents>?
+                        
+# The default <action> is to add (or, to add to) a <nodesubject> or <edgesubject>, '~' signals deletion
 
              <action> ::= '~'
-
-# The <subject> of an <act> is one or more <node>s or <edges>s
-
-            <subject> ::= <node>
-                        | <nodelist>
-                        | <nodepattern>
-                        | <edge>
-                        | <edgelist>
-                        | <edgepattern>
-
-           <nodelist> ::= '(' <node>+ ')'
-
-           <edgelist> ::= '(' <edge>+ ')'
-
-# The scope of <nodepattern> or <edgepattern> is the current container.
-#
-# <metaobj> are stored, and can be deleted, but they are not rendered
-# directly. They represent <properties> and <contents> to be
-# automatically added to the <obj> of any following <act>.
-#
-# When the <metaobject> is deleted, no further <obj> are modified,
-# but all current modifications from the <metaobj> remain.
-
-        <nodepattern> ::= '*'
-
-        <edgepattern> ::= '<*>'
-
-# Any <subject> can have <properties> which are to be
-# added (or deleted) from all the objects implied by the <subject>
-
-# If <value> is not provided then it defaults to aasigning the empty string 
-
-         <properties> ::= '[' <attribute_value>+ ']'
-
-    <attribute_value> ::= <attribute> <value_assign>?
-
-          <attribute> ::= <name_string>
-
-       <value_assign> ::= '=' <value>
-
-              <value> ::= <name_string>
-                        | <integer>
-                        | <float>
-                        | <boolean>
-
-# Any <subject> can have <contents> which are to be
-# added (or deleted) from all the objects implied by the <subject>
-
-           <contents> ::= '{' <properties>? <act>+ '}'
-
-# The optional properties at the beginning of the container, are properties
-# that apply to the inside of the container only.  Think "graph" attributes
-# from dot,  Properties such as layout engine selection.
-
-# There is no top-level container, other than the interpreting program itself
-# so top-level layout properties must come from the program, or perhaps
-# command line options. 
 
 # The <term> is mostly optional since it is rarely needed.
 # It serves two purposes.
@@ -73,11 +19,97 @@
 #      syntactically terminated when the next <act> starts. but while the
 #      stream is stopped the last <act> gets stuck, unless forced out with
 #      a <term>.  Think of it like a "flush" operator.
-# An <EOF> condition on the input filestream is implicitly a <term>.
+# An <EOF> condition on the input stream is implicitly a <term>.
 
                <term> ::= ';'
 
-# A <node> can be simple, or multi (think "layers" of node, all in the same
+# A <nodesubject> of an <act> is one or more <node>, or future <node> that match a pattern
+
+        <nodesubject> ::= <node>
+                        | <nodelist>
+                        | <nodepattern>
+
+           <nodelist> ::= '(' <node>+ ')'
+
+        <nodepattern> ::= '*'
+
+# <nodepattern> are stored, and can be deleted, but they are not rendered
+# directly. They introduce <nodeproperties> and <nodecontents> to be
+# automatically added to the <node> of any following <act> in the current container.
+
+# When a <nodepattern> is deleted, no further <node> are modified,
+# but all current modifications from the <nodepattern> remain.
+
+# An <edgesubject> of an <act> is one or more <edge>, or future <edge> that match a pattern
+
+        <edgesubject> ::= <edge>
+                        | <edgelist>
+                        | <edgepattern>
+
+           <edgelist> ::= '(' <edge>+ ')'
+
+        <edgepattern> ::= '<' '*' <ordinality>? '>'
+
+       <ordinalility> ::= <digit>+ '+'?
+
+# <edgepattern> are stored, and can be deleted, but they are not rendered
+# directly. They introduce <edgeproperties> and <edgecontents> to be
+# automatically added to the <edge> of any following <act> in the current container.
+
+# When an <edgepattern> is deleted, no further <edge> are modified,
+# but all current modifications from the <edgepattern> remain.
+
+# Any <nodesubject> can have <nodeproperties>  and <nodecontents> which are to be
+# added (or deleted) from all the <node> implied by the <nodesubject>
+
+# <nodeproperties> represent properties of the <node> outside of any container it might have.
+# think attributes like labels and shapes.
+
+# If a <value> is not provided then it defaults to the empty string, the interpretation of which is left undefined
+# by this syntax, and may be interpreted in different ways in differerent attributes.
+
+     <nodeproperties> ::= '[' <nodeattribute_value>+ ']'
+
+<nodeattribute_value> ::= <nodeattribute> <value_assign>?
+
+      <nodeattribute> ::= <name_string>
+
+       <value_assign> ::= '=' <value>
+
+              <value> ::= <name_string>
+                        | <integer>
+                        | <float>
+                        | <boolean>
+
+# <nodecontents> consist of a set of properties for the inside of the container (think layout_engine)
+# and a contained "graph" using <act> recursively.
+
+       <nodecontents> ::= '{' <containerproperties>? <act>+ '}'
+
+<containerproperties> ::= '[' <containerattribute_value>+ ']' <term>?
+
+<containerattribute_value> ::= <containerattribute> <value_assign>?
+
+# There is no top-level container, other than the interpreting program itself
+# so top-level layout properties must come from the program or its command line options. 
+
+# Any <edgesubject> can have <edgeproperties> and/or <edgecontents> which are to be
+# added (or deleted) from all the <edge> implied by the <edgesubject>
+
+# If <value> is not provided then it defaults to assigning the empty string 
+
+# The sytax of <edgeproperties>, <nodeproperties>, and <containerproperties> is identical,
+# but separate run-time disctionaries are used for each.
+
+     <edgeproperties> ::= '[' <edgeattribute_value>+ ']'
+
+<edgeattribute_value> ::= <edgeattribute> <value_assign>?
+
+      <edgeattribute> ::= <name_string>
+
+       <edgecontents> ::= '{' <containerproperties>? <act>+ '}'
+
+# A <node> can be simple, or multi (think "stacks" of node, all in the same
 # place, all with the same <properties>, all with the same <contents>)
 
                <node> ::= <node_name> <disambiguator>?
@@ -92,27 +124,47 @@
 # If the containing <obj> is a <node>  then the external name is, e.g. "A:w"
 # ( the west compass port on node "A" ).  The internal name for that same port 
 # is just ":w"
-#
+
 # If the containing <obj> is an <edge>  then the external name is the
 # <node> at the external end of the <edge>.  The internal name for that
 # same port is the 1-based index of the <node> in the containing <edge>'s
 # name.  i.e the "leg" number.
 # This may seem awkward, but it allows the edge's <content> to be reused
 # for multiple edges.
-#
+
 # Note that for <edge>s drawn as lines, the internal <port> and the <edge>'s
-# endpoint on an external <node>'s <port> are typically not in the same place.  # However, they are logically the same, since the drawing can always be
+# endpoint on an external <node>'s <port> are typically not in the same place.
+# However, they are logically the same, since the drawing can always be
 # distorted so that they are the same point with no change in semantics.
 
 # An <edge> can be simple, or multi (think "parallel" edges, all with the
 # same <endpoints> (modulo disambiguation), all with the same <properties>,
 # all with the same <contents>)
 
+# An <edge> can be fully contained in the current container, or one or more
+# of it endpoints can be in another container, descibed by a path relative
+# to the current container.
+
+# Note: <node> induction:  <edges> can induce <node> in the current container,
+# but an <edge> to non-existent node in another container,  or to a non-existant
+# container, is an error.
+
                <edge> ::= '<' <endpointlist> '>' <disambiguator>?
 
        <endpointlist> ::= <endpoint> <endpoint>+
 
-           <endpoint> ::= <node_port>
+           <endpoint> ::= <ancestor>? <decendent>? <localendpoint>
+
+           <ancestor> ::= <contained>+
+
+          <decendent> ::= <contains>+
+
+          <contained> ::= ':' '/'
+
+           <contains> ::= <node> '/'
+                        | <edge> '/'
+
+      <localendpoint> ::= <node_port>
                         | <container_port> 
 
           <node_port> ::= <node> <port>?
@@ -202,13 +254,6 @@
 # are usable as simple strings in names and values.
 
 # FIXME - do we want a restricted form of ID for node names and attribute names?
-#
-# FIXME - should the scope of <nodepattern> <edgepattern> <container_properties>
-#         extend into sub containers?
 
 # FIXME - additional detail needed for html-like label strings....
-
-
-
-
 
