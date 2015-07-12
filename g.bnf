@@ -28,14 +28,26 @@
         <nodesubject> ::= <node>
                         | <nodelist>
                         | <nodepattern>
+                        | <nodepatternlist>
+
+# A <node> can be simple, or multi (think "stacks" of node, all in the same
+# place, all with the same <properties>, all with the same <contents>)
+
+               <node> ::= <node_name> <disambiguator>?
+          <node_name> ::= <string>
+      <disambiguator> ::= '::' <string>
 
            <nodelist> ::= '(' <node>+ ')'
 
-        <nodepattern> ::= '*'
+        <nodepattern> ::= <node_leading_substring>? '*'
+<node_leading_substring> ::= <string>
 
-# <nodepattern> are stored, and can be deleted, but they are not rendered
+    <nodepatternlist> ::= '(' <nodepattern> ')'
+
+# <nodepattern> and <nodepatternlist> are stored, and can be deleted, but they are not rendered
 # directly. They introduce <nodeproperties> and <nodecontents> to be
-# automatically added to the <node> of any following <act> in the current container.
+# automatically added to the <node> of any following <act> in the current container that
+# match the pattern.
 
 # When a <nodepattern> is deleted, no further <node> are modified,
 # but all current modifications from the <nodepattern> remain.
@@ -45,14 +57,63 @@
         <edgesubject> ::= <edge>
                         | <edgelist>
                         | <edgepattern>
+                        | <edgepatternlist>
+
+# An <edge> can be simple, or multi (think "parallel" edges, all with the
+# same <endpoints> (modulo disambiguation), all with the same <properties>,
+# all with the same <contents>)
+
+# An <edge> can be fully contained in the current container, or one or more
+# of it endpoints can be in another container, descibed by a path relative
+# to the current container.
+
+# <edges> can induce <node>, included in this is the induction of any containers
+# implied by the patch to that <node>  
+
+               <edge> ::= '<' <endpointlist> '>' <disambiguator>?
+
+       <endpointlist> ::= <endpoint> <endpoint>+
+
+           <endpoint> ::= <ancestor>? <decendent>? <localendpoint>
+
+           <ancestor> ::= <contained>+
+
+          <decendent> ::= <containor>+
+
+          <contained> ::= ':' '/'
+
+          <containor> ::= <node> '/'
+                        | <edge> '/'
+
+      <localendpoint> ::= <node_port>
+                        | <container_port> 
+
+          <node_port> ::= <node> <port>?
+
+     <container_port> ::= <port>
+
+               <port> ::= ':' <port_name>
+
+# if <port> is not provided for a <node_port> then it defaults to the
+# center of the shape, with the line representing the <edge> clipped back
+# to the boundary of the shape.
 
            <edgelist> ::= '(' <edge>+ ')'
 
-        <edgepattern> ::= '<' '*' <ordinality>? '>'
+    <endpointpattern> ::= <endpoint_leading_substring>? '*'
+<endpoint_leading_substring> ::= <string>
 
-       <ordinalility> ::= <digit>+ '+'?
+# FIXME  these patterns may be confusing and not be sufficiently generic
+# See: doc/sketches/implement_netlist_with_edge_container.png for the objective of these patterns.
 
-# <edgepattern> are stored, and can be deleted, but they are not rendered
+        <edgepattern> ::= '<' <endpointpattern> <endpointpattern>+ '**'? '>'
+
+    <edgepatternlist> ::= '<' '(' <endpointpattern> ')' <endpointpattern> '>'
+
+# Note: <edgepatternlist> defines a list of two-ended edges,  not a single netlist starting
+# with all the endpoints in the first <endpointpattern> 
+
+# <edgepattern> and <edgepatternlist> are stored, and can be deleted, but they are not rendered
 # directly. They introduce <edgeproperties> and <edgecontents> to be
 # automatically added to the <edge> of any following <act> in the current container.
 
@@ -72,11 +133,11 @@
 
 <nodeattribute_value> ::= <nodeattribute> <value_assign>?
 
-      <nodeattribute> ::= <name_string>
+      <nodeattribute> ::= <string>
 
        <value_assign> ::= '=' <value>
 
-              <value> ::= <name_string>
+              <value> ::= <string>
                         | <integer>
                         | <float>
                         | <boolean>
@@ -105,16 +166,9 @@
 
 <edgeattribute_value> ::= <edgeattribute> <value_assign>?
 
-      <edgeattribute> ::= <name_string>
+      <edgeattribute> ::= <string>
 
        <edgecontents> ::= '{' <containerproperties>? <act>+ '}'
-
-# A <node> can be simple, or multi (think "stacks" of node, all in the same
-# place, all with the same <properties>, all with the same <contents>)
-
-               <node> ::= <node_name> <disambiguator>?
-
-      <disambiguator> ::= '::' <name_string>
 
 # An <edge> is a relationship between a set of two or more <node>s, or more
 # stricly, <port>s. A <port> is a named-place on the outside of a <node>,
@@ -125,7 +179,7 @@
 # ( the west compass port on node "A" ).  The internal name for that same port 
 # is just ":w"
 
-# If the containing <obj> is an <edge>  then the external name is the
+# If the containing object is an <edge>  then the external name is the
 # <node> at the external end of the <edge>.  The internal name for that
 # same port is the 1-based index of the <node> in the containing <edge>'s
 # name.  i.e the "leg" number.
@@ -137,46 +191,6 @@
 # However, they are logically the same, since the drawing can always be
 # distorted so that they are the same point with no change in semantics.
 
-# An <edge> can be simple, or multi (think "parallel" edges, all with the
-# same <endpoints> (modulo disambiguation), all with the same <properties>,
-# all with the same <contents>)
-
-# An <edge> can be fully contained in the current container, or one or more
-# of it endpoints can be in another container, descibed by a path relative
-# to the current container.
-
-# Note: <node> induction:  <edges> can induce <node> in the current container,
-# but an <edge> to non-existent node in another container,  or to a non-existant
-# container, is an error.
-
-               <edge> ::= '<' <endpointlist> '>' <disambiguator>?
-
-       <endpointlist> ::= <endpoint> <endpoint>+
-
-           <endpoint> ::= <ancestor>? <decendent>? <localendpoint>
-
-           <ancestor> ::= <contained>+
-
-          <decendent> ::= <contains>+
-
-          <contained> ::= ':' '/'
-
-           <contains> ::= <node> '/'
-                        | <edge> '/'
-
-      <localendpoint> ::= <node_port>
-                        | <container_port> 
-
-          <node_port> ::= <node> <port>?
-
-     <container_port> ::= <port>
-
-               <port> ::= ':' <port_name>
-
-# if <port> is not provided for a <node_port> then it defaults to the
-# center of the shape, with the line representing the <edge> clipped back
-# to the boundary of the shape.
-
 # <port_name> can be: compass points, or leg index,  or cell index.
           <port_name> ::= 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw'
                         | <leg_index>
@@ -186,9 +200,9 @@
 
           <cell_index> ::= <digit>+ '.' <digit>+
 
-# Finally, <name string> (Note that quoted strings can be empty)
+# Finally, <string> (Note that only quoted strings can be empty)
 
-        <name_string> ::= <simple_char>+
+             <string> ::= <simple_char>+
                         | ''' <singlequoted_char>* '''
                         | '"' <doublequoted_char>* '"'
 
