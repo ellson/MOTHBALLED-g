@@ -144,8 +144,8 @@
                         | <float>
                         | <boolean>
 
-# <nodecontents> consist of a set of properties for the inside of the container (think layout_engine)
-# and a contained "graph" using <act> recursively.
+# <nodecontents> consist of: a set of properties for the inside of the container (think layout_engine)
+# followed by: a contained "graph" using <act> recursively.
 
        <nodecontents> ::= '{' <containerproperties>? <act>+ '}'
 
@@ -168,7 +168,11 @@
 
 <edgeattribute_value> ::= <edgeattribute> <value_assign>?
 
-      <edgeattribute> ::= <string>
+      <edgeattribute> ::= <simple_string>
+
+# <edgecontents> consist of: a set of properties for the inside of the container (think layout_engine)
+# followed by: a contained "graph" using <act> recursively.  The <ports> of an edge container
+# are the legs of the containing <edge>, 1-based
 
        <edgecontents> ::= '{' <containerproperties>? <act>+ '}'
 
@@ -272,9 +276,4 @@
                         | '/*' ... '*/'
 
 # Note that  '+' '-' '.' ','  Are not special.  So numbers 
-# are usable as simple strings in names and values.
-
-# FIXME - do we want a restricted form of ID for node names and attribute names?
-
-# FIXME - additional detail needed for html-like label strings....
-
+# are usable as simple_strings in names and values.
