@@ -217,14 +217,14 @@
 
   <singlequoted_char> ::= <simple_char>
                         | <special_char>
-                        | <angels>
+                        | <angles>
                         | '"'
-                        | <escape> '''
+                        | <escape> '''     
                         | <escape> <escape>
                         
   <doublequoted_char> ::= <simple_char>
                         | <special_char>
-                        | <angels>
+                        | <angles>
                         | '''
                         | <escape> '"'
                         | <escape> <escape>
@@ -256,10 +256,12 @@
                         | '$' | '@'
                         | '!' | '|'
                         | '`' | '?'
+			| \200 ... \377
 
     <alpha_uppercase> ::= A...Z
     <alpha_lowercase> ::= a...z
               <digit> ::= 0...9
+
              <angles> ::= '<' | '>'
 
        <special_char> ::= <whitespace> | <newline>
