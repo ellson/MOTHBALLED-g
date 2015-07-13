@@ -34,7 +34,8 @@
 
                <node> ::= <node_name> <disambiguator>?
           <node_name> ::= <simple_string>
-      <disambiguator> ::= '::' <simple_string>
+      <disambiguator> ::= '::' <disambiguator_name>
+ <disambiguator_name> ::= '::' <simple_string>
 
            <nodelist> ::= '(' <node>+ ')'
 
@@ -46,12 +47,7 @@
 # When a <nodepatternlist> is deleted, no further <node> are modified,
 # but all current modifications from the <nodepattern> remain.
 
-    <nodepatternlist> ::= '(' <node>? <nodepattern>+ <node_or_pattern>? ')' 
-
-    <node_or_pattern> ::= <node>
-                        | <nodepattern>
-
-        <nodepattern> ::= ... Like <node> but with at least one '*' in:
+    <nodepatternlist> ::= ... Like <nodelist> but with at least one '*' in some:
                               or <node_name>,
                               or <discriminator>.   ...
 
@@ -103,7 +99,7 @@
 # to the boundary of the shape.
 
            <edgelist> ::= '(' <edge>+ ')'
-                        | '<' <endpoint>? <endpointlist> <endpoint_or_list>+ '>'
+                        | '<' <endpoint_or_list>? <endpointlist> <endpoint_or_list>+ '>'
 
        <endpointlist> ::= '(' <endpoint> ')'
 
@@ -120,20 +116,7 @@
 # When a <edgepatternlist> is deleted, no further <edge> are modified,
 # but all current modifications from the <edgepattern> remain.
 
-    <edgepatternlist> ::= '(' <edge>* <edgepattern>+ <edge_or_pattern>* ')' 
-                        | '<' <endpoint_or_list> <endpointpatternlist> <endpoint_or_list>* '>' <disambiguator>?
-
-    <edge_or_pattern> ::= <edge>
-                        | <edgepattern>
-
-        <edgepattern> ::= '<' <endpoint_or_patternlist> <endpointpatternlist> <endpoint_or_patternlist>* '>' <disambiguator>?
-
-<endpoint_or_patternlist> ::= <endpoint>
-                        | <endpointpatternlist>
-
-<endpointpatternlist> ::= '(' <endpointpattern> ')'
-
-    <endpointpattern> ::= ... Like <endpoint> but with at least one '*' in:
+    <edgepatternlist> ::= ... Like <edgelist> but with at least one '*' in some:
                               <container_name>,
                               or <node_name>,
                               or <port_name>,
@@ -152,7 +135,7 @@
 
 <nodeattribute_value> ::= <nodeattribute> <value_assign>?
 
-      <nodeattribute> ::= <string>
+      <nodeattribute> ::= <simple_string>
 
        <value_assign> ::= '=' <value>
 
@@ -221,27 +204,32 @@
 
 # Finally, <string> (Note that only quoted strings can be empty)
 
+      <simple_string> ::= <simple_char>+
+
              <string> ::= <simple_char>+
                         | ''' <singlequoted_char>* '''
                         | '"' <doublequoted_char>* '"'
+                        | '<' <html_like_char>* '>'
 
-        <simple_char> ::= <not_special_char>
-                        | <escape> <special_char>
-                        | <escape> '''
-                        | <escape> '"'
-                        | <escape> <escape>
-
-  <singlequoted_char> ::= <not_special_char>
+  <singlequoted_char> ::= <simple_char>
                         | <special_char>
+                        | <angels>
                         | '"'
                         | <escape> '''
                         | <escape> <escape>
                         
-  <doublequoted_char> ::= <not_special_char>
+  <doublequoted_char> ::= <simple_char>
                         | <special_char>
+                        | <angels>
                         | '''
                         | <escape> '"'
                         | <escape> <escape>
+                        
+     <html_like_char> ::= <simple_char>
+                        | <special_char>
+                        | '''
+                        | '"'
+                        | <angles>              .... '<', '>', must be balanced ...
                         
              <escape> ::= '\'
 
@@ -254,7 +242,7 @@
 # Any other character that is escaped, but which doesn't normally need
 # to be escaped, is taken as itself.
 
-   <not_special_char> ::= <alpha_uppercase>
+        <simple_char> ::= <alpha_uppercase>
                         | <alpha_lowercase>
                         | <digit>
                         | '_' | '%'
@@ -268,15 +256,15 @@
     <alpha_uppercase> ::= A...Z
     <alpha_lowercase> ::= a...z
               <digit> ::= 0...9
+             <angles> ::= '<' | '>'
 
        <special_char> ::= <whitespace> | <newline>
                         | '{' | '}'
                         | '(' | ')'
                         | '[' | ']'
-                        | '<' | '>'
                         | '~' | '='
                         | ':' | ';'
-                        | '/' | '#'
+                        | '/' | '#'    ... only special because of comments ...
                         | '*'
 
            <comments> ::= '//' ... EOL
