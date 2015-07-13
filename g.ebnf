@@ -27,36 +27,38 @@
 
         <nodesubject> ::= <node>
                         | <nodelist>
-                        | <nodepattern>
                         | <nodepatternlist>
 
 # A <node> can be simple, or multi (think "stacks" of node, all in the same
 # place, all with the same <properties>, all with the same <contents>)
 
                <node> ::= <node_name> <disambiguator>?
-          <node_name> ::= <string>
-      <disambiguator> ::= '::' <string>
+          <node_name> ::= <simple_string>
+      <disambiguator> ::= '::' <simple_string>
 
            <nodelist> ::= '(' <node>+ ')'
 
-        <nodepattern> ::= <node_leading_substring>? '*'
-<node_leading_substring> ::= <string>
-
-    <nodepatternlist> ::= '(' <nodepattern> ')'
-
-# <nodepattern> and <nodepatternlist> are stored, and can be deleted, but they are not rendered
+# <nodepatternlist> are stored, and can be deleted, but they are not rendered
 # directly. They introduce <nodeproperties> and <nodecontents> to be
-# automatically added to the <node> of any following <act> in the current container that
-# match the pattern.
+# automatically added to a <node> of any following <act> in the current container that
+# match any member of the <nodepatternlist>.
 
-# When a <nodepattern> is deleted, no further <node> are modified,
+# When a <nodepatternlist> is deleted, no further <node> are modified,
 # but all current modifications from the <nodepattern> remain.
+
+    <nodepatternlist> ::= '(' <node>? <nodepattern>+ <node_or_pattern>? ')' 
+
+    <node_or_pattern> ::= <node>
+                        | <nodepattern>
+
+        <nodepattern> ::= ... Like <node> but with at least one '*' in:
+                              or <node_name>,
+                              or <discriminator>.   ...
 
 # An <edgesubject> of an <act> is one or more <edge>, or future <edge> that match a pattern
 
         <edgesubject> ::= <edge>
                         | <edgelist>
-                        | <edgepattern>
                         | <edgepatternlist>
 
 # An <edge> can be simple, or multi (think "parallel" edges, all with the
@@ -67,23 +69,25 @@
 # of it endpoints can be in another container, descibed by a path relative
 # to the current container.
 
-# <edges> can induce <node>, included in this is the induction of any containers
-# implied by the patch to that <node>  
+# <edges> can induce <node> and all <descendent> <container> implied by the path to the <node>.
+# <ancestor> <contained_by> must exist.
 
-               <edge> ::= '<' <endpointlist> '>' <disambiguator>?
+               <edge> ::= '<' <endpoints> '>' <disambiguator>?
 
-       <endpointlist> ::= <endpoint> <endpoint>+
+          <endpoints> ::= <endpoint> <endpoint>+
 
            <endpoint> ::= <ancestor>? <decendent>? <localendpoint>
 
-           <ancestor> ::= <contained>+
+           <ancestor> ::= <contained_by>+
 
-          <decendent> ::= <containor>+
+          <contained_by> ::= ':' '/'
 
-          <contained> ::= ':' '/'
+         <descendent> ::= <container>+
 
-          <containor> ::= <node> '/'
-                        | <edge> '/'
+          <container> ::= <container_name> '/'
+
+     <container_name> ::= <node>
+                        | <edge>
 
       <localendpoint> ::= <node_port>
                         | <container_port> 
@@ -99,26 +103,41 @@
 # to the boundary of the shape.
 
            <edgelist> ::= '(' <edge>+ ')'
+                        | '<' <endpoint>? <endpointlist> <endpoint_or_list>+ '>'
 
-    <endpointpattern> ::= <endpoint_leading_substring>? '*'
-<endpoint_leading_substring> ::= <string>
+       <endpointlist> ::= '(' <endpoint> ')'
 
-# FIXME  these patterns may be confusing and not be sufficiently generic
-# See: doc/sketches/implement_netlist_with_edge_container.png for the objective of these patterns.
+   <endpoint_or_list> ::= <endpoint>
+                        | <endpointlist>
 
-        <edgepattern> ::= '<' <endpointpattern> <endpointpattern>+ '**'? '>'
+# Note:  <(a b) c>  is equivalent to:  (<a c> <b c>)
 
-    <edgepatternlist> ::= '<' '(' <endpointpattern> ')' <endpointpattern> '>'
-
-# Note: <edgepatternlist> defines a list of two-ended edges,  not a single netlist starting
-# with all the endpoints in the first <endpointpattern> 
-
-# <edgepattern> and <edgepatternlist> are stored, and can be deleted, but they are not rendered
+# <edgepatternlist> are stored, and can be deleted, but they are not rendered
 # directly. They introduce <edgeproperties> and <edgecontents> to be
-# automatically added to the <edge> of any following <act> in the current container.
+# automatically added to a <edge> of any following <act> in the current container that
+# match any member of the <edgepatternlist>.
 
-# When an <edgepattern> is deleted, no further <edge> are modified,
+# When a <edgepatternlist> is deleted, no further <edge> are modified,
 # but all current modifications from the <edgepattern> remain.
+
+    <edgepatternlist> ::= '(' <edge>* <edgepattern>+ <edge_or_pattern>* ')' 
+                        | '<' <endpoint_or_list> <endpointpatternlist> <endpoint_or_list>* '>' <disambiguator>?
+
+    <edge_or_pattern> ::= <edge>
+                        | <edgepattern>
+
+        <edgepattern> ::= '<' <endpoint_or_patternlist> <endpointpatternlist> <endpoint_or_patternlist>* '>' <disambiguator>?
+
+<endpoint_or_patternlist> ::= <endpoint>
+                        | <endpointpatternlist>
+
+<endpointpatternlist> ::= '(' <endpointpattern> ')'
+
+    <endpointpattern> ::= ... Like <endpoint> but with at least one '*' in:
+                              <container_name>,
+                              or <node_name>,
+                              or <port_name>,
+                              or <disambiguator>.   ...
 
 # Any <nodesubject> can have <nodeproperties>  and <nodecontents> which are to be
 # added (or deleted) from all the <node> implied by the <nodesubject>
