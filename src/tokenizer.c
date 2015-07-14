@@ -15,9 +15,9 @@ typedef enum {
     OCT, AST,   // '#'  '*'
     CLN, SCN,   // ':'  ';'
     EQL, TLD    // '='  '~'
-} toktype_t;
+} fragtype_t;
  
-toktype_t char2tok[] = {
+fragtype_t char2fragtype[] = {
    NUL, ABC, ABC, ABC, ABC, ABC, ABC, ABC,  /* NUL SOH STX ETX EOT ENQ ACK BEL */
    ABC,  WS,  NL, ABC, ABC,  CR, ABC, ABC,  /*  BS TAB  LF  VT  FF  CR  SO  SI */
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC,  /* DLE DC1 DC2 DC3 DC4 NAK STN ETB */
@@ -53,10 +53,58 @@ toktype_t char2tok[] = {
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC
 };
 
+fragtype_t fragtype2fraglisttype[] = {
+    NUL,      // NUL,        // EOF
+    ABC,      // ABC,        // simple_string_character
+     WS,      //  WS,        // whitespace
+     WS,  WS, //  NL,  CR,   // newline return
+    DQT, SQT, // DQT, SQT,   // '"'  '''
+    NUL, NUL, // LPN, RPN,   // '('  ')'
+    NUL, NUL, // LAN, RAN,   // '<'  '>'
+    NUL, NUL, // LBT, RBT,   // '['  ']'
+    NUL, NUL, // LBE, RBE,   // '{'  '}'
+    NUL, ABC, // FSL, BSL,   // '/'  '\' 
+    NUL, ABC, // OCT, AST,   // '#'  '*'
+    NUL, NUL, // CLN, SCN,   // ':'  ';'
+    NUL, NUL, // EQL, TLD    // '='  '~'
+};
+
+int fragtype2firstcharoffset[] = {
+    0,    // NUL,        // EOF
+    0,    // ABC,        // simple_string_character
+    0,    //  WS,        // whitespace
+    0, 0, //  NL,  CR,   // newline return
+    1, 1, // DQT, SQT,   // '"'  '''
+    0, 0, // LPN, RPN,   // '('  ')'
+    0, 0, // LAN, RAN,   // '<'  '>'
+    0, 0, // LBT, RBT,   // '['  ']'
+    0, 0, // LBE, RBE,   // '{'  '}'
+    0, 1, // FSL, BSL,   // '/'  '\' 
+    0, 0, // OCT, AST,   // '#'  '*'
+    0, 0, // CLN, SCN,   // ':'  ';'
+    0, 0, // EQL, TLD    // '='  '~'
+};
+
+fragtype_t fragtype2fragtermtype[] = {
+    NUL,      // NUL,        // EOF
+    NUL,      // ABC,        // simple_string_character
+    NUL,      //  WS,        // whitespace
+    NUL, NUL, //  NL,  CR,   // newline return
+    DQT, SQT, // DQT, SQT,   // '"'  '''
+    RPN, NUL, // LPN, RPN,   // '('  ')'
+    RAN, NUL, // LAN, RAN,   // '<'  '>'
+    RBT, NUL, // LBT, RBT,   // '['  ']'
+    RBE, NUL, // LBE, RBE,   // '{'  '}'
+    NUL, NUL, // FSL, BSL,   // '/'  '\' 
+    NUL, NUL, // OCT, AST,   // '#'  '*'
+    NUL, NUL, // CLN, SCN,   // ':'  ';'
+    NUL, NUL, // EQL, TLD    // '='  '~'
+};
+
 typedef struct elem_s elem_t;
 
 struct elem_s {
-    toktype_t type;
+    fragtype_t type;
     void *beg;
     int len;
     int allocated;
@@ -64,250 +112,70 @@ struct elem_s {
 };
 
 typedef struct {
-    toktype_t fraglisttype;
+    fragtype_t fraglisttype, fragtermtype;
     elem_t *fraglist, *frag;
 } act_t;
 
-typedef int (*tokfunc)(act_t *act);
-
-static int tok_NUL (act_t *act);
-static int tok_ABC (act_t *act);
-static int tok_WS  (act_t *act);
-static int tok_NL  (act_t *act);
-static int tok_CR  (act_t *act);
-static int tok_DQT (act_t *act);
-static int tok_SQT (act_t *act);
-static int tok_LPN (act_t *act);
-static int tok_RPN (act_t *act);
-static int tok_LAN (act_t *act);
-static int tok_RAN (act_t *act);
-static int tok_LBT (act_t *act);
-static int tok_RBT (act_t *act);
-static int tok_LBE (act_t *act);
-static int tok_RBE (act_t *act);
-static int tok_FSL (act_t *act);
-static int tok_BSL (act_t *act);
-static int tok_OCT (act_t *act);
-static int tok_AST (act_t *act);
-static int tok_CLN (act_t *act);
-static int tok_SCN (act_t *act);
-static int tok_EQL (act_t *act);
-static int tok_TLD (act_t *act);
-
-tokfunc tokproc[]={
-    tok_NUL,   
-    tok_ABC,
-    tok_WS,   
-    tok_NL,   
-    tok_CR,   
-    tok_DQT,
-    tok_SQT,
-    tok_LPN,
-    tok_RPN,
-    tok_LAN,
-    tok_RAN,
-    tok_LBT,
-    tok_RBT,
-    tok_LBE,
-    tok_RBE,
-    tok_FSL,
-    tok_BSL,
-    tok_OCT,
-    tok_AST,
-    tok_CLN,
-    tok_SCN,
-    tok_EQL,
-    tok_TLD
-};
-
-static void process_fraglist (void) {
+static void process_fraglist (act_t *act) {
     fprintf(stdout,"process fraglist\n");
 }
 
 unsigned char *test=(unsigned char*)"<aa bb cc>";
 
 int main (int argc, char *argv[]) {
-    int transition;
     unsigned char *inp, c;
     act_t *act;
 
     act = calloc(sizeof(act_t), 1);
 
-    act->frag = calloc(sizeof(elem_t), 1);
-    act->fraglist = act->frag;
-
     inp = test;
     while ((c = *inp)) {
-        toktype_t toktype;
-        toktype = char2tok[c];
+        fragtype_t fragtype, fraglisttype, fragtermtype;
+        int firstcharoffset;
 	elem_t *frag = act->frag;
-        if (toktype == frag->type) {
-            frag->len++;
+
+        fragtype = char2fragtype[c];
+        if (frag) {
+            if (fragtype == frag->type) {
+                frag->len++;
+            }
+	    else {
+                fragtermtype = fragtype2fragtermtype[fragtype];
+            
+                fraglisttype = fragtype2fraglisttype[fragtype];
+		if (fraglisttype == act->fraglisttype) {
+ 		    firstcharoffset = fragtype2firstcharoffset[fragtype];
+		    if (firstcharoffset == 0) {
+                        frag->len++;
+                    }
+                    else {
+			frag = calloc(sizeof(elem_t), 1);
+                        frag->type = fragtype;
+                        frag->len = 0;
+			frag->beg = inp + 1;
+			act->frag->next = frag;
+			act->frag = frag;
+                    }
+                }
+ 		else {
+process_fraglist(act);
+		}
+            }
         }
-	else {
-            transition = tokproc[toktype](act);
-	    switch (transition) {
-            case 0:  // add to current frag
-		frag->len++;
-	        break;
-            case 1:  // append new frag to current fraglist, expecting to start on next character
+        else {
+            fraglisttype = fragtype2fraglisttype[fragtype];
+	    if (act->fraglisttype != NUL) {
                 frag = calloc(sizeof(elem_t), 1);
-                frag->type = toktype;
-                frag->len = 0;
-                frag->beg = inp + 1;
-                act->frag->next = frag;
-                act->frag = frag;
-	        break;
-            case 2:  // append new frag to current fraglist using this character
-                frag = calloc(sizeof(elem_t), 1);
-                frag->type = toktype;
-                frag->len = 1;
-                frag->beg = inp;
-                act->frag->next = frag;
-                act->frag = frag;
-	        break;
-            case 3:  // process current fraglist, and start new on next character
-                process_fraglist();
-                frag = calloc(sizeof(elem_t), 1);
-                frag->type = toktype;
-                frag->len = 0;
-                frag->beg = inp + 1;
+                frag->type = fragtype;
+ 		firstcharoffset = fragtype2firstcharoffset[fragtype];
+                frag->len = 1 - firstcharoffset;
+                frag->beg = inp + firstcharoffset;
+                frag->next = NULL;
                 act->frag = frag;
                 act->fraglist = frag;
-                act->fraglisttype = toktype;
-	        break;
-            case 4:  // process current fraglist, and start new using this character
-                process_fraglist();
-                frag = calloc(sizeof(elem_t), 1);
-                frag->type = toktype;
-                frag->len = 1;
-                frag->beg = inp;
-                act->frag = frag;
-                act->fraglist = frag;
-                act->fraglisttype = toktype;
-	        break;
-	    default:
-		fprintf(stderr,"shouldn't happen\n");
-	    }
+                act->fraglisttype = fraglisttype;
+            }
 	}
         inp++;
     }
 }
-
-static int tok_NUL (act_t *act) {
-    fprintf(stdout,"null\n");
-    return 1;
-}
-
-static int tok_ABC (act_t *act) {
-    fprintf(stdout,"abc\n");
-    return 0;
-}
-
-static int tok_WS (act_t *act) {
-    fprintf(stdout,"whitespace\n");
-    return 0;
-}
-
-static int tok_NL   (act_t *act) {
-    // increment line count unless preceeded by CR
-    fprintf(stdout,"newline\n");
-    return 0;
-}
-
-static int tok_CR   (act_t *act) {
-    // increment line count
-    fprintf(stdout,"return\n");
-    return 0;
-}
-
-static int tok_DQT (act_t *act) {
-    fprintf(stdout,"double_quote\n");
-    return 0;
-}
-
-static int tok_SQT (act_t *act) {
-    fprintf(stdout,"single quote\n");
-    return 0;
-}
-
-static int tok_LPN (act_t *act) {
-    fprintf(stdout,"left paren\n");
-    return 0;
-}
-
-static int tok_RPN (act_t *act) {
-    fprintf(stdout,"right paren\n");
-    return 0;
-}
-
-static int tok_LAN (act_t *act) {
-    fprintf(stdout,"lessthan\n");
-    return 0;
-}
-
-static int tok_RAN (act_t *act) {
-    fprintf(stdout,"greaterthan\n");
-    return 0;
-}
-
-static int tok_LBT (act_t *act) {
-    fprintf(stdout,"left bracket\n");
-    return 0;
-}
-
-static int tok_RBT (act_t *act) {
-    fprintf(stdout,"right bracket\n");
-    return 0;
-}
-
-static int tok_LBE (act_t *act) {
-    fprintf(stdout,"left brace\n");
-    return 0;
-}
-
-static int tok_RBE (act_t *act) {
-    fprintf(stdout,"right brace\n");
-    return 0;
-}
-
-static int tok_FSL (act_t *act) {
-    fprintf(stdout,"forward slash\n");
-    return 0;
-}
-
-static int tok_BSL (act_t *act) {
-    fprintf(stdout,"backslash\n");
-    return 0;
-}
-
-static int tok_OCT (act_t *act) {
-    fprintf(stdout,"octothorpe\n");
-    return 0;
-}
-
-static int tok_AST (act_t *act) {
-    fprintf(stdout,"asterisk\n");
-    return 0;
-}
-
-static int tok_CLN (act_t *act) {
-    fprintf(stdout,"colon\n");
-    return 0;
-}
-
-static int tok_SCN (act_t *act) {
-    fprintf(stdout,"semicolon\n");
-    return 0;
-}
-
-static int tok_EQL (act_t *act) {
-    fprintf(stdout,"equals\n");
-    return 0;
-}
-
-static int tok_TLD (act_t *act) {
-    fprintf(stdout,"tilde\n");
-    return 0;
-}
-
