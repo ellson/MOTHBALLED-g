@@ -5,31 +5,26 @@ typedef enum {
     NUL=0,           // EOF
     ABC=1<<0,        // simple_string_character
      WS=1<<1,        // whitespace
-     NL=1<<2&WS,     // newline
-     CR=1<<3&WS,     // return
-     QT=1<<4,
-    DQT=1<<5&QT,     // '"'
-    SQT=1<<6&QT,     // '''
-   OPEN=1<<7,
-  CLOSE=1<<8,
-    LPN=1<<9&OPEN,   // '('
-    RPN=1<<10&CLOSE, // ')'
-    LAN=1<<11&OPEN,  // '<'
-    RAN=1<<12&CLOSE, // '>'
-    LBT=1<<13&OPEN,  // '['
-    RBT=1<<14&CLOSE, // ']'
-    LBE=1<<15&OPEN,  // '{'
-    RBE=1<<16&CLOSE, // '}'
-    FSL=1<<17,       // '/'
-    BSL=1<<18,       // '\'
-    OCT=1<<18,       // '#'
-    AST=1<<20,       // '*'
-    CLN=1<<19,       // ':'
-    SCN=1<<21,       // ';'
-    EQL=1<<22,       // '='
-    TLD=1<<23,       // '~'
- DQTABC=ABC&WS&LPN&RPN&LAN&RAN&LBT&RBT&LBE&RBE&FSL&OCT&AST&CLN&SCN&EQL&TLD&SQT,
- SQTABC=ABC&WS&LPN&RPN&LAN&RAN&LBT&RBT&LBE&RBE&FSL&OCT&AST&CLN&SCN&EQL&TLD&DQT,
+     NL=1<<2,        // newline
+     CR=1<<3,        // return
+    DQT=1<<4,        // '"'
+    SQT=1<<5,        // '''
+    LPN=1<<6,        // '('
+    RPN=1<<7,        // ')'
+    LAN=1<<8,        // '<'
+    RAN=1<<9,        // '>'
+    LBT=1<<10,       // '['
+    RBT=1<<11,       // ']'
+    LBE=1<<12,       // '{'
+    RBE=1<<13,       // '}'
+    FSL=1<<14,       // '/'
+    BSL=1<<15,       // '\'
+    OCT=1<<16,       // '#'
+    AST=1<<17,       // '*'
+    CLN=1<<18,       // ':'
+    SCN=1<<19,       // ';'
+    EQL=1<<20,       // '='
+    TLD=1<<21,       // '~'
 } charclass_t;
  
 charclass_t char2charclass[] = {
@@ -79,7 +74,7 @@ struct elem_s {
 };
 
 typedef struct {
-    charclass_t fraglisttype, fragtermtype;
+    charclass_t fraglistcharclass;
     elem_t *fraglist, *frag;
 } act_t;
 
@@ -98,52 +93,77 @@ int main (int argc, char *argv[]) {
     inp = test;
     while ((c = *inp)) {
         charclass_t charclass;
-	elem_t *frag = act->frag;
+	elem_t *frag;
 
         charclass = char2charclass[c];
-        if (frag) {
-            if (charclass & frag->charclass) {
+        frag = act->frag;
+        if (frag) {    // a frag already exists
+            if (charclass & frag->charclass) {  // identical charclass, just continue appending to frag
                 frag->len++;
             }
 	    else {
-#if 0
-                fragtermtype = charclass2fragtermtype[charclass];
-            
-                fraglisttype = charclass2fraglisttype[charclass];
-		if (fraglisttype == act->fraglisttype) {
- 		    firstcharoffset = charclass2firstcharoffset[charclass];
-		    if (firstcharoffset == 0) {
+                if (charclass & act->fraglistcharclass) {  // if matches fraglist charclass
+ 		    if (charclass & (ABC|WS|NL|CR)) {  // charclass that can be simply appended
                         frag->len++;
                     }
-                    else {
+                    else { // DQT|SQT|BSL  -- charclass that start at next char - so new frag to skip this char
 			frag = calloc(sizeof(elem_t), 1);
-                        frag->type = charclass;
+                        frag->charclass = charclass;
                         frag->len = 0;
 			frag->beg = inp + 1;
 			act->frag->next = frag;
 			act->frag = frag;
                     }
-#endif
                 }
  		else {
-process_fraglist(act);
+		    process_fraglist(act);
+                    act->frag = NULL;
 		}
             }
         }
-        else {
-            fraglisttype = charclass2fraglisttype[charclass];
-	    if (act->fraglisttype != NUL) {
+
+        frag = act->frag;
+        if (!frag) { // no current frag
+            if (charclass & (ABC|WS|NL|CR|DQT|SQT|FSL)) { // charclass that need a frag
                 frag = calloc(sizeof(elem_t), 1);
-                frag->type = charclass;
- 		firstcharoffset = charclass2firstcharoffset[charclass];
-                frag->len = 1 - firstcharoffset;
-                frag->beg = inp + firstcharoffset;
+                frag->charclass = charclass;
+ 		if (charclass & (ABC|WS|NL|CR)) { // charclass that start at this char
+                    frag->len = 1;
+                    frag->beg = inp;
+                }
+                else { // DQT|SQT|BSL     --   charclass that start at next char
+                    frag->len = 0;
+                    frag->beg = inp + 1;
+                }
                 frag->next = NULL;
                 act->frag = frag;
                 act->fraglist = frag;
-                act->fraglisttype = fraglisttype;
+                switch (charclass) {  // set fraglistcharclass with all classes accepted in fraglist
+		case ABC:
+		    act->fraglistcharclass = ABC;
+		    break;
+		case WS:
+		case NL:
+		case CR:
+		    act->fraglistcharclass = WS|NL|CR;
+		    break;
+		case DQT:
+		    act->fraglistcharclass = ABC|WS|NL|CR|LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|FSL|OCT|AST|CLN|SCN|EQL|TLD|SQT;
+		    break;
+		case SQT:
+		    act->fraglistcharclass = ABC|WS|LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|FSL|OCT|AST|CLN|SCN|EQL|TLD|DQT;
+		    break;
+		case BSL:
+		    act->fraglistcharclass = ABC|WS|LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|FSL|OCT|AST|CLN|SCN|EQL|TLD|DQT|SQT|FSL;
+		    break;
+                default:
+		    fprintf(stderr,"shouldn't get here\n");
+                }
             }
 	}
+
+fprintf(stdout,"%c\n",c);
+
         inp++;
     }
 }
