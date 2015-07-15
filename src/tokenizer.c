@@ -2,22 +2,37 @@
 #include <stdlib.h>
 
 typedef enum {
-    NUL,	// EOF
-    ABC,	// simple_string_character
-     WS,	// whitespace
-     NL,  CR,   // newline return
-    DQT, SQT,   // '"'  '''
-    LPN, RPN,   // '('  ')'
-    LAN, RAN,   // '<'  '>'
-    LBT, RBT,   // '['  ']'
-    LBE, RBE,   // '{'  '}'
-    FSL, BSL,   // '/'  '\' 
-    OCT, AST,   // '#'  '*'
-    CLN, SCN,   // ':'  ';'
-    EQL, TLD    // '='  '~'
-} fragtype_t;
+    NUL=0,           // EOF
+    ABC=1<<0,        // simple_string_character
+     WS=1<<1,        // whitespace
+     NL=1<<2&WS,     // newline
+     CR=1<<3&WS,     // return
+     QT=1<<4,
+    DQT=1<<5&QT,     // '"'
+    SQT=1<<6&QT,     // '''
+   OPEN=1<<7,
+  CLOSE=1<<8,
+    LPN=1<<9&OPEN,   // '('
+    RPN=1<<10&CLOSE, // ')'
+    LAN=1<<11&OPEN,  // '<'
+    RAN=1<<12&CLOSE, // '>'
+    LBT=1<<13&OPEN,  // '['
+    RBT=1<<14&CLOSE, // ']'
+    LBE=1<<15&OPEN,  // '{'
+    RBE=1<<16&CLOSE, // '}'
+    FSL=1<<17,       // '/'
+    BSL=1<<18,       // '\'
+    OCT=1<<18,       // '#'
+    AST=1<<20,       // '*'
+    CLN=1<<19,       // ':'
+    SCN=1<<21,       // ';'
+    EQL=1<<22,       // '='
+    TLD=1<<23,       // '~'
+ DQTABC=ABC&WS&LPN&RPN&LAN&RAN&LBT&RBT&LBE&RBE&FSL&OCT&AST&CLN&SCN&EQL&TLD&SQT,
+ SQTABC=ABC&WS&LPN&RPN&LAN&RAN&LBT&RBT&LBE&RBE&FSL&OCT&AST&CLN&SCN&EQL&TLD&DQT,
+} charclass_t;
  
-fragtype_t char2fragtype[] = {
+charclass_t char2charclass[] = {
    NUL, ABC, ABC, ABC, ABC, ABC, ABC, ABC,  /* NUL SOH STX ETX EOT ENQ ACK BEL */
    ABC,  WS,  NL, ABC, ABC,  CR, ABC, ABC,  /*  BS TAB  LF  VT  FF  CR  SO  SI */
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC,  /* DLE DC1 DC2 DC3 DC4 NAK STN ETB */
@@ -53,58 +68,10 @@ fragtype_t char2fragtype[] = {
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC
 };
 
-fragtype_t fragtype2fraglisttype[] = {
-    NUL,      // NUL,        // EOF
-    ABC,      // ABC,        // simple_string_character
-     WS,      //  WS,        // whitespace
-     WS,  WS, //  NL,  CR,   // newline return
-    DQT, SQT, // DQT, SQT,   // '"'  '''
-    NUL, NUL, // LPN, RPN,   // '('  ')'
-    NUL, NUL, // LAN, RAN,   // '<'  '>'
-    NUL, NUL, // LBT, RBT,   // '['  ']'
-    NUL, NUL, // LBE, RBE,   // '{'  '}'
-    NUL, ABC, // FSL, BSL,   // '/'  '\' 
-    NUL, ABC, // OCT, AST,   // '#'  '*'
-    NUL, NUL, // CLN, SCN,   // ':'  ';'
-    NUL, NUL, // EQL, TLD    // '='  '~'
-};
-
-int fragtype2firstcharoffset[] = {
-    0,    // NUL,        // EOF
-    0,    // ABC,        // simple_string_character
-    0,    //  WS,        // whitespace
-    0, 0, //  NL,  CR,   // newline return
-    1, 1, // DQT, SQT,   // '"'  '''
-    0, 0, // LPN, RPN,   // '('  ')'
-    0, 0, // LAN, RAN,   // '<'  '>'
-    0, 0, // LBT, RBT,   // '['  ']'
-    0, 0, // LBE, RBE,   // '{'  '}'
-    0, 1, // FSL, BSL,   // '/'  '\' 
-    0, 0, // OCT, AST,   // '#'  '*'
-    0, 0, // CLN, SCN,   // ':'  ';'
-    0, 0, // EQL, TLD    // '='  '~'
-};
-
-fragtype_t fragtype2fragtermtype[] = {
-    NUL,      // NUL,        // EOF
-    NUL,      // ABC,        // simple_string_character
-    NUL,      //  WS,        // whitespace
-    NUL, NUL, //  NL,  CR,   // newline return
-    DQT, SQT, // DQT, SQT,   // '"'  '''
-    RPN, NUL, // LPN, RPN,   // '('  ')'
-    RAN, NUL, // LAN, RAN,   // '<'  '>'
-    RBT, NUL, // LBT, RBT,   // '['  ']'
-    RBE, NUL, // LBE, RBE,   // '{'  '}'
-    NUL, NUL, // FSL, BSL,   // '/'  '\' 
-    NUL, NUL, // OCT, AST,   // '#'  '*'
-    NUL, NUL, // CLN, SCN,   // ':'  ';'
-    NUL, NUL, // EQL, TLD    // '='  '~'
-};
-
 typedef struct elem_s elem_t;
 
 struct elem_s {
-    fragtype_t type;
+    charclass_t charclass;
     void *beg;
     int len;
     int allocated;
@@ -112,7 +79,7 @@ struct elem_s {
 };
 
 typedef struct {
-    fragtype_t fraglisttype, fragtermtype;
+    charclass_t fraglisttype, fragtermtype;
     elem_t *fraglist, *frag;
 } act_t;
 
@@ -130,32 +97,33 @@ int main (int argc, char *argv[]) {
 
     inp = test;
     while ((c = *inp)) {
-        fragtype_t fragtype, fraglisttype, fragtermtype;
-        int firstcharoffset;
+        charclass_t charclass;
 	elem_t *frag = act->frag;
 
-        fragtype = char2fragtype[c];
+        charclass = char2charclass[c];
         if (frag) {
-            if (fragtype == frag->type) {
+            if (charclass & frag->charclass) {
                 frag->len++;
             }
 	    else {
-                fragtermtype = fragtype2fragtermtype[fragtype];
+#if 0
+                fragtermtype = charclass2fragtermtype[charclass];
             
-                fraglisttype = fragtype2fraglisttype[fragtype];
+                fraglisttype = charclass2fraglisttype[charclass];
 		if (fraglisttype == act->fraglisttype) {
- 		    firstcharoffset = fragtype2firstcharoffset[fragtype];
+ 		    firstcharoffset = charclass2firstcharoffset[charclass];
 		    if (firstcharoffset == 0) {
                         frag->len++;
                     }
                     else {
 			frag = calloc(sizeof(elem_t), 1);
-                        frag->type = fragtype;
+                        frag->type = charclass;
                         frag->len = 0;
 			frag->beg = inp + 1;
 			act->frag->next = frag;
 			act->frag = frag;
                     }
+#endif
                 }
  		else {
 process_fraglist(act);
@@ -163,11 +131,11 @@ process_fraglist(act);
             }
         }
         else {
-            fraglisttype = fragtype2fraglisttype[fragtype];
+            fraglisttype = charclass2fraglisttype[charclass];
 	    if (act->fraglisttype != NUL) {
                 frag = calloc(sizeof(elem_t), 1);
-                frag->type = fragtype;
- 		firstcharoffset = fragtype2firstcharoffset[fragtype];
+                frag->type = charclass;
+ 		firstcharoffset = charclass2firstcharoffset[charclass];
                 frag->len = 1 - firstcharoffset;
                 frag->beg = inp + firstcharoffset;
                 frag->next = NULL;
