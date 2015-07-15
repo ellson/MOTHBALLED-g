@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "list.h"
+
 typedef enum {
     NUL=0,           // EOF
     ABC=1<<0,        // simple_string_character
@@ -63,24 +65,10 @@ charclass_t char2charclass[] = {
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC
 };
 
-typedef struct elem_s elem_t;
-
-struct elem_s {
-    charclass_t charclass;
-    void *beg;
-    int len;
-    int allocated;
-    elem_t *next;
-};
-
 typedef struct {
     charclass_t fraglistcharclass;
     elem_t *fraglist, *frag;
 } act_t;
-
-static void process_fraglist (act_t *act) {
-    fprintf(stdout,"process fraglist\n");
-}
 
 unsigned char *test=(unsigned char*)"<aa bb cc>";
 
@@ -93,12 +81,12 @@ int main (int argc, char *argv[]) {
     inp = test;
     while ((c = *inp)) {
         charclass_t charclass;
-	elem_t *frag;
+	elem_t *frag, *elem;
 
         charclass = char2charclass[c];
         frag = act->frag;
         if (frag) {    // a frag already exists
-            if (charclass & frag->charclass) {  // identical charclass, just continue appending to frag
+            if (charclass & frag->type) {  // identical charclass, just continue appending to frag
                 frag->len++;
             }
 	    else {
@@ -107,16 +95,19 @@ int main (int argc, char *argv[]) {
                         frag->len++;
                     }
                     else { // DQT|SQT|BSL  -- charclass that start at next char - so new frag to skip this char
-			frag = calloc(sizeof(elem_t), 1);
-                        frag->charclass = charclass;
-                        frag->len = 0;
-			frag->beg = inp + 1;
+			frag = newelem(charclass, inp+1, 0, 0, NULL);
 			act->frag->next = frag;
 			act->frag = frag;
                     }
                 }
  		else {
-		    process_fraglist(act);
+		    if (act->fraglist->type & (WS|NL|CR)) {
+			freelist(act->fraglist);
+		    }
+                    else if (act->fraglist->type & (ABC|DQT|SQT|FSL)) {
+			elem = joinlist2elem(act->fraglist, 1, 0);
+fprintf(stdout,"%s\n",elem->buf);
+                    }
                     act->frag = NULL;
 		}
             }
@@ -129,17 +120,12 @@ int main (int argc, char *argv[]) {
         frag = act->frag;
         if (!frag) { // no current frag
             if (charclass & (ABC|WS|NL|CR|DQT|SQT|FSL)) { // charclass that need a frag
-                frag = calloc(sizeof(elem_t), 1);
-                frag->charclass = charclass;
  		if (charclass & (ABC|WS|NL|CR)) { // charclass that start at this char
-                    frag->len = 1;
-                    frag->beg = inp;
+		    frag = newelem(charclass, inp, 1, 0, NULL);
                 }
                 else { // DQT|SQT|BSL     --   charclass that start at next char
-                    frag->len = 0;
-                    frag->beg = inp + 1;
+		    frag = newelem(charclass, inp+1, 0, 0, NULL);
                 }
-                frag->next = NULL;
                 act->frag = frag;
                 act->fraglist = frag;
                 switch (charclass) {  // set fraglistcharclass with all classes accepted in fraglist
@@ -165,9 +151,6 @@ int main (int argc, char *argv[]) {
                 }
             }
 	}
-
-fprintf(stdout,"%c\n",c);
-
         inp++;
     }
 }
