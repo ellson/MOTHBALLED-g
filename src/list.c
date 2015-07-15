@@ -47,19 +47,14 @@ elem_t *joinlist2elem(elemlist_t *list, int type) {
 	elem = elem->next;
     }
 
-#if 0
-    switch (cnt) {
-    case 0 :
-        return NULL;
-	break;
-    case 1 :
-        // optimize by directly promoting of only one elem,
-        //  -- unfortunately may be non-'\0'-terminated string
+    elem = list->first;
+    if (cnt == 1 && elem->allocated == 1) {
+        // optimize by directly promoting if only one elem,
+        // and if its string has already been malloc'ed and '\0'-terminated
         new = list->first;
         new->type = type;
-        break;
-    default :
-#endif
+    }
+    else {
         // prepare new to contain joined list in allocated buffer
         pos = malloc(len+1);
         new = newelem(type, pos, len, 1);
@@ -88,9 +83,7 @@ elem_t *joinlist2elem(elemlist_t *list, int type) {
         *pos = '\0';
     
         new->next = NULL;
-#if 0
     }
-#endif
     list->first = NULL;
     list->last = NULL;
     list->type = 0;

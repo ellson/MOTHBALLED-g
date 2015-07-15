@@ -70,20 +70,37 @@ charclass_t char2charclass[] = {
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC
 };
 
+typedef struct {
+    elemlist_t fraglist, npathlist, nlistlist, edgelist, elistlist;
+} act_t;
+
+static int opencloseblock(act_t *act, charclass_t charclass) {
+    return 0;
+}
+
 unsigned char *test=(unsigned char*)"<aa bb cc>";
 
 int main (int argc, char *argv[]) {
     unsigned char *inp, c;
+    int rc, ccnt;
     charclass_t charclass;
-    elemlist_t *fraglist, *npathlist, *nlistlist;
+    act_t *act;
+    elemlist_t *fraglist, *npathlist, *nlistlist, *edgelist, *elistlist;
     elem_t *frag, *npathelem, *nlistelem;
 
-    fraglist = calloc(sizeof(elemlist_t), 1);
-    npathlist = calloc(sizeof(elemlist_t), 1);
-    nlistlist = calloc(sizeof(elemlist_t), 1);
+    act = calloc(sizeof(act_t), 1);
+
+    fraglist = &(act->fraglist);
+    npathlist = &(act->npathlist);
+    nlistlist = &(act->nlistlist);
+    edgelist = &(act->edgelist);
+    elistlist = &(act->elistlist);
 
     inp = test;
+
+    ccnt = 0;
     while ((c = *inp++)) {
+        ccnt++;
         charclass = char2charclass[c];
         frag = fraglist->last;
         if (frag) {    // a frag already exists
@@ -100,7 +117,7 @@ int main (int argc, char *argv[]) {
 			appendlist(fraglist, frag);
                     }
                 }
- 		else { // new charclass is not member of old, so something got terminated and neeasd promoting
+ 		else { // new charclass is not member of old, so something got terminated and needs promoting
                     if (fraglist->type & (ABC|DQT|SQT|FSL)) {
 			npathelem = joinlist2elem(fraglist, NPATH);
 			appendlist(npathlist, npathelem);
@@ -111,17 +128,21 @@ fprintf(stdout,"npathelem: %s\n",npathelem->buf);
 			appendlist(nlistlist, nlistelem);
 fprintf(stdout,"nlistelem: %s\n",nlistelem->buf);
 		    } 
-// FIXME
-//     NPATH | NLIST --> EDGE
-//     EDGE --> ELIST
-		    freelist(fraglist);	 // free anything that hasn't been promoted,  e.g. WS
+                    freelist(fraglist);  // free anything that hasn't been promoted,  e.g. WS
 		}
             }
         }
 
-        if (charclass & (LPN|LAN|LBT|LBE)) { // charclass that need a frag
-              // FIXME  -- this is trying to deal with opens ... not sure
+        if (charclass & (LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|SQT|DQT)) {
+	    rc = opencloseblock(act, charclass);
+	    if (rc) {
+		fprintf(stderr, "parser error at char number: %d   \"%c\"\n", ccnt, c);
+                exit(rc);
+            }
         }
+// FIXME - deal with OPEN and CLOSE
+//     NPATH | NLIST --> EDGE
+//     EDGE --> ELIST
 
         frag = fraglist->last;
         if (!frag) { // no current frag
