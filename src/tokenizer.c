@@ -4,29 +4,34 @@
 #include "list.h"
 
 typedef enum {
-    NUL=0,           // EOF
-    ABC=1<<0,        // simple_string_character
-     WS=1<<1,        // whitespace
-     NL=1<<2,        // newline
-     CR=1<<3,        // return
-    DQT=1<<4,        // '"'
-    SQT=1<<5,        // '''
-    LPN=1<<6,        // '('
-    RPN=1<<7,        // ')'
-    LAN=1<<8,        // '<'
-    RAN=1<<9,        // '>'
-    LBT=1<<10,       // '['
-    RBT=1<<11,       // ']'
-    LBE=1<<12,       // '{'
-    RBE=1<<13,       // '}'
-    FSL=1<<14,       // '/'
-    BSL=1<<15,       // '\'
-    OCT=1<<16,       // '#'
-    AST=1<<17,       // '*'
-    CLN=1<<18,       // ':'
-    SCN=1<<19,       // ';'
-    EQL=1<<20,       // '='
-    TLD=1<<21,       // '~'
+    NUL = 0,           // EOF
+    ABC = 1<<0,        // simple_string_character
+     WS = 1<<1,        // whitespace
+     NL = 1<<2,        // newline
+     CR = 1<<3,        // return
+    DQT = 1<<4,        // '"'
+    SQT = 1<<5,        // '''
+    LPN = 1<<6,        // '('
+    RPN = 1<<7,        // ')'
+    LAN = 1<<8,        // '<'
+    RAN = 1<<9,        // '>'
+    LBT = 1<<10,       // '['
+    RBT = 1<<11,       // ']'
+    LBE = 1<<12,       // '{'
+    RBE = 1<<13,       // '}'
+    FSL = 1<<14,       // '/'
+    BSL = 1<<15,       // '\'
+    OCT = 1<<16,       // '#'
+    AST = 1<<17,       // '*'
+    CLN = 1<<18,       // ':'
+    SCN = 1<<19,       // ';'
+    EQL = 1<<20,       // '='
+    TLD = 1<<21,       // '~'
+
+  NPATH = 1<<22,
+  NLIST = 1<<23,
+   EDGE = 1<<24,
+  ELIST = 1<<25,
 } charclass_t;
  
 charclass_t char2charclass[] = {
@@ -65,92 +70,91 @@ charclass_t char2charclass[] = {
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC
 };
 
-typedef struct {
-    charclass_t fraglistcharclass;
-    elem_t *fraglist, *frag;
-} act_t;
-
 unsigned char *test=(unsigned char*)"<aa bb cc>";
 
 int main (int argc, char *argv[]) {
     unsigned char *inp, c;
-    act_t *act;
+    charclass_t charclass;
+    elemlist_t *fraglist, *npathlist, *nlistlist;
+    elem_t *frag, *npathelem, *nlistelem;
 
-    act = calloc(sizeof(act_t), 1);
+    fraglist = calloc(sizeof(elemlist_t), 1);
+    npathlist = calloc(sizeof(elemlist_t), 1);
+    nlistlist = calloc(sizeof(elemlist_t), 1);
 
     inp = test;
-    while ((c = *inp)) {
-        charclass_t charclass;
-	elem_t *frag, *elem;
-
+    while ((c = *inp++)) {
         charclass = char2charclass[c];
-        frag = act->frag;
+        frag = fraglist->last;
         if (frag) {    // a frag already exists
             if (charclass & frag->type) {  // identical charclass, just continue appending to frag
                 frag->len++;
             }
 	    else {
-                if (charclass & act->fraglistcharclass) {  // if matches fraglist charclass
+                if (charclass & fraglist->type) {  // if matches fraglist charclass
  		    if (charclass & (ABC|WS|NL|CR)) {  // charclass that can be simply appended
                         frag->len++;
                     }
                     else { // DQT|SQT|BSL  -- charclass that start at next char - so new frag to skip this char
-			frag = newelem(charclass, inp+1, 0, 0, NULL);
-			act->frag->next = frag;
-			act->frag = frag;
+			frag = newelem(charclass, inp, 0, 0);
+			appendlist(fraglist, frag);
                     }
                 }
- 		else {
-		    if (act->fraglist->type & (WS|NL|CR)) {
-			freelist(act->fraglist);
-		    }
-                    else if (act->fraglist->type & (ABC|DQT|SQT|FSL)) {
-			elem = joinlist2elem(act->fraglist, 1, 0);
-fprintf(stdout,"%s\n",elem->buf);
-                    }
-                    act->frag = NULL;
+ 		else { // new charclass is not member of old, so something got terminated and neeasd promoting
+                    if (fraglist->type & (ABC|DQT|SQT|FSL)) {
+			npathelem = joinlist2elem(fraglist, NPATH);
+			appendlist(npathlist, npathelem);
+fprintf(stdout,"npathelem: %s\n",npathelem->buf);
+
+//FIXME - something in here to deal with path separators:  :/ <abc>/ <abc> :: <abc> : <abc>
+			nlistelem = joinlist2elem(npathlist, NLIST);
+			appendlist(nlistlist, nlistelem);
+fprintf(stdout,"nlistelem: %s\n",nlistelem->buf);
+		    } 
+// FIXME
+//     NPATH | NLIST --> EDGE
+//     EDGE --> ELIST
+		    freelist(fraglist);	 // free anything that hasn't been promoted,  e.g. WS
 		}
             }
         }
 
         if (charclass & (LPN|LAN|LBT|LBE)) { // charclass that need a frag
-              // FIXME
+              // FIXME  -- this is trying to deal with opens ... not sure
         }
 
-        frag = act->frag;
+        frag = fraglist->last;
         if (!frag) { // no current frag
             if (charclass & (ABC|WS|NL|CR|DQT|SQT|FSL)) { // charclass that need a frag
  		if (charclass & (ABC|WS|NL|CR)) { // charclass that start at this char
-		    frag = newelem(charclass, inp, 1, 0, NULL);
+		    frag = newelem(charclass, inp-1, 1, 0);
                 }
                 else { // DQT|SQT|BSL     --   charclass that start at next char
-		    frag = newelem(charclass, inp+1, 0, 0, NULL);
+		    frag = newelem(charclass, inp, 0, 0);
                 }
-                act->frag = frag;
-                act->fraglist = frag;
-                switch (charclass) {  // set fraglistcharclass with all classes accepted in fraglist
+		appendlist(fraglist, frag);
+                switch (charclass) {  // set list type with all classes accepted in fraglist
 		case ABC:
-		    act->fraglistcharclass = ABC;
+		    fraglist->type = ABC;
 		    break;
 		case WS:
 		case NL:
 		case CR:
-		    act->fraglistcharclass = WS|NL|CR;
+		    fraglist->type = WS|NL|CR;
 		    break;
 		case DQT:
-		    act->fraglistcharclass = ABC|WS|NL|CR|LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|FSL|OCT|AST|CLN|SCN|EQL|TLD|SQT;
+		    fraglist->type = ABC|WS|NL|CR|LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|FSL|OCT|AST|CLN|SCN|EQL|TLD|SQT;
 		    break;
 		case SQT:
-		    act->fraglistcharclass = ABC|WS|LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|FSL|OCT|AST|CLN|SCN|EQL|TLD|DQT;
+		    fraglist->type = ABC|WS|LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|FSL|OCT|AST|CLN|SCN|EQL|TLD|DQT;
 		    break;
 		case BSL:
-		    act->fraglistcharclass = ABC|WS|LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|FSL|OCT|AST|CLN|SCN|EQL|TLD|DQT|SQT|FSL;
+		    fraglist->type = ABC|WS|LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|FSL|OCT|AST|CLN|SCN|EQL|TLD|DQT|SQT|FSL;
 		    break;
                 default:
 		    fprintf(stderr,"shouldn't get here\n");
                 }
             }
 	}
-        inp++;
     }
 }

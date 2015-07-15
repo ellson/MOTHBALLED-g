@@ -1,4 +1,4 @@
-CFLAGS = -O0 -Wall
+CFLAGS = -g -O0 -Wall
 
 tokenizer: tokenizer.c list.c list.h
 
