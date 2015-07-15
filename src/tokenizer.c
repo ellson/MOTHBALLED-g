@@ -122,6 +122,10 @@ int main (int argc, char *argv[]) {
             }
         }
 
+        if (charclass & (LPN|LAN|LBT|LBE)) { // charclass that need a frag
+              // FIXME
+        }
+
         frag = act->frag;
         if (!frag) { // no current frag
             if (charclass & (ABC|WS|NL|CR|DQT|SQT|FSL)) { // charclass that need a frag
