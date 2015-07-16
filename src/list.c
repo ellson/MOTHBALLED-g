@@ -21,36 +21,33 @@ elem_t* newelem(int type, unsigned char *buf, int len, int allocated) {
             elem->next = next;
         }
         elem_freelist = elem;   // add chain of elems to freelist
-     }
-     elem_freelist = elem->next;  // update freelist to point to next available
+    }
+    elem_freelist = elem->next;  // update freelist to point to next available
 
-     elem->type = type;
-     elem->buf = buf;
-     elem->len = len;
-     elem->allocated = allocated;
-     elem->next = NULL;
-     return elem;
+    elem->type = type;
+    elem->buf = buf;
+    elem->len = len;
+    elem->allocated = allocated;
+    elem->next = NULL;
+    return elem;
 }
 
 elem_t *joinlist2elem(elemlist_t *list, int type) {
     elem_t *elem, *next, *new;
-    int cnt, len;
+    int len;
     unsigned char *pos;
 
-    // count elems, and calc total len ielems to be joined
-    cnt=0;
+    // calc total len ielems to be joined
     len=0;
     elem = list->first;
     while (elem) {
-        cnt++;
         len += elem->len;
 	elem = elem->next;
     }
 
     elem = list->first;
-    if (cnt == 1 && elem->allocated == 1) {
+    if (elem->next == NULL ) {
         // optimize by directly promoting if only one elem,
-        // and if its string has already been malloc'ed and '\0'-terminated
         new = list->first;
         new->type = type;
     }
@@ -79,9 +76,6 @@ elem_t *joinlist2elem(elemlist_t *list, int type) {
 	    elem = next;
         }
     
-        // null terminate for safety and convenience
-        *pos = '\0';
-    
         new->next = NULL;
     }
     list->first = NULL;
@@ -96,8 +90,8 @@ void appendlist(elemlist_t *list, elem_t *elem) {
     }
     else {
 	list->first = elem;
-	list->last = elem;
     }
+    list->last = elem;
 }
 
 void freelist(elemlist_t *list) {
@@ -136,3 +130,18 @@ void freefreelist(void) {
     elem_freelist = NULL;
 }
         
+void printj(elemlist_t *list, char *join) {
+    elem_t *elem;
+    unsigned char *cp;
+    int len;
+
+    elem = list->first;
+    while (elem) {
+        cp = elem->buf;
+        len = elem->len;
+        while (len--) printf ("%c", *cp++);
+        if (elem != list->last) printf (join);
+	elem = elem->next;
+    }
+    printf ("\n");
+}

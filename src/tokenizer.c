@@ -242,12 +242,14 @@ int main (int argc, char *argv[]) {
                     if (fraglist->type & STRING) {
 			npathelem = joinlist2elem(fraglist, NPATH);
 			appendlist(npathlist, npathelem);
-fprintf(stdout,"npathelem: %s\n",npathelem->buf);
+printf("npath: ");
+printj(npathlist, " ");
 
 //FIXME - something in here to deal with path separators:  :/ <abc>/ <abc> :: <abc> : <abc>
 			nlistelem = joinlist2elem(npathlist, NLIST);
 			appendlist(nlistlist, nlistelem);
-fprintf(stdout,"nlistelem: %s\n",nlistelem->buf);
+printf("nlist: ");
+printj(nlistlist, " ");
 		    } 
                     freelist(fraglist);  // free anything that hasn't been promoted,  e.g. WS
 		}

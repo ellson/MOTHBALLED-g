@@ -18,4 +18,5 @@ elem_t* joinlist2elem(elemlist_t *list, int type);
 void appendlist(elemlist_t *list, elem_t *elem);
 void freelist(elemlist_t *list);
 void freefreelist(void);
+void printj(elemlist_t *list, char *join);
 
