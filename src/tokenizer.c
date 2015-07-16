@@ -3,40 +3,35 @@
 
 #include "list.h"
 
-typedef enum {
-    NUL = 0,           // EOF
-    ABC = 1<<0,        // simple_string_character
-     WS = 1<<1,        // whitespace
-     NL = 1<<2,        // newline
-     CR = 1<<3,        // return
-    DQT = 1<<4,        // '"'
-    SQT = 1<<5,        // '''
-    LPN = 1<<6,        // '('
-    RPN = 1<<7,        // ')'
-    LAN = 1<<8,        // '<'
-    RAN = 1<<9,        // '>'
-    LBT = 1<<10,       // '['
-    RBT = 1<<11,       // ']'
-    LBE = 1<<12,       // '{'
-    RBE = 1<<13,       // '}'
-    FSL = 1<<14,       // '/'
-    BSL = 1<<15,       // '\'
-    OCT = 1<<16,       // '#'
-    AST = 1<<17,       // '*'
-    CLN = 1<<18,       // ':'
-    SCN = 1<<19,       // ';'
-    EQL = 1<<20,       // '='
-    TLD = 1<<21,       // '~'
-
-  NPATH = 1<<22,
-  NLIST = 1<<23,
-   EDGE = 1<<24,
-  ELIST = 1<<25,
-} charclass_t;
+enum charclass_t {
+    NUL,       // EOF
+    ABC,       // simple_string_character
+     WS,       // whitespace
+     LF,       // newline
+     CR,       // return
+    DQT,       // '"'
+    SQT,       // '''
+    LPN,       // '('
+    RPN,       // ')'
+    LAN,       // '<'
+    RAN,       // '>'
+    LBT,       // '['
+    RBT,       // ']'
+    LBE,       // '{'
+    RBE,       // '}'
+    FSL,       // '/'
+    BSL,       // '\'
+    OCT,       // '#'
+    AST,       // '*'
+    CLN,       // ':'
+    SCN,       // ';'
+    EQL,       // '='
+    TLD,       // '~'
+};
  
-charclass_t char2charclass[] = {
+unsigned char char2charclass[] = {
    NUL, ABC, ABC, ABC, ABC, ABC, ABC, ABC,  /* NUL SOH STX ETX EOT ENQ ACK BEL */
-   ABC,  WS,  NL, ABC, ABC,  CR, ABC, ABC,  /*  BS TAB  LF  VT  FF  CR  SO  SI */
+   ABC,  WS,  LF, ABC, ABC,  CR, ABC, ABC,  /*  BS TAB  LF  VT  FF  CR  SO  SI */
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC,  /* DLE DC1 DC2 DC3 DC4 NAK STN ETB */
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC,  /* CAN  EM SUB ESC  FS  GS  RS  US */
     WS, ABC, DQT, OCT, ABC, ABC, ABC, SQT,  /* SPC  !   "   #   $   %   &   '  */
@@ -67,14 +62,93 @@ charclass_t char2charclass[] = {
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC,
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC,
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC,
-   ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC
+};
+ 
+enum charclassprops_t {
+   NONE         = 0,
+   STRING       = 1<<0,
+   TWO          = 1<<1,
+   SPACE        = 1<<2,
+   OPEN         = 1<<3,
+   CLOSE        = 1<<4,
+   PARENTHESIS  = 1<<5,
+   ANGLEBRACKET = 1<<6,
+   BRACKET      = 1<<7,
+   BRACE        = 1<<8,
+   DQTSTR       = 1<<9,
+   SQTSTR       = 1<<10,
+   EOL          = 1<<11,
+   CMNTBEG      = 1<<12,
+   CMNTEND      = 1<<13,
+   CMNTEOLBEG   = 1<<14,
+   CMNTEOLEND   = 1<<15,
+   CMNTSTR      = 1<<16,
+   ESCAPE       = 1<<17,
+   DISAMBIG     = 1<<18,
+   ANCESTOR     = 1<<19,
+   NPATH        = 1<<20,
+   NLIST        = 1<<21,
+};
+
+unsigned int charONEclass2props[] = {
+    /* NUL  */  NONE,
+    /* ABC  */  STRING,
+    /* WSP  */  SPACE,
+    /*  LF  */  TWO | EOL | CMNTEOLEND | SPACE,
+    /*  CR  */  TWO | EOL | CMNTEOLEND | SPACE,
+    /* DQT  */  OPEN | CLOSE,
+    /* SQT  */  OPEN | CLOSE,
+    /* LPN  */  OPEN | PARENTHESIS,
+    /* RPN  */  CLOSE | PARENTHESIS,
+    /* LAN  */  OPEN | ANGLEBRACKET,
+    /* RAN  */  OPEN | ANGLEBRACKET,
+    /* LBR  */  OPEN | BRACKET,
+    /* RBR  */  OPEN | BRACKET,
+    /* LBE  */  OPEN | BRACE,
+    /* RBE  */  OPEN | BRACE,
+    /* OCT  */  NONE,
+    /* AST  */  TWO | CMNTEND,
+    /* FSL  */  TWO | CMNTBEG | CMNTEOLBEG,
+    /* BSL  */  TWO | ESCAPE,
+    /* CLN  */  TWO | DISAMBIG  | ANCESTOR,
+    /* SCN  */  NONE,
+    /* EQL  */  NONE,
+    /* TLD  */  NONE,
+};
+
+#define proptypemask (STRING | SPACE | EOL | PARENTHESIS | ANGLEBRACKET | BRACKET | BRACE | DQTSTR | SQTSTR | CMNTSTR)
+
+unsigned int charTWOclass2props[] = {
+    /* NUL  */  ESCAPE | ABC,
+    /* ABC  */  ESCAPE | ABC, 
+    /* WSP  */  ESCAPE | ABC,
+    /*  LF  */  ESCAPE | EOL,
+    /*  CR  */  ESCAPE | EOL,             // FIXME = what about '\' CR LF or '\' LF CR
+    /* DQT  */  ESCAPE | ABC,
+    /* SQT  */  ESCAPE | ABC,
+    /* LPN  */  ESCAPE | ABC,
+    /* RPN  */  ESCAPE | ABC,
+    /* LAN  */  ESCAPE | ABC,
+    /* RAN  */  ESCAPE | ABC,
+    /* LBR  */  ESCAPE | ABC,
+    /* RBR  */  ESCAPE | ABC,
+    /* LBE  */  ESCAPE | ABC,
+    /* RBE  */  ESCAPE | ABC,
+    /* OCT  */  ESCAPE | ABC,
+    /* AST  */  ESCAPE | CMNTBEG,
+    /* FSL  */  ESCAPE | CMNTEND | CMNTEOLBEG,
+    /* BSL  */  ESCAPE | ABC,
+    /* CLN  */  ESCAPE | DISAMBIG,
+    /* SCN  */  ESCAPE | ABC,
+    /* EQL  */  ESCAPE | ABC,
+    /* TLD  */  ESCAPE | ABC,
 };
 
 typedef struct {
     elemlist_t fraglist, npathlist, nlistlist, edgelist, elistlist;
 } act_t;
 
-static int opencloseblock(act_t *act, charclass_t charclass) {
+static int opencloseblock(act_t *act, unsigned char charclass) {
     return 0;
 }
 
@@ -82,8 +156,9 @@ unsigned char *test=(unsigned char*)"<aa bb cc>";
 
 int main (int argc, char *argv[]) {
     unsigned char *inp, c;
-    int rc, ccnt;
-    charclass_t charclass;
+    int rc, charcnt;
+    unsigned char charclass;
+    unsigned int  charprops;
     act_t *act;
     elemlist_t *fraglist, *npathlist, *nlistlist, *edgelist, *elistlist;
     elem_t *frag, *npathelem, *nlistelem;
@@ -98,27 +173,28 @@ int main (int argc, char *argv[]) {
 
     inp = test;
 
-    ccnt = 0;
+    charcnt = 0;
     while ((c = *inp++)) {
-        ccnt++;
+        charcnt++;
         charclass = char2charclass[c];
+        charprops = charONEclass2props[charclass];
         frag = fraglist->last;
         if (frag) {    // a frag already exists
-            if (charclass & frag->type) {  // identical charclass, just continue appending to frag
+            if (charprops & frag->type) {  // matching charprops, just continue appending to frag
                 frag->len++;
             }
 	    else {
-                if (charclass & fraglist->type) {  // if matches fraglist charclass
- 		    if (charclass & (ABC|WS|NL|CR)) {  // charclass that can be simply appended
+                if (charprops & fraglist->type) {  // if matches fraglist 
+ 		    if (charprops & (STRING|SPACE)) {  // char that can be simply appended
                         frag->len++;
                     }
-                    else { // DQT|SQT|BSL  -- charclass that start at next char - so new frag to skip this char
-			frag = newelem(charclass, inp, 0, 0);
+                    else { // DQT|SQT|BSL  -- charprop that start at next char - so new frag to skip this char
+			frag = newelem(charprops & proptypemask, inp, 0, 0);
 			appendlist(fraglist, frag);
                     }
                 }
- 		else { // new charclass is not member of old, so something got terminated and needs promoting
-                    if (fraglist->type & (ABC|DQT|SQT|FSL)) {
+ 		else { // new charprops don't match, so something got terminated and needs promoting
+                    if (fraglist->type & STRING) {
 			npathelem = joinlist2elem(fraglist, NPATH);
 			appendlist(npathlist, npathelem);
 fprintf(stdout,"npathelem: %s\n",npathelem->buf);
@@ -133,10 +209,10 @@ fprintf(stdout,"nlistelem: %s\n",nlistelem->buf);
             }
         }
 
-        if (charclass & (LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|SQT|DQT)) {
+        if (charprops & (OPEN|CLOSE)) {
 	    rc = opencloseblock(act, charclass);
 	    if (rc) {
-		fprintf(stderr, "parser error at char number: %d   \"%c\"\n", ccnt, c);
+		fprintf(stderr, "parser error at char number: %d   \"%c\"\n", charcnt, c);
                 exit(rc);
             }
         }
@@ -146,31 +222,31 @@ fprintf(stdout,"nlistelem: %s\n",nlistelem->buf);
 
         frag = fraglist->last;
         if (!frag) { // no current frag
-            if (charclass & (ABC|WS|NL|CR|DQT|SQT|FSL)) { // charclass that need a frag
- 		if (charclass & (ABC|WS|NL|CR)) { // charclass that start at this char
-		    frag = newelem(charclass, inp-1, 1, 0);
+            if (charprops & (STRING|SPACE|DQTSTR|SQTSTR|CMNTSTR)) { // charclass that need a frag
+ 		if (charprops & (STRING|SPACE)) { // charclass that start at this char
+		    frag = newelem(charprops & proptypemask, inp-1, 1, 0);
                 }
-                else { // DQT|SQT|BSL     --   charclass that start at next char
-		    frag = newelem(charclass, inp, 0, 0);
+                else { // charclass that start at next char
+		    frag = newelem(charprops & proptypemask, inp, 0, 0);
                 }
 		appendlist(fraglist, frag);
                 switch (charclass) {  // set list type with all classes accepted in fraglist
 		case ABC:
-		    fraglist->type = ABC;
+		    fraglist->type = STRING;
 		    break;
 		case WS:
-		case NL:
+		case LF:
 		case CR:
-		    fraglist->type = WS|NL|CR;
+		    fraglist->type = SPACE;
 		    break;
 		case DQT:
-		    fraglist->type = ABC|WS|NL|CR|LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|FSL|OCT|AST|CLN|SCN|EQL|TLD|SQT;
+		    fraglist->type = DQTSTR;
 		    break;
 		case SQT:
-		    fraglist->type = ABC|WS|LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|FSL|OCT|AST|CLN|SCN|EQL|TLD|DQT;
+		    fraglist->type = SQTSTR;
 		    break;
 		case BSL:
-		    fraglist->type = ABC|WS|LPN|RPN|LAN|RAN|LBT|RBT|LBE|RBE|FSL|OCT|AST|CLN|SCN|EQL|TLD|DQT|SQT|FSL;
+		    fraglist->type = STRING;
 		    break;
                 default:
 		    fprintf(stderr,"shouldn't get here\n");
