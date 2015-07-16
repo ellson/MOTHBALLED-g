@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "list.h"
 
@@ -190,7 +191,7 @@ unsigned int charTWOclass2props[] = {
 };
 
 typedef struct {
-    elemlist_t fraglist, npathlist, nlistlist, edgelist, elistlist;
+    elem_t *fraglist, *npathlist, *nlistlist, *edgelist, *elistlist;
 } act_t;
 
 static int opencloseblock(act_t *act, unsigned char charclass) {
@@ -205,16 +206,22 @@ int main (int argc, char *argv[]) {
     unsigned char charclass;
     unsigned int  charprops;
     act_t *act;
-    elemlist_t *fraglist, *npathlist, *nlistlist, *edgelist, *elistlist;
+    elem_t *fraglist, *npathlist, *nlistlist, *edgelist, *elistlist;
     elem_t *frag, *npathelem, *nlistelem;
 
     act = calloc(sizeof(act_t), 1);
 
-    fraglist = &(act->fraglist);
-    npathlist = &(act->npathlist);
-    nlistlist = &(act->nlistlist);
-    edgelist = &(act->edgelist);
-    elistlist = &(act->elistlist);
+    act->fraglist = newlist(0);
+    act->npathlist = newlist(0);
+    act->nlistlist = newlist(0);
+    act->edgelist = newlist(0);
+    act->elistlist = newlist(0);
+
+    fraglist = act->fraglist;
+    npathlist = act->npathlist;
+    nlistlist = act->nlistlist;
+    edgelist = act->edgelist;
+    elistlist = act->elistlist;
 
     inp = test;
 
@@ -223,15 +230,19 @@ int main (int argc, char *argv[]) {
         charcnt++;
         charclass = char2charclass[c];
         charprops = charONEclass2props[charclass];
-        frag = fraglist->last;
+        frag = fraglist->u.lst.last;
+
         if (frag) {    // a frag already exists
-            if (charprops & frag->type) {  // matching charprops, just continue appending to frag
-                frag->len++;
+
+            assert (frag->type == STR);
+
+            if (charprops & frag->props) {  // matching charprops, just continue appending to frag
+                frag->u.str.len++;
             }
 	    else {
-                if (charprops & fraglist->type) {  // if matches fraglist 
+                if (charprops & fraglist->props) {  // if matches fraglist 
  		    if (charprops & (STRING|SPACE)) {  // char that can be simply appended
-                        frag->len++;
+                        frag->u.str.len++;
                     }
                     else { // DQT|SQT|BSL  -- charprop that start at next char - so new frag to skip this char
 			frag = newelem(charprops & proptypemask, inp, 0, 0);
@@ -239,17 +250,17 @@ int main (int argc, char *argv[]) {
                     }
                 }
  		else { // new charprops don't match, so something got terminated and needs promoting
-                    if (fraglist->type & STRING) {
-			npathelem = joinlist2elem(fraglist, NPATH);
+//printj(fraglist);
+                    if (fraglist->props & STRING) {
+			npathelem = list2elem(fraglist);
 			appendlist(npathlist, npathelem);
-printf("npath: ");
-printj(npathlist, " ");
+printj(npathlist);
 
 //FIXME - something in here to deal with path separators:  :/ <abc>/ <abc> :: <abc> : <abc>
-			nlistelem = joinlist2elem(npathlist, NLIST);
+			nlistelem = list2elem(npathlist);
 			appendlist(nlistlist, nlistelem);
-printf("nlist: ");
-printj(nlistlist, " ");
+//printf("nlist: ");
+//printj(nlistlist, " ");
 		    } 
                     freelist(fraglist);  // free anything that hasn't been promoted,  e.g. WS
 		}
@@ -267,7 +278,7 @@ printj(nlistlist, " ");
 //     NPATH | NLIST --> EDGE
 //     EDGE --> ELIST
 
-        frag = fraglist->last;
+        frag = fraglist->u.lst.last;
         if (!frag) { // no current frag
             if (charprops & (STRING|SPACE|DQTSTR|SQTSTR|CMNTSTR)) { // charclass that need a frag
  		if (charprops & (STRING|SPACE)) { // charclass that start at this char
@@ -277,23 +288,23 @@ printj(nlistlist, " ");
 		    frag = newelem(charprops & proptypemask, inp, 0, 0);
                 }
 		appendlist(fraglist, frag);
-                switch (charclass) {  // set list type with all classes accepted in fraglist
+                switch (charclass) {  // set list props with all classes accepted in fraglist
 		case ABC:
-		    fraglist->type = STRING;
+		    fraglist->props = STRING;
 		    break;
 		case WS:
 		case LF:
 		case CR:
-		    fraglist->type = SPACE;
+		    fraglist->props = SPACE;
 		    break;
 		case DQT:
-		    fraglist->type = DQTSTR;
+		    fraglist->props = DQTSTR;
 		    break;
 		case SQT:
-		    fraglist->type = SQTSTR;
+		    fraglist->props = SQTSTR;
 		    break;
 		case BSL:
-		    fraglist->type = STRING;
+		    fraglist->props = STRING;
 		    break;
                 default:
 		    fprintf(stderr,"shouldn't get here\n");

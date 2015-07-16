@@ -1,22 +1,29 @@
 typedef struct elem_s elem_t;
 
+typedef enum {STR, LST} elemtype_t;
+
 struct elem_s {
-    int type;
-    unsigned char *buf;
-    int len;
-    int allocated;
     elem_t *next;
+    int props;
+    elemtype_t type;
+    union {
+	struct {
+	    unsigned char *buf;
+            int len;
+    	    int allocated;
+        } str;
+        struct {
+	    elem_t *first;
+            elem_t *last;
+        } lst;
+    } u;
 };
 
-typedef struct {
-    int type;
-    elem_t *first, *last;
-} elemlist_t;
 
-elem_t* newelem(int type, unsigned char *buf, int len, int allocated);
-elem_t* joinlist2elem(elemlist_t *list, int type);
-void appendlist(elemlist_t *list, elem_t *elem);
-void freelist(elemlist_t *list);
-void freefreelist(void);
-void printj(elemlist_t *list, char *join);
+elem_t* newlist(int props);
+elem_t* newelem(int props, unsigned char *buf, int len, int allocated);
+elem_t *list2elem(elem_t *list);
+void appendlist(elem_t *list, elem_t *elem);
+void freelist(elem_t *list);
+void printj(elem_t *list);
 

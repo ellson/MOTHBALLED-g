@@ -1,108 +1,103 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "list.h"
 
 static elem_t *elem_freelist;
 
-elem_t* newelem(int type, unsigned char *buf, int len, int allocated) {
+static elem_t* newelem_private(elemtype_t type, int props) {
     elem_t *elem, *next;
     int i;
 
-    elem = NULL;
     if (elem_freelist) {       // if elem in freelist
         elem = elem_freelist;   // use first
     }
     else {                     // else no elems in freelist
-        for (i=0; i<20; i++) {   // ... so add 20 elems 
-            next = elem;
-	    elem = malloc (sizeof(elem_t));
-            elem->next = next;
+#define LISTALLOCNUM 100
+        elem_freelist = malloc (LISTALLOCNUM * sizeof(elem_t));
+        next = elem_freelist;
+        for (i=0; i<LISTALLOCNUM; i++) {   // ... so add LISTALLOCNUM elemes to free list
+	    elem = next;
+            next = elem + sizeof(elem_t);
+	    elem->next = next;
         }
-        elem_freelist = elem;   // add chain of elems to freelist
+	elem->next = NULL;      // terminate last elem
+        elem = elem_freelist;   // add chain of elems to freelist
     }
     elem_freelist = elem->next;  // update freelist to point to next available
-
     elem->type = type;
-    elem->buf = buf;
-    elem->len = len;
-    elem->allocated = allocated;
+    elem->props = props;
     elem->next = NULL;
     return elem;
 }
 
-elem_t *joinlist2elem(elemlist_t *list, int type) {
-    elem_t *elem, *next, *new;
-    int len;
-    unsigned char *pos;
+elem_t* newlist(int props) {
+    elem_t* elem;
 
-    // calc total len ielems to be joined
-    len=0;
-    elem = list->first;
-    while (elem) {
-        len += elem->len;
-	elem = elem->next;
-    }
-
-    elem = list->first;
-    if (elem->next == NULL ) {
-        // optimize by directly promoting if only one elem,
-        new = list->first;
-        new->type = type;
-    }
-    else {
-        // prepare new to contain joined list in allocated buffer
-        pos = malloc(len+1);
-        new = newelem(type, pos, len, 1);
-    
-        // iterate over list to be joined
-        elem = list->first;
-        while (elem) {
-	    next = elem->next;
-    
-            // copy fragment into new
-            len = elem->len;
-	    strncpy((char*)(pos), (char*)(elem->buf), len);
-	    pos += len;
-    
-            // clean up old and return to elem_freelist
-            if (elem->allocated) {
-                free(elem->buf);
-            }
-            elem->next = elem_freelist;
-            elem_freelist = elem;
-    
-	    elem = next;
-        }
-    
-        new->next = NULL;
-    }
-    list->first = NULL;
-    list->last = NULL;
-    list->type = 0;
-    return new;
+    elem = newelem_private(LST, props);
+    elem ->u.lst.first = NULL;
+    elem ->u.lst.last = NULL;
+    return elem;
 }
 
-void appendlist(elemlist_t *list, elem_t *elem) {
-    if (list->first) {
-	list->last->next = elem;
-    }
-    else {
-	list->first = elem;
-    }
-    list->last = elem;
+elem_t* newelem(int props, unsigned char *buf, int len, int allocated) {
+    elem_t* elem;
+    
+    elem = newelem_private(STR, props);
+    elem->u.str.buf = buf;
+    elem->u.str.len = len;
+    elem->u.str.allocated = allocated;
+    return elem;
 }
 
-void freelist(elemlist_t *list) {
+elem_t *list2elem(elem_t *list) {
+    elem_t *elem;
+
+    assert(list->type == LST);
+
+    elem = newlist(0);
+    elem->u.lst.first = list->u.lst.first;
+    elem->u.lst.last = list->u.lst.last;
+    elem->props = list->props;
+    list->u.lst.first = NULL;
+    list->u.lst.last = NULL;
+    list->props = 0;
+    return elem;
+}
+
+void appendlist(elem_t *list, elem_t *elem) {
+
+    assert(list->type == LST);
+
+    if (list->u.lst.first) {
+	list->u.lst.last->next = elem;
+    }
+    else {
+	list->u.lst.first = elem;
+    }
+    list->u.lst.last = elem;
+}
+
+void freelist(elem_t *list) {
     elem_t *elem, *next;
 
+    assert(list->type == LST);
+
     // free list of elem, but really just put them back on the elem_freelist
-    elem = list->first;
+    elem = list->u.lst.first;
     while (elem) {
 	next = elem->next;
-        if (elem->allocated) { // if the elem containes allocated buf, then really free that
-	    free(elem->buf);
+        switch (elem->type) {
+        case STR :
+	    if (elem->u.str.allocated) { // if the elem contains an allocated buf, then really free that
+	        free(elem->u.str.buf);
+            }
+	    break;
+        case LST :
+	    freelist(elem);  // recursively free lists of lists
+	    break;
 	}
 
         // insert elem at beginning of freelist
@@ -113,35 +108,46 @@ void freelist(elemlist_t *list) {
     }
 
     // clean up emptied list
-    list->first = NULL;
-    list->last = NULL;
-    list->type = 0;
+    list->u.lst.first = NULL;
+    list->u.lst.last = NULL;
+    list->props = 0;
 }
         
-void freefreelist(void) {
-    elem_t *elem, *next;
-
-    elem = elem_freelist;
-    while (elem) {
-	next = elem->next;
-	free(elem);
-	elem=next;
-    }
-    elem_freelist = NULL;
-}
-        
-void printj(elemlist_t *list, char *join) {
+static void printj_private(elem_t *list, int indent) {
     elem_t *elem;
     unsigned char *cp;
-    int len;
+    int len, cnt;
 
-    elem = list->first;
-    while (elem) {
-        cp = elem->buf;
-        len = elem->len;
-        while (len--) printf ("%c", *cp++);
-        if (elem != list->last) printf (join);
-	elem = elem->next;
+    assert(list->type == LST);
+    cnt = 0;
+    elem = list->u.lst.first;
+    switch (elem->type) {
+    case STR :
+        while (elem) {
+            assert(elem->type == STR);
+            cp = elem->u.str.buf;
+            len = elem->u.str.len;
+            if (len) {
+                while (indent--) putc (' ', stdout);
+                while (len--) putc (*cp++, stdout);
+                cnt++;
+            }
+            elem = elem->next;
+        }
+        if (cnt) {
+            putc ('\n', stdout);
+        }
+        break;
+    case LST :
+        while (elem) {
+            assert(elem->type == LST);
+	    printj_private(elem, indent+2);  // recursively print lists
+            elem = elem->next;
+	}
+	break;
     }
-    printf ("\n");
+}
+
+void printj(elem_t *list) {
+    printj_private(list, 0);
 }
