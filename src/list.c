@@ -52,6 +52,8 @@ elem_t* newelem(int props, unsigned char *buf, int len, int allocated) {
     return elem;
 }
 
+// to allow statically allocated list headers, list2elem copies the header into
+// a new elem, and then reinitializes the old header.
 elem_t *list2elem(elem_t *list) {
     elem_t *elem;
 

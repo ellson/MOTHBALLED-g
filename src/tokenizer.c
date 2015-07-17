@@ -191,46 +191,48 @@ unsigned int charTWOclass2props[] = {
 };
 
 typedef struct {
-    elem_t *fraglist, *npathlist, *nlistlist, *edgelist, *elistlist;
+    elem_t
+	fraglist,      // string fragments forming a single string
+	npathlist,     // strings components forming a path
+	nlistlist,     // paths descibing sets of nodes or endpoints
+        edgelist,      // list of endpoints sets describing one or more edges
+        elistlist,     // list of edges or of edge sets
+    	nproplist,     // list of node properties
+    	eproplist,     // list of edge properties
+	cproplist,     // list pf container properties
+        cactlist;      // list of acts
 } act_t;
 
 static int opencloseblock(act_t *act, unsigned char charclass) {
     return 0;
 }
 
-unsigned char *test=(unsigned char*)"<aa bb cc>";
+unsigned char *test=(unsigned char*)"<aa 'bb' cc>";
 
 int main (int argc, char *argv[]) {
     unsigned char *inp, c;
-    int rc, charcnt;
+    int rc, charcnt, charprops, fragprops;
     unsigned char charclass;
-    unsigned int  charprops;
     act_t *act;
     elem_t *fraglist, *npathlist, *nlistlist, *edgelist, *elistlist;
     elem_t *frag, *npathelem, *nlistelem;
 
     act = calloc(sizeof(act_t), 1);
 
-    act->fraglist = newlist(0);
-    act->npathlist = newlist(0);
-    act->nlistlist = newlist(0);
-    act->edgelist = newlist(0);
-    act->elistlist = newlist(0);
-
-    fraglist = act->fraglist;
-    npathlist = act->npathlist;
-    nlistlist = act->nlistlist;
-    edgelist = act->edgelist;
-    elistlist = act->elistlist;
+    fraglist = &(act->fraglist);
+    npathlist = &(act->npathlist);
+    nlistlist = &(act->nlistlist);
+    edgelist = &(act->edgelist);
+    elistlist = &(act->elistlist);
 
     inp = test;
 
+    frag = NULL;
     charcnt = 0;
     while ((c = *inp++)) {
         charcnt++;
         charclass = char2charclass[c];
         charprops = charONEclass2props[charclass];
-        frag = fraglist->u.lst.last;
 
         if (frag) {    // a frag already exists
 
@@ -254,15 +256,15 @@ int main (int argc, char *argv[]) {
                     if (fraglist->props & STRING) {
 			npathelem = list2elem(fraglist);
 			appendlist(npathlist, npathelem);
-printj(npathlist);
+//printj(npathlist);
 
 //FIXME - something in here to deal with path separators:  :/ <abc>/ <abc> :: <abc> : <abc>
 			nlistelem = list2elem(npathlist);
 			appendlist(nlistlist, nlistelem);
-//printf("nlist: ");
-//printj(nlistlist, " ");
+printj(nlistlist);
 		    } 
                     freelist(fraglist);  // free anything that hasn't been promoted,  e.g. WS
+                    frag = NULL;
 		}
             }
         }
@@ -278,37 +280,17 @@ printj(npathlist);
 //     NPATH | NLIST --> EDGE
 //     EDGE --> ELIST
 
-        frag = fraglist->u.lst.last;
         if (!frag) { // no current frag
             if (charprops & (STRING|SPACE|DQTSTR|SQTSTR|CMNTSTR)) { // charclass that need a frag
+                fragprops = charprops & proptypemask;
  		if (charprops & (STRING|SPACE)) { // charclass that start at this char
-		    frag = newelem(charprops & proptypemask, inp-1, 1, 0);
+		    frag = newelem(fragprops, inp-1, 1, 0);
                 }
                 else { // charclass that start at next char
-		    frag = newelem(charprops & proptypemask, inp, 0, 0);
+		    frag = newelem(fragprops, inp, 0, 0);
                 }
 		appendlist(fraglist, frag);
-                switch (charclass) {  // set list props with all classes accepted in fraglist
-		case ABC:
-		    fraglist->props = STRING;
-		    break;
-		case WS:
-		case LF:
-		case CR:
-		    fraglist->props = SPACE;
-		    break;
-		case DQT:
-		    fraglist->props = DQTSTR;
-		    break;
-		case SQT:
-		    fraglist->props = SQTSTR;
-		    break;
-		case BSL:
-		    fraglist->props = STRING;
-		    break;
-                default:
-		    fprintf(stderr,"shouldn't get here\n");
-                }
+                fraglist->props = fragprops;
             }
 	}
     }

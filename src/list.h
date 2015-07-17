@@ -1,21 +1,22 @@
 typedef struct elem_s elem_t;
 
-typedef enum {STR, LST} elemtype_t;
+// LST must = 0 for static allocation
+typedef enum {LST, STR} elemtype_t;
 
 struct elem_s {
     elem_t *next;
     int props;
     elemtype_t type;
     union {
+        struct {
+	    elem_t *first;
+            elem_t *last;
+        } lst;
 	struct {
 	    unsigned char *buf;
             int len;
     	    int allocated;
         } str;
-        struct {
-	    elem_t *first;
-            elem_t *last;
-        } lst;
     } u;
 };
 
