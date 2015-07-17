@@ -1,6 +1,6 @@
 typedef struct elem_s elem_t;
 
-// LST must = 0 for static allocation
+// LST must = 0 for calloc of list headers
 typedef enum {LST, STR} elemtype_t;
 
 struct elem_s {
@@ -20,11 +20,9 @@ struct elem_s {
     } u;
 };
 
-
 elem_t* newlist(int props);
 elem_t* newelem(int props, unsigned char *buf, int len, int allocated);
 elem_t *list2elem(elem_t *list);
 void appendlist(elem_t *list, elem_t *elem);
 void freelist(elem_t *list);
 void printj(elem_t *list);
-

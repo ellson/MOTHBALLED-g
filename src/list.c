@@ -117,32 +117,31 @@ void freelist(elem_t *list) {
         
 static void printj_private(elem_t *list, int indent) {
     elem_t *elem;
+    elemtype_t type;
     unsigned char *cp;
     int len, cnt;
 
     assert(list->type == LST);
     cnt = 0;
     elem = list->u.lst.first;
-    switch (elem->type) {
+    type = elem->type;
+    switch (type) {
     case STR :
         while (elem) {
-            assert(elem->type == STR);
+            assert(elem->type == type);  // check all the same type
             cp = elem->u.str.buf;
             len = elem->u.str.len;
             if (len) {
-                while (indent--) putc (' ', stdout);
+        	if (! cnt++) while (indent--) putc (' ', stdout);
                 while (len--) putc (*cp++, stdout);
-                cnt++;
             }
             elem = elem->next;
         }
-        if (cnt) {
-            putc ('\n', stdout);
-        }
+        if (cnt) putc ('\n', stdout);
         break;
     case LST :
         while (elem) {
-            assert(elem->type == LST);
+            assert(elem->type == type);  // check all the same type
 	    printj_private(elem, indent+2);  // recursively print lists
             elem = elem->next;
 	}

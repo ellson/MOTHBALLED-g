@@ -4,7 +4,7 @@
 
 #include "list.h"
 
-enum charclass_t {
+typedef enum {
     NUL,       // EOF
     ABC,       // simple_string_character
      WS,       // whitespace
@@ -28,9 +28,9 @@ enum charclass_t {
     SCN,       // ';'
     EQL,       // '='
     TLD,       // '~'
-};
+} charclass_t;
  
-unsigned char char2charclass[] = {
+charclass_t char2charclass[] = {
    NUL, ABC, ABC, ABC, ABC, ABC, ABC, ABC,  /* NUL SOH STX ETX EOT ENQ ACK BEL */
    ABC,  WS,  LF, ABC, ABC,  CR, ABC, ABC,  /*  BS TAB  LF  VT  FF  CR  SO  SI */
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC,  /* DLE DC1 DC2 DC3 DC4 NAK STN ETB */
@@ -65,52 +65,7 @@ unsigned char char2charclass[] = {
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC,
 };
  
-// escape translations
-//    Most characters translate to themselves, including:
-//        SPC '\040'
-//         '  '\047'
-//         \  '\134'
-//        DEL '\177'
-//    A few translate to different characters:
-//         n  '\156'  ->  LF  '\013'
-//         r  '\122'  ->  CR  '\015'
-//         t  '\164'  -> TAB  '\011'
-unsigned char escchar2char[] = {
-   '\000', '\001', '\002', '\003', '\004', '\005', '\006', '\007', /* NUL SOH STX ETX EOT ENQ ACK BEL */
-   '\010', '\011', '\012', '\013', '\014', '\015', '\016', '\017', /*  BS TAB  LF  VT  FF  CR  SO  SI */
-   '\020', '\021', '\022', '\023', '\024', '\025', '\026', '\027', /* DLE DC1 DC2 DC3 DC4 NAK STN ETB */
-   '\030', '\031', '\032', '\033', '\034', '\035', '\036', '\037', /* CAN  EM SUB ESC  FS  GS  RS  US */
-   '\040',    '!',    '"',    '#',    '$',    '%',    '&', '\047', /* SPC  !   "   #   $   %   &   '  */
-      '(',    ')',    '*',    '+',    ',',    '-',    '.',    '/', /*  (   )   *   +   ,   -   .   /  */
-      '0',    '1',    '2',    '3',    '4',    '5',    '6',    '7', /*  0   1   2   3   4   5   6   7  */
-      '8',    '9',    ':',    ';',    '<',    '=',    '>',    '?', /*  8   9   :   ;   <   =   >   ?  */
-   '\000',    'A',    'B',    'C',    'D',    'E',    'F',    'G', /*  @   A   B   C   D   E   F   G  */
-      'H',    'I',    'J',    'K',    'L',    'M',    'N',    'O', /*  H   I   J   K   L   M   N   O  */
-      'P',    'Q',    'R',    'S',    'T',    'U',    'V',    'W', /*  P   Q   R   S   T   U   V   W  */
-      'X',    'Y',    'Y',    '[', '\134',    ']',    '^',    '_', /*  X   Y   Z   [   \   ]   ^   _  */
-      '`',    'a',    'b',    'c',    'd',    'e',    'f',    'g', /*  `   a   b   c   d   e   f   g  */
-      'h',    'i',    'j',    'k',    'l',    'm', '\013',    'o', /*  h   i   j   k   l   m   n   o  */
-      'p',    'q', '\015',    's', '\011',    'u',    'v',    'w', /*  p   q   r   s   t   u   v   w  */
-      'x',    'y',    'z',    '{',    '|',    '}',    '~', '\177', /*  x   y   z   {   |   }   ~  DEL */
-   '\200', '\201', '\202', '\203', '\204', '\205', '\206', '\207',
-   '\210', '\211', '\212', '\213', '\214', '\215', '\216', '\217',
-   '\220', '\221', '\222', '\223', '\224', '\225', '\226', '\227',
-   '\230', '\231', '\232', '\233', '\234', '\235', '\236', '\237',
-   '\240', '\241', '\242', '\243', '\244', '\245', '\246', '\247',
-   '\250', '\251', '\252', '\253', '\254', '\255', '\256', '\257',
-   '\260', '\261', '\262', '\263', '\264', '\265', '\266', '\267',
-   '\270', '\271', '\272', '\273', '\274', '\275', '\276', '\277',
-   '\300', '\301', '\302', '\303', '\304', '\305', '\306', '\307',
-   '\310', '\311', '\312', '\313', '\314', '\315', '\316', '\317',
-   '\320', '\321', '\322', '\323', '\324', '\325', '\326', '\327',
-   '\330', '\331', '\332', '\333', '\334', '\335', '\336', '\337',
-   '\340', '\341', '\342', '\343', '\344', '\345', '\346', '\347',
-   '\350', '\351', '\352', '\353', '\354', '\355', '\356', '\357',
-   '\360', '\361', '\362', '\363', '\364', '\365', '\366', '\367',
-   '\370', '\371', '\372', '\373', '\374', '\375', '\376', '\377',
-};
-
-enum charclassprops_t {
+typedef enum {
    NONE         = 0,
    STRING       = 1<<0,
    TWO          = 1<<1,
@@ -134,13 +89,15 @@ enum charclassprops_t {
    ANCESTOR     = 1<<19,
    NPATH        = 1<<20,
    NLIST        = 1<<21,
-};
+} charprops_t;
 
-unsigned int charONEclass2props[] = {
+#define proptypemask (STRING | SPACE | ESCAPE | PARENTHESIS | ANGLEBRACKET | BRACKET | BRACE | DQTSTR | SQTSTR | CMNTSTR)
+
+charprops_t charONEclass2props[] = {
     /* NUL  */  NONE,
     /* ABC  */  STRING,
     /* WSP  */  SPACE,
-    /*  LF  */  TWO | EOL | CMNTEOLEND | SPACE,
+    /*  LF  */  EOL | CMNTEOLEND | SPACE,
     /*  CR  */  TWO | EOL | CMNTEOLEND | SPACE,
     /* DQT  */  OPEN | CLOSE,
     /* SQT  */  OPEN | CLOSE,
@@ -152,42 +109,40 @@ unsigned int charONEclass2props[] = {
     /* RBR  */  OPEN | BRACKET,
     /* LBE  */  OPEN | BRACE,
     /* RBE  */  OPEN | BRACE,
-    /* OCT  */  NONE,
-    /* AST  */  TWO | CMNTEND,
     /* FSL  */  TWO | CMNTBEG | CMNTEOLBEG,
     /* BSL  */  TWO | ESCAPE,
+    /* OCT  */  NONE,
+    /* AST  */  TWO | CMNTEND,
     /* CLN  */  TWO | DISAMBIG  | ANCESTOR,
     /* SCN  */  NONE,
     /* EQL  */  NONE,
     /* TLD  */  NONE,
 };
 
-#define proptypemask (STRING | SPACE | EOL | PARENTHESIS | ANGLEBRACKET | BRACKET | BRACE | DQTSTR | SQTSTR | CMNTSTR)
-
-unsigned int charTWOclass2props[] = {
-    /* NUL  */  ESCAPE | ABC,
-    /* ABC  */  ESCAPE | ABC, 
-    /* WSP  */  ESCAPE | ABC,
+charprops_t charTWOclass2props[] = {
+    /* NUL  */  NONE,
+    /* ABC  */  ESCAPE, 
+    /* WSP  */  ESCAPE,
     /*  LF  */  ESCAPE | EOL,
-    /*  CR  */  ESCAPE | EOL,             // FIXME = what about '\' CR LF or '\' LF CR
-    /* DQT  */  ESCAPE | ABC,
-    /* SQT  */  ESCAPE | ABC,
-    /* LPN  */  ESCAPE | ABC,
-    /* RPN  */  ESCAPE | ABC,
-    /* LAN  */  ESCAPE | ABC,
-    /* RAN  */  ESCAPE | ABC,
-    /* LBR  */  ESCAPE | ABC,
-    /* RBR  */  ESCAPE | ABC,
-    /* LBE  */  ESCAPE | ABC,
-    /* RBE  */  ESCAPE | ABC,
-    /* OCT  */  ESCAPE | ABC,
-    /* AST  */  ESCAPE | CMNTBEG,
+    /*  CR  */  ESCAPE | EOL,
+    /* DQT  */  ESCAPE,
+    /* SQT  */  ESCAPE,
+    /* LPN  */  ESCAPE,
+    /* RPN  */  ESCAPE,
+    /* LAN  */  ESCAPE,
+    /* RAN  */  ESCAPE,
+    /* LBR  */  ESCAPE,
+    /* RBR  */  ESCAPE,
+    /* LBE  */  ESCAPE,
+    /* RBE  */  ESCAPE,
     /* FSL  */  ESCAPE | CMNTEND | CMNTEOLBEG,
-    /* BSL  */  ESCAPE | ABC,
+    /* BSL  */  ESCAPE,
+    /* OCT  */  ESCAPE,
+    /* AST  */  ESCAPE | CMNTBEG,
     /* CLN  */  ESCAPE | DISAMBIG,
-    /* SCN  */  ESCAPE | ABC,
-    /* EQL  */  ESCAPE | ABC,
-    /* TLD  */  ESCAPE | ABC,
+    /* SCN  */  ESCAPE,
+    /* EQL  */  ESCAPE,
+    /* TLD  */  ESCAPE,
 };
 
 typedef struct {
@@ -207,12 +162,13 @@ static int opencloseblock(act_t *act, unsigned char charclass) {
     return 0;
 }
 
-unsigned char *test=(unsigned char*)"<aa 'bb' cc>";
+unsigned char *test=(unsigned char*)"<a\\Aa 'bb' cc>";
 
 int main (int argc, char *argv[]) {
     unsigned char *inp, c;
-    int rc, charcnt, charprops, fragprops;
-    unsigned char charclass;
+    int rc, linecharcnt, linecnt;
+    charprops_t charprops;
+    unsigned char charclass, charsize;
     act_t *act;
     elem_t *fraglist, *npathlist, *nlistlist /*, *edgelist, *elistlist,
 	*nproplist, *eproplist, *cproplist, *containerlist */;
@@ -233,29 +189,50 @@ int main (int argc, char *argv[]) {
     inp = test;
 
     frag = NULL;
-    charcnt = 0;
+    linecharcnt = 0;
+    linecnt = 0;
     while ((c = *inp++)) {
-        charcnt++;
+        linecharcnt++;
         charclass = char2charclass[c];
         charprops = charONEclass2props[charclass];
+        charsize = 1;
+        if (charprops & TWO) {
+            if ((c = *inp)) {
+	        charclass = char2charclass[c];
+                charprops |= charTWOclass2props[charclass];
+                charprops &= proptypemask;
+                if (charprops) {
+		    inp++;
+                    charsize++;
+	            if ((charprops & EOL)) {
+                        linecnt++;
+                        linecharcnt = 0;
+                    }
+		}
+	    }
+        }
         if (frag) {    // a frag already exists
             assert (frag->type == STR);
             if (charprops & frag->props) {  // matching charprops, just continue appending to frag
-                frag->u.str.len++;
+                frag->u.str.len += charsize;
             }
 	    else {
                 if (charprops & fraglist->props) {  // if matches fraglist 
  		    if (charprops & (STRING|SPACE)) {  // char that can be simply appended
-                        frag->u.str.len++;
+                        frag->u.str.len += charsize;
                     }
-                    else { // DQT|SQT|BSL  -- charprop that start at next char - so new frag to skip this char
+                    else if (charprops & ESCAPE) {  // charprop that start at this char - but need frag to skip prev
+			frag = newelem(STRING, inp-1, 1, 0);
+			appendlist(fraglist, frag);
+                    }
+                    else { // DQTSTR|SQTSTR -- charprop that start at next char - so new frag to skip this char
 			frag = newelem(charprops & proptypemask, inp, 0, 0);
 			appendlist(fraglist, frag);
                     }
                 }
  		else { // new charprops don't match, so something got terminated and needs promoting
 //printj(fraglist);
-                    if (fraglist->props & STRING) {
+                    if (fraglist->props & (STRING|ESCAPE)) {
 			npathelem = list2elem(fraglist);
 			appendlist(npathlist, npathelem);
 //printj(npathlist);
@@ -274,7 +251,7 @@ printj(nlistlist);
         if (charprops & (OPEN|CLOSE)) {
 	    rc = opencloseblock(act, charclass);
 	    if (rc) {
-		fprintf(stderr, "parser error at char number: %d   \"%c\"\n", charcnt, c);
+		fprintf(stderr, "parser error at: %d:%d \"%c\"\n", linecnt,  linecharcnt, c);
                 exit(rc);
             }
         }
@@ -283,17 +260,22 @@ printj(nlistlist);
 //     EDGE --> ELIST
 
         if (!frag) { // no current frag
-            if (charprops & (STRING|SPACE|DQTSTR|SQTSTR|CMNTSTR)) { // charclass that need a frag
-                fragprops = charprops & proptypemask;
- 		if (charprops & (STRING|SPACE)) { // charclass that start at this char
-		    frag = newelem(fragprops, inp-1, 1, 0);
-                }
-                else { // charclass that start at next char
-		    frag = newelem(fragprops, inp, 0, 0);
-                }
+            if (charprops & (STRING|ESCAPE)) {
+		fraglist->props = (STRING|ESCAPE);
+		frag = newelem(STRING, inp-1, 1, 0);
 		appendlist(fraglist, frag);
-                fraglist->props = fragprops;
             }
+            else if (charprops & (DQTSTR|SQTSTR)) {
+		fraglist->props = (STRING|ESCAPE);
+		frag = newelem(STRING, inp, 0, 0);
+		appendlist(fraglist, frag);
+            }
+	    else if (charprops & SPACE) {
+		fraglist->props = SPACE;
+		frag = newelem(SPACE, inp-1, 1, 0);
+		appendlist(fraglist, frag);
+	    }
+// FIXME - something for quoted strings
 	}
     }
 }
