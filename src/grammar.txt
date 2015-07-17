@@ -1,0 +1,56 @@
+act		SEQ: action? subject properties? container? term?
+
+subject		ALT: obj objlist
+properties	SEQ: LBR attr_val* RBR
+container       SEQ: LBE properties? act* RBE
+
+objlist		SEQ: LPA obj* RPA     // list must be all same obj type
+obj		ALT: edge node
+
+edge		SEQ: LAN leg leg leg* RAN disambiguator?
+
+leg		ALT: endpoint enpointset
+endpointset	SEQ: LPA endpoint* RPA
+
+endpoint        SEQ: ancestor* descendent* node port?
+descendent      SEQ: nodeid FSL
+port		SEQ: CLN portid
+
+nodelist	SEQ: LPA node* RPA
+node		SEQ: nodeid disambiguator?
+
+disabiguator	SEQ: disamintro disamid
+
+attr_val	SEQ: attrid valueassign?
+valueassign	SEQ: EQL value
+
+
+
+nodeid		ALT: string pattern 
+disamid		ALT: string pattern 
+portid		ALT: string pattern
+
+value		SEQ: string
+attrid		SEQ: string
+
+string		SEQ: frag frag*
+
+action		TOK: '~'
+term		TOK: ';'
+LBE             TOK: '{'
+RBE             TOK: '}'
+LPA             TOK: '('
+RPA             TOK: ')'
+LBR             TOK: '['
+RBR             TOK: ']'
+LAN             TOK: '<'
+RAN             TOK: '>'
+EQL             TOK: '='
+FSL             TOK: '/'
+pattern		TOK: '*'
+
+ancestor	TWO: ':/'
+disamintro	TWO: '::'
+
+
+// missing:  quoted strings, escapes, comments
