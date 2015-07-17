@@ -192,15 +192,15 @@ unsigned int charTWOclass2props[] = {
 
 typedef struct {
     elem_t
-	fraglist,      // string fragments forming a single string
-	npathlist,     // strings components forming a path
-	nlistlist,     // paths descibing sets of nodes or endpoints
-        edgelist,      // list of endpoints sets describing one or more edges
-        elistlist,     // list of edges or of edge sets
-    	nproplist,     // list of node properties
-    	eproplist,     // list of edge properties
-	cproplist,     // list pf container properties
-        cactlist;      // list of acts
+	fraglist,       // string fragments forming a single string
+	npathlist,      // strings components forming a path
+	nlistlist,      // paths descibing sets of nodes or endpoints
+        edgelist,       // list of endpoints sets describing one or more edges
+        elistlist,      // list of edges or of edge sets
+    	nproplist,      // list of node properties
+    	eproplist,      // list of edge properties
+	cproplist,      // list of container properties
+        containerlist;  // list of acts
 } act_t;
 
 static int opencloseblock(act_t *act, unsigned char charclass) {
@@ -214,7 +214,8 @@ int main (int argc, char *argv[]) {
     int rc, charcnt, charprops, fragprops;
     unsigned char charclass;
     act_t *act;
-    elem_t *fraglist, *npathlist, *nlistlist, *edgelist, *elistlist;
+    elem_t *fraglist, *npathlist, *nlistlist /*, *edgelist, *elistlist,
+	*nproplist, *eproplist, *cproplist, *containerlist */;
     elem_t *frag, *npathelem, *nlistelem;
 
     act = calloc(sizeof(act_t), 1);
@@ -222,8 +223,12 @@ int main (int argc, char *argv[]) {
     fraglist = &(act->fraglist);
     npathlist = &(act->npathlist);
     nlistlist = &(act->nlistlist);
-    edgelist = &(act->edgelist);
+/*  edgelist = &(act->edgelist);
     elistlist = &(act->elistlist);
+    nproplist = &(act->nproplist);
+    eproplist = &(act->eproplist);
+    cproplist = &(act->cproplist);
+    containerlist = &(act->containerlist); */
 
     inp = test;
 
@@ -233,11 +238,8 @@ int main (int argc, char *argv[]) {
         charcnt++;
         charclass = char2charclass[c];
         charprops = charONEclass2props[charclass];
-
         if (frag) {    // a frag already exists
-
             assert (frag->type == STR);
-
             if (charprops & frag->props) {  // matching charprops, just continue appending to frag
                 frag->u.str.len++;
             }
