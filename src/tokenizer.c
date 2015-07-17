@@ -30,7 +30,11 @@ typedef enum {
     TLD,       // '~'
 } charclass_t;
  
-charclass_t char2charclass[] = {
+// Every character is grouped into exactly one charclass_t
+// All the characters in a charclass_t are treated identially by the parser
+//
+// charclass_t defaults to int, which would make this table 768 bytes larger
+unsigned char char2charclass[] = {
    NUL, ABC, ABC, ABC, ABC, ABC, ABC, ABC,  /* NUL SOH STX ETX EOT ENQ ACK BEL */
    ABC,  WS,  LF, ABC, ABC,  CR, ABC, ABC,  /*  BS TAB  LF  VT  FF  CR  SO  SI */
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC,  /* DLE DC1 DC2 DC3 DC4 NAK STN ETB */
@@ -65,6 +69,7 @@ charclass_t char2charclass[] = {
    ABC, ABC, ABC, ABC, ABC, ABC, ABC, ABC,
 };
  
+// each charclass can have zero or more properties, described by a bit pattern
 typedef enum {
    NONE         = 0,
    STRING       = 1<<0,
@@ -91,6 +96,7 @@ typedef enum {
    NLIST        = 1<<21,
 } charprops_t;
 
+// some of the property bits define the type of string fragment FIXME - may change as OPEN|CLOSE are dealt with ...
 #define proptypemask (STRING | SPACE | ESCAPE | PARENTHESIS | ANGLEBRACKET | BRACKET | BRACE | DQTSTR | SQTSTR | CMNTSTR)
 
 charprops_t charONEclass2props[] = {
@@ -158,7 +164,7 @@ typedef struct {
         containerlist;  // list of acts
 } act_t;
 
-static int opencloseblock(act_t *act, unsigned char charclass) {
+static int opencloseblock(act_t *act, charclass_t charclass) {
     return 0;
 }
 
@@ -166,9 +172,9 @@ unsigned char *test=(unsigned char*)"<a\\Aa 'bb' cc>";
 
 int main (int argc, char *argv[]) {
     unsigned char *inp, c;
-    int rc, linecharcnt, linecnt;
+    int rc, linecharcnt, linecnt, charsize;
+    charclass_t charclass;
     charprops_t charprops;
-    unsigned char charclass, charsize;
     act_t *act;
     elem_t *fraglist, *npathlist, *nlistlist /*, *edgelist, *elistlist,
 	*nproplist, *eproplist, *cproplist, *containerlist */;
@@ -199,6 +205,10 @@ int main (int argc, char *argv[]) {
         if (charprops & TWO) {
             if ((c = *inp)) {
 	        charclass = char2charclass[c];
+
+                // we work out what the character pair is by combining the 
+                // charpros from both chars  (this means that CRLF is only a single EOL)
+                // and then masking out the TWO and other unrelated bits
                 charprops |= charTWOclass2props[charclass];
                 charprops &= proptypemask;
                 if (charprops) {
@@ -211,17 +221,17 @@ int main (int argc, char *argv[]) {
 		}
 	    }
         }
-        if (frag) {    // a frag already exists
+        if (frag) {    // a frag already exists from a previous iteration of the while loop
             assert (frag->type == STR);
             if (charprops & frag->props) {  // matching charprops, just continue appending to frag
                 frag->u.str.len += charsize;
             }
 	    else {
                 if (charprops & fraglist->props) {  // if matches fraglist 
- 		    if (charprops & (STRING|SPACE)) {  // char that can be simply appended
+ 		    if (charprops & (STRING|SPACE)) {  // STRING or SPACE char that can be simply appended
                         frag->u.str.len += charsize;
                     }
-                    else if (charprops & ESCAPE) {  // charprop that start at this char - but need frag to skip prev
+                    else if (charprops & ESCAPE) {  // STRING frag that starts at this char - needs a new frag to skip BSL char
 			frag = newelem(STRING, inp-1, 1, 0);
 			appendlist(fraglist, frag);
                     }
