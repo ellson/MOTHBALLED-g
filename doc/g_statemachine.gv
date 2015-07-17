@@ -1,0 +1,60 @@
+digraph {
+        ordering=out
+
+        act [shape=box]
+        action [shape=box label="action?\n~"]
+        fill1 [shape=none label=""]
+        subject [shape=box]
+        fill2 [shape=none label=""]
+        properties [label="properties?\n[...]"]
+        container_properties [shape=box label="properties?\n[...]"]
+        container [label="container?\n{...}"]
+        term [shape=box label="term?\n;"] 
+	singleedgelist [shape=none label="" width=0 height=0]
+        edgelist [label="edgelist\n(...)"]
+        nodelist [label="nodelist\n(...)"]
+	singlenodelist [shape=none label="" width=0 height=0]
+	singleedge [label="edge\n<...>" shape=box]
+	singlenode [label="node" shape=box]
+        endpointlist [label="endpointlist\n(...)"]
+        endpoint [shape=box]
+        attr_val [shape=box label="attr = val"]
+        string [shape=box]
+
+        { rank=same; action fill1 subject fill2 properties container term }
+
+	act -> action 
+	act -> fill1 [style=invis] 
+	act -> subject
+	act -> fill2 [style=invis] 
+	act -> properties
+	act -> container
+	act -> term
+
+	subject -> singleedgelist [dir=none]
+	subject -> edgelist
+	subject -> nodelist
+        subject -> singlenodelist [dir=none]
+
+        singleedgelist -> singleedge 
+	edgelist -> singleedge
+        nodelist -> singlenode
+        singlenodelist -> singlenode 
+
+        singleedge -> {endpointlist endpoint}
+        endpointlist -> endpoint
+        {endpoint singlenode} -> pathlist
+
+        pathlist -> string -> fraglist
+
+	container -> {container_properties act_list}
+        container_properties -> attr_val_list
+
+	properties -> attr_val_list
+
+        attr_val_list -> attr_val
+        attr_val -> string
+        attr_val -> string
+
+	act_list -> act
+}
