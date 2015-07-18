@@ -1,4 +1,4 @@
-# include "tokenize.h"
+# include "parse.h"
 
 unsigned char *test=(unsigned char*)"<a\\Aa 'bb' cc>";
 
@@ -8,7 +8,7 @@ int main (int argc, char *argv[]) {
 
     inp = test;
     
-    rc = tokenize(inp);
+    rc = parse(inp);
 
     return rc;
 }
