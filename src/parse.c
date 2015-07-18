@@ -6,6 +6,30 @@
 #include "list.h"
 
 typedef enum {
+    // input state
+    NUL,       // EOF
+    ABC,       // simple_string_character
+     WS,       // whitespace
+     LF,       // newline
+     CR,       // return
+    DQT,       // '"'
+    SQT,       // '''
+    LPN,       // '('
+    RPN,       // ')'
+    LAN,       // '<'
+    RAN,       // '>'
+    LBT,       // '['
+    RBT,       // ']'
+    LBE,       // '{'
+    RBE,       // '}'
+    FSL,       // '/'
+    BSL,       // '\'
+    OCT,       // '#'
+    AST,       // '*'
+    CLN,       // ':'
+    SCN,       // ';'
+    EQL,       // '='
+    TLD,       // '~'
     // grammar states
     ACT,
     ACTION,
@@ -33,31 +57,9 @@ typedef enum {
     VALUE,
     DISAMBINTRO,
     ANCESTOR,
-    // input state
-    NUL,       // EOF
-    ABC,       // simple_string_character
-     WS,       // whitespace
-     LF,       // newline
-     CR,       // return
-    DQT,       // '"'
-    SQT,       // '''
-    LPN,       // '('
-    RPN,       // ')'
-    LAN,       // '<'
-    RAN,       // '>'
-    LBT,       // '['
-    RBT,       // ']'
-    LBE,       // '{'
-    RBE,       // '}'
-    FSL,       // '/'
-    BSL,       // '\'
-    OCT,       // '#'
-    AST,       // '*'
-    CLN,       // ':'
-    SCN,       // ';'
-    EQL,       // '='
-    TLD,       // '~'
 } state_t;
+
+#define state_t_size TLD
 
 typedef enum {
     NONE         = 0,
@@ -85,6 +87,31 @@ typedef enum {
     REP          = 1<<20,   // repeatable   ( REP|OPT means 0 or morea )
 } props_t;
 
+
+static int NUL_nxt[] =		{NONE, NUL};
+static int ABC_nxt[] =		{STRING, NUL};
+static int WSP_nxt[] =		{SPACE, NUL};
+static int LF_nxt[] =		{EOL|CMNTEOLEND|SPACE, NUL};
+static int CR_nxt[] =		{TWO|EOL|CMNTEOLEND|SPACE, NUL};
+static int DQT_nxt[] =		{OPEN|CLOSE, NUL};
+static int SQT_nxt[] =		{OPEN|CLOSE, NUL};
+static int LPN_nxt[] =		{OPEN|PARENTHESIS, NUL};
+static int RPN_nxt[] =		{CLOSE|PARENTHESIS, NUL};
+static int LAN_nxt[] =		{OPEN|ANGLEBRACKET, NUL};
+static int RAN_nxt[] =		{OPEN|ANGLEBRACKET, NUL};
+static int LBR_nxt[] =		{OPEN|BRACKET, NUL};
+static int RBR_nxt[] =		{OPEN|BRACKET, NUL};
+static int LBE_nxt[] =		{OPEN|BRACE, NUL};
+static int RBE_nxt[] =		{OPEN|BRACE, NUL};
+static int FSL_nxt[] =		{TWO|CMNTBEG|CMNTEOLBEG, NUL};
+static int BSL_nxt[] =		{TWO|ESCAPE, NUL};
+static int OCT_nxt[] =		{NONE, NUL};
+static int AST_nxt[] =		{TWO|CMNTEND, NUL};
+static int CLN_nxt[] =		{NONE, NUL};
+static int SCN_nxt[] =		{NONE, NUL};
+static int EQL_nxt[] =		{NONE, NUL};
+static int TLD_nxt[] =		{NONE, NUL};
+
 static int ACT_nxt[] =		{ACTION|OPT, SUBJECT, PROPERTIES|OPT, CONTAINER|OPT, TERM|OPT, NUL};
 static int ACTION_nxt[] =	{TLD, NUL};
 static int SUBJECT_nxt[] =	{OBJ|ALT, OBJLIST|ALT, NUL};
@@ -95,7 +122,7 @@ static int OBJLIST_nxt[] =	{LPN, OBJ|REP|OPT, RPN, NUL};
 static int OBJ_nxt[] =		{EDGE|ALT, NODE|ALT, NUL};
 static int EDGE_nxt[] =		{LAN, LEG, LEG, LEG|REP|OPT, RAN, DISAMB|OPT, NUL};
 static int LEG_nxt[] =		{ENDPOINT|ALT, ENDPOINTSET|ALT, NUL};
-static int ENDPOINTSET_nxt[] =	{LPN, ENDPOINT|REP|OPT, RPN, NUL};
+static int ENDPOINTSET_nxt[] = 	{LPN, ENDPOINT|REP|OPT, RPN, NUL};
 static int ENDPOINT_nxt[] =	{ANCESTOR|REP|OPT, DESCENDENT|REP|OPT, NODE, PORT|OPT, NUL};
 static int DESCENDENT_nxt[] =	{NODEID, FSL, NUL};
 static int PORT_nxt[] =		{CLN, PORTID, NUL};
@@ -113,6 +140,29 @@ static int DISAMBINTRO_nxt[] =	{CLN, CLN, NUL};
 static int ANCESTOR_nxt[] =	{CLN, FSL, NUL};
 
 static int *next[] = {
+    NUL_nxt,
+    ABC_nxt,
+    WSP_nxt,
+    LF_nxt,
+    CR_nxt,
+    DQT_nxt,
+    SQT_nxt,
+    LPN_nxt,
+    RPN_nxt,
+    LAN_nxt,
+    RAN_nxt,
+    LBR_nxt,
+    RBR_nxt,
+    LBE_nxt,
+    RBE_nxt,
+    FSL_nxt,
+    BSL_nxt,
+    OCT_nxt,
+    AST_nxt,
+    CLN_nxt,
+    SCN_nxt,
+    EQL_nxt,
+    TLD_nxt,
     ACT_nxt,
     ACTION_nxt,
     SUBJECT_nxt,
@@ -183,60 +233,6 @@ unsigned char char2state[] = {
 // some of the property bits define the type of string fragment FIXME - may change as OPEN|CLOSE are dealt with ...
 #define proptypemask (STRING | SPACE | ESCAPE | PARENTHESIS | ANGLEBRACKET | BRACKET | BRACE | DQTSTR | SQTSTR | CMNTSTR)
 
-#if 1
-props_t charONEstate2props[] = {
-    /* NUL  */  NONE,
-    /* ABC  */  STRING,
-    /* WSP  */  SPACE,
-    /*  LF  */  EOL | CMNTEOLEND | SPACE,
-    /*  CR  */  TWO | EOL | CMNTEOLEND | SPACE,
-    /* DQT  */  OPEN | CLOSE,
-    /* SQT  */  OPEN | CLOSE,
-    /* LPN  */  OPEN | PARENTHESIS,
-    /* RPN  */  CLOSE | PARENTHESIS,
-    /* LAN  */  OPEN | ANGLEBRACKET,
-    /* RAN  */  OPEN | ANGLEBRACKET,
-    /* LBR  */  OPEN | BRACKET,
-    /* RBR  */  OPEN | BRACKET,
-    /* LBE  */  OPEN | BRACE,
-    /* RBE  */  OPEN | BRACE,
-    /* FSL  */  TWO | CMNTBEG | CMNTEOLBEG,
-    /* BSL  */  TWO | ESCAPE,
-    /* OCT  */  NONE,
-    /* AST  */  TWO | CMNTEND,
-    /* CLN  */  NONE,
-    /* SCN  */  NONE,
-    /* EQL  */  NONE,
-    /* TLD  */  NONE,
-};
-#else
-int  charONEstate2props[];
-charONEstate2props[NUL] =  NONE;
-charONEstate2props[ABC] =  STRING;
-charONEstate2props[WSP] =  SPACE;
-charONEstate2props[ LF] =  EOL|CMNTEOLEND|SPACE;
-charONEstate2props[ CR] =  TWO|EOL|CMNTEOLEND|SPACE;
-charONEstate2props[DQT] =  OPEN|CLOSE;
-charONEstate2props[SQT] =  OPEN|CLOSE;
-charONEstate2props[LPN] =  OPEN|PARENTHESIS;
-charONEstate2props[RPN] =  CLOSE|PARENTHESIS;
-charONEstate2props[LAN] =  OPEN|ANGLEBRACKET;
-charONEstate2props[RAN] =  OPEN|ANGLEBRACKET;
-charONEstate2props[LBR] =  OPEN|BRACKET;
-charONEstate2props[RBR] =  OPEN|BRACKET;
-charONEstate2props[LBE] =  OPEN|BRACE;
-charONEstate2props[RBE] =  OPEN|BRACE;
-charONEstate2props[FSL] =  TWO|CMNTBEG|CMNTEOLBEG;
-charONEstate2props[BSL] =  TWO|ESCAPE;
-charONEstate2props[OCT] =  NONE;
-charONEstate2props[AST] =  TWO|CMNTEND;
-charONEstate2props[CLN] =  NONE;
-charONEstate2props[SCN] =  NONE;
-charONEstate2props[EQL] =  NONE;
-charONEstate2props[TLD] =  NONE;
-};
-#endif
-
 props_t charTWOstate2props[] = {
     /* NUL  */  NONE,
     /* ABC  */  ESCAPE, 
@@ -284,7 +280,7 @@ int parse(unsigned char *inp) {
     unsigned char c;
     int rc, linecharcnt, linecnt, charsize;
     state_t state;
-    props_t props;
+    int props;
     act_t *act;
     elem_t *fraglist, *npathlist, *nlistlist /*, *edgelist, *elistlist,
 	*nproplist, *eproplist, *cproplist, *containerlist */;
@@ -308,7 +304,7 @@ int parse(unsigned char *inp) {
     while ((c = *inp++)) {
         linecharcnt++;
         state = char2state[c];
-        props = charONEstate2props[state];
+        props = next[state][0];
         charsize = 1;
         if (props & TWO) {
             if ((c = *inp)) {
