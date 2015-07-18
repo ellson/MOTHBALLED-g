@@ -1,6 +1,7 @@
 CFLAGS = -g -O0 -Wall
 
-tokenizer: tokenizer.c list.c list.h
+
+main: grammar.c tokenize.c list.c main.c grammar.h tokenize.h list.h
 
 clean:
-	rm -f tokenizer
+	rm -f main

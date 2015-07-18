@@ -59,6 +59,33 @@ disamintro	TWO: '::'
 
 
 typedef enum {
+    // grammar states
+    ACT,
+    ACTION,
+    SUBJECT,
+    PROPERTIES,
+    CONTAINER,
+    TERM,
+    OBJLIST,
+    OBJ,
+    EDGE,
+    LEG,
+    ENDPOINTSET,
+    ENDPOINT,
+    DESCENDENT,
+    PORT,
+    NODELIST,
+    NODE,
+    DISAMB,
+    ATTR_VAL,
+    VALASSIGN,
+    NODEID,
+    DISAMBID,
+    PORTID,
+    ATTRID,
+    VALUE,
+    DISAMBINTRO,
+    ANCESTOR,
     // input charclass
     NUL,       // EOF
     ABC,       // simple_string_character
@@ -83,29 +110,6 @@ typedef enum {
     SCN,       // ';'
     EQL,       // '='
     TLD,       // '~'
-    // grammar states
-    ACT,
-    ACTION,
-    SUBJECT,
-    PROPERTIES,
-    CONTAINER,
-    OBJLIST,
-    OBJ,
-    EDGE,
-    LEG,
-    ENDPOINTSET,
-    ENDPOINT,
-    DESCENDENT,
-    PORT,
-    NODELIST,
-    NODE,
-    DISAMBIGUATOR,
-    ATTR_VAL,
-    VALUEASSIGN,
-    NODEID,
-    DISAMID,
-    PORTID,
-    VALUE 
 } charclass_t;
 
 typedef enum {
@@ -129,31 +133,64 @@ typedef enum {
    CMNTSTR      = 1<<16,
    ESCAPE       = 1<<17,
    // grammar props
-   SEQ          = 1<<18,
-   ALT          = 1<<19,
-   OPT          = 1<<20,
-   MULTI        = 1<<21,
+   ALT          = 1<<18,   // alternive - one must be satisfied
+   OPT          = 1<<19,   // optional
+   REP          = 1<<20,   // repeatable   ( REP|OPT means 0 or morea )
 } charprops_t;
 
-    state[ACT]		= {SEQ,	ACTION|OPT, SUBJECT, PROPERTIES|OPT, CONTAINER|OPT, TERM|OPT, NUL };
-    state[ACTION]	= {SEQ, TLD, NUL };
-    state[SUBJECT]	= {ALT,	OBJ, OBJLIST, NUL };
-    state[PROPERTIES]	= {SEQ,	LBR, ATTR_VAL|MULT, RBR, NUL };
-    state[CONTAINER]	= {SEQ,	LBE, PROPERTIES|OPT, ACT|MULT, RBE, NUL };
-    state[OBJLIST]	= {SEQ,	LPA, OBJ|MULT, RPA, NUL };
-    state[OBJ]		= {ALT,	EDGE, NODE, NUL };
-    state[EDGE]		= {SEQ,	LAN, LEG, LEG, LEG|MULT, RAN, DISAMBGUATOR|OPT, NUL };
-    state[LEG]		= {ALT,	ENDPOINT, ENDPOINTSET, NUL };
-    state[ENDPOINTSET]	= {SEQ,	LPA, ENDPOINT|MULT, RPA, NUL };
-    state[ENDPOINT]	= {SEQ,	ANCESTOR|MULT, DESCENDENT|MULT, NODE, PORT|OPT, NUL };
-    state[DESCENDENT]	= {SEQ,	NODEID, FSL, NUL };
-    state[PORT]		= {SEQ,	CLN, PORTID, NUL };
-    state[NODELIST]	= {SEQ,	LPA, NODE|MULT, rpa, NUL };
-    state[NODE]		= {SEQ,	NODEID, DISAMBIGUATOR|OPT, NUL };
-    state[DISAMBIGUATOR]= {SEQ,	DISAMBINTRO, DISAMBID, NUL };
-    state[ATTR_VAL]	= {SEQ,	ATTRID VALUEASSIGN|OPT, NUL };
-    state[VALUEASSIGN]	= {SEQ,	EQL, VALUE, NUL };
-    state[NODEID]	= {ALT,	STRING, AST, NUL };
-    state[DISAMID]	= {ALT,	STRING, AST, NUL };
-    state[PORTID]	= {ALT,	STRING, AST, NUL };
-    state[VALUE]	= {SEQ,	STRING, NUL }}
+    int ACT_nxt[] =		{ACTION|OPT, SUBJECT, PROPERTIES|OPT, CONTAINER|OPT, TERM|OPT, NUL};
+    int ACTION_nxt[] =		{TLD, NUL};
+    int SUBJECT_nxt[] =		{OBJ|ALT, OBJLIST|ALT, NUL};
+    int PROPERTIES_nxt[] =	{LBT, ATTR_VAL|REP|OPT, RBT, NUL};
+    int CONTAINER_nxt[] =	{LBE, PROPERTIES|OPT, ACT|REP|OPT, RBE, NUL};
+    int TERM_nxt[] =            {SCN|OPT, NUL};
+    int OBJLIST_nxt[] =		{LPN, OBJ|REP|OPT, RPN, NUL};
+    int OBJ_nxt[] =		{EDGE|ALT, NODE|ALT, NUL};
+    int EDGE_nxt[] =		{LAN, LEG, LEG, LEG|REP|OPT, RAN, DISAMB|OPT, NUL};
+    int LEG_nxt[] =		{ENDPOINT|ALT, ENDPOINTSET|ALT, NUL};
+    int ENDPOINTSET_nxt[] =	{LPN, ENDPOINT|REP|OPT, RPN, NUL};
+    int ENDPOINT_nxt[] =	{ANCESTOR|REP|OPT, DESCENDENT|REP|OPT, NODE, PORT|OPT, NUL};
+    int DESCENDENT_nxt[] =	{NODEID, FSL, NUL};
+    int PORT_nxt[] =		{CLN, PORTID, NUL};
+    int NODELIST_nxt[] =	{LPN, NODE|REP|OPT, RPN, NUL};
+    int NODE_nxt[] =		{NODEID, DISAMB|OPT, NUL};
+    int DISAMB_nxt[] =		{DISAMBINTRO, DISAMBID, NUL};
+    int ATTR_VAL_nxt[] =	{ATTRID, VALASSIGN|OPT, NUL};
+    int VALASSIGN_nxt[] =	{EQL, VALUE, NUL};
+    int NODEID_nxt[] =		{STRING|ALT, AST|ALT, NUL};
+    int DISAMBID_nxt[] =	{STRING|ALT, AST|ALT, NUL};
+    int PORTID_nxt[] =		{STRING|ALT, AST|ALT, NUL};
+    int ATTRID_nxt[] =		{STRING, NUL};
+    int VALUE_nxt[] =		{STRING, NUL};
+    int DISAMBINTRO_nxt[] =	{CLN, CLN, NUL};
+    int ANCESTOR_nxt[] =	{CLN, FSL, NUL};
+
+int *next[] = {
+    ACT_nxt,
+    ACTION_nxt,
+    SUBJECT_nxt,
+    PROPERTIES_nxt,
+    CONTAINER_nxt,
+    TERM_nxt,
+    OBJLIST_nxt,
+    OBJ_nxt,
+    EDGE_nxt,
+    LEG_nxt,
+    ENDPOINTSET_nxt,
+    ENDPOINT_nxt,
+    DESCENDENT_nxt,
+    PORT_nxt,
+    NODELIST_nxt,
+    NODE_nxt,
+    DISAMB_nxt,
+    ATTR_VAL_nxt,
+    VALASSIGN_nxt,
+    NODEID_nxt,
+    DISAMBID_nxt,
+    PORTID_nxt,
+    ATTRID_nxt,
+    VALUE_nxt,
+    DISAMBINTRO_nxt,
+    ANCESTOR_nxt
+};
+

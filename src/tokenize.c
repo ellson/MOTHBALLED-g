@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "tokenize.h"
 #include "list.h"
 
 typedef enum {
@@ -168,10 +169,8 @@ static int opencloseblock(act_t *act, charclass_t charclass) {
     return 0;
 }
 
-unsigned char *test=(unsigned char*)"<a\\Aa 'bb' cc>";
-
-int main (int argc, char *argv[]) {
-    unsigned char *inp, c;
+int tokenize(unsigned char *inp) {
+    unsigned char c;
     int rc, linecharcnt, linecnt, charsize;
     charclass_t charclass;
     charprops_t charprops;
@@ -191,8 +190,6 @@ int main (int argc, char *argv[]) {
     eproplist = &(act->eproplist);
     cproplist = &(act->cproplist);
     containerlist = &(act->containerlist); */
-
-    inp = test;
 
     frag = NULL;
     linecharcnt = 0;
@@ -262,7 +259,7 @@ printj(nlistlist);
 	    rc = opencloseblock(act, charclass);
 	    if (rc) {
 		fprintf(stderr, "parser error at: %d:%d \"%c\"\n", linecnt,  linecharcnt, c);
-                exit(rc);
+                return rc;
             }
         }
 // FIXME - deal with OPEN and CLOSE
@@ -288,4 +285,5 @@ printj(nlistlist);
 // FIXME - something for quoted strings
 	}
     }
+    return 0;
 }
