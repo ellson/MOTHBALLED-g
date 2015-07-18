@@ -1,13 +1,20 @@
+# The g language is used for describing graphs of nodes and edges.
+
+# The g language is unusual in that there are no keywords in the language,  only key characters (and a few character pairs)
+# all of which are non-alpanumeric.  Consequently, strings only need quoting if they contain whitespace, or a special
+# character, and escaping is only needed for the quote character in quoted strings.
+
+# Numbers are not used by the language, and so numbers (int, decimal, signed or unsigned) are all legal strings without
+# quoting.  (Attibute values can be interpreted as numbers later; they are just not treated differently by the parser.)
+
 # A graph structure is built incrementally with a series of <acts>.
-# There is no hard beginning or end, permitting any "graph" to be interpreted in the context
-# of any other graph,  where it may be used prepended, appended, or contained.
+#
+# There is no hard begining or end, permitting any "graph" to be interpreted in the context
+# of any other graph,  where it may be used, prepended or appended by the graph, or contained in one of its nodes or edges..
 
-                <act> ::= <action>? <subj_prop_cont> <term>?
+                <act> ::= <action>? <subject> <properties>? <contents>? <term>?
 
-     <subj_prop_cont> ::= <nodesubject> <nodeproperties>? <nodecontents>?
-                        | <edgesubject> <edgeproperties>? <edgecontents>?
-                        
-# The default <action> is to add (or, to add to) a <nodesubject> or <edgesubject>, '~' signals deletion
+# The default <action> is to add a, or to add to an existing, <subject>. '~' signals deletion
 
              <action> ::= '~'
 
@@ -17,45 +24,27 @@
 #   2) for when a stream of <act>s stop, to indicate that the
 #      last <act> is finished. Normally in a stream, an <act> is adequately
 #      syntactically terminated when the next <act> starts. but while the
-#      stream is stopped the last <act> gets stuck, unless forced out with
+#      stream is stopped the last <act> gets stuck, syntacticaly, unless forced out with
 #      a <term>.  Think of it like a "flush" operator.
 # An <EOF> condition on the input stream is implicitly a <term>.
 
                <term> ::= ';'
 
-# A <nodesubject> of an <act> is one or more <node>, or future <node> that match a pattern
+# A <subject> of an <act> is one <object>, or a homogonous list of <object>s of the same type.
 
-        <nodesubject> ::= <node>
-                        | <nodelist>
-                        | <nodepatternlist>
+            <subject> ::= <object>
+                        | '(' <object>+ ')'
+
+             <object> ::= <node> 
+			| <edge>
 
 # A <node> can be simple, or multi (think "stacks" of node, all in the same
 # place, all with the same <properties>, all with the same <contents>)
 
-               <node> ::= <node_name> <disambiguator>?
-          <node_name> ::= <simple_string>
-      <disambiguator> ::= '::' <disambiguator_name>
- <disambiguator_name> ::= '::' <simple_string>
-
-           <nodelist> ::= '(' <node>+ ')'
-
-# <nodepatternlist> are stored, and can be deleted, but they are not rendered
-# directly. They introduce <nodeproperties> and <nodecontents> to be
-# automatically added to a <node> of any following <act> in the current container that
-# match any member of the <nodepatternlist>.
-
-# When a <nodepatternlist> is deleted, no further <node> are modified,
-# but all current modifications from the <nodepattern> remain.
-
-    <nodepatternlist> ::= ... Like <nodelist> but with at least one '*' in some:
-                              or <node_name>,
-                              or <discriminator>.   ...
-
-# An <edgesubject> of an <act> is one or more <edge>, or future <edge> that match a pattern
-
-        <edgesubject> ::= <edge>
-                        | <edgelist>
-                        | <edgepatternlist>
+               <node> ::= <node_id> <disambiguator>?
+            <node_id> ::= <string>
+      <disambiguator> ::= '::' <disambiguator_id>
+   <disambiguator_id> ::= <string>
 
 # An <edge> can be simple, or multi (think "parallel" edges, all with the
 # same <endpoints> (modulo disambiguation), all with the same <properties>,
@@ -65,150 +54,67 @@
 # of it endpoints can be in another container, descibed by a path relative
 # to the current container.
 
-# <edges> can induce <node> and all <descendent> <container> implied by the path to the <node>.
-# <ancestor> <contained_by> must exist.
+# <edge> can induce <node>s
 
-               <edge> ::= '<' <endpoints> '>' <disambiguator>?
+               <edge> ::= '<' <leg> <leg>+ '>' <disambiguator>?
 
-          <endpoints> ::= <endpoint> <endpoint>+
+		<leg> ::= <endpoint>
+			| '(' <endpoint> ')'
+
+# Note: The construct:  <(a b) z>
+#    is equivalent to:  (<a z> <b z>)
 
            <endpoint> ::= <ancestor>? <decendent>? <localendpoint>
 
-           <ancestor> ::= <contained_by>+
+           <ancestor> ::= ':/'
 
-          <contained_by> ::= ':' '/'
+         <descendent> ::= <obj> '/'
 
-         <descendent> ::= <container>+
+      <localendpoint> ::= <node> <port>?
+                        | <port>
 
-          <container> ::= <container_name> '/'
+               <port> ::= ':' <port_id>
 
-     <container_name> ::= <node>
-                        | <edge>
+# Note: a <port> as a <localendpoint> refers the inside <port> on the <container>
+# in which the <endpoint> is in.  For <node> contents it uses the same <port_id>
+# inside as outside.  For <edge> contents is refers a particular <leg> of the 
+# parent <edge> by means of a 1-based integer.
 
-      <localendpoint> ::= <node_port>
-                        | <container_port> 
-
-          <node_port> ::= <node> <port>?
-
-     <container_port> ::= <port>
-
-               <port> ::= ':' <port_name>
-
-# if <port> is not provided for a <node_port> then it defaults to the
+# If <port> is not provided for a <node_port> then it defaults to the
 # center of the shape, with the line representing the <edge> clipped back
 # to the boundary of the shape.
 
-           <edgelist> ::= '(' <edge>+ ')'
-                        | '<' <endpoint_or_list>? <endpointlist> <endpoint_or_list>+ '>'
+# Any <subject> can have <properties> and <contents> which are to be
+# added (or deleted) from the <object> or <object>s specified by the <subject>
 
-       <endpointlist> ::= '(' <endpoint> ')'
+# <properties> of a <subject> affect the outside of any container it might have.
+# Think attributes like labels and shapes.
 
-   <endpoint_or_list> ::= <endpoint>
-                        | <endpointlist>
+# <container>s have an additional set of <properties> for describing the inside of the <container>
+# Think: layout engine,  graph/digraph, strict/nonstrict, ...
 
-# Note:  <(a b) c>  is equivalent to:  (<a c> <b c>)
-
-# <edgepatternlist> are stored, and can be deleted, but they are not rendered
-# directly. They introduce <edgeproperties> and <edgecontents> to be
-# automatically added to a <edge> of any following <act> in the current container that
-# match any member of the <edgepatternlist>.
-
-# When a <edgepatternlist> is deleted, no further <edge> are modified,
-# but all current modifications from the <edgepattern> remain.
-
-    <edgepatternlist> ::= ... Like <edgelist> but with at least one '*' in some:
-                              <container_name>,
-                              or <node_name>,
-                              or <port_name>,
-                              or <disambiguator>.   ...
-
-# Any <nodesubject> can have <nodeproperties>  and <nodecontents> which are to be
-# added (or deleted) from all the <node> implied by the <nodesubject>
-
-# <nodeproperties> represent properties of the <node> outside of any container it might have.
-# think attributes like labels and shapes.
+# There is no <container> for the top <act>s, so its properties must be
+# provided by the external environment, such as from the command line.
 
 # If a <value> is not provided then it defaults to the empty string, the interpretation of which is left undefined
 # by this syntax, and may be interpreted in different ways in differerent attributes.
 
-     <nodeproperties> ::= '[' <nodeattribute_value>+ ']'
+         <properties> ::= '[' <attribute_value>* ']'
 
-<nodeattribute_value> ::= <nodeattribute> <value_assign>?
+    <attribute_value> ::= <attribute_id> <value_assign>?
 
-      <nodeattribute> ::= <simple_string>
+       <attribute_id> ::= <string>
 
        <value_assign> ::= '=' <value>
 
               <value> ::= <string>
-                        | <integer>
-                        | <float>
-                        | <boolean>
 
-# <nodecontents> consist of: a set of properties for the inside of the container (think layout_engine)
+# <contents> consist of: a set of properties for the inside of the container (think layout_engine)
 # followed by: a contained "graph" using <act> recursively.
 
-       <nodecontents> ::= '{' <containerproperties>? <act>+ '}'
-
-<containerproperties> ::= '[' <containerattribute_value>+ ']' <term>?
-
-<containerattribute_value> ::= <containerattribute> <value_assign>?
-
-# There is no top-level container, other than the interpreting program itself
-# so top-level layout properties must come from the program or its command line options. 
-
-# Any <edgesubject> can have <edgeproperties> and/or <edgecontents> which are to be
-# added (or deleted) from all the <edge> implied by the <edgesubject>
-
-# If <value> is not provided then it defaults to assigning the empty string 
-
-# The sytax of <edgeproperties>, <nodeproperties>, and <containerproperties> is identical,
-# but separate run-time disctionaries are used for each.
-
-     <edgeproperties> ::= '[' <edgeattribute_value>+ ']'
-
-<edgeattribute_value> ::= <edgeattribute> <value_assign>?
-
-      <edgeattribute> ::= <simple_string>
-
-# <edgecontents> consist of: a set of properties for the inside of the container (think layout_engine)
-# followed by: a contained "graph" using <act> recursively.  The <ports> of an edge container
-# are the legs of the containing <edge>, 1-based
-
-       <edgecontents> ::= '{' <containerproperties>? <act>+ '}'
-
-# An <edge> is a relationship between a set of two or more <node>s, or more
-# stricly, <port>s. A <port> is a named-place on the outside of a <node>,
-# and also, if the <obj> has <contents>, then it is a named-place refered to
-# from inside the container.
-
-# If the containing <obj> is a <node>  then the external name is, e.g. "A:w"
-# ( the west compass port on node "A" ).  The internal name for that same port 
-# is just ":w"
-
-# If the containing object is an <edge>  then the external name is the
-# <node> at the external end of the <edge>.  The internal name for that
-# same port is the 1-based index of the <node> in the containing <edge>'s
-# name.  i.e the "leg" number.
-# This may seem awkward, but it allows the edge's <content> to be reused
-# for multiple edges.
-
-# Note that for <edge>s drawn as lines, the internal <port> and the <edge>'s
-# endpoint on an external <node>'s <port> are typically not in the same place.
-# However, they are logically the same, since the drawing can always be
-# distorted so that they are the same point with no change in semantics.
-
-# <port_name> can be: compass points, or leg index,  or cell index.
-          <port_name> ::= 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw'
-                        | <leg_index>
-                        | <cell_index>
-
-           <leg_index> ::= <digit>+
-
-          <cell_index> ::= <digit>+ '.' <digit>+
+           <contents> ::= '{' <properties>? <act>* '}'
 
 # Finally, <string> (Note that only quoted strings can be empty)
-
-      <simple_string> ::= <simple_char>+
 
              <string> ::= <simple_char>+
                         | ''' <singlequoted_char>* '''
@@ -280,5 +186,4 @@
 # Note that  '+' '-' '.' ','  Are not special.  So numbers 
 # are usable as simple_strings in names and values.
 
-# FIXME - how to support patterns for netlists with arbitrary number of legs?
-# Something like:   <(*) (*) (*)*>
+# FIXME - patterns
