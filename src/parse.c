@@ -37,17 +37,17 @@ typedef enum {
     PROPERTIES,
     CONTAINER,
     TERM,
-    OBJLIST,
-    OBJ,
+    OBJECT_LIST,
+    OBJECT,
     EDGE,
     TAIL,
     HEAD,
-    ENDPOINTSET,
+    ENDPOINT_SET,
     ENDPOINT,
     DESCENDENT,
     PORT,
     NODE,
-    DISAMB,
+    DISAMBIGUATOR,
     ATTR_VAL,
     VALASSIGN,
     NODEID,
@@ -88,62 +88,117 @@ typedef enum {
     REC          = 1<<29,   // recursion
 } props_t;
 
+#define NEXT(s,n) (char* (s)_str "s";int (s)_nxt[]={(n)})
 
-static int NUL_nxt[] =		{NONE, NUL};
-static int ABC_nxt[] =		{STRING, NUL};
-static int WSP_nxt[] =		{SPACE, NUL};
-static int LF_nxt[] =		{EOL|CMNTEOLEND|SPACE, NUL};
-static int CR_nxt[] =		{TWO|EOL|CMNTEOLEND|SPACE, NUL};
-static int DQT_nxt[] =		{OPEN|CLOSE, NUL};
-static int SQT_nxt[] =		{OPEN|CLOSE, NUL};
-static int LPN_nxt[] =		{OPEN|PARENTHESIS, NUL};
-static int RPN_nxt[] =		{CLOSE|PARENTHESIS, NUL};
-static int LAN_nxt[] =		{OPEN|ANGLEBRACKET, NUL};
-static int RAN_nxt[] =		{OPEN|ANGLEBRACKET, NUL};
-static int LBR_nxt[] =		{OPEN|BRACKET, NUL};
-static int RBR_nxt[] =		{OPEN|BRACKET, NUL};
-static int LBE_nxt[] =		{OPEN|BRACE, NUL};
-static int RBE_nxt[] =		{OPEN|BRACE, NUL};
-static int FSL_nxt[] =		{TWO|CMNTBEG|CMNTEOLBEG, NUL};
-static int BSL_nxt[] =		{TWO|ESCAPE, NUL};
-static int OCT_nxt[] =		{NONE, NUL};
-static int AST_nxt[] =		{TWO|CMNTEND, NUL};
-static int CLN_nxt[] =		{NONE, NUL};
-static int SCN_nxt[] =		{NONE, NUL};
-static int EQL_nxt[] =		{NONE, NUL};
-static int TLD_nxt[] =		{NONE, NUL};
+NEXT(NUL,(NONE, NUL));
 
-static int ACT_nxt[] =		{ACTION|OPT, SUBJECT, PROPERTIES|OPT, CONTAINER|OPT, TERM|OPT, NUL};
-static int ACTION_nxt[] =	{TLD, NUL};
-static int SUBJECT_nxt[] =	{OBJ|ALT, OBJLIST|ALT, NUL};
-static int PROPERTIES_nxt[] =	{LBT, ATTR_VAL|REP|OPT, RBT, NUL};
-static int CONTAINER_nxt[] =	{LBE, PROPERTIES|OPT, ACT|REC|REP|OPT, RBE, NUL};
-static int TERM_nxt[] =		{SCN|OPT, NUL};
-static int OBJLIST_nxt[] =	{LPN, OBJ|REP, RPN, NUL};
-static int OBJ_nxt[] =		{EDGE|ALT, NODE|ALT, NUL};
-static int EDGE_nxt[] =		{LAN, TAIL, HEAD|REP, RAN, DISAMB|OPT, NUL};
-static int TAIL_nxt[] =		{ENDPOINT|ALT, ENDPOINTSET|ALT, NUL};
-static int HEAD_nxt[] =		{ENDPOINT|ALT, ENDPOINTSET|ALT, NUL};
-static int ENDPOINTSET_nxt[] = 	{LPN, ENDPOINT|REP, RPN, NUL};
-static int ENDPOINT_nxt[] =	{ANCESTOR|REP|OPT, DESCENDENT|REP|OPT, NODE, PORT|OPT, NUL};
-static int DESCENDENT_nxt[] =	{NODEID, FSL, NUL};
-static int PORT_nxt[] =		{CLN, PORTID, NUL};
-static int NODE_nxt[] =		{NODEID, DISAMB|OPT, NUL};
-static int DISAMB_nxt[] =	{DISAMBINTRO, DISAMBID, NUL};
-static int ATTR_VAL_nxt[] =	{ATTRID, VALASSIGN|OPT, NUL};
-static int VALASSIGN_nxt[] =	{EQL, VALUE, NUL};
-static int NODEID_nxt[] =	{STRING|ALT, AST|ALT, NUL};
-static int DISAMBID_nxt[] =	{STRING|ALT, AST|ALT, NUL};
-static int PORTID_nxt[] =	{STRING|ALT, AST|ALT, NUL};
-static int ATTRID_nxt[] =	{STRING, NUL};
-static int VALUE_nxt[] =	{STRING, NUL};
-static int DISAMBINTRO_nxt[] =	{CLN, CLN, NUL};
-static int ANCESTOR_nxt[] =	{CLN, FSL, NUL};
+static int NUL_nxt[] = {NONE, NUL};
+static int ABC_nxt[] = {STRING, NUL};
+static int WS_nxt[] = {SPACE, NUL};
+static int LF_nxt[] = {EOL|CMNTEOLEND|SPACE, NUL};
+static int CR_nxt[] = {TWO|EOL|CMNTEOLEND|SPACE, NUL};
+static int DQT_nxt[] = {OPEN|CLOSE, NUL};
+static int SQT_nxt[] = {OPEN|CLOSE, NUL};
+static int LPN_nxt[] = {OPEN|PARENTHESIS, NUL};
+static int RPN_nxt[] = {CLOSE|PARENTHESIS, NUL};
+static int LAN_nxt[] = {OPEN|ANGLEBRACKET, NUL};
+static int RAN_nxt[] = {OPEN|ANGLEBRACKET, NUL};
+static int LBR_nxt[] = {OPEN|BRACKET, NUL};
+static int RBR_nxt[] = {OPEN|BRACKET, NUL};
+static int LBE_nxt[] = {OPEN|BRACE, NUL};
+static int RBE_nxt[] = {OPEN|BRACE, NUL};
+static int FSL_nxt[] = {TWO|CMNTBEG|CMNTEOLBEG, NUL};
+static int BSL_nxt[] = {TWO|ESCAPE, NUL};
+static int OCT_nxt[] = {NONE, NUL};
+static int AST_nxt[] = {TWO|CMNTEND, NUL};
+static int CLN_nxt[] = {NONE, NUL};
+static int SCN_nxt[] = {NONE, NUL};
+static int EQL_nxt[] = {NONE, NUL};
+static int TLD_nxt[] = {NONE, NUL};
 
-static int *next[] = {
+static int ACT_nxt[] = {ACTION|OPT, SUBJECT, PROPERTIES|OPT, CONTAINER|OPT, TERM|OPT, NUL};
+static int ACTION_nxt[] = {TLD, NUL};
+static int SUBJECT_nxt[] = {OBJECT|ALT, OBJECT_LIST|ALT, NUL};
+static int PROPERTIES_nxt[] = {LBT, ATTR_VAL|REP|OPT, RBT, NUL};
+static int CONTAINER_nxt[] = {LBE, PROPERTIES|OPT, ACT|REC|REP|OPT, RBE, NUL};
+static int TERM_nxt[] = {SCN|OPT, NUL};
+static int OBJECT_LIST_nxt[] = {LPN, OBJECT|REP, RPN, NUL};
+static int OBJECT_nxt[] = {EDGE|ALT, NODE|ALT, NUL};
+static int EDGE_nxt[] = {LAN, TAIL, HEAD|REP, RAN, DISAMBIGUATOR|OPT, NUL};
+static int TAIL_nxt[] = {ENDPOINT|ALT, ENDPOINT_SET|ALT, NUL};
+static int HEAD_nxt[] = {ENDPOINT|ALT, ENDPOINT_SET|ALT, NUL};
+static int ENDPOINT_SET_nxt[] = {LPN, ENDPOINT|REP, RPN, NUL};
+static int ENDPOINT_nxt[] = {ANCESTOR|REP|OPT, DESCENDENT|REP|OPT, NODE, PORT|OPT, NUL};
+static int DESCENDENT_nxt[] = {NODEID, FSL, NUL};
+static int PORT_nxt[] = {CLN, PORTID, NUL};
+static int NODE_nxt[] = {NODEID, DISAMBIGUATOR|OPT, NUL};
+static int DISAMBIGUATOR_nxt[] = {DISAMBINTRO, DISAMBID, NUL};
+static int ATTR_VAL_nxt[] = {ATTRID, VALASSIGN|OPT, NUL};
+static int VALASSIGN_nxt[] = {EQL, VALUE, NUL};
+static int NODEID_nxt[] = {STRING|ALT, AST|ALT, NUL};
+static int DISAMBID_nxt[] = {STRING|ALT, AST|ALT, NUL};
+static int PORTID_nxt[] = {STRING|ALT, AST|ALT, NUL};
+static int ATTRID_nxt[] = {STRING, NUL};
+static int VALUE_nxt[] = {STRING, NUL};
+static int DISAMBINTRO_nxt[] = {CLN, CLN, NUL};
+static int ANCESTOR_nxt[] = {CLN, FSL, NUL};
+
+static char *NUL_str = "NUL";
+static char *ABC_str = "ABC";
+static char *WS_str = "WS";
+static char *LF_str = "LF";
+static char *CR_str = "CR";
+static char *DQT_str = "DQT";
+static char *SQT_str = "SQT";
+static char *LPN_str = "LPN";
+static char *RPN_str = "RPN";
+static char *LAN_str = "LAN";
+static char *RAN_str = "RAN";
+static char *LBR_str = "LBR";
+static char *RBR_str = "RBR";
+static char *LBE_str = "LBE";
+static char *RBE_str = "RBE";
+static char *FSL_str = "FSL";
+static char *BSL_str = "BSL";
+static char *OCT_str = "OCT";
+static char *AST_str = "AST";
+static char *CLN_str = "CLN";
+static char *SCN_str = "SCN";
+static char *EQL_str = "EQL";
+static char *TLD_str = "TLD";
+
+static char *ACT_str = "ACT";
+static char *ACTION_str = "ACTION";
+static char *SUBJECT_str = "SUBJECT";
+static char *PROPERTIES_str = "PROPERTIES";
+static char *CONTAINER_str = "CONTAINER";
+static char *TERM_str = "TERM";
+static char *OBJECT_LIST_str = "OBJECT_LIST";
+static char *OBJECT_str = "OBJECT";
+static char *EDGE_str = "EDGE";
+static char *TAIL_str = "TAIL";
+static char *HEAD_str = "HEAD";
+static char *ENDPOINT_SET_str = "ENDPOINT_SET";
+static char *ENDPOINT_str = "ENDPOINT";
+static char *DESCENDENT_str = "DESCENDENT";
+static char *PORT_str = "PORT";
+static char *NODE_str = "NODE";
+static char *DISAMBIGUATOR_str = "DISAMBIGUATOR";
+static char *ATTR_VAL_str = "ATTR_VAL";
+static char *VALASSIGN_str = "VALASSIGN";
+static char *NODEID_str = "NODEID";
+static char *DISAMBID_str = "DISAMBID";
+static char *PORTID_str = "PORTID";
+static char *ATTRID_str = "ATTRID";
+static char *VALUE_str = "VALUE";
+static char *DISAMBINTRO_str = "DISAMBINTRO";
+static char *ANCESTOR_str = "ANCESTOR";
+
+
+static char **next[] = {
     NUL_nxt,
     ABC_nxt,
-    WSP_nxt,
+    WS_nxt,
     LF_nxt,
     CR_nxt,
     DQT_nxt,
@@ -170,17 +225,17 @@ static int *next[] = {
     PROPERTIES_nxt,
     CONTAINER_nxt,
     TERM_nxt,
-    OBJLIST_nxt,
-    OBJ_nxt,
+    OBJECT_LIST_nxt,
+    OBJECT_nxt,
     EDGE_nxt,
     TAIL_nxt,
     HEAD_nxt,
-    ENDPOINTSET_nxt,
+    ENDPOINT_SET_nxt,
     ENDPOINT_nxt,
     DESCENDENT_nxt,
     PORT_nxt,
     NODE_nxt,
-    DISAMB_nxt,
+    DISAMBIGUATOR_nxt,
     ATTR_VAL_nxt,
     VALASSIGN_nxt,
     NODEID_nxt,
@@ -237,7 +292,7 @@ unsigned char char2state[] = {
 props_t charTWOstate2props[] = {
     /* NUL  */  NONE,
     /* ABC  */  ESCAPE, 
-    /* WSP  */  ESCAPE,
+    /*  WS  */  ESCAPE,
     /*  LF  */  ESCAPE | EOL,
     /*  CR  */  ESCAPE | EOL,
     /* DQT  */  ESCAPE,
@@ -279,15 +334,22 @@ static int opencloseblock(act_t *act, state_t state) {
 
 static void printg_next(int s, int indent) {
     int *pn, n, i;
+    char *s_name, *n_name;
 
-    pn = next[s];
+    s_name = next[s].name;
+    pn = next[s].next;
     while (1) {
         n = *pn++;
 	if (n & REC) continue;
 	n &= 0xFF;        
         if (!n) break;
+        n_name = next[n].name;
         for (i = indent; i--; ) putc (' ', stdout);
+#if 0
 	printf("< %d %d > {\n", s, n);
+#else
+	printf("< %s %s > {\n", s_name, n_name);
+#endif
         printg_next(n, indent+2);
         for (i = indent; i--; ) putc (' ', stdout);
 	printf("}\n");
