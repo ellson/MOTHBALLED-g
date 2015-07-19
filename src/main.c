@@ -3,7 +3,9 @@
 
 # include "parse.h"
 
-unsigned char *test=(unsigned char*)"<a\\Aa 'bb' cc>";
+//unsigned char *test=(unsigned char*)"<a\\Aa 'bb' cc>";
+//unsigned char *test=(unsigned char*)"<aa 'bb' cc>";
+unsigned char *test=(unsigned char*)"<aa bb cc>";
 
 int main (int argc, char *argv[]) {
     unsigned char *inp;

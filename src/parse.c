@@ -313,38 +313,60 @@ void printg (void) {
     printg_next(ACT, 0);
 }
 
-static int parse_next(int s, unsigned char *inp) {
+static unsigned char *inp, c;
+static int in;
+
+static int parse_next(int s) {
     int *pn, n, nn, rc;
 
 #if 1
     int ss;
     char *s_name;
+#endif
+#if 2
+    char *in_name;
+#endif
 
+#if 1
     ss = s & 0xFF;
     s_name = *state_name[ss];
     printf("%s\n", s_name);
 #endif
 
-    rc = 0;
+    pn = state_next[ss];
     while (1) {
         n = *pn++;
         nn = n & 0xFF;
-        if (!nn) break;  // FIXME
+        if (!nn) {
+	    if ( (in & 0xFF) == ss ) {
+#if 2
+                in_name = *state_name[in];
+		printf("    %s\n", in_name);
+#endif
+	     c = *inp++;
+             in = char2state[c];
+	     return 0;
+	  }
+          return 1;
+	}
     
 //        if (n & REC) continue;     // FIXME - maybe allocate new inp buffers?
 
         if ((n ^ s) & TWO) continue;
 
-	if (n & REP) { while (( rc = parse_next(n, inp) ) == 0); break; }
-	if (n & ALT) if (( rc = parse_next(n, inp) ) != 0) continue;
-	if (n & OPT) if (( rc = parse_next(n, inp) ) == 0) break;
-        rc = parse_next(n, inp);
+	if (n & REP) { while (( rc = parse_next(n) ) == 0); break; }
+	if (n & ALT) if (( rc = parse_next(n) ) != 0) continue;
+	if (n & OPT) if (( rc = parse_next(n) ) == 0) break;
+        rc = parse_next(n);
     }
     return rc;
 }
 
-int parse(unsigned char *inp) {
-    return parse_next(ACT, inp);
+int parse(unsigned char *input) {
+    inp = input;
+    c = *inp++;
+    in = char2state[c];
+    return parse_next(ACT);
 }
 
 #if 0
