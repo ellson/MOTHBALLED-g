@@ -6,6 +6,9 @@ int main (int argc, char *argv[]) {
     unsigned char *inp;
     int rc;
 
+    printg();
+    return 0;
+
     inp = test;
     
     rc = parse(inp);

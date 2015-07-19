@@ -56,9 +56,12 @@
 
 # <edge> can induce <node>s
 
-               <edge> ::= '<' <leg> <leg>+ '>' <disambiguator>?
+               <edge> ::= '<' <tail> <head>+ '>' <disambiguator>?
 
-		<leg> ::= <endpoint>
+		<tail> ::= <endpoint>
+			| '(' <endpoint> ')'
+
+		<head> ::= <endpoint>
 			| '(' <endpoint> ')'
 
 # Note: The construct:  <(a b) z>
@@ -77,8 +80,8 @@
 
 # Note: a <port> as a <localendpoint> refers the inside <port> on the <container>
 # in which the <endpoint> is in.  For <node> contents it uses the same <port_id>
-# inside as outside.  For <edge> contents is refers a particular <leg> of the 
-# parent <edge> by means of a 1-based integer.
+# inside as outside.  For <edge> contents it refers a particular <tail>
+# or <head> of the parent <edge> by means of an index: 1=<tail>, 2,3,4...=<head>s.
 
 # If <port> is not provided for a <node_port> then it defaults to the
 # center of the shape, with the line representing the <edge> clipped back

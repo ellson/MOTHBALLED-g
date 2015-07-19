@@ -40,12 +40,12 @@ typedef enum {
     OBJLIST,
     OBJ,
     EDGE,
-    LEG,
+    TAIL,
+    HEAD,
     ENDPOINTSET,
     ENDPOINT,
     DESCENDENT,
     PORT,
-    NODELIST,
     NODE,
     DISAMB,
     ATTR_VAL,
@@ -63,28 +63,29 @@ typedef enum {
 
 typedef enum {
     NONE         = 0,
-    STRING       = 1<<0,
-    TWO          = 1<<1,
-    SPACE        = 1<<2,
-    OPEN         = 1<<3,
-    CLOSE        = 1<<4,
-    PARENTHESIS  = 1<<5,
-    ANGLEBRACKET = 1<<6,
-    BRACKET      = 1<<7,
-    BRACE        = 1<<8,
-    DQTSTR       = 1<<9,
-    SQTSTR       = 1<<10,
-    EOL          = 1<<11,
-    CMNTBEG      = 1<<12,
-    CMNTEND      = 1<<13,
-    CMNTEOLBEG   = 1<<14,
-    CMNTEOLEND   = 1<<15,
-    CMNTSTR      = 1<<16,
-    ESCAPE       = 1<<17,
+    STRING       = 1<<8,
+    TWO          = 1<<9,
+    SPACE        = 1<<10,
+    OPEN         = 1<<11,
+    CLOSE        = 1<<12,
+    PARENTHESIS  = 1<<13,
+    ANGLEBRACKET = 1<<14,
+    BRACKET      = 1<<14,
+    BRACE        = 1<<16,
+    DQTSTR       = 1<<17,
+    SQTSTR       = 1<<18,
+    EOL          = 1<<19,
+    CMNTBEG      = 1<<20,
+    CMNTEND      = 1<<21,
+    CMNTEOLBEG   = 1<<22,
+    CMNTEOLEND   = 1<<23,
+    CMNTSTR      = 1<<24,
+    ESCAPE       = 1<<25,
     // grammar props
-    ALT          = 1<<18,   // alternive - one must be satisfied
-    OPT          = 1<<19,   // optional
-    REP          = 1<<20,   // repeatable   ( REP|OPT means 0 or morea )
+    ALT          = 1<<26,   // alternive - one must be satisfied
+    OPT          = 1<<27,   // optional
+    REP          = 1<<28,   // repeatable   ( REP|OPT means 0 or morea )
+    REC          = 1<<29,   // recursion
 } props_t;
 
 
@@ -116,17 +117,17 @@ static int ACT_nxt[] =		{ACTION|OPT, SUBJECT, PROPERTIES|OPT, CONTAINER|OPT, TER
 static int ACTION_nxt[] =	{TLD, NUL};
 static int SUBJECT_nxt[] =	{OBJ|ALT, OBJLIST|ALT, NUL};
 static int PROPERTIES_nxt[] =	{LBT, ATTR_VAL|REP|OPT, RBT, NUL};
-static int CONTAINER_nxt[] =	{LBE, PROPERTIES|OPT, ACT|REP|OPT, RBE, NUL};
+static int CONTAINER_nxt[] =	{LBE, PROPERTIES|OPT, ACT|REC|REP|OPT, RBE, NUL};
 static int TERM_nxt[] =		{SCN|OPT, NUL};
-static int OBJLIST_nxt[] =	{LPN, OBJ|REP|OPT, RPN, NUL};
+static int OBJLIST_nxt[] =	{LPN, OBJ|REP, RPN, NUL};
 static int OBJ_nxt[] =		{EDGE|ALT, NODE|ALT, NUL};
-static int EDGE_nxt[] =		{LAN, LEG, LEG, LEG|REP|OPT, RAN, DISAMB|OPT, NUL};
-static int LEG_nxt[] =		{ENDPOINT|ALT, ENDPOINTSET|ALT, NUL};
-static int ENDPOINTSET_nxt[] = 	{LPN, ENDPOINT|REP|OPT, RPN, NUL};
+static int EDGE_nxt[] =		{LAN, TAIL, HEAD|REP, RAN, DISAMB|OPT, NUL};
+static int TAIL_nxt[] =		{ENDPOINT|ALT, ENDPOINTSET|ALT, NUL};
+static int HEAD_nxt[] =		{ENDPOINT|ALT, ENDPOINTSET|ALT, NUL};
+static int ENDPOINTSET_nxt[] = 	{LPN, ENDPOINT|REP, RPN, NUL};
 static int ENDPOINT_nxt[] =	{ANCESTOR|REP|OPT, DESCENDENT|REP|OPT, NODE, PORT|OPT, NUL};
 static int DESCENDENT_nxt[] =	{NODEID, FSL, NUL};
 static int PORT_nxt[] =		{CLN, PORTID, NUL};
-static int NODELIST_nxt[] =	{LPN, NODE|REP|OPT, RPN, NUL};
 static int NODE_nxt[] =		{NODEID, DISAMB|OPT, NUL};
 static int DISAMB_nxt[] =	{DISAMBINTRO, DISAMBID, NUL};
 static int ATTR_VAL_nxt[] =	{ATTRID, VALASSIGN|OPT, NUL};
@@ -172,12 +173,12 @@ static int *next[] = {
     OBJLIST_nxt,
     OBJ_nxt,
     EDGE_nxt,
-    LEG_nxt,
+    TAIL_nxt,
+    HEAD_nxt,
     ENDPOINTSET_nxt,
     ENDPOINT_nxt,
     DESCENDENT_nxt,
     PORT_nxt,
-    NODELIST_nxt,
     NODE_nxt,
     DISAMB_nxt,
     ATTR_VAL_nxt,
@@ -274,6 +275,27 @@ typedef struct {
 
 static int opencloseblock(act_t *act, state_t state) {
     return 0;
+}
+
+static void printg_next(int s, int indent) {
+    int *pn, n, i;
+
+    pn = next[s];
+    while (1) {
+        n = *pn++;
+	if (n & REC) continue;
+	n &= 0xFF;        
+        if (!n) break;
+        for (i = indent; i--; ) putc (' ', stdout);
+	printf("< %d %d > {\n", s, n);
+        printg_next(n, indent+2);
+        for (i = indent; i--; ) putc (' ', stdout);
+	printf("}\n");
+    }
+}
+
+void printg (void) {
+    printg_next(ACT, 0);
 }
 
 int parse(unsigned char *inp) {
