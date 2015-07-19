@@ -5,7 +5,7 @@ typedef enum {LST, STR} elemtype_t;
 
 struct elem_s {
     elem_t *next;
-    int props;
+    int state;
     elemtype_t type;
     union {
         struct {
@@ -20,8 +20,8 @@ struct elem_s {
     } u;
 };
 
-elem_t* newlist(int props);
-elem_t* newelem(int props, unsigned char *buf, int len, int allocated);
+elem_t* newlist(int state);
+elem_t* newelem(int state, unsigned char *buf, int len, int allocated);
 elem_t *list2elem(elem_t *list);
 void appendlist(elem_t *list, elem_t *elem);
 void freelist(elem_t *list);

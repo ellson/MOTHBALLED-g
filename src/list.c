@@ -7,7 +7,7 @@
 
 static elem_t *elem_freelist;
 
-static elem_t* newelem_private(elemtype_t type, int props) {
+static elem_t* newelem_private(elemtype_t type, int state) {
     elem_t *elem, *next;
     int i;
 
@@ -28,24 +28,24 @@ static elem_t* newelem_private(elemtype_t type, int props) {
     }
     elem_freelist = elem->next;  // update freelist to point to next available
     elem->type = type;
-    elem->props = props;
+    elem->state = state;
     elem->next = NULL;
     return elem;
 }
 
-elem_t* newlist(int props) {
+elem_t* newlist(int state) {
     elem_t* elem;
 
-    elem = newelem_private(LST, props);
+    elem = newelem_private(LST, state);
     elem ->u.lst.first = NULL;
     elem ->u.lst.last = NULL;
     return elem;
 }
 
-elem_t* newelem(int props, unsigned char *buf, int len, int allocated) {
+elem_t* newelem(int state, unsigned char *buf, int len, int allocated) {
     elem_t* elem;
     
-    elem = newelem_private(STR, props);
+    elem = newelem_private(STR, state);
     elem->u.str.buf = buf;
     elem->u.str.len = len;
     elem->u.str.allocated = allocated;
@@ -62,10 +62,10 @@ elem_t *list2elem(elem_t *list) {
     elem = newlist(0);
     elem->u.lst.first = list->u.lst.first;
     elem->u.lst.last = list->u.lst.last;
-    elem->props = list->props;
+    elem->state = list->state;
     list->u.lst.first = NULL;
     list->u.lst.last = NULL;
-    list->props = 0;
+    list->state = 0;
     return elem;
 }
 
@@ -112,7 +112,7 @@ void freelist(elem_t *list) {
     // clean up emptied list
     list->u.lst.first = NULL;
     list->u.lst.last = NULL;
-    list->props = 0;
+    list->state = 0;
 }
         
 static void printj_private(elem_t *list, int indent) {
