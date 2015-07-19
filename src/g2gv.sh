@@ -1,7 +1,7 @@
-echo "graph {"
+echo "strict graph {"
 while read op t h x x; do
     if test "$op" = "<"; then
-	echo "  $t -> $h"
+	echo "  $t -- $h"
     fi
 done
 echo "}"
