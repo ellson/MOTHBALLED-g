@@ -24,6 +24,8 @@ NEXT(AST,	    ONE|ALT, FSL|TWO|COMMENTEND|ALT );
 NEXT(CLN,	    CLN|TWO|DISAMBIG|ALT, FSL|TWO|PARENT|ALT, ONE|ALT );
 NEXT(SCN,	    ONE );
 NEXT(EQL,	    ONE );
+NEXT(HAT,	    ONE );
+NEXT(TIC,	    ONE );
 NEXT(TLD,	    ONE );
 NEXT(ACT,	    ACTION|OPT, SUBJECT, ATTRIBUTES|OPT, CONTAINER|OPT, TERM|OPT );
 NEXT(ACTION,	    TLD );
@@ -42,11 +44,14 @@ NEXT(TAIL,	    ENDPOINT|ALT, ENDPOINT_SET|ALT );
 NEXT(HEAD,	    ENDPOINT|ALT, ENDPOINT_SET|ALT );
 NEXT(ENDPOINT_SET,  LPN, ENDPOINT, ENDPOINT_MORE|REP, RPN );
 NEXT(ENDPOINT_MORE, SPACE, ENDPOINT );
-NEXT(ENDPOINT,	    ANCESTOR|REP|OPT, DESCENDENT|REP|OPT, NODE, PORT|OPT );
-NEXT(DESCENDENT,    NODEID, FSL );
+NEXT(ENDPOINT,      ANCESTOR_MEMBER|ALT, FAMILY_MEMBER|ALT, PORT|ALT);
+NEXT(ANCESTOR_MEMBER, HAT, ANCESTOR_MORE|REP|OPT, DESCENDENT|REP, PORT|OPT );
+NEXT(ANCESTOR_MORE, FSL, CLN );
+NEXT(FAMILY_MEMBER, NODE, DESCENDENT|REP|OPT, PORT|OPT );
+NEXT(DESCENDENT,    FSL, NODE );
 NEXT(PORT,	    CLN, PORTID );
 NEXT(NODE,	    NODEID, DISAMBIGUATOR|OPT );
-NEXT(DISAMBIGUATOR, DISAMBINTRO, DISAMBID );
+NEXT(DISAMBIGUATOR, TIC, DISAMBID );
 NEXT(ATTR,	    ATTRID, VALASSIGN|OPT );
 NEXT(VALASSIGN,	    EQL, VALUE );
 NEXT(NODEID,	    STRING|ALT, AST|ALT );
@@ -54,8 +59,6 @@ NEXT(DISAMBID,	    STRING|ALT, AST|ALT );
 NEXT(PORTID,	    STRING|ALT, AST|ALT );
 NEXT(ATTRID,	    STRING );
 NEXT(VALUE,	    STRING );
-NEXT(DISAMBINTRO,   CLN|TWO|DISAMBIG );
-NEXT(ANCESTOR,	    CLN|TWO|PARENT );
 NEXT(STRING,	    FRAG, FRAG|REP );
 NEXT(FRAG,	    ABC|ALT, DQFRAG|ALT, SQFRAG|ALT, BSL|TWO|ESCAPE|ALT );
 NEXT(DQFRAG,        DQT, FRAG|REP, DQT );
@@ -85,6 +88,8 @@ static int *state_next[] = {
     CLN_nxt,
     SCN_nxt,
     EQL_nxt,
+    HAT_nxt,
+    TIC_nxt,
     TLD_nxt,
     ACT_nxt,
     ACTION_nxt,
@@ -104,6 +109,9 @@ static int *state_next[] = {
     ENDPOINT_SET_nxt,
     ENDPOINT_MORE_nxt,
     ENDPOINT_nxt,
+    ANCESTOR_MEMBER_nxt,
+    ANCESTOR_MORE_nxt,
+    FAMILY_MEMBER_nxt,
     DESCENDENT_nxt,
     PORT_nxt,
     NODE_nxt,
@@ -115,8 +123,6 @@ static int *state_next[] = {
     PORTID_nxt,
     ATTRID_nxt,
     VALUE_nxt,
-    DISAMBINTRO_nxt,
-    ANCESTOR_nxt,
     STRING_nxt,
     FRAG_nxt,
     DQFRAG_nxt,
@@ -147,6 +153,8 @@ static char **state_name[] = {
     &CLN_str,
     &SCN_str,
     &EQL_str,
+    &HAT_str,
+    &TIC_str,
     &TLD_str,
     &ACT_str,
     &ACTION_str,
@@ -166,6 +174,9 @@ static char **state_name[] = {
     &ENDPOINT_SET_str,
     &ENDPOINT_MORE_str,
     &ENDPOINT_str,
+    &ANCESTOR_MEMBER_str,
+    &ANCESTOR_MORE_str,
+    &FAMILY_MEMBER_str,
     &DESCENDENT_str,
     &PORT_str,
     &NODE_str,
@@ -177,8 +188,6 @@ static char **state_name[] = {
     &PORTID_str,
     &ATTRID_str,
     &VALUE_str,
-    &DISAMBINTRO_str,
-    &ANCESTOR_str,
     &STRING_str,
     &FRAG_str,
     &DQFRAG_str,
@@ -202,8 +211,8 @@ unsigned char char2state[] = {
     ABC,ABC,ABC,ABC,ABC,ABC,ABC,ABC, /*  @   A   B   C   D   E   F   G  */
     ABC,ABC,ABC,ABC,ABC,ABC,ABC,ABC, /*  H   I   J   K   L   M   N   O  */
     ABC,ABC,ABC,ABC,ABC,ABC,ABC,ABC, /*  P   Q   R   S   T   U   V   W  */
-    ABC,ABC,ABC,LBT,BSL,RBT,ABC,ABC, /*  X   Y   Z   [   \   ]   ^   _  */
-    ABC,ABC,ABC,ABC,ABC,ABC,ABC,ABC, /*  `   a   b   c   d   e   f   g  */
+    ABC,ABC,ABC,LBT,BSL,RBT,HAT,ABC, /*  X   Y   Z   [   \   ]   ^   _  */
+    TIC,ABC,ABC,ABC,ABC,ABC,ABC,ABC, /*  `   a   b   c   d   e   f   g  */
     ABC,ABC,ABC,ABC,ABC,ABC,ABC,ABC, /*  h   i   j   k   l   m   n   o  */
     ABC,ABC,ABC,ABC,ABC,ABC,ABC,ABC, /*  p   q   r   s   t   u   v   w  */
     ABC,ABC,ABC,LBE,ABC,RBE,TLD,ABC, /*  x   y   z   {   |   }   ~  DEL */
