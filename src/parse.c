@@ -11,13 +11,12 @@ static void printg_next(int s, int indent) {
     char *s_name, *n_name;
 
     ss = s & 0xFF;
-    s_name = *state_name[ss];
-    pn = state_next[ss];
-    while (1) {
-        n = *pn++;
+    s_name = *state_name[ss >> 1];
+    pn = state_next[ss >> 1];
+    while ((n = *pn++)) {
 	nn = n & 0xFF;        
         if (!nn) break;
-        n_name = *state_name[nn];
+        n_name = *state_name[nn >> 1];
         for (i = indent; i--; ) putc (' ', stdout);
 	printf("< %s %s > {\n", s_name, n_name);
 	if (n & REC) continue;
@@ -48,34 +47,28 @@ static int parse_next(int s) {
 
 #if 1
     ss = s & 0xFF;
-    s_name = *state_name[ss];
+    s_name = *state_name[ss >> 1];
     printf("%s\n", s_name);
 #endif
 
-    pn = state_next[ss];
-    while (1) {
-        n = *pn++;
-        nn = n & 0xFF;
-        if (!nn) {
-	    if ( (in & 0xFF) == ss ) {
+    if ( in == ss ) {
 #if 2
-                in_name = *state_name[in];
-		printf("    %s\n", in_name);
+        in_name = *state_name[in >> 1];
+	printf("    %s\n", in_name);
 #endif
-	     c = *inp++;
-             in = char2state[c];
-	     return 0;
-	  }
-          return 1;
-	}
-    
+        c = *inp++;
+        in = char2state[c];
+	return 0;
+    }
+    rc = 1;
+    pn = state_next[ss >> 1];
+    while ((n = *pn++)) {
 //        if (n & REC) continue;     // FIXME - maybe allocate new inp buffers?
 
         if ((n ^ s) & TWO) continue;
 
+	if (n & (ALT|OPT)) { if (( rc = parse_next(n) ) != 0) continue; else break; }
 	if (n & REP) { while (( rc = parse_next(n) ) == 0); break; }
-	if (n & ALT) if (( rc = parse_next(n) ) != 0) continue;
-	if (n & OPT) if (( rc = parse_next(n) ) == 0) break;
         rc = parse_next(n);
     }
     return rc;

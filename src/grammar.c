@@ -25,24 +25,29 @@ NEXT(CLN,	    CLN|TWO|DISAMBIG|ALT, FSL|TWO|PARENT|ALT, ONE|ALT );
 NEXT(SCN,	    ONE );
 NEXT(EQL,	    ONE );
 NEXT(TLD,	    ONE );
-NEXT(ACT,	    ACTION|OPT, SUBJECT, PROPERTIES|OPT, CONTAINER|OPT, TERM|OPT );
+NEXT(ACT,	    ACTION|OPT, SUBJECT, ATTRIBUTES|OPT, CONTAINER|OPT, TERM|OPT );
 NEXT(ACTION,	    TLD );
 NEXT(SUBJECT,	    OBJECT|ALT, OBJECT_LIST|ALT );
-NEXT(PROPERTIES,    LBT, ATTRIBUTE|REP|OPT, RBT );
-NEXT(CONTAINER,	    LBE, PROPERTIES|OPT, ACT|REC|REP|OPT, RBE );
+NEXT(ATTRIBUTES,    LBT, ATTR, ATTR_MORE|REP, RBT );
+NEXT(ATTR_MORE,	    SPACE, ATTR );
+NEXT(CONTAINER,	    LBE, ATTRIBUTES|OPT, CONTENTS|OPT, RBE );
+NEXT(CONTENTS,      ACT|REC, CONTENTS_MORE );
+NEXT(CONTENTS_MORE, SPACE, ACT|REC );
 NEXT(TERM,	    SCN|OPT );
-NEXT(OBJECT_LIST,   LPN, OBJECT|REP, RPN );
+NEXT(OBJECT_LIST,   LPN, OBJECT, OBJECT_MORE|REP, RPN );
+NEXT(OBJECT_MORE,   SPACE, OBJECT );
 NEXT(OBJECT,	    EDGE|ALT, NODE|ALT );
 NEXT(EDGE,	    LAN, TAIL, HEAD|REP, RAN, DISAMBIGUATOR|OPT );
 NEXT(TAIL,	    ENDPOINT|ALT, ENDPOINT_SET|ALT );
 NEXT(HEAD,	    ENDPOINT|ALT, ENDPOINT_SET|ALT );
-NEXT(ENDPOINT_SET,  LPN, ENDPOINT|REP, RPN );
+NEXT(ENDPOINT_SET,  LPN, ENDPOINT, ENDPOINT_MORE|REP, RPN );
+NEXT(ENDPOINT_MORE, SPACE, ENDPOINT );
 NEXT(ENDPOINT,	    ANCESTOR|REP|OPT, DESCENDENT|REP|OPT, NODE, PORT|OPT );
 NEXT(DESCENDENT,    NODEID, FSL );
 NEXT(PORT,	    CLN, PORTID );
 NEXT(NODE,	    NODEID, DISAMBIGUATOR|OPT );
 NEXT(DISAMBIGUATOR, DISAMBINTRO, DISAMBID );
-NEXT(ATTRIBUTE,	    ATTRID, VALASSIGN|OPT );
+NEXT(ATTR,	    ATTRID, VALASSIGN|OPT );
 NEXT(VALASSIGN,	    EQL, VALUE );
 NEXT(NODEID,	    STRING|ALT, AST|ALT );
 NEXT(DISAMBID,	    STRING|ALT, AST|ALT );
@@ -55,13 +60,14 @@ NEXT(STRING,	    DQSTR|ALT, SQSTR|ALT, ABC|ALT );
 NEXT(DQSTR,         DQT, FRAG|REP, DQT );
 NEXT(SQSTR,         SQT, FRAG|REP, SQT );
 NEXT(FRAG,	    BSL|TWO|ESCAPE|ALT, ABC|ALT );
+NEXT(SPACE,         WS );  // FIXME
 
 static int *state_next[] = {
     NUL_nxt,
     ABC_nxt,
-    WS_nxt,
-    LF_nxt,
-    CR_nxt,
+     WS_nxt,
+     LF_nxt,
+     CR_nxt,
     DQT_nxt,
     SQT_nxt,
     LPN_nxt,
@@ -83,21 +89,26 @@ static int *state_next[] = {
     ACT_nxt,
     ACTION_nxt,
     SUBJECT_nxt,
-    PROPERTIES_nxt,
+    ATTRIBUTES_nxt,
+    ATTR_MORE_nxt,
     CONTAINER_nxt,
+    CONTENTS_nxt,
+    CONTENTS_MORE_nxt,
     TERM_nxt,
     OBJECT_LIST_nxt,
+    OBJECT_MORE_nxt,
     OBJECT_nxt,
     EDGE_nxt,
     TAIL_nxt,
     HEAD_nxt,
     ENDPOINT_SET_nxt,
+    ENDPOINT_MORE_nxt,
     ENDPOINT_nxt,
     DESCENDENT_nxt,
     PORT_nxt,
     NODE_nxt,
     DISAMBIGUATOR_nxt,
-    ATTRIBUTE_nxt,
+    ATTR_nxt,
     VALASSIGN_nxt,
     NODEID_nxt,
     DISAMBID_nxt,
@@ -109,15 +120,16 @@ static int *state_next[] = {
     STRING_nxt,
     DQSTR_nxt,
     SQSTR_nxt,
-    FRAG_nxt
+    FRAG_nxt,
+    SPACE_nxt
 };
 
 static char **state_name[] = {
     &NUL_str,
     &ABC_str,
-    &WS_str,
-    &LF_str,
-    &CR_str,
+     &WS_str,
+     &LF_str,
+     &CR_str,
     &DQT_str,
     &SQT_str,
     &LPN_str,
@@ -139,21 +151,26 @@ static char **state_name[] = {
     &ACT_str,
     &ACTION_str,
     &SUBJECT_str,
-    &PROPERTIES_str,
+    &ATTRIBUTES_str,
+    &ATTR_MORE_str,
     &CONTAINER_str,
+    &CONTENTS_str,
+    &CONTENTS_MORE_str,
     &TERM_str,
     &OBJECT_LIST_str,
+    &OBJECT_MORE_str,
     &OBJECT_str,
     &EDGE_str,
     &TAIL_str,
     &HEAD_str,
     &ENDPOINT_SET_str,
+    &ENDPOINT_MORE_str,
     &ENDPOINT_str,
     &DESCENDENT_str,
     &PORT_str,
     &NODE_str,
     &DISAMBIGUATOR_str,
-    &ATTRIBUTE_str,
+    &ATTR_str,
     &VALASSIGN_str,
     &NODEID_str,
     &DISAMBID_str,
@@ -165,7 +182,8 @@ static char **state_name[] = {
     &STRING_str,
     &DQSTR_str,
     &SQSTR_str,
-    &FRAG_str
+    &FRAG_str,
+    &SPACE_str
 };
 
 // Every character is grouped into exactly one state_t
