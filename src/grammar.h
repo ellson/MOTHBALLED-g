@@ -57,9 +57,9 @@ typedef enum {
     DISAMBINTRO		= 104,
     ANCESTOR		= 106,
     STRING		= 108,
-    DQSTR		= 110,
-    SQSTR		= 112,
-    FRAG		= 114,
+    FRAG		= 110,
+    DQFRAG		= 112,
+    SQFRAG		= 114,
     SPACE		= 116
 } state_t;
 

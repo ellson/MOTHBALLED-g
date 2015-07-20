@@ -56,10 +56,10 @@ NEXT(ATTRID,	    STRING );
 NEXT(VALUE,	    STRING );
 NEXT(DISAMBINTRO,   CLN|TWO|DISAMBIG );
 NEXT(ANCESTOR,	    CLN|TWO|PARENT );
-NEXT(STRING,	    DQSTR|ALT, SQSTR|ALT, ABC|ALT );
-NEXT(DQSTR,         DQT, FRAG|REP, DQT );
-NEXT(SQSTR,         SQT, FRAG|REP, SQT );
-NEXT(FRAG,	    BSL|TWO|ESCAPE|ALT, ABC|ALT );
+NEXT(STRING,	    FRAG, FRAG|REP );
+NEXT(FRAG,	    ABC|ALT, DQFRAG|ALT, SQFRAG|ALT, BSL|TWO|ESCAPE|ALT );
+NEXT(DQFRAG,        DQT, FRAG|REP, DQT );
+NEXT(SQFRAG,        SQT, FRAG|REP, SQT );
 NEXT(SPACE,         WS );  // FIXME
 
 static int *state_next[] = {
@@ -118,9 +118,9 @@ static int *state_next[] = {
     DISAMBINTRO_nxt,
     ANCESTOR_nxt,
     STRING_nxt,
-    DQSTR_nxt,
-    SQSTR_nxt,
     FRAG_nxt,
+    DQFRAG_nxt,
+    SQFRAG_nxt,
     SPACE_nxt
 };
 
@@ -180,9 +180,9 @@ static char **state_name[] = {
     &DISAMBINTRO_str,
     &ANCESTOR_str,
     &STRING_str,
-    &DQSTR_str,
-    &SQSTR_str,
     &FRAG_str,
+    &DQFRAG_str,
+    &SQFRAG_str,
     &SPACE_str
 };
 
