@@ -35,7 +35,7 @@ static unsigned char *inp, c;
 static int in;
 
 static int parse_next(int s) {
-    int *pn, n, nn, rc;
+    int *pn, n, rc;
 
 #if 1
     int ss;
@@ -67,9 +67,9 @@ static int parse_next(int s) {
 
         if ((n ^ s) & TWO) continue;
 
-	if (n & (ALT|OPT)) { if (( rc = parse_next(n) ) != 0) continue; else break; }
-	if (n & REP) { while (( rc = parse_next(n) ) == 0); break; }
-        rc = parse_next(n);
+	if ( (n & ALT)) {    if (( rc = parse_next(n) ) == 0) break; else continue; }
+	if (!(n & OPT)) {    if (( rc = parse_next(n) ) != 0) break; /* else fall into REP test */ }
+	if ( (n & REP)) { while (( rc = parse_next(n) ) == 0); break; }
     }
     return rc;
 }
