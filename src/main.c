@@ -15,6 +15,10 @@ int main (int argc, char *argv[]) {
         printg();
         return 0;
     }
+    if (argc > 1 && strcmp(argv[1], "-d") == 0) {
+        dumpg();
+        return 0;
+    }
 
     inp = test;
     

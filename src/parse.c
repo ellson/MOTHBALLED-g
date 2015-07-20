@@ -27,8 +27,25 @@ static void printg_next(int s, int indent) {
     }
 }
 
+// recursively walk the grammar - tests all possible transitions
 void printg (void) {
     printg_next(ACT, 0);
+}
+
+// just dump the grammar,  should result in same graph as printg()
+void dumpg (void) {
+    int i, *p;
+    for (i=0; i < sizeof(state_next)/sizeof(int*); i++) {
+        printf("%s\n", *state_name[i]);
+        for (p=state_next[i]; (*p) & 0xFF; p++) {
+	    printf("    < %s %s > [ ", *state_name[i], *state_name[((*p) & 0xFF) >> 1]);
+            if (*p & ALT) printf("ALT ");
+            if (*p & OPT) printf("OPT ");
+            if (*p & REP) printf("REP ");
+            if (*p & REC) printf("REC ");
+            printf("]\n");
+        }
+    }
 }
 
 static unsigned char *inp, c;
