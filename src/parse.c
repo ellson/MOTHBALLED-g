@@ -84,9 +84,9 @@ static int parse_next(int s) {
 
         if ((n ^ s) & TWO) continue;
 
-	if ( (n & ALT)) {    if (( rc = parse_next(n) ) == 0) break; else continue; }
-	if (!(n & OPT)) {    if (( rc = parse_next(n) ) != 0) break; /* else fall into REP test */ }
-	if ( (n & REP)) { while (( rc = parse_next(n) ) == 0); break; }
+	if      ( (n & ALT)) {    if (( rc = parse_next(n) ) != 0) continue;} 
+	else if (!(n & OPT)) {    if (( rc = parse_next(n) ) != 0) break; } 
+	if      ( (n & REP)) { while (( rc = parse_next(n) ) == 0); break; }
     }
     return rc;
 }
