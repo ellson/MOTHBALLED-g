@@ -29,11 +29,11 @@ static void printg_next(int si, int indent) {
         printf("< %s %s > [ ", tail, get_name(ni));
         if (nxt & ALT) printf("ALT ");
         if (nxt & OPT) printf("OPT ");
-        if (nxt & SREP) printf("SREP");
+        if (nxt & SREP) printf("SREP ");
         if (nxt & REP) printf("REP ");
         if (nxt & REC) printf("REC ");
         printf("] {\n");
-        printg_next(ni, indent+2);
+	if (! (nxt & REC)) printg_next(ni, indent+2);
         for (i = indent; i--; ) putc (' ', stdout);
         printf("}\n");
         si++;
