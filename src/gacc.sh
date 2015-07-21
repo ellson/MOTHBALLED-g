@@ -51,47 +51,75 @@ if test "$prev" != ""; then
     emit_node
 fi
 
-cat <<EOF
-#define ALT 1<<15
-#define REP 1<<14
-#define SREP 1<<13
-#define OPT 1<<12
-#define REC 1<<11
+####
+#cat <<EOF
+##define ALT 1<<15
+##define REP 1<<14
+##define SREP 1<<13
+##define OPT 1<<12
+##define REC 1<<11
+#
+#EOF
 
-EOF
+printf "#include \"grammar.h\"\n\n"
 
-echo "char state_names[] = {"
+####
+printf "char state_names[] = {"
 for n in $nodelist; do
-    printf "  /* %3s %-15s */ %s,\n" "${SPOS[$n]}" "$n" "${NAME[$n]}"
+    printf "    /* %3s */  %s,\n" "${SPOS[$n]}" "${NAME[$n]}"
 done
-echo "};"
-echo ""
+printf "};\n\n"
 
-echo "unsigned short state_machine[] = {"
+####
+printf "/* EBNF (omitting terminals)\n"
 for n in $nodelist; do
-    printf "/* %3s %-15s */ " "${POS[$n]}" "$n"
     fieldc=0
     for i in ${NODE[$n]}; do
 	if [ -z ${POS[$i]} ]; then
-	    echo -n "$i"
+	    printf "%s" "$i"
 	else
-    	    if test $fieldc -ne 0; then
-	        echo -n ","
+    	    if test $fieldc -eq 0; then
+                printf "    %15s ::= " "$n"
+	    else
+	        printf " "
             fi
             ((fieldc++))
-	    echo -n "${POS[$i]}" 
+	    printf "%s" "$i" 
         fi
     done
     if test $fieldc -ne 0; then
-        echo -n ","
+        printf "\n"
+    fi
+done
+printf "*/\n\n"
+
+####
+printf "unsigned short state_machine[] = {\n"
+for n in $nodelist; do
+    printf "    /* %3s %15s */  " "${POS[$n]}" "$n"
+    fieldc=0
+    for i in ${NODE[$n]}; do
+	if [ -z ${POS[$i]} ]; then
+	    printf "%s" "$i"
+	else
+    	    if test $fieldc -ne 0; then
+	        printf ","
+            fi
+            ((fieldc++))
+	    printf "%s" "${POS[$i]}" 
+        fi
+    done
+    if test $fieldc -ne 0; then
+        printf ","
     fi
     spos=${SPOS[$n]}
     if test $spos -eq 0; then
-	echo "0,"
+	printf "0,\n"
     else
-        echo "${spos}<<7,"
+        printf "${spos}<<7,\n"
     fi
 done
-echo "};"
-echo ""
-echo "#define state_machine_start ${POS[ACT]}"
+printf "};\n\n"
+
+####
+printf "#define state_machine_start %s\n" "${POS[ACT]}"
