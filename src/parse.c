@@ -15,27 +15,29 @@ static char *get_name(int si) {
 			         // ... strings always start on even index, so LSB is alwways 0
 }
 
-static void printg_next(char si, int indent) {
-#if 0
-    int *pn, ss, n, nn, i;
-    char *s_name, *n_name;
+static void printg_next(int si, int indent) {
+    char *tail;
+    int i, ni;
+    short nxt;
 
-    ss = s & 0xFF;
-    s_name = *state_name[ss >> 1];
-    pn = state_next[ss >> 1];
-    while ((n = *pn++)) {
-	nn = n & 0xFF;        
-        if (!nn) break;
-        n_name = *state_name[nn >> 1];
+    tail = get_name(si);
+    while (1) {
+        nxt = state_machine[si];
+        ni = nxt & 0xFF;
+        if (! ni) break;
         for (i = indent; i--; ) putc (' ', stdout);
-	printf("< %s %s > {\n", s_name, n_name);
-	if (n & REC) continue;
-        if ((n ^ s) & TWO) continue;
-        printg_next(n, indent+2);
+        printf("< %s %s > [ ", tail, get_name(ni));
+        if (nxt & ALT) printf("ALT ");
+        if (nxt & OPT) printf("OPT ");
+        if (nxt & SREP) printf("SREP");
+        if (nxt & REP) printf("REP ");
+        if (nxt & REC) printf("REC ");
+        printf("] {\n");
+        printg_next(ni, indent+2);
         for (i = indent; i--; ) putc (' ', stdout);
-	printf("}\n");
+        printf("}\n");
+        si++;
     }
-#endif
 }
 
 // recursively walk the grammar - tests all possible transitions
@@ -43,7 +45,7 @@ void printg (void) {
     printg_next(state_machine_start, 0);
 }
 
-// just dump the grammar,  should result in same graph as printg()
+// just dump the grammar linearly,  should result in same logical graph as printg()
 void dumpg (void) {
     int si, ni;
     short nxt;
@@ -67,20 +69,6 @@ void dumpg (void) {
 	    si++;
 	}
         si++;
-#if 0
-    int i, *p;
-    for (i=0; i < sizeof(state_next)/sizeof(int*); i++) {
-        printf("%s\n", *state_name[i]);
-        for (p=state_next[i]; (*p) & 0xFF; p++) {
-	    printf("    < %s %s > [ ", *state_name[i], *state_name[((*p) & 0xFF) >> 1]);
-            if (*p & ALT) printf("ALT ");
-            if (*p & OPT) printf("OPT ");
-            if (*p & REP) printf("REP ");
-            if (*p & SREP) printf("SREP ");
-            if (*p & REC) printf("REC ");
-            printf("]\n");
-        }
-#endif
     }
 }
 
