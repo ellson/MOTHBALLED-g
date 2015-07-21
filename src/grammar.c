@@ -3,30 +3,6 @@
 #define NEXT(s,...) char *s##_str=#s;int s##_nxt[]={__VA_ARGS__, NULL}
 
 NEXT(NUL,	    ONE );
-NEXT(ABC,	    ONE );
-NEXT(WS,	    ONE );
-NEXT(LF,	    CR|TWO|EOL|ALT, ONE|EOL|ALT );
-NEXT(CR,	    LF|TWO|EOL|ALT, ONE|EOL|ALT );
-NEXT(DQT,	    ONE );
-NEXT(SQT,	    ONE );
-NEXT(LPN,	    ONE );
-NEXT(RPN,	    ONE );
-NEXT(LAN,	    ONE );
-NEXT(RAN,	    ONE );
-NEXT(LBR,	    ONE );
-NEXT(RBR,	    ONE );
-NEXT(LBE,	    ONE );
-NEXT(RBE,	    ONE );
-NEXT(FSL,	    ONE|ALT, FSL|TWO|COMMENTEOL|ALT, AST|TWO|COMMENTBEG|ALT );
-NEXT(BSL,	    BSL|TWO|ESCAPE|ALT, DQT|TWO|ESCAPE|ALT, SQT|TWO|ESCAPE|ALT, ONE|ALT );
-NEXT(OCT,	    COMMENTBEG );
-NEXT(AST,	    ONE|ALT, FSL|TWO|COMMENTEND|ALT );
-NEXT(CLN,	    CLN|TWO|DISAMBIG|ALT, FSL|TWO|PARENT|ALT, ONE|ALT );
-NEXT(SCN,	    ONE );
-NEXT(EQL,	    ONE );
-NEXT(HAT,	    ONE );
-NEXT(TIC,	    ONE );
-NEXT(TLD,	    ONE );
 NEXT(ACT,	    ACTION|OPT, SUBJECT, ATTRIBUTES|OPT, CONTAINER|OPT, TERM|OPT );
 NEXT(ACTION,	    TLD );
 NEXT(SUBJECT,	    OBJECT|ALT, OBJECT_LIST|ALT );
@@ -35,7 +11,6 @@ NEXT(ATTR_MORE,	    SPACE, ATTR );
 NEXT(CONTAINER,	    LBE, ATTRIBUTES|OPT, CONTENTS|OPT, RBE );
 NEXT(CONTENTS,      ACT|REC, CONTENTS_MORE|REP|OPT );
 NEXT(CONTENTS_MORE, SPACE, ACT|REC );
-NEXT(TERM,	    SCN|OPT );
 NEXT(OBJECT_LIST,   LPN, OBJECT, OBJECT_MORE|REP|OPT, RPN );
 NEXT(OBJECT_MORE,   SPACE, OBJECT );
 NEXT(OBJECT,	    EDGE|ALT, NODE|ALT );
@@ -63,34 +38,35 @@ NEXT(STRING,	    FRAG, FRAG|REP|OPT );
 NEXT(FRAG,	    ABC|ALT, DQFRAG|ALT, SQFRAG|ALT, BSL|TWO|ESCAPE|ALT );
 NEXT(DQFRAG,        DQT, ABC|REP|OPT, DQT );
 NEXT(SQFRAG,        SQT, ABC|REP|OPT, SQT );
-NEXT(SPACE,         WS );  // FIXME
+NEXT(SPACE,         WS );
+NEXT(TERM,	    SCN|OPT );
+NEXT(ABC,	    ONE );
+NEXT(WS,	    ONE );
+NEXT(DQT,	    ONE );
+NEXT(SQT,	    ONE );
+NEXT(LPN,	    ONE );
+NEXT(RPN,	    ONE );
+NEXT(LAN,	    ONE );
+NEXT(RAN,	    ONE );
+NEXT(LBR,	    ONE );
+NEXT(RBR,	    ONE );
+NEXT(LBE,	    ONE );
+NEXT(RBE,	    ONE );
+NEXT(FSL,	    ONE|ALT, FSL|TWO|COMMENTEOL|ALT, AST|TWO|COMMENTBEG|ALT );
+NEXT(BSL,	    BSL|TWO|ESCAPE|ALT, DQT|TWO|ESCAPE|ALT, SQT|TWO|ESCAPE|ALT, ONE|ALT );
+NEXT(OCT,	    COMMENTBEG );
+NEXT(AST,	    ONE|ALT, FSL|TWO|COMMENTEND|ALT );
+NEXT(CLN,	    CLN|TWO|DISAMBIG|ALT, FSL|TWO|PARENT|ALT, ONE|ALT );
+NEXT(SCN,	    ONE );
+NEXT(EQL,	    ONE );
+NEXT(HAT,	    ONE );
+NEXT(TIC,	    ONE );
+NEXT(TLD,	    ONE );
+NEXT(LF,	    CR|TWO|EOL|ALT, ONE|EOL|ALT );
+NEXT(CR,	    LF|TWO|EOL|ALT, ONE|EOL|ALT );
 
 static int *state_next[] = {
     NUL_nxt,
-    ABC_nxt,
-     WS_nxt,
-     LF_nxt,
-     CR_nxt,
-    DQT_nxt,
-    SQT_nxt,
-    LPN_nxt,
-    RPN_nxt,
-    LAN_nxt,
-    RAN_nxt,
-    LBR_nxt,
-    RBR_nxt,
-    LBE_nxt,
-    RBE_nxt,
-    FSL_nxt,
-    BSL_nxt,
-    OCT_nxt,
-    AST_nxt,
-    CLN_nxt,
-    SCN_nxt,
-    EQL_nxt,
-    HAT_nxt,
-    TIC_nxt,
-    TLD_nxt,
     ACT_nxt,
     ACTION_nxt,
     SUBJECT_nxt,
@@ -99,7 +75,6 @@ static int *state_next[] = {
     CONTAINER_nxt,
     CONTENTS_nxt,
     CONTENTS_MORE_nxt,
-    TERM_nxt,
     OBJECT_LIST_nxt,
     OBJECT_MORE_nxt,
     OBJECT_nxt,
@@ -127,35 +102,36 @@ static int *state_next[] = {
     FRAG_nxt,
     DQFRAG_nxt,
     SQFRAG_nxt,
-    SPACE_nxt
+    SPACE_nxt,
+    TERM_nxt,
+    ABC_nxt,
+     WS_nxt,
+    DQT_nxt,
+    SQT_nxt,
+    LPN_nxt,
+    RPN_nxt,
+    LAN_nxt,
+    RAN_nxt,
+    LBR_nxt,
+    RBR_nxt,
+    LBE_nxt,
+    RBE_nxt,
+    FSL_nxt,
+    BSL_nxt,
+    OCT_nxt,
+    AST_nxt,
+    CLN_nxt,
+    SCN_nxt,
+    EQL_nxt,
+    HAT_nxt,
+    TIC_nxt,
+    TLD_nxt,
+     LF_nxt,
+     CR_nxt
 };
 
 static char **state_name[] = {
     &NUL_str,
-    &ABC_str,
-     &WS_str,
-     &LF_str,
-     &CR_str,
-    &DQT_str,
-    &SQT_str,
-    &LPN_str,
-    &RPN_str,
-    &LAN_str,
-    &RAN_str,
-    &LBR_str,
-    &RBR_str,
-    &LBE_str,
-    &RBE_str,
-    &FSL_str,
-    &BSL_str,
-    &OCT_str,
-    &AST_str,
-    &CLN_str,
-    &SCN_str,
-    &EQL_str,
-    &HAT_str,
-    &TIC_str,
-    &TLD_str,
     &ACT_str,
     &ACTION_str,
     &SUBJECT_str,
@@ -164,7 +140,6 @@ static char **state_name[] = {
     &CONTAINER_str,
     &CONTENTS_str,
     &CONTENTS_MORE_str,
-    &TERM_str,
     &OBJECT_LIST_str,
     &OBJECT_MORE_str,
     &OBJECT_str,
@@ -192,7 +167,32 @@ static char **state_name[] = {
     &FRAG_str,
     &DQFRAG_str,
     &SQFRAG_str,
-    &SPACE_str
+    &SPACE_str,
+    &TERM_str,
+    &ABC_str,
+     &WS_str,
+    &DQT_str,
+    &SQT_str,
+    &LPN_str,
+    &RPN_str,
+    &LAN_str,
+    &RAN_str,
+    &LBR_str,
+    &RBR_str,
+    &LBE_str,
+    &RBE_str,
+    &FSL_str,
+    &BSL_str,
+    &OCT_str,
+    &AST_str,
+    &CLN_str,
+    &SCN_str,
+    &EQL_str,
+    &HAT_str,
+    &TIC_str,
+    &TLD_str,
+     &LF_str,
+     &CR_str,
 };
 
 // Every character is grouped into exactly one state_t

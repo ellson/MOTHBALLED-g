@@ -24,8 +24,10 @@ emit_node() {
 indx=0
 sindx=0
 prev=""
+nodelist=""
 while read op t h x x props; do
     if test "$op" != "<"; then
+	nodelist+=" $op"
         NODE[$op]=""
         NAME[$op]=""
         if test "$prev" != ""; then
@@ -59,17 +61,14 @@ cat <<EOF
 EOF
 
 echo "char state_names[] = {"
-(
-for n in ${!NODE[@]}; do
+for n in $nodelist; do
     printf "  /* %3s %-15s */ %s,\n" "${SPOS[$n]}" "$n" "${NAME[$n]}"
 done
-) | sort -n -k2
 echo "};"
 echo ""
 
 echo "unsigned short state_machine[] = {"
-(
-for n in ${!NODE[@]}; do
+for n in $nodelist; do
     printf "/* %3s %-15s */ " "${POS[$n]}" "$n"
     fieldc=0
     for i in ${NODE[$n]}; do
@@ -86,9 +85,13 @@ for n in ${!NODE[@]}; do
     if test $fieldc -ne 0; then
         echo -n ","
     fi
-    echo "${SPOS[$n]}<<7,"
+    spos=${SPOS[$n]}
+    if test $spos -eq 0; then
+	echo "0,"
+    else
+        echo "${spos}<<7,"
+    fi
 done
-) | sort -n -k2
 echo "};"
 echo ""
 echo "#define state_machine_start ${POS[ACT]}"
