@@ -15,24 +15,34 @@ static char *get_name(int si) {
 			         // ... strings always start on even index, so LSB is alwways 0
 }
 
+static void print_edge(int ei, int hi) {
+    printf("< %s %s >", get_name(ei), get_name(hi));
+}
+
+static void print_properties(int si) {
+    if (si & (ALT|OPT|SREP|REP|REC)) {
+        printf(" [ ");
+        if (si & ALT) printf("ALT ");
+        if (si & OPT) printf("OPT ");
+        if (si & SREP) printf("SREP ");
+        if (si & REP) printf("REP ");
+        if (si & REC) printf("REC ");
+        printf("]");
+    }
+}
+
 static void printg_next(int si, int indent) {
-    char *tail;
     int i, ni;
     short nxt;
 
-    tail = get_name(si);
     while (1) {
         nxt = state_machine[si];
         ni = nxt & 0xFF;
         if (! ni) break;
         for (i = indent; i--; ) putc (' ', stdout);
-        printf("< %s %s > [ ", tail, get_name(ni));
-        if (nxt & ALT) printf("ALT ");
-        if (nxt & OPT) printf("OPT ");
-        if (nxt & SREP) printf("SREP ");
-        if (nxt & REP) printf("REP ");
-        if (nxt & REC) printf("REC ");
-        printf("] {\n");
+        print_edge(si, ni);
+        print_properties(nxt);
+        printf(" {\n");
 	if (! (nxt & REC)) printg_next(ni, indent+2);
         for (i = indent; i--; ) putc (' ', stdout);
         printf("}\n");
@@ -59,24 +69,21 @@ void dumpg (void) {
             nxt = state_machine[si];
             ni = nxt & 0xFF;
             if (! ni) break;
-	    printf("    < %s %s > [ ", tail, get_name(ni));
-            if (nxt & ALT) printf("ALT ");
-            if (nxt & OPT) printf("OPT ");
-            if (nxt & SREP) printf("SREP ");
-            if (nxt & REP) printf("REP ");
-            if (nxt & REC) printf("REC ");
-            printf("]\n");
+	    printf("    ");
+            print_edge(si, ni);
+            print_properties(nxt);
+            printf("\n");
 	    si++;
 	}
         si++;
     }
 }
 
-#if 0
 static unsigned char *inp, c;
 static int in;
 
 static int parse_next(int s) {
+#if 0
     int *pn, n, rc;
 
 #if 1
@@ -114,6 +121,8 @@ static int parse_next(int s) {
 	if      ( (n & REP)) { while (( rc = parse_next(n) ) == 0); break; }
     }
     return rc;
+#endif
+return 1;
 }
 
 int parse(unsigned char *input) {
@@ -122,11 +131,6 @@ int parse(unsigned char *input) {
     in = char2state[c];
     return parse_next(ACT);
 }
-#else
-int parse(unsigned char *input) {
-    return 1;
-}
-#endif
 
 
 #if 0
