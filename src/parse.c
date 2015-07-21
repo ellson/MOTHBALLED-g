@@ -62,7 +62,7 @@ void dumpg (void) {
 	    printf("    < %s %s > [ ", tail, get_name(ni));
             if (nxt & ALT) printf("ALT ");
             if (nxt & OPT) printf("OPT ");
-            if (nxt & SREP) printf("SREP");
+            if (nxt & SREP) printf("SREP ");
             if (nxt & REP) printf("REP ");
             if (nxt & REC) printf("REC ");
             printf("]\n");
