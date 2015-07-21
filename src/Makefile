@@ -11,11 +11,13 @@ main.o: main.c parse.h
 grammar.png: main g2gv.sh
 	./main -g | ./g2gv.sh | dot -Tpng -o grammar.png
 
-grammar.g: main 
+# grammar.g can be built by main, but need to avoid the dependency loop
+# and allow hand modifications to be made locally and stored in git
+grammar.g:
 	./main -d >grammar.g
 
-grammar.c.in: grammar.g jacc.sh
-	./jacc.sh <grammar.g >grammar.c.in
+ngrammar.c: grammar.g gacc.sh
+	./gacc.sh <grammar.g >ngrammar.c
 
 clean:
-	rm -f *.o main grammar.png grammar.g grammar.c.in
+	rm -f *.o main grammar.png ngrammar.c
