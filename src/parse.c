@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "grammar.c"
-#include "parse.h"
+#include "lexer.c"
 #include "list.h"
+#include "parse.h"
 
 static char *get_name(int si) {
     unsigned short *p;
