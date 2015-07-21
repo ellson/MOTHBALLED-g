@@ -2,7 +2,7 @@ CFLAGS = -g -O0 -Wall
 
 main: parse.o list.o main.o
 
-parse.o: grammar.c parse.c grammar.h parse.h list.h
+parse.o: grammar.c parse.c parse.h list.h
 
 list.o: list.c list.h
 

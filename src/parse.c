@@ -6,7 +6,17 @@
 #include "parse.h"
 #include "list.h"
 
-static void printg_next(int s, int indent) {
+static char *get_name(int si) {
+    unsigned short *p;
+
+    p = &state_machine[si];
+    while (*p & 0xFF) p++;  // traverse to terminator to find the index of the name string
+    return &state_names[*p >> 7];   // ... from the high order byte of the terminator
+			         // ... strings always start on even index, so LSB is alwways 0
+}
+
+static void printg_next(char si, int indent) {
+#if 0
     int *pn, ss, n, nn, i;
     char *s_name, *n_name;
 
@@ -25,15 +35,39 @@ static void printg_next(int s, int indent) {
         for (i = indent; i--; ) putc (' ', stdout);
 	printf("}\n");
     }
+#endif
 }
 
 // recursively walk the grammar - tests all possible transitions
 void printg (void) {
-    printg_next(ACT, 0);
+    printg_next(state_machine_start, 0);
 }
 
 // just dump the grammar,  should result in same graph as printg()
 void dumpg (void) {
+    int si, ni;
+    short nxt;
+    char *tail;
+
+    si = 0;
+    while (si < sizeof(state_machine)/sizeof(short)) {
+        tail = get_name(si);
+        printf("%s\n", tail);
+        while (1) {
+            nxt = state_machine[si];
+            ni = nxt & 0xFF;
+            if (! ni) break;
+	    printf("    < %s %s > [ ", tail, get_name(ni));
+            if (nxt & ALT) printf("ALT ");
+            if (nxt & OPT) printf("OPT ");
+            if (nxt & SREP) printf("SREP");
+            if (nxt & REP) printf("REP ");
+            if (nxt & REC) printf("REC ");
+            printf("]\n");
+	    si++;
+	}
+        si++;
+#if 0
     int i, *p;
     for (i=0; i < sizeof(state_next)/sizeof(int*); i++) {
         printf("%s\n", *state_name[i]);
@@ -42,12 +76,15 @@ void dumpg (void) {
             if (*p & ALT) printf("ALT ");
             if (*p & OPT) printf("OPT ");
             if (*p & REP) printf("REP ");
+            if (*p & SREP) printf("SREP ");
             if (*p & REC) printf("REC ");
             printf("]\n");
         }
+#endif
     }
 }
 
+#if 0
 static unsigned char *inp, c;
 static int in;
 
@@ -97,6 +134,12 @@ int parse(unsigned char *input) {
     in = char2state[c];
     return parse_next(ACT);
 }
+#else
+int parse(unsigned char *input) {
+    return 1;
+}
+#endif
+
 
 #if 0
 typedef struct {

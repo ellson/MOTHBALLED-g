@@ -1,35 +1,4 @@
 NUL
-ABC
-WS
-LF
-    < LF CR > [ ALT ]
-CR
-    < CR LF > [ ALT ]
-DQT
-SQT
-LPN
-RPN
-LAN
-RAN
-LBR
-RBR
-LBE
-RBE
-FSL
-BSL
-    < BSL BSL > [ ALT ]
-    < BSL DQT > [ ALT ]
-    < BSL SQT > [ ALT ]
-OCT
-AST
-CLN
-    < CLN FSL > [ ALT ]
-    < CLN FSL > [ ALT ]
-SCN
-EQL
-HAT
-TIC
-TLD
 ACT
     < ACT ACTION > [ OPT ]
     < ACT SUBJECT > [ ]
@@ -60,8 +29,6 @@ CONTENTS
 CONTENTS_MORE
     < CONTENTS_MORE SPACE > [ ]
     < CONTENTS_MORE ACT > [ REC ]
-TERM
-    < TERM SCN > [ OPT ]
 OBJECT_LIST
     < OBJECT_LIST LPN > [ ]
     < OBJECT_LIST OBJECT > [ ]
@@ -104,7 +71,7 @@ ANCESTOR_MEMBER
     < ANCESTOR_MEMBER PORT > [ OPT ]
 ANCESTOR_MORE
     < ANCESTOR_MORE FSL > [ ]
-    < ANCESTOR_MORE FSL > [ ]
+    < ANCESTOR_MORE CLN > [ ]
 FAMILY_MEMBER
     < FAMILY_MEMBER NODE > [ ]
     < FAMILY_MEMBER DESCENDENT > [ OPT REP ]
@@ -113,7 +80,7 @@ DESCENDENT
     < DESCENDENT FSL > [ ]
     < DESCENDENT NODE > [ ]
 PORT
-    < PORT FSL > [ ]
+    < PORT CLN > [ ]
     < PORT PORTID > [ ]
 NODE
     < NODE NODEID > [ ]
@@ -158,3 +125,36 @@ SQFRAG
     < SQFRAG SQT > [ ]
 SPACE
     < SPACE WS > [ ]
+TERM
+    < TERM SCN > [ OPT ]
+ABC
+WS
+DQT
+SQT
+LPN
+RPN
+LAN
+RAN
+LBR
+RBR
+LBE
+RBE
+FSL
+BSL
+    < BSL BSL > [ ALT ]
+    < BSL DQT > [ ALT ]
+    < BSL SQT > [ ALT ]
+OCT
+AST
+CLN
+    < CLN CLN > [ ALT ]
+    < CLN FSL > [ ALT ]
+SCN
+EQL
+HAT
+TIC
+TLD
+LF
+    < LF CR > [ ALT ]
+CR
+    < CR LF > [ ALT ]

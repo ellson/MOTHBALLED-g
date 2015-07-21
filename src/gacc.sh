@@ -52,16 +52,21 @@ if test "$prev" != ""; then
 fi
 
 ####
-#cat <<EOF
-##define ALT 1<<15
-##define REP 1<<14
-##define SREP 1<<13
-##define OPT 1<<12
-##define REC 1<<11
-#
-#EOF
 
-printf "#include \"grammar.h\"\n\n"
+cat <<EOF
+/*
+ * This is a generated file.  Do not edit.
+ */
+
+typedef enum {
+    ALT    = 1<<15,      // alternive - one must be satisfied
+    OPT    = 1<<14,      // optional
+    REP    = 1<<13,      // repeatable   ( REP|OPT means 0 or more )
+    SREP   = 1<<12,      // ... with SPACE separators
+    REC    = 1<<11       // recursion
+} props_t;
+
+EOF
 
 ####
 printf "char state_names[] = {"
@@ -122,4 +127,13 @@ done
 printf "};\n\n"
 
 ####
-printf "#define state_machine_start %s\n" "${POS[ACT]}"
+printf "#define state_machine_start %s\n\n" "${POS[ACT]}"
+
+
+####
+printf "typedef enum {\n"
+for n in $nodelist; do
+    printf "    %15s = %s\n" "$n" "${POS[$n]},"
+done
+printf "} state_t;\n\n"
+
