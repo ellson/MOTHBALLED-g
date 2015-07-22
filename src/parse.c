@@ -31,7 +31,7 @@ static void printg_next(int si, int indent) {
     char *p, *tp, *hp, prop;
     int i, hi;
 
-    p = &state_machine[si];
+    p = &state_machine[si<<1];
     tp = p;
     while ((hi = *p++)) {
         prop = *p++;
@@ -57,7 +57,7 @@ void dumpg (void) {
     char *p, *tp, *hp, prop;
 
     si = 0;
-    p = &state_machine[si];
+    p = &state_machine[si<<1];
     while (si < sizeof(state_machine)) {
         tp = p;
         printf("%s\n", get_name(tp));
