@@ -27,20 +27,20 @@ static void print_prop(char prop) {
     }
 }
 
-static void printg_next(int si, int indent) {
-    char *p, *tp, *hp, prop;
+static void printg_next(char *p, int indent) {
+    char *tp, *hp, prop;
     int i, hi;
 
-    p = &state_machine[si<<1];
     tp = p;
-    while ((hi = *p++)) {
-        prop = *p++;
-        hp = &state_machine[hi<<1];
+    while ((hi = *p)) {
+        hp = p+(hi<<1);
+        prop = *++p;
+        p++;
         for (i = indent; i--; ) putc (' ', stdout);
         print_edge(tp, hp);
         print_prop(prop);
         printf(" {\n");
-	if (! (prop & REC)) printg_next(hi, indent+2);
+	if (! (prop & REC)) printg_next(hp, indent+2);
         for (i = indent; i--; ) putc (' ', stdout);
         printf("}\n");
     }
@@ -48,7 +48,7 @@ static void printg_next(int si, int indent) {
 
 // recursively walk the grammar - tests all possible transitions
 void printg (void) {
-    printg_next(state_machine_start, 0);
+    printg_next(&state_machine[ACT<<1], 0);
 }
 
 // just dump the grammar linearly,  should result in same logical graph as printg()
@@ -57,20 +57,21 @@ void dumpg (void) {
     char *p, *tp, *hp, prop;
 
     si = 0;
-    p = &state_machine[si<<1];
+    p = &state_machine[0];
     while (si < sizeof(state_machine)) {
         tp = p;
         printf("%s\n", get_name(tp));
-        while ((hi = *p++)) {
-            prop = *p++;
-	    hp = &state_machine[hi<<1];
+        while ((hi = *p)) {
+            hp = p+(hi<<1);
+            prop = *++p;
+            p++;
 	    printf("    ");
             print_edge(tp, hp);
             print_prop(prop);
             printf("\n");
             si+=2;
 	}
-	p++;
+	p+=2;
         si+=2;
     }
 }

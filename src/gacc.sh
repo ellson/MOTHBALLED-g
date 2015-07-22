@@ -101,7 +101,8 @@ printf "*/\n\n"
 ####
 printf "char state_machine[] = {\n"
 for n in $nodelist; do
-    printf "    /* %3s %15s */  " "${POS[$n]}" "$n"
+    tpos=${POS[$n]}
+    printf "    /* %3s %15s */  " "$tpos" "$n"
     fieldc=0
     for i in ${NODE[$n]}; do
 	if [ -z ${POS[$i]} ]; then
@@ -110,7 +111,8 @@ for n in $nodelist; do
     	    if test $fieldc -ne 0; then
 	        printf ","
             fi
-	    printf "%s" "${POS[$i]},0" 
+            hpos=${POS[$i]}
+	    printf "%d,0" $((hpos-tpos)) 
         fi
         ((fieldc++))
     done
