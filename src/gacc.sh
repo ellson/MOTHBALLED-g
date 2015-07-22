@@ -109,15 +109,16 @@ for n in $nodelist; do
 	    printf "|%s" "$i"
 	else
     	    if test $fieldc -ne 0; then
-	        printf ","
+	        printf ", "
             fi
             hpos=${POS[$i]}
 	    printf "%d,0" $((hpos-tpos)) 
+            ((tpos++))
+            ((fieldc++))
         fi
-        ((fieldc++))
     done
     if test $fieldc -ne 0; then
-        printf ","
+        printf ", "
     fi
     spos=${SPOS[$n]}
     printf "0,$((spos/2)),\n"
