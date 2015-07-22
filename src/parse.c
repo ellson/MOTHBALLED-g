@@ -54,6 +54,25 @@ void printg (void) {
     printg_next(&state_machine[ACT<<1], 0);
 }
 
+static void print_chars ( char *p ) {
+    int i, j, si;
+
+    si = (p - state_machine)>>1;
+    j=0;
+    for (i=0; i<0x100; i++) {
+        if (si == char2state[i]) {
+	    if (++j < 16) {
+	         putc (' ', stdout);
+            }
+            else {
+	         putc ('\n', stdout);
+	         j = 0;
+	    }
+            printf("%02x", i);
+	}
+    }
+}
+
 // just dump the grammar linearly,  should result in same logical graph as printg()
 void dumpg (void) {
     int hi;
@@ -62,17 +81,22 @@ void dumpg (void) {
     p = state_machine;
     while (p < (state_machine + sizeof(state_machine))) {
         tp = p;
-        printf("%s\n", get_name(tp));
-        while ((hi = *p++)) {
-            prop = *p++;
-            hp = p+(hi<<1);
-
-	    printf("    ");
-            print_edge(tp, hp);
-            print_prop(prop);
-            printf("\n");
+        if (*p) {
+            while ((hi = *p++)) {
+                prop = *p++;
+                hp = p+(hi<<1);
+                print_edge(tp, hp);
+                print_prop(prop);
+                printf("\n");
+	    }
+	    p++;
 	}
-	p++;
+	else {
+	    printf("%s {", get_name(p));
+            print_chars(p);
+	    printf(" }\n");
+	    p+=2;	
+	}
     }
 }
 
