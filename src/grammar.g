@@ -28,16 +28,13 @@ OBJECT
     < OBJECT NODE > [ ALT ]
 EDGE
     < EDGE LAN >
-    < EDGE TAIL >
-    < EDGE HEAD > [ SREP ]
+    < EDGE LEG >
+    < EDGE LEG > [ SREP ]
     < EDGE RAN >
     < EDGE DISAMBIGUATOR > [ OPT ]
-TAIL
-    < TAIL ENDPOINT > [ ALT ]
-    < TAIL ENDPOINT_SET > [ ALT ]
-HEAD
-    < HEAD ENDPOINT > [ ALT ]
-    < HEAD ENDPOINT_SET > [ ALT ]
+LEG
+    < LEG ENDPOINT_SET > [ ALT ]
+    < LEG ENDPOINT > [ ALT ]
 ENDPOINT_SET
     < ENDPOINT_SET LPN >
     < ENDPOINT_SET ENDPOINT > [ SREP ]
