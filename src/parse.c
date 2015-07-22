@@ -6,47 +6,43 @@
 #include "list.h"
 #include "parse.h"
 
-static char *get_name(int si) {
-    unsigned short *p;
-
-    p = &state_machine[si];
-    while (*p & 0xFF) p++;  // traverse to terminator to find the index of the name string
-    return &state_names[*p >> 7];   // ... from the high order byte of the terminator
-			         // ... strings always start on even index, so LSB is alwways 0
+static char *get_name(char *p) {
+    while (*p++) p++;                   // traverse to terminator
+    return &state_names[(*p<<1)&0x1FF]; // get index for string from the byte after the terminator
 }
 
-static void print_edge(int ei, int hi) {
-    printf("< %s %s >", get_name(ei), get_name(hi));
+static void print_edge(char *tp, char *hp) {
+    printf("< %s %s >", get_name(tp), get_name(hp));
 }
 
-static void print_properties(int si) {
-    if (si & (ALT|OPT|SREP|REP|REC)) {
+static void print_prop(char prop) {
+    if (prop & (ALT|OPT|SREP|REP|REC)) {
         printf(" [ ");
-        if (si & ALT) printf("ALT ");
-        if (si & OPT) printf("OPT ");
-        if (si & SREP) printf("SREP ");
-        if (si & REP) printf("REP ");
-        if (si & REC) printf("REC ");
+        if (prop & ALT) printf("ALT ");
+        if (prop & OPT) printf("OPT ");
+        if (prop & SREP) printf("SREP ");
+        if (prop & REP) printf("REP ");
+        if (prop & REC) printf("REC ");
         printf("]");
     }
 }
 
 static void printg_next(int si, int indent) {
-    int i, ni;
-    short nxt;
+    char *p, *tp, *hp, prop;
+    int i, hi;
 
-    while (1) {
-        nxt = state_machine[si];
-        ni = nxt & 0xFF;
-        if (! ni) break;
+    p = &state_machine[si];
+    tp = p;
+    while ((hi = *p++)) {
+        prop = *p++;
+        hp = &state_machine[hi<<1];
         for (i = indent; i--; ) putc (' ', stdout);
-        print_edge(si, ni);
-        print_properties(nxt);
+        print_edge(tp, hp);
+        print_prop(prop);
         printf(" {\n");
-	if (! (nxt & REC)) printg_next(ni, indent+2);
+	if (! (prop & REC)) printg_next(hi, indent+2);
         for (i = indent; i--; ) putc (' ', stdout);
         printf("}\n");
-        si++;
     }
 }
 
@@ -57,25 +53,25 @@ void printg (void) {
 
 // just dump the grammar linearly,  should result in same logical graph as printg()
 void dumpg (void) {
-    int si, ni;
-    short nxt;
-    char *tail;
+    int si, hi;
+    char *p, *tp, *hp, prop;
 
     si = 0;
-    while (si < sizeof(state_machine)/sizeof(short)) {
-        tail = get_name(si);
-        printf("%s\n", tail);
-        while (1) {
-            nxt = state_machine[si];
-            ni = nxt & 0xFF;
-            if (! ni) break;
+    p = &state_machine[si];
+    while (si < sizeof(state_machine)) {
+        tp = p;
+        printf("%s\n", get_name(tp));
+        while ((hi = *p++)) {
+            prop = *p++;
+	    hp = &state_machine[hi<<1];
 	    printf("    ");
-            print_edge(si, ni);
-            print_properties(nxt);
+            print_edge(tp, hp);
+            print_prop(prop);
             printf("\n");
-	    si++;
+            si+=2;
 	}
-        si++;
+	p++;
+        si+=2;
     }
 }
 

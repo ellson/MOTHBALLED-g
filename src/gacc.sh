@@ -40,7 +40,7 @@ while read op t h x x props; do
         NODE[$t]+="$h"
         for p in $props; do
             if test "$p" != "]"; then
-	        NODE[$t]+=" |$p"
+	        NODE[$t]+=" $p"
             fi
         done
 	((indx++))
@@ -59,11 +59,11 @@ cat <<EOF
  */
 
 typedef enum {
-    ALT    = 1<<15,      // alternive - one must be satisfied
-    OPT    = 1<<14,      // optional
-    REP    = 1<<13,      // repeatable   ( REP|OPT means 0 or more )
-    SREP   = 1<<12,      // ... with SPACE separators
-    REC    = 1<<11       // recursion
+    ALT    = 1<<6,      // alternive - one must be satisfied
+    OPT    = 1<<5,      // optional
+    REP    = 1<<4,      // repeatable   ( REP|OPT means 0 or more )
+    SREP   = 1<<3,      // ... with SPACE separators
+    REC    = 1<<2       // recursion
 } props_t;
 
 EOF
@@ -81,7 +81,7 @@ for n in $nodelist; do
     fieldc=0
     for i in ${NODE[$n]}; do
 	if [ -z ${POS[$i]} ]; then
-	    printf "%s" "$i"
+	    printf "|%s" "$i"
 	else
     	    if test $fieldc -eq 0; then
                 printf "    %15s ::= " "$n"
@@ -99,30 +99,26 @@ done
 printf "*/\n\n"
 
 ####
-printf "unsigned short state_machine[] = {\n"
+printf "char state_machine[] = {\n"
 for n in $nodelist; do
     printf "    /* %3s %15s */  " "${POS[$n]}" "$n"
     fieldc=0
     for i in ${NODE[$n]}; do
 	if [ -z ${POS[$i]} ]; then
-	    printf "%s" "$i"
+	    printf "|%s" "$i"
 	else
     	    if test $fieldc -ne 0; then
 	        printf ","
             fi
-            ((fieldc++))
-	    printf "%s" "${POS[$i]}" 
+	    printf "%s" "${POS[$i]},0" 
         fi
+        ((fieldc++))
     done
     if test $fieldc -ne 0; then
         printf ","
     fi
     spos=${SPOS[$n]}
-    if test $spos -eq 0; then
-	printf "0,\n"
-    else
-        printf "${spos}<<7,\n"
-    fi
+    printf "0,$((spos/2)),\n"
 done
 printf "};\n\n"
 
