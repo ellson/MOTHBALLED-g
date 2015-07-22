@@ -1,5 +1,20 @@
 #!/bin/bash
 
+if test $# -lt 1; then
+   echo "Usage: $0 <grammar spec in g>" >&2
+   exit 1
+fi
+
+ifn="$1"
+if test ! -r "$ifn"; then
+   echo "$0 : \"$ifn\" is not readable"
+   exit 1
+fi
+
+of=${ifn%.g}
+ofh=${of}.h
+ofc=${of}.c
+
 typeset -A NODE POS SPOS NAME
 
 emit_node() {
@@ -46,14 +61,14 @@ while read op t h x x props; do
 	((indx++))
         NODE[$t]+=" "
     fi
-done
+done <$ifn
 if test "$prev" != ""; then
     emit_node
 fi
 
 ####
 
-cat <<EOF
+cat >$ofh <<EOF
 /*
  * This is a generated file.  Do not edit.
  */
@@ -68,14 +83,24 @@ typedef enum {
 
 EOF
 
+cat >$ofc <<EOF
+/*
+ * This is a generated file.  Do not edit.
+ */
+
+EOF
+
 ####
+(
 printf "char state_names[] = {"
 for n in $nodelist; do
     printf "    /* %3s */  %s,\n" "${SPOS[$n]}" "${NAME[$n]}"
 done
 printf "};\n\n"
+) >>$ofc
 
 ####
+(
 printf "/* EBNF (omitting terminals)\n"
 for n in $nodelist; do
     fieldc=0
@@ -97,8 +122,10 @@ for n in $nodelist; do
     fi
 done
 printf "*/\n\n"
+) >>$ofc
 
 ####
+(
 printf "char state_machine[] = {\n"
 for n in $nodelist; do
     tpos=${POS[$n]}
@@ -137,15 +164,19 @@ for n in $nodelist; do
     printf "0,$((spos/2)),\n"
 done
 printf "};\n\n"
+) >>$ofc
 
 ####
+(
 printf "#define state_machine_start %s\n\n" "${POS[ACT]}"
-
+) >>$ofc
 
 ####
+(
 printf "typedef enum {\n"
 for n in $nodelist; do
     printf "    %15s = %s\n" "$n" "${POS[$n]},"
 done
 printf "} state_t;\n\n"
+) >>$ofh
 

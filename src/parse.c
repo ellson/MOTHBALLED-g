@@ -2,9 +2,12 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "lexer.c"
 #include "list.h"
 #include "parse.h"
+#include "grammar.h"
+
+#include "grammar.c"
+#include "lexer.c"
 
 static char *get_name(char *p) {
     while (*p++) p++;                   // traverse to terminator

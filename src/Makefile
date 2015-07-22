@@ -16,8 +16,8 @@ grammar.png: main g2gv.sh
 grammar.g:
 	./main -d >grammar.g
 
-grammar.c: grammar.g gacc.sh
-	./gacc.sh <grammar.g >grammar.c
+grammar.c grammar.h: grammar.g gacc.sh
+	./gacc.sh grammar.g
 
 clean:
 	rm -f *.o main grammar.png grammar.c

@@ -1,5 +1,3 @@
-#include "grammar.c"
-
 // Every character is grouped into exactly one state_t
 // All the characters in a state_t are treated identially by the parser
 //
