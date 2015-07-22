@@ -32,10 +32,10 @@ static void printg_next(char *p, int indent) {
     int i, hi;
 
     tp = p;
-    while ((hi = *p)) {
+    while ((hi = *p++)) {
+        prop = *p++;
         hp = p+(hi<<1);
-        prop = *++p;
-        p++;
+
         for (i = indent; i--; ) putc (' ', stdout);
         print_edge(tp, hp);
         print_prop(prop);
@@ -53,26 +53,23 @@ void printg (void) {
 
 // just dump the grammar linearly,  should result in same logical graph as printg()
 void dumpg (void) {
-    int si, hi;
+    int hi;
     char *p, *tp, *hp, prop;
 
-    si = 0;
-    p = &state_machine[0];
-    while (si < sizeof(state_machine)) {
+    p = state_machine;
+    while (p < (state_machine + sizeof(state_machine))) {
         tp = p;
         printf("%s\n", get_name(tp));
-        while ((hi = *p)) {
+        while ((hi = *p++)) {
+            prop = *p++;
             hp = p+(hi<<1);
-            prop = *++p;
-            p++;
+
 	    printf("    ");
             print_edge(tp, hp);
             print_prop(prop);
             printf("\n");
-            si+=2;
 	}
-	p+=2;
-        si+=2;
+	p++;
     }
 }
 

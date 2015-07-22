@@ -112,8 +112,8 @@ for n in $nodelist; do
 	        printf ", "
             fi
             hpos=${POS[$i]}
-	    printf "%d,0" $((hpos-tpos)) 
             ((tpos++))
+	    printf "%d,0" $((hpos-tpos)) 
             ((fieldc++))
         fi
     done
