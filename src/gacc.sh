@@ -104,20 +104,33 @@ for n in $nodelist; do
     tpos=${POS[$n]}
     printf "    /* %3s %15s */  " "$tpos" "$n"
     fieldc=0
+    propc=0
     for i in ${NODE[$n]}; do
 	if [ -z ${POS[$i]} ]; then
-	    printf "|%s" "$i"
+            if test $propc -eq 0; then
+                printf "%s" "$i"
+	    else
+	        printf "|%s" "$i"
+            fi
+            ((propc++))
 	else
     	    if test $fieldc -ne 0; then
+                if test $propc -eq 0; then
+                    printf "0"
+                fi
 	        printf ", "
             fi
+            propc=0
             hpos=${POS[$i]}
             ((tpos++))
-	    printf "%d,0" $((hpos-tpos)) 
+	    printf "%d," $((hpos-tpos)) 
             ((fieldc++))
         fi
     done
     if test $fieldc -ne 0; then
+        if test $propc -eq 0; then
+            printf "0"
+        fi
         printf ", "
     fi
     spos=${SPOS[$n]}
