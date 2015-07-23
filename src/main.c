@@ -9,15 +9,21 @@ unsigned char *test=(unsigned char*)"<aa bb cc>";
 
 int main (int argc, char *argv[]) {
     unsigned char *inp;
-    int rc;
+    int rc, i;
 
-    if (argc > 1 && strcmp(argv[1], "-g") == 0) {
-        printg();
-        return 0;
-    }
-    if (argc > 1 && strcmp(argv[1], "-d") == 0) {
-        dumpg();
-        return 0;
+// FIXME - do options properly
+    for (i=0; i<argc; i++) {
+        if (strcmp(argv[1], "-s") == 0) {
+	    set_style();
+        }
+        if (strcmp(argv[1], "-g") == 0) {
+            printg();
+	    return 0;
+        }
+        if (strcmp(argv[1], "-d") == 0) {
+            dumpg();
+	    return 0;
+        }
     }
 
     inp = test;

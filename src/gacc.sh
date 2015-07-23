@@ -25,14 +25,14 @@ indx=0
 sindx=0
 
 sm_node() {
-    if test "$state" != ""; then   # if there was a state still unterminated
-        # add terminator
-        STATE_NEXT[$state]+=" ,0"
-        ((indx++))
-        # add index to states's name (always on even addres)
-        STATE_NEXT[$state]+=",$(( ${SPOS[$state]} / 2))"
-        ((indx++))
-    fi
+#    if test "$state" != ""; then   # if there was a state still unterminated
+#        # add terminator
+#        STATE_NEXT[$state]+=",0 "
+#        ((indx++))
+#        # add index to states's name (always on even addres)
+#        STATE_NEXT[$state]+=",$(( ${SPOS[$state]} / 2))"
+#        ((indx++))
+#    fi
 
     state=$1
     statelist+=" $state"
@@ -72,16 +72,17 @@ sm_list_elem() {
 }
 
 sm_prop() {
-        PROPS[$1]=""
-        if test "${STATE_PROPS[$indx]}" = "0"; then
-            STATE_PROPS[$indx]="$1"
-        else
-            STATE_PROPS[$indx]+="|$1"
-        fi
+    PROPS[$1]=""
+    if test "${STATE_PROPS[$indx]}" = "0"; then
+        STATE_PROPS[$indx]="$1"
+    else
+        STATE_PROPS[$indx]+="|$1"
+    fi
 }
 
 sm_cont() {
     for i in $*; do
+# printf "%s %s %s\n" "$i" "$state" "$indx"
         CHARMAP["$i"]=$state
     done
 }
@@ -190,21 +191,39 @@ printf "};\n\n"
 
 ####
 (
+printf "char char2state[] = {"
+for msb in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
+    printf "\n /* ${msb}0 */  "
+    for lsb in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
+	printf " ${CHARMAP[${msb}${lsb}]}"
+    done
+done
+printf "\n};\n\n"
+) >>$ofc
+
+####
+(
 printf "/* EBNF (omitting terminals)\n"
 for s in $statelist; do
     fieldc=0
     for i in ${STATE_NEXT[$s]}; do
-	if test "${POS[$i]}" != ""; then
-	    printf "|%s" "$i"
-	else
-    	    if test $fieldc -eq 0; then
-                printf "    %15s ::= " "$s"
-	    else
-	        printf " "
-            fi
-            ((fieldc++))
-	    printf "%s" "$i" 
+        if test $fieldc -eq 0; then
+            printf "    %15s ::= " "$s"
         fi
+        (( fieldc++  ))
+	printf " %s" "$i"
+        printf "%s" "${STATE_PROPS[$i]}";
+#	if test "${POS[$i]}" != ""; then
+#	    printf "|%s" "$i"
+#	else
+#    	    if test $fieldc -eq 0; then
+#                printf "    %15s ::= " "$s"
+#	    else
+#	        printf " "
+#            fi
+#            ((fieldc++))
+#	    printf "%s" "$i" 
+#       fi
     done
     if test $fieldc -ne 0; then
         printf "\n"

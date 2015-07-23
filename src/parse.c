@@ -9,13 +9,28 @@
 #include "grammar.c"
 #include "lexer.c"
 
+#define styleLAN sstyle?"< ":"<"
+#define styleRAN sstyle?"\n>\n":">"
+#define styleLPN sstyle?"\n  ( ":"("
+#define styleRPN sstyle?"\n  )\n":")"
+#define styleLBR sstyle?"\n  [ ":"["
+#define styleRBR sstyle?"\n  ]\n":"]"
+#define styleLBE sstyle?"\n  { ":"{"
+#define styleRBE sstyle?"\n  }\n":"}"
+
+static int sstyle=0;
+
+void set_sstyle (void) { 
+    sstyle=1;
+}
+
 static char *get_name(char *p) {
     while (*p++) p++;                   // traverse to terminator
     return &state_names[(*p<<1)&0x1FF]; // get index for string from the byte after the terminator
 }
 
-static void print_edge(char *tp, char *hp) {
-    printf("<%s %s>", get_name(tp), get_name(hp));
+static void print_edge( char *tail, char *head ) {
+    printf("%s %s %s %s", styleLAN, tail, head, styleRAN);
 }
 
 static void print_attr ( char attr, char *name, int *cnt ) {
@@ -30,13 +45,14 @@ static void print_prop(char prop) {
 
     if (prop & (ALT|OPT|SREP|REP|REC)) {
         cnt=0;
+        printf("%s", styleLBR);
         putc ('[',stdout);
         print_attr( prop & ALT, "ALT", &cnt);
         print_attr( prop & OPT, "OPT", &cnt);
         print_attr( prop & SREP, "SREP", &cnt);
         print_attr( prop & REP, "REP", &cnt);
         print_attr( prop & REC, "REC", &cnt);
-        putc (']',stdout);
+        printf("%s", styleRBR);
     }
 }
 
@@ -52,10 +68,10 @@ static void printg_next(char *p, int indent) {
         for (i = indent; i--; ) putc (' ', stdout);
         print_edge(tp, hp);
         print_prop(prop);
-        printf("{\n");
+        printf("%s", styleLBE);
 	if (! (prop & REC)) printg_next(hp, indent+2);
         for (i = indent; i--; ) putc (' ', stdout);
-        printf("}\n");
+        printf("%s", styleRBE);
     }
 }
 
@@ -96,9 +112,9 @@ void dumpg (void) {
 	    p++;
 	}
 	else {
-	    printf("%s{", get_name(p));
+	    printf("%s%s", get_name(p), styleLBE);
             print_chars(p);
-	    printf("}\n");
+	    printf("%s", styleRBE);
 	    p+=2;	
 	}
     }
