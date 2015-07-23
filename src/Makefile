@@ -16,7 +16,7 @@ grammar.png: main g2gv.sh
 grammar.g:
 	./main -d >grammar.g
 
-grammar.s: grammar.g
+grammar.s: grammar.g spacer.sed
 	sed -f spacer.sed <grammar.g >grammar.s
 
 grammar.c grammar.h: grammar.s gacc.sh
