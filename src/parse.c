@@ -15,18 +15,28 @@ static char *get_name(char *p) {
 }
 
 static void print_edge(char *tp, char *hp) {
-    printf("< %s %s >", get_name(tp), get_name(hp));
+    printf("<%s %s>", get_name(tp), get_name(hp));
+}
+
+static void print_attr ( char attr, char *name, int *cnt ) {
+    if (attr) {
+	if ((*cnt)++) putc (' ', stdout);
+        printf (name);
+    }
 }
 
 static void print_prop(char prop) {
+    int cnt;
+
     if (prop & (ALT|OPT|SREP|REP|REC)) {
-        printf(" [ ");
-        if (prop & ALT) printf("ALT ");
-        if (prop & OPT) printf("OPT ");
-        if (prop & SREP) printf("SREP ");
-        if (prop & REP) printf("REP ");
-        if (prop & REC) printf("REC ");
-        printf("]");
+        cnt=0;
+        putc ('[',stdout);
+        print_attr( prop & ALT, "ALT", &cnt);
+        print_attr( prop & OPT, "OPT", &cnt);
+        print_attr( prop & SREP, "SREP", &cnt);
+        print_attr( prop & REP, "REP", &cnt);
+        print_attr( prop & REC, "REC", &cnt);
+        putc (']',stdout);
     }
 }
 
@@ -42,7 +52,7 @@ static void printg_next(char *p, int indent) {
         for (i = indent; i--; ) putc (' ', stdout);
         print_edge(tp, hp);
         print_prop(prop);
-        printf(" {\n");
+        printf("{\n");
 	if (! (prop & REC)) printg_next(hp, indent+2);
         for (i = indent; i--; ) putc (' ', stdout);
         printf("}\n");
@@ -55,19 +65,13 @@ void printg (void) {
 }
 
 static void print_chars ( char *p ) {
-    int i, j, si;
+    int i, cnt, si;
 
     si = (p - state_machine)>>1;
-    j=0;
+    cnt=0;
     for (i=0; i<0x100; i++) {
         if (si == char2state[i]) {
-	    if (++j < 16) {
-	         putc (' ', stdout);
-            }
-            else {
-	         putc ('\n', stdout);
-	         j = 0;
-	    }
+	    if (cnt++) putc (' ', stdout);
             printf("%02x", i);
 	}
     }
@@ -92,9 +96,9 @@ void dumpg (void) {
 	    p++;
 	}
 	else {
-	    printf("%s {", get_name(p));
+	    printf("%s{", get_name(p));
             print_chars(p);
-	    printf(" }\n");
+	    printf("}\n");
 	    p+=2;	
 	}
     }
@@ -103,8 +107,8 @@ void dumpg (void) {
 static unsigned char *inp, c;
 static int in;
 
-static int parse_next(int s) {
 #if 0
+static int parse_next(int s) {
     int *pn, n, rc;
 
 #if 1
@@ -142,15 +146,31 @@ static int parse_next(int s) {
 	if      ( (n & REP)) { while (( rc = parse_next(n) ) == 0); break; }
     }
     return rc;
+}
 #endif
-return 1;
+
+static int parse_next(char *p) {
+    char *tp, *hp, prop;
+    int i, hi;
+
+    tp = p;
+    while ((hi = *p++)) {
+        prop = *p++;
+        hp = p+(hi<<1);
+
+        print_edge(tp, hp);
+        print_prop(prop);
+        printf(" {\n");
+//	if (! (prop & REC)) printg_next(hp, indent+2);
+        printf("}\n");
+    }
+    return 1;
 }
 
-int parse(unsigned char *input) {
-    inp = input;
-    c = *inp++;
-    in = char2state[c];
-    return parse_next(ACT);
+int parse(unsigned char *in) {
+    c = *in++;
+    inp = &state_machine[char2state[c]<<1];
+    return parse_next(&state_machine[ACT<<1]);
 }
 
 
