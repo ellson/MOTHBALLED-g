@@ -11,131 +11,130 @@ if test ! -r "$ifn"; then
    exit 1
 fi
 
-of=${ifn%.g}
 of=${ifn%.s}
+# of=${ifn%.g}
 ofh=${of}.h
 ofc=${of}.c
 
-typeset -A NODE POS SPOS NAME PROPS
-nodelist=""
+
+typeset -A STATE_NEXT POS STATE_NAME SPOS PROPS STATE_PROPS CHARMAP
+
+state=""
+statelist=""
 indx=0
 sindx=0
-prev=""
 
-add_node() {
-    if test "{NODE[$1]}" = ""; then
-	nodelist+="$1 "
-        NODE[$1]=" "
-        NEXT[$1]=" "
-        NAME[$1]=" "
+sm_node() {
+    if test "$state" != ""; then   # if there was a state still unterminated
+        # add terminator
+        STATE_NEXT[$state]+=" ,0"
+        ((indx++))
+        # add index to states's name (always on even addres)
+        STATE_NEXT[$state]+=",$(( ${SPOS[$state]} / 2))"
+        ((indx++))
+    fi
+
+    state=$1
+    statelist+=" $state"
+    STATE_NEXT[$state]="    "
         
-        POS[$1]=$indx
-	((indx++))
+    POS[$state]=$indx
+    ((indx++))
+    STATE_PROPS[$indx]="0"
 
-        SPOS[$1]=$sindx
-        charc=0
-        for (( i=0; i<${#1}; i++ )); do
-            if test $charc -ne 0; then
-                NAME[$1]+=","
-            fi
-            ((charc++))
-            NAME[$i]+="'${prev:$i:1}'"
-	    ((sindx++)) 
-        done
+    STATE_NAME[$state]=""
+    SPOS[$1]=$sindx
+    charc=0
+    for (( i=0; i<${#1}; i++ )); do
+        if test $charc -ne 0; then
+            STATE_NAME[$state]+=","
+        fi
+        ((charc++))
+        STATE_NAME[$state]+="'${state:$i:1}'"
+	((sindx++)) 
+   done
+   STATE_NAME[$state]+=",'\\0'"
+   ((sindx++))
+   if test $(( sindx % 2 )) -eq 1; then
+       STATE_NAME[$state]+=",'\\0'"
+       ((sindx++))
+   fi
+}
+
+sm_edge() {
+    STATE_NEXT[$1]+=" $2"
+    ((indx++))
+}
+
+sm_list_elem() {
+    echo "lists are not supported" >&2
+    exit 1
+}
+
+sm_prop() {
+        PROPS[$1]=""
+        if test "${STATE_PROPS[$indx]}" = "0"; then
+            STATE_PROPS[$indx]="$1"
+        else
+            STATE_PROPS[$indx]+="|$1"
+        fi
+}
+
+sm_cont() {
+    for i in $*; do
+        CHARMAP["$i"]=$state
+    done
+}
+
+#############################################
+# fairly generic functions for g traversal
+#
+# incomplete - but sufficient for sm
+
+typeset -A NODE
+
+g_node() {
+    if test "${NODE[$1]}" = ""; then
+        NODE[$1]="1"
+	sm_node $1
     fi
 }
-add_edge() {
-    add_node $1
-    add_node $2
-    NODE[$i]+="$2 "
+
+g_edge() {
+    g_node $1
+    g_node $2
+    sm_edge $1 $2
 }
-add_list() {
+
+g_list() {
     for i in $*; do
-        echo "lists are not supported" >&2
-        exit 1
+	sm_list_elem $i
     done
 }
-add_prop() {
+
+g_prop() {
     for i in $*; do
-        PROP[$i]=""
+	sm_prop $i
     done
 }
-add_cont() {
-    for i in $*; do
-        CHAR[$i]=$current_node
-    done
+g_cont() {
+    sm_cont $*
 }
 
 while read op toks; do
     case "$op" in
     '' | '>' | ')' | ']' | '}' ) ;;
-    '<' ) add_edge $toks;;
-    '(' ) add_list $toks;;
-    '[' ) add_prop $toks;;
-    '{' ) add_cont $toks;;
-    default ) add_node $op
+    '<' ) g_edge $toks;;
+    '(' ) g_list $toks;;
+    '[' ) g_prop $toks;;
+    '{' ) g_cont $toks;;
+    default ) g_node $op
     esac
 done <$ifn
 
-#emit_node() {
-#    ((indx++))  # account for terminator
-#    charc=0
-#    for (( i=0; i<${#prev}; i++ )); do
-#        if test $charc -ne 0; then
-#            NAME[$prev]+=","
-#        fi
-#        ((charc++))
-#        NAME[$prev]+="'${prev:$i:1}'"
-#	((sindx++)) 
-#    done
-#    NAME[$prev]+=",'\\0'"
-#    ((sindx++))
-#    if test $(( sindx % 2 )) -eq 1; then
-#	NAME[$prev]+=",'\\0'"
-#	((sindx++))
-#    fi
-#}
+##############################################
 #
-#
-#while read op t h x x props; do
-#    if test "$op" != "<"; then
-#	nodelist+=" $op"
-#        NODE[$op]=""
-#        NAME[$op]=""
-#        if test "$prev" != ""; then
-# 	    emit_node
-#        fi
-#	POS[$op]=$indx
-#	SPOS[$op]=$sindx
-#        prev=$op
-#    else
-#	if [ -z $NODE[$t] ]; then
-#	    nodelist+=" $t"
-#            NODE[$t]="$h"
-#            NAME[$t]=""
-#            if test "$prev" != ""; then
-#                emit_node
-#            fi
-#	    POS[$t]=$indx
-#            SPOS[$t]=$sindx
-#            prev=$t
-#        fi
-#        prev=$t
-#        for p in $props; do
-#            if test "$p" != "]"; then
-#		PROPS[$p]=""
-#	        NODE[$t]+=" $p"
-#            fi
-#        done
-#	((indx++))
-#        NODE[$t]+=" "
-#    fi
-#done <$ifn
-#if test "$prev" != ""; then
-#    emit_node
-#fi
-
-####
+# emit sm output: grammar.h
 
 cat >$ofh <<EOF
 /*
@@ -157,6 +156,19 @@ echo "} props_t;"
 echo "" 
 ) >>$ofh
 
+####
+(
+printf "typedef enum {\n"
+for s in $statelist; do
+    printf "    $s ${POS[$s]},\n"
+done
+printf "} state_t;\n\n"
+) >>$ofh
+
+##############################################
+#
+# emit sm output: grammar.c
+
 cat >$ofc <<EOF
 /*
  * This is a generated file.  Do not edit.
@@ -167,8 +179,8 @@ EOF
 ####
 (
 printf "char state_names[] = {"
-for n in $nodelist; do
-    printf "    /* %3s */  %s,\n" "${SPOS[$n]}" "${NAME[$n]}"
+for s in $statelist; do
+    printf "    /* %3s */  %s,\n" "${SPOS[$s]}" "${NAME[$s]}"
 done
 printf "};\n\n"
 ) >>$ofc
@@ -176,14 +188,14 @@ printf "};\n\n"
 ####
 (
 printf "/* EBNF (omitting terminals)\n"
-for n in $nodelist; do
+for s in $statelist; do
     fieldc=0
-    for i in ${NODE[$n]}; do
+    for i in ${STATE_NEXT[$s]}; do
 	if [ -z ${POS[$i]} ]; then
 	    printf "|%s" "$i"
 	else
     	    if test $fieldc -eq 0; then
-                printf "    %15s ::= " "$n"
+                printf "    %15s ::= " "$s"
 	    else
 	        printf " "
             fi
@@ -201,12 +213,12 @@ printf "*/\n\n"
 ####
 (
 printf "char state_machine[] = {\n"
-for n in $nodelist; do
-    tpos=${POS[$n]}
-    printf "    /* %3s %15s */  " "$tpos" "$n"
+for s in $statelist; do
+    tpos=${POS[$s]}
+    printf "    /* %3s %15s */  " "$tpos" "$s"
     fieldc=0
     propc=0
-    for i in ${NODE[$n]}; do
+    for i in ${STATE_NEXT[$s]}; do
 	if [ -z ${POS[$i]} ]; then
             if test $propc -eq 0; then
                 printf "%s" "$i"
@@ -234,7 +246,7 @@ for n in $nodelist; do
         fi
         printf ", "
     fi
-    spos=${SPOS[$n]}
+    spos=${SPOS[$s]}
     printf "0,$((spos/2)),\n"
 done
 printf "};\n\n"
@@ -244,13 +256,4 @@ printf "};\n\n"
 (
 printf "#define state_machine_start %s\n\n" "${POS[ACT]}"
 ) >>$ofc
-
-####
-(
-printf "typedef enum {\n"
-for n in $nodelist; do
-    printf "    $n ${POS[$n]},\n"
-done
-printf "} state_t;\n\n"
-) >>$ofh
 
