@@ -1,3 +1,5 @@
 *.o
 main
 grammar.c
+grammar.h
+grammar.s

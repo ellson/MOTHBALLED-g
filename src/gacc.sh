@@ -12,10 +12,11 @@ if test ! -r "$ifn"; then
 fi
 
 of=${ifn%.g}
+of=${ifn%.s}
 ofh=${of}.h
 ofc=${of}.c
 
-typeset -A NODE POS SPOS NAME
+typeset -A NODE POS SPOS NAME PROPS
 
 emit_node() {
     ((indx++))  # account for terminator
@@ -52,9 +53,21 @@ while read op t h x x props; do
 	SPOS[$op]=$sindx
         prev=$op
     else
-        NODE[$t]+="$h"
+	if [ -z $NODE[$t] ]; then
+	    nodelist+=" $t"
+            NODE[$t]="$h"
+            NAME[$t]=""
+            if test "$prev" != ""; then
+                emit_node
+            fi
+	    POS[$t]=$indx
+            SPOS[$t]=$sindx
+            prev=$t
+        fi
+        prev=$t
         for p in $props; do
             if test "$p" != "]"; then
+		PROPS[$p]=""
 	        NODE[$t]+=" $p"
             fi
         done
@@ -73,15 +86,20 @@ cat >$ofh <<EOF
  * This is a generated file.  Do not edit.
  */
 
-typedef enum {
-    ALT    = 1<<6,      // alternive - one must be satisfied
-    OPT    = 1<<5,      // optional
-    REP    = 1<<4,      // repeatable   ( REP|OPT means 0 or more )
-    SREP   = 1<<3,      // ... with SPACE separators
-    REC    = 1<<2       // recursion
-} props_t;
-
 EOF
+
+####
+
+(
+cnt=0
+echo "typedef enum {"
+for p in ${!PROPS[@]}; do
+    echo "    $p = 1<<$cnt"
+    ((cnt++))
+done
+echo "} props_t;"
+echo "" 
+) >>$ofh
 
 cat >$ofc <<EOF
 /*
@@ -175,7 +193,7 @@ printf "#define state_machine_start %s\n\n" "${POS[ACT]}"
 (
 printf "typedef enum {\n"
 for n in $nodelist; do
-    printf "    %15s = %s\n" "$n" "${POS[$n]},"
+    printf "    $n ${POS[$n]},\n"
 done
 printf "} state_t;\n\n"
 ) >>$ofh
