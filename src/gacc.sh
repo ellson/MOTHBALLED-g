@@ -52,13 +52,13 @@ sm_node() {
         ((charc++))
         STATE_NAME[$state]+="'${state:$i:1}'"
 	((sindx++)) 
-   done
-   STATE_NAME[$state]+=",'\\0'"
-   ((sindx++))
-   if test $(( sindx % 2 )) -eq 1; then
-       STATE_NAME[$state]+=",'\\0'"
-       ((sindx++))
-   fi
+    done
+    STATE_NAME[$state]+=",'\\0'"
+    ((sindx++))
+    if test $(( sindx % 2 )) -eq 1; then
+        STATE_NAME[$state]+=",'\\0'"
+        ((sindx++))
+    fi
 }
 
 sm_edge() {
@@ -122,13 +122,15 @@ g_cont() {
 }
 
 while read op toks; do
+    if test "$op" = ""; then continue; fi
     case "$op" in
-    '' | '>' | ')' | ']' | '}' ) ;;
+    '>' | ')' | ']' | '}' ) ;;
     '<' ) g_edge $toks;;
     '(' ) g_list $toks;;
     '[' ) g_prop $toks;;
     '{' ) g_cont $toks;;
-    default ) g_node $op
+    'NUL' ) g_node "NUL";;
+    default ) g_node "$op";;
     esac
 done <$ifn
 
@@ -169,6 +171,7 @@ printf "} state_t;\n\n"
 #
 # emit sm output: grammar.c
 
+
 cat >$ofc <<EOF
 /*
  * This is a generated file.  Do not edit.
@@ -178,9 +181,9 @@ EOF
 
 ####
 (
-printf "char state_names[] = {"
+printf "char state_names[] = {\n"
 for s in $statelist; do
-    printf "    /* %3s */  %s,\n" "${SPOS[$s]}" "${NAME[$s]}"
+    printf "    /* %3s */  %s,\n" "${SPOS[$s]}" "${STATE_NAME[$s]}"
 done
 printf "};\n\n"
 ) >>$ofc
@@ -191,7 +194,7 @@ printf "/* EBNF (omitting terminals)\n"
 for s in $statelist; do
     fieldc=0
     for i in ${STATE_NEXT[$s]}; do
-	if [ -z ${POS[$i]} ]; then
+	if test "${POS[$i]}" != ""; then
 	    printf "|%s" "$i"
 	else
     	    if test $fieldc -eq 0; then
@@ -250,10 +253,5 @@ for s in $statelist; do
     printf "0,$((spos/2)),\n"
 done
 printf "};\n\n"
-) >>$ofc
-
-####
-(
-printf "#define state_machine_start %s\n\n" "${POS[ACT]}"
 ) >>$ofc
 
