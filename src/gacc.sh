@@ -116,6 +116,7 @@ sm_term() {
 		    else
 	                nprop+="$prop"
 		    fi
+		    ((cnt++))
 	        done
                 prop=""
             fi
@@ -236,7 +237,8 @@ EOF
 (
 printf "char state_names[] = {\n"
 for s in ${statelist[@]}; do
-    printf "    /* %3s */  %s,\n" "${SPOS[$s]}" "${NAME[$s]}"
+    spos=${SPOS[$s]}
+    printf "    /* %3d */  %s,\n" "$((spos/2))" "${NAME[$s]}"
 done
 printf "};\n\n"
 ) >>$ofc
