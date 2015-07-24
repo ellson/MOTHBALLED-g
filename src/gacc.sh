@@ -46,6 +46,7 @@ sm_node() {
         NAME[$1]+=",'\\0'"
         ((sindx++))
     fi
+    prop=""
 }
 
 sm_state() {
@@ -57,7 +58,7 @@ sm_state() {
 sm_end_state() {
     if test "$1" != ""; then
         nextlist=("${nextlist[@]}" "")
-        proplist=("${proplist[@]}" ${POS[$1]})
+        proplist=("${proplist[@]}" "")
         ((indx++))
     fi
     state=""
@@ -321,38 +322,6 @@ for s in ${statelist[@]}; do
         fi
         printf " %d,%s" "$((nxtindx-indx))" "$nprops"
     done
-		
-#    fieldc=0
-#    propc=0
-#    for i in ${NEXT[$s]}; do
-#	if [ -z ${POS[$i]} ]; then
-#            if test $propc -eq 0; then
-#                printf "%s" "$i"
-#	    else
-#	        printf "|%s" "$i"
-#            fi
-#            ((propc++))
-#	else
-#    	    if test $fieldc -ne 0; then
-#                if test $propc -eq 0; then
-#                    printf "0"
-#                fi
-#	        printf ", "
-#            fi
-#            propc=0
-#            hpos=${POS[$i]}
-#            ((tpos++))
-#	    printf "%d," $((hpos-tpos)) 
-#            ((fieldc++))
-#        fi
-#    done
-#    if test $fieldc -ne 0; then
-#        if test $propc -eq 0; then
-#            printf "0"
-#        fi
-#        printf ", "
-#    fi
-
     spos=${SPOS[$s]}
     printf " 0,$((spos/2)),\n"
 done
