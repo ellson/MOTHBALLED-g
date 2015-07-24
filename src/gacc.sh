@@ -224,6 +224,14 @@ done
 printf "\n} state_t;\n\n"
 ) >>$ofh
 
+cat >>$ofh <<EOF
+
+extern char state_names[];
+extern unsigned char char2state[];
+extern char state_machine[];
+extern int sizeof_state_machine;
+
+EOF
 ##############################################
 #
 # emit sm output: grammar.c
@@ -233,6 +241,8 @@ cat >$ofc <<EOF
 /*
  * This is a generated file.  Do not edit.
  */
+
+#include "$ofh"
 
 EOF
 
@@ -248,15 +258,15 @@ printf "};\n\n"
 
 ####
 (
-printf "char char2state[] = {"
+printf "unsigned char char2state[] = {"
 for msb in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
-    printf "\n    /* ${msb}0 */  "
+    printf "\n    /* ${msb}0 */   "
     for lsb in 0 1 2 3 4 5 6 7; do
-	printf " ${CHARMAP[${msb}${lsb}]}"
+	printf "%3s," "${CHARMAP[${msb}${lsb}]}"
     done
-    printf "\n    /* ${msb}8 */  "
+    printf "\n    /* ${msb}8 */   "
     for lsb in 8 9 a b c d e f; do
-	printf " ${CHARMAP[${msb}${lsb}]}"
+	printf "%3s," "${CHARMAP[${msb}${lsb}]}"
     done
 done
 printf "\n};\n\n"
@@ -325,10 +335,12 @@ for s in ${statelist[@]}; do
 	if test $cnt -eq 0; then
 	    nprops=0
         fi
-        printf " %d,%s" "$((nxtindx-indx))" "$nprops"
+        printf " %d,%s," "$((nxtindx-indx))" "$nprops"
     done
     spos=${SPOS[$s]}
     printf " 0,$((spos/2)),\n"
 done
 printf "};\n\n"
+
+printf "int sizeof_state_machine = sizeof(state_machine);\n\n"
 ) >>$ofc

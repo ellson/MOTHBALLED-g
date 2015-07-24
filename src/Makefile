@@ -1,8 +1,10 @@
 CFLAGS = -g -O0 -Wall
 
-main: parse.o list.o main.o
+main: parse.o grammar.o list.o main.o
 
-parse.o: parse.c lexer.c grammar.c list.h parse.h
+parse.o: parse.c grammar.h list.h parse.h
+
+grammar.o: grammar.c grammar.h
 
 list.o: list.c list.h
 

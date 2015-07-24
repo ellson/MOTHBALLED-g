@@ -2,12 +2,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "grammar.h"
 #include "list.h"
 #include "parse.h"
-#include "grammar.h"
-
-#include "grammar.c"
-#include "lexer.c"
 
 #define styleLAN sstyle?"< ":"<"
 #define styleRAN sstyle?"\n>\n":">"
@@ -25,8 +22,8 @@ void set_sstyle (void) {
 }
 
 static char *get_name(char *p) {
-    while (*p++) p++;                   // traverse to terminator
-    return &state_names[(*p<<1)&0x1FF]; // get index for string from the byte after the terminator
+    while (*p++) p++;             // traverse to terminator
+    return &state_names[(*p<<1)]; // get index for string from the byte after the terminator
 }
 
 static void print_edge( char *tail, char *head ) {
@@ -99,7 +96,7 @@ void dumpg (void) {
     char *p, *tp, *hp, prop;
 
     p = state_machine;
-    while (p < (state_machine + sizeof(state_machine))) {
+    while (p < (state_machine + sizeof_state_machine)) {
         tp = p;
         if (*p) {
             while ((hi = *p++)) {

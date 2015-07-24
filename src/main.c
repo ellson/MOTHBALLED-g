@@ -14,7 +14,7 @@ int main (int argc, char *argv[]) {
 // FIXME - do options properly
     for (i=0; i<argc; i++) {
         if (strcmp(argv[1], "-s") == 0) {
-	    set_style();
+	    set_sstyle();
         }
         if (strcmp(argv[1], "-g") == 0) {
             printg();
