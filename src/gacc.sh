@@ -19,6 +19,7 @@ ofc=${of}.c
 
 typeset -A POS NAME SPOS PROPS CHARMAP
 
+namelist=()
 state=""
 statelist=()
 next=""
@@ -29,24 +30,26 @@ indx=0
 sindx=0
 
 sm_node() {
-    NAME[$1]=""
-    SPOS[$1]=$sindx
-    charc=0
-    for (( i=0; i<${#1}; i++ )); do
-        if test $charc -ne 0; then
-            NAME[$1]+=","
-        fi
-        ((charc++))
-        NAME[$1]+="'${1:$i:1}'"
-	((sindx++)) 
-    done
-    NAME[$1]+=",'\\0'"
-    ((sindx++))
-    if test $(( sindx % 2 )) -eq 1; then
+    if test "${NAME[$1]}" = ""; then
+        namelist=("${namelist[@]}" "$1")
+        SPOS[$1]=$sindx
+        charc=0
+        for (( i=0; i<${#1}; i++ )); do
+            if test $charc -ne 0; then
+                NAME[$1]+=","
+            fi
+            ((charc++))
+            NAME[$1]+="'${1:$i:1}'"
+	    ((sindx++)) 
+        done
         NAME[$1]+=",'\\0'"
         ((sindx++))
+        if test $(( sindx % 2 )) -eq 1; then
+            NAME[$1]+=",'\\0'"
+            ((sindx++))
+        fi
+        prop=""
     fi
-    prop=""
 }
 
 sm_state() {
@@ -236,9 +239,9 @@ EOF
 ####
 (
 printf "char state_names[] = {\n"
-for s in ${statelist[@]}; do
-    spos=${SPOS[$s]}
-    printf "    /* %3d */  %s,\n" "$((spos/2))" "${NAME[$s]}"
+for n in ${namelist[@]}; do
+    spos=${SPOS[$n]}
+    printf "    /* %3d */  %s,\n" "$((spos/2))" "$n"
 done
 printf "};\n\n"
 ) >>$ofc
