@@ -19,49 +19,53 @@ ofc=${of}.c
 
 typeset -A POS NAME SPOS PROPS CHARMAP
 
+node=""
 state=""
 statelist=""
+next=""
 nextlist=""
-proplist=""
 prop=""
+proplist=""
 indx=0
 sindx=0
 
 sm_node() {
-    if test "$state" != ""; then
-	nextlist+=" 0"
-	proplist+=" ${POS[$state]}"
-        ((indx++))
-    fi
+    node="$1"
+    statelist+=" $1"
 
-    state="$1"
-    statelist+=" $state"
-
-    next="0"
-    prop=""
-        
-    POS[$state]=$indx
-
-    NAME[$state]=""
+    NAME[$1]=""
     SPOS[$1]=$sindx
     charc=0
     for (( i=0; i<${#1}; i++ )); do
         if test $charc -ne 0; then
-            NAME[$state]+=","
+            NAME[$1]+=","
         fi
         ((charc++))
-        NAME[$state]+="'${state:$i:1}'"
+        NAME[$1]+="'${state:$i:1}'"
 	((sindx++)) 
     done
-    NAME[$state]+=",'\\0'"
+    NAME[$1]+=",'\\0'"
     ((sindx++))
     if test $(( sindx % 2 )) -eq 1; then
-        NAME[$state]+=",'\\0'"
+        NAME[$1]+=",'\\0'"
         ((sindx++))
     fi
 }
 
+sm_end_next() {
+    if test "$1" != ""; then
+    	nextlist+=" 0"
+    	proplist+=" ${POS[$1]}"
+    	((indx++))
+    fi
+}
+
 sm_edge() {
+    if test "$1" != "$state"; then
+	sm_end_next $state
+	state="$1"
+        POS[$state]=$indx
+    fi
     next=$2
     prop=""
 }
@@ -76,8 +80,11 @@ sm_prop() {
 }
 
 sm_cont() {
+    # FIXME - just because we don't use contents on edges...
+    sm_end_next $node
+
     for i in $*; do
-        CHARMAP["$i"]="$state"
+        CHARMAP["$i"]="$node"
     done
 }
 
@@ -88,26 +95,27 @@ sm_delete() {
 
 sm_term() {
     if test "$state" != ""; then
-	nextlist+=" $next"
+        if test "$next" != ""; then
+	    nextlist+=" $next"
 
-        if test "$prop" != ""; then
-            cnt=0
-            for p in $prop; do
-	        PROPS[$p]=""
-                if test $cnt -eq 0;then
-		    proplist+=" "
-                else
-		    proplist+="|"
-                fi
-	        proplist+="$prop"
-	    done
-        else
-	    proplist+=" 0"
+            if test "$prop" != ""; then
+                cnt=0
+                for p in $prop; do
+	            PROPS[$p]=""
+                    if test $cnt -eq 0;then
+		        proplist+=" "
+                    else
+		        proplist+="|"
+                    fi
+	            proplist+="$prop"
+	        done
+                prop=""
+            else
+	        proplist+=" 0"
+            fi
+	    ((indx++))
+	    next=""
         fi
-
-	((indx++))
-        state=""
-        prop=""
     fi
 }
 
@@ -164,8 +172,6 @@ while read op toks; do
     default ) g_node "$op";;
     esac
 done <$ifn
-
-
 
 ##############################################
 #
