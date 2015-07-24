@@ -19,20 +19,16 @@ ofc=${of}.c
 
 typeset -A POS NAME SPOS PROPS CHARMAP
 
-node=""
 state=""
-statelist=""
+statelist=()
 next=""
-nextlist=""
+nextlist=()
 prop=""
-proplist=""
+proplist=()
 indx=0
 sindx=0
 
 sm_node() {
-    node="$1"
-    statelist+=" $1"
-
     NAME[$1]=""
     SPOS[$1]=$sindx
     charc=0
@@ -41,7 +37,7 @@ sm_node() {
             NAME[$1]+=","
         fi
         ((charc++))
-        NAME[$1]+="'${state:$i:1}'"
+        NAME[$1]+="'${1:$i:1}'"
 	((sindx++)) 
     done
     NAME[$1]+=",'\\0'"
@@ -52,20 +48,34 @@ sm_node() {
     fi
 }
 
-sm_end_next() {
+sm_state() {
+    state=$1
+    statelist=("${statelist[@]}" "$1")
+    POS[$1]=$indx
+}
+
+sm_end_state() {
     if test "$1" != ""; then
-    	nextlist+=" 0"
-    	proplist+=" ${POS[$1]}"
-    	((indx++))
+        nextlist=("${nextlist[@]}" "")
+        proplist=("${proplist[@]}" ${POS[$1]})
+        ((indx++))
     fi
+    state=""
+}
+
+sm_leg1() {
+    if test "$state" != "$1"; then
+        sm_end_state $state
+        sm_state $1
+    fi
+    sm_node $1
+}
+
+sm_leg2() {
+    sm_node $1
 }
 
 sm_edge() {
-    if test "$1" != "$state"; then
-	sm_end_next $state
-	state="$1"
-        POS[$state]=$indx
-    fi
     next=$2
     prop=""
 }
@@ -80,11 +90,8 @@ sm_prop() {
 }
 
 sm_cont() {
-    # FIXME - just because we don't use contents on edges...
-    sm_end_next $node
-
     for i in $*; do
-        CHARMAP["$i"]="$node"
+        CHARMAP["$i"]="$state"
     done
 }
 
@@ -96,23 +103,22 @@ sm_delete() {
 sm_term() {
     if test "$state" != ""; then
         if test "$next" != ""; then
-	    nextlist+=" $next"
+            nextlist=("${nextlist[@]}" "$next")
 
+	    nprop=""
             if test "$prop" != ""; then
                 cnt=0
                 for p in $prop; do
 	            PROPS[$p]=""
-                    if test $cnt -eq 0;then
-		        proplist+=" "
-                    else
-		        proplist+="|"
-                    fi
-	            proplist+="$prop"
+                    if test $cnt -ne 0;then
+		        nprop+=" $prop"
+		    else
+	                nprop+="$prop"
+		    fi
 	        done
                 prop=""
-            else
-	        proplist+=" 0"
             fi
+            proplist=("${proplist[@]}" "$nprop")
 	    ((indx++))
 	    next=""
         fi
@@ -123,21 +129,22 @@ sm_term() {
 # fairly generic functions for g traversal
 #    - expects input in the "shell friendly" format of g
 #
-# incomplete - but sufficient for grammar sm
-#    - does not support recursive ACT
+# eventually to be replace by an output option on g
 
 typeset -A NODE
 
 g_node() {
     if test "${NODE[$1]}" = ""; then
         NODE[$1]="1"
+        sm_end_state $state
+        sm_state $1
 	sm_node $1
     fi
 }
 
 g_edge() {
-    g_node $1
-    g_node $2
+    sm_leg1 $1
+    sm_leg2 $2
     sm_edge $1 $2
 }
 
@@ -168,8 +175,7 @@ while read op toks; do
     '{' ) g_cont $toks;;
     '~' ) g_delete ;;
     ';' ) g_term ;;
-    'NUL' ) g_node "NUL";;
-    default ) g_node "$op";;
+    * ) g_node "$op";;
     esac
 done <$ifn
 
@@ -203,11 +209,11 @@ printf "\n} props_t;\n\n"
 (
 cnt=0
 printf "typedef enum {\n"
-for s in $statelist; do
+for s in ${statelist[@]}; do
     if test $cnt -ne 0; then 
 	printf ",\n"
     fi
-    printf "    $s ${POS[$s]}"
+    printf "    $s = ${POS[$s]}"
     ((cnt++))
 done
 printf "\n} state_t;\n\n"
@@ -228,7 +234,7 @@ EOF
 ####
 (
 printf "char state_names[] = {\n"
-for s in $statelist; do
+for s in ${statelist[@]}; do
     printf "    /* %3s */  %s,\n" "${SPOS[$s]}" "${NAME[$s]}"
 done
 printf "};\n\n"
@@ -238,10 +244,13 @@ printf "};\n\n"
 (
 printf "char char2state[] = {"
 for msb in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
-    printf "\n /* ${msb}0 */  "
-    for lsb in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
-	ch="${msb}${lsb}"
-	printf " ${CHARMAP[$ch}]}"
+    printf "\n    /* ${msb}0 */  "
+    for lsb in 0 1 2 3 4 5 6 7; do
+	printf " ${CHARMAP[${msb}${lsb}]}"
+    done
+    printf "\n    /* ${msb}8 */  "
+    for lsb in 8 9 a b c d e f; do
+	printf " ${CHARMAP[${msb}${lsb}]}"
     done
 done
 printf "\n};\n\n"
@@ -249,39 +258,46 @@ printf "\n};\n\n"
 
 ####
 (
-printf "/* EBNF (omitting terminals)\n"
-for s in $statelist; do
-    fieldc=0
-#    for i in ${NEXT[$s]}; do
-#        if test $fieldc -eq 0; then
-#            printf "    %15s ::= " "$s"
-#        fi
-#        (( fieldc++  ))
-#	printf " %s" "$i"
-#        printf "%s" "${PROPS[$i]}";
-#	if test "${POS[$i]}" != ""; then
-#	    printf "|%s" "$i"
-#	else
-#    	    if test $fieldc -eq 0; then
-#                printf "    %15s ::= " "$s"
-#	    else
-#	        printf " "
-#            fi
-#            ((fieldc++))
-#	    printf "%s" "$i" 
-#       fi
-#    done
-    if test $fieldc -ne 0; then
-        printf "\n"
-    fi
+printf "/* EBNF *************************************************\n\n"
+for s in ${statelist[@]}; do
+    printf "%19s ::=" "$s"
+    indx=${POS[$s]}
+    alts=0
+    while true; do
+        next=${nextlist[$indx]}
+        prop=${proplist[$indx]}
+        ((indx++))
+        if test "$next" = ""; then break; fi
+        ord=0
+	for p in $prop; do
+	    case $p in
+            ALT ) if test $alts -ne 0; then
+		      printf "\n%23s" "|"
+		  fi
+		  (( alts++))
+		  ;;
+            REP | SREP) ((ord|=2));;
+            OPT ) ((ord|=1));;
+	    *) ;;
+	    esac
+        done
+	case $ord in
+	0 ) ordc="";; 
+	1 ) ordc="?";; 
+	2 ) ordc="+";; 
+	3 ) ordc="*";; 
+	esac
+        printf " %s%s" "$next" "$ordc"
+    done
+    printf "\n"
 done
-printf "*/\n\n"
+printf "\n********************************************************/\n\n"
 ) >>$ofc
 
 ####
 (
 printf "char state_machine[] = {\n"
-for s in $statelist; do
+for s in ${statelist[@]}; do
     tpos=${POS[$s]}
     printf "    /* %3s %15s */  " "$tpos" "$s"
     fieldc=0
