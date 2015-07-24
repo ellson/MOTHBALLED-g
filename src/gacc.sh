@@ -260,8 +260,8 @@ printf "\n};\n\n"
 (
 printf "/* EBNF *************************************************\n\n"
 for s in ${statelist[@]}; do
-    printf "%19s ::=" "$s"
     indx=${POS[$s]}
+    printf "%26s ::=" "$s"
     alts=0
     while true; do
         next=${nextlist[$indx]}
@@ -272,7 +272,7 @@ for s in ${statelist[@]}; do
 	for p in $prop; do
 	    case $p in
             ALT ) if test $alts -ne 0; then
-		      printf "\n%23s" "|"
+		      printf "\n%30s" "|"
 		  fi
 		  (( alts++))
 		  ;;
@@ -298,10 +298,32 @@ printf "\n********************************************************/\n\n"
 (
 printf "char state_machine[] = {\n"
 for s in ${statelist[@]}; do
-    tpos=${POS[$s]}
-    printf "    /* %3s %15s */  " "$tpos" "$s"
-    fieldc=0
-    propc=0
+    indx=${POS[$s]}
+    printf "    /* %3s %15s */  " "$indx" "$s"
+    while true; do
+        next=${nextlist[$indx]}
+	prop=${proplist[$indx]}
+        ((indx++))
+        if test "$next" = ""; then break; fi
+        nxtindx=${POS[$next]}
+        nprops=""
+        cnt=0
+	for p in $prop; do
+	    if test $cnt -eq 0; then
+		nprops=$p
+	    else
+		nprops+="|$p"
+	    fi
+	    ((cnt++))
+	done
+	if test $cnt -eq 0; then
+	    nprops=0
+        fi
+        printf " %d,%s" "$((nxtindx-indx))" "$nprops"
+    done
+		
+#    fieldc=0
+#    propc=0
 #    for i in ${NEXT[$s]}; do
 #	if [ -z ${POS[$i]} ]; then
 #            if test $propc -eq 0; then
@@ -324,14 +346,15 @@ for s in ${statelist[@]}; do
 #            ((fieldc++))
 #        fi
 #    done
-    if test $fieldc -ne 0; then
-        if test $propc -eq 0; then
-            printf "0"
-        fi
-        printf ", "
-    fi
+#    if test $fieldc -ne 0; then
+#        if test $propc -eq 0; then
+#            printf "0"
+#        fi
+#        printf ", "
+#    fi
+
     spos=${SPOS[$s]}
-    printf "0,$((spos/2)),\n"
+    printf " 0,$((spos/2)),\n"
 done
 printf "};\n\n"
 ) >>$ofc
