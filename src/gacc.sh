@@ -17,80 +17,106 @@ ofh=${of}.h
 ofc=${of}.c
 
 
-typeset -A STATE_NEXT POS STATE_NAME SPOS PROPS STATE_PROPS CHARMAP
+typeset -A POS NAME SPOS PROPS CHARMAP
 
 state=""
 statelist=""
+nextlist=""
+proplist=""
+prop=""
 indx=0
 sindx=0
 
 sm_node() {
-#    if test "$state" != ""; then   # if there was a state still unterminated
-#        # add terminator
-#        STATE_NEXT[$state]+=",0 "
-#        ((indx++))
-#        # add index to states's name (always on even addres)
-#        STATE_NEXT[$state]+=",$(( ${SPOS[$state]} / 2))"
-#        ((indx++))
-#    fi
+    if test "$state" != ""; then
+	nextlist+=" 0"
+	proplist+=" ${POS[$state]}"
+        ((indx++))
+    fi
 
-    state=$1
+    state="$1"
     statelist+=" $state"
-    STATE_NEXT[$state]="    "
+
+    next="0"
+    prop=""
         
     POS[$state]=$indx
-    ((indx++))
-    STATE_PROPS[$indx]="0"
 
-    STATE_NAME[$state]=""
+    NAME[$state]=""
     SPOS[$1]=$sindx
     charc=0
     for (( i=0; i<${#1}; i++ )); do
         if test $charc -ne 0; then
-            STATE_NAME[$state]+=","
+            NAME[$state]+=","
         fi
         ((charc++))
-        STATE_NAME[$state]+="'${state:$i:1}'"
+        NAME[$state]+="'${state:$i:1}'"
 	((sindx++)) 
     done
-    STATE_NAME[$state]+=",'\\0'"
+    NAME[$state]+=",'\\0'"
     ((sindx++))
     if test $(( sindx % 2 )) -eq 1; then
-        STATE_NAME[$state]+=",'\\0'"
+        NAME[$state]+=",'\\0'"
         ((sindx++))
     fi
 }
 
 sm_edge() {
-    STATE_NEXT[$1]+=" $2"
-    ((indx++))
+    next=$2
+    prop=""
 }
 
 sm_list_elem() {
-    echo "lists are not supported" >&2
+    echo "lists are not expected in grammars" >&2
     exit 1
 }
 
 sm_prop() {
-    PROPS[$1]=""
-    if test "${STATE_PROPS[$indx]}" = "0"; then
-        STATE_PROPS[$indx]="$1"
-    else
-        STATE_PROPS[$indx]+="|$1"
-    fi
+    prop="$*"
 }
 
 sm_cont() {
     for i in $*; do
-# printf "%s %s %s\n" "$i" "$state" "$indx"
-        CHARMAP["$i"]=$state
+        CHARMAP["$i"]="$state"
     done
+}
+
+sm_delete() {
+    echo "deletes are not expected in grammars" >&2
+    exit 1
+}
+
+sm_term() {
+    if test "$state" != ""; then
+	nextlist+=" $next"
+
+        if test "$prop" != ""; then
+            cnt=0
+            for p in $prop; do
+	        PROPS[$p]=""
+                if test $cnt -eq 0;then
+		    proplist+=" "
+                else
+		    proplist+="|"
+                fi
+	        proplist+="$prop"
+	    done
+        else
+	    proplist+=" 0"
+        fi
+
+	((indx++))
+        state=""
+        prop=""
+    fi
 }
 
 #############################################
 # fairly generic functions for g traversal
+#    - expects input in the "shell friendly" format of g
 #
-# incomplete - but sufficient for sm
+# incomplete - but sufficient for grammar sm
+#    - does not support recursive ACT
 
 typeset -A NODE
 
@@ -108,18 +134,20 @@ g_edge() {
 }
 
 g_list() {
-    for i in $*; do
-	sm_list_elem $i
-    done
+    sm_list $*
 }
 
 g_prop() {
-    for i in $*; do
-	sm_prop $i
-    done
+    sm_prop $*
 }
 g_cont() {
     sm_cont $*
+}
+g_delete() {
+    sm_delete
+}
+g_term() {
+    sm_term
 }
 
 while read op toks; do
@@ -130,10 +158,14 @@ while read op toks; do
     '(' ) g_list $toks;;
     '[' ) g_prop $toks;;
     '{' ) g_cont $toks;;
+    '~' ) g_delete ;;
+    ';' ) g_term ;;
     'NUL' ) g_node "NUL";;
     default ) g_node "$op";;
     esac
 done <$ifn
+
+
 
 ##############################################
 #
@@ -150,22 +182,29 @@ EOF
 
 (
 cnt=0
-echo "typedef enum {"
+printf "typedef enum {\n"
 for p in ${!PROPS[@]}; do
-    echo "    $p = 1<<$cnt"
+    if test $cnt -ne 0; then 
+	printf ",\n"
+    fi
+    printf "    $p = 1<<$cnt"
     ((cnt++))
 done
-echo "} props_t;"
-echo "" 
+printf "\n} props_t;\n\n"
 ) >>$ofh
 
 ####
 (
+cnt=0
 printf "typedef enum {\n"
 for s in $statelist; do
-    printf "    $s ${POS[$s]},\n"
+    if test $cnt -ne 0; then 
+	printf ",\n"
+    fi
+    printf "    $s ${POS[$s]}"
+    ((cnt++))
 done
-printf "} state_t;\n\n"
+printf "\n} state_t;\n\n"
 ) >>$ofh
 
 ##############################################
@@ -184,7 +223,7 @@ EOF
 (
 printf "char state_names[] = {\n"
 for s in $statelist; do
-    printf "    /* %3s */  %s,\n" "${SPOS[$s]}" "${STATE_NAME[$s]}"
+    printf "    /* %3s */  %s,\n" "${SPOS[$s]}" "${NAME[$s]}"
 done
 printf "};\n\n"
 ) >>$ofc
@@ -195,7 +234,8 @@ printf "char char2state[] = {"
 for msb in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
     printf "\n /* ${msb}0 */  "
     for lsb in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
-	printf " ${CHARMAP[${msb}${lsb}]}"
+	ch="${msb}${lsb}"
+	printf " ${CHARMAP[$ch}]}"
     done
 done
 printf "\n};\n\n"
@@ -206,13 +246,13 @@ printf "\n};\n\n"
 printf "/* EBNF (omitting terminals)\n"
 for s in $statelist; do
     fieldc=0
-    for i in ${STATE_NEXT[$s]}; do
-        if test $fieldc -eq 0; then
-            printf "    %15s ::= " "$s"
-        fi
-        (( fieldc++  ))
-	printf " %s" "$i"
-        printf "%s" "${STATE_PROPS[$i]}";
+#    for i in ${NEXT[$s]}; do
+#        if test $fieldc -eq 0; then
+#            printf "    %15s ::= " "$s"
+#        fi
+#        (( fieldc++  ))
+#	printf " %s" "$i"
+#        printf "%s" "${PROPS[$i]}";
 #	if test "${POS[$i]}" != ""; then
 #	    printf "|%s" "$i"
 #	else
@@ -224,7 +264,7 @@ for s in $statelist; do
 #            ((fieldc++))
 #	    printf "%s" "$i" 
 #       fi
-    done
+#    done
     if test $fieldc -ne 0; then
         printf "\n"
     fi
@@ -240,28 +280,28 @@ for s in $statelist; do
     printf "    /* %3s %15s */  " "$tpos" "$s"
     fieldc=0
     propc=0
-    for i in ${STATE_NEXT[$s]}; do
-	if [ -z ${POS[$i]} ]; then
-            if test $propc -eq 0; then
-                printf "%s" "$i"
-	    else
-	        printf "|%s" "$i"
-            fi
-            ((propc++))
-	else
-    	    if test $fieldc -ne 0; then
-                if test $propc -eq 0; then
-                    printf "0"
-                fi
-	        printf ", "
-            fi
-            propc=0
-            hpos=${POS[$i]}
-            ((tpos++))
-	    printf "%d," $((hpos-tpos)) 
-            ((fieldc++))
-        fi
-    done
+#    for i in ${NEXT[$s]}; do
+#	if [ -z ${POS[$i]} ]; then
+#            if test $propc -eq 0; then
+#                printf "%s" "$i"
+#	    else
+#	        printf "|%s" "$i"
+#            fi
+#            ((propc++))
+#	else
+#    	    if test $fieldc -ne 0; then
+#                if test $propc -eq 0; then
+#                    printf "0"
+#                fi
+#	        printf ", "
+#            fi
+#            propc=0
+#            hpos=${POS[$i]}
+#            ((tpos++))
+#	    printf "%d," $((hpos-tpos)) 
+#            ((fieldc++))
+#        fi
+#    done
     if test $fieldc -ne 0; then
         if test $propc -eq 0; then
             printf "0"
@@ -273,4 +313,3 @@ for s in $statelist; do
 done
 printf "};\n\n"
 ) >>$ofc
-
