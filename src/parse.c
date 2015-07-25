@@ -25,11 +25,7 @@ void set_sstyle (void) {
 }
 
 static char *get_name(char *p) {
-    unsigned char sindx;              // absolute offset
-
-    while (*p) p+=2;                  // traverse to terminator
-    sindx = *++p;                     // get to state_name from the byte after the terminator
-    return (state_names + sindx * 2); // use as offset from beginning of table
+    while (*p) p+=2; return (state_names + (unsigned char)(*++p) * 2); 
 }
 
 static char *oleg1=NULL, *oleg2=NULL;

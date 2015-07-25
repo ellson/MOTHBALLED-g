@@ -268,10 +268,10 @@ printf "\n};\n\n"
 
 ####
 (
-printf "/* EBNF *************************************************\n\n"
+printf "/* EBNF *************************************************\n *\n *"
 for s in ${statelist[@]}; do
     indx=${POS[$s]}
-    printf "%23s ::=" "$s"
+    printf "%21s ::=" "$s"
     alts=0
     while true; do
         next=${nextlist[$indx]}
@@ -282,7 +282,7 @@ for s in ${statelist[@]}; do
 	for p in $prop; do
 	    case $p in
             ALT ) if test $alts -ne 0; then
-		      printf "\n%27s" "|"
+		      printf "\n *%25s" "|"
 		  fi
 		  (( alts++))
 		  ;;
@@ -299,9 +299,9 @@ for s in ${statelist[@]}; do
 	esac
         printf " %s%s" "$next" "$ordc"
     done
-    printf "\n"
+    printf "\n *"
 done
-printf "\n********************************************************/\n\n"
+printf "\n ********************************************************/\n\n"
 ) >>$ofc
 
 ####
@@ -326,11 +326,11 @@ for s in ${statelist[@]}; do
 	        ((cnt++))
 	    done
 	done
-        printf " %4d,%d," $((nxtindx-indx)) $nprops
+        printf "%4d,0x%02x," $((nxtindx-indx)) $nprops
 #echo "state=$s indx=$indx next=$next nxtindx=$nxtindx diff=$(( $nxtindx - $indx )) props=$nprops" >&2
     done
     spos=${SPOS[$s]}
-    printf " %4d,%d,\n" 0 $((spos/2))
+    printf "%4d,%d,\n" 0 $((spos/2))
 done
 printf "};\n\n"
 ) >>$ofc
