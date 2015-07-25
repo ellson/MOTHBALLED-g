@@ -6,6 +6,9 @@
 #include "list.h"
 #include "parse.h"
 
+#define OUT stderr
+#define ERR stderr
+
 #define styleLAN sstyle?"< ":"<"
 #define styleRAN sstyle?"\n>\n":">"
 #define styleLPN sstyle?"\n  ( ":"("
@@ -22,8 +25,8 @@ void set_sstyle (void) {
 }
 
 static char *get_name(char *p) {
-    while (*p) p+=2;            // traverse to terminator
-    return (state_names + (*++p) * 2); // get index for string from the byte after the terminator
+    while (*p) p+=2;                   // traverse to terminator
+    return (state_names + ((*++p)<<1)); // get index to state_name from the byte after the terminator
 }
 
 static char *oleg1=NULL, *oleg2=NULL;
@@ -45,47 +48,47 @@ static void print_edge( char *leg1, char *leg2 ) {
     else {
 	sleg2 = "=";
     }
-    printf("%s%s %s%s", styleLAN, sleg1, sleg2, styleRAN);
+    fprintf(OUT,"%s%s %s%s", styleLAN, sleg1, sleg2, styleRAN);
 }
 
-static void print_attr ( char attr, char *name, int *cnt ) {
+static void print_attr ( char attr, char *attrid, int *inlist ) {
     if (attr) {
-	if ((*cnt)++) putc (' ', stdout);
-        printf (name);
+	if ((*inlist)++) putc (' ', OUT);
+        fprintf(OUT,attrid);
     }
 }
 
 static void print_prop(char prop) {
-    int cnt;
+    int inlist;
 
     if (prop & (ALT|OPT|SREP|REP|REC)) {
-        cnt=0;
-        printf("%s", styleLBR);
-        print_attr( prop & ALT, "ALT", &cnt);
-        print_attr( prop & OPT, "OPT", &cnt);
-        print_attr( prop & SREP, "SREP", &cnt);
-        print_attr( prop & REP, "REP", &cnt);
-        print_attr( prop & REC, "REC", &cnt);
-        printf("%s", styleRBR);
+        inlist=0;
+        fprintf(OUT,"%s", styleLBR);
+        print_attr( prop & ALT, "ALT", &inlist);
+        print_attr( prop & OPT, "OPT", &inlist);
+        print_attr( prop & SREP, "SREP", &inlist);
+        print_attr( prop & REP, "REP", &inlist);
+        print_attr( prop & REC, "REC", &inlist);
+        fprintf(OUT,"%s", styleRBR);
     }
 }
 
 static void printg_next(char *p, int indent) {
     char *tp, *hp, prop;
-    int i, hi;
+    int indx, i;
 
     tp = p;
-    while ((hi = *p++)) {
+    while ((indx = *p++)) {
         prop = *p++;
-        hp = p + (hi<<1);
+        hp = p + (indx<<1);
 
-        for (i = indent; i--; ) putc (' ', stdout);
+        for (i = indent; i--; ) putc (' ', OUT);
         print_edge(tp, hp);
         print_prop(prop);
-        printf("%s\n", styleLBE);
+        fprintf(OUT,"%s\n", styleLBE);
 	if (! (prop & REC)) printg_next(hp, indent+2);
-        for (i = indent; i--; ) putc (' ', stdout);
-        printf("%s\n", styleRBE);
+        for (i = indent; i--; ) putc (' ', OUT);
+        fprintf(OUT,"%s\n", styleRBE);
     }
 }
 
@@ -101,34 +104,35 @@ static void print_chars ( char *p ) {
     cnt=0;
     for (i=0; i<0x100; i++) {
         if (si == char2state[i]) {
-	    if (cnt++) putc (' ', stdout);
-            printf("%02x", i);
+	    if (cnt++) putc (' ', OUT);
+            fprintf(OUT,"%02x", i);
 	}
     }
 }
 
 // just dump the grammar linearly,  should result in same logical graph as printg()
 void dumpg (void) {
-    int hi;
+    int indx;
     char *p, *tp, *hp, prop;
 
     p = state_machine;
     while (p < (state_machine + sizeof_state_machine)) {
         tp = p;
         if (*p) {
-            while ((hi = *p++)) {
+            while ((indx = *p++)) {
                 prop = *p++;
-                hp = p+(hi<<1);
+                hp = p + (indx<<1);
+
                 print_edge(tp, hp);
                 print_prop(prop);
 	    }
-            printf("\n");
+            fprintf(OUT,"\n");
 	    p++;
 	}
 	else {
-	    printf("%s%s", get_name(p), styleLBE);
+	    fprintf(OUT,"%s%s", get_name(p), styleLBE);
             print_chars(p);
-	    printf("%s\n", styleRBE);
+	    fprintf(OUT,"%s\n", styleRBE);
 	    p+=2;	
 	}
     }
@@ -141,7 +145,7 @@ static char *inp;
 static int in;
 
 static int parse_next(int s) {
-    int *pn, n, rc;
+    int pn, n, rc;
 
 #if 1
     int ss;
@@ -154,13 +158,13 @@ static int parse_next(int s) {
 #if 1
     ss = s & 0xFF;
     s_name = *state_name[ss >> 1];
-    printf("%s\n", s_name);
+    fprintf(OUT,"%s\n", s_name);
 #endif
 
     if ( in == ss ) {
 #if 2
         in_name = *state_name[in >> 1];
-	printf("    %s\n", in_name);
+	fprintf(OUT,"    %s\n", in_name);
 #endif
         c = *inp++;
         in = char2state[c];
@@ -183,18 +187,18 @@ static int parse_next(int s) {
 
 static int parse_next(char *p) {
     char *tp, *hp, prop;
-    int hi;
+    int indx;
 
     tp = p;
-    while ((hi = *p++)) {
+    while ((indx = *p++)) {
         prop = *p++;
-        hp = p+(hi<<1);
+        hp = p + (indx<<1);
 
         print_edge(tp, hp);
         print_prop(prop);
-        printf(" {\n");
+        fprintf(OUT," {\n");
 //	if (! (prop & REC)) printg_next(hp, indent+2);
-        printf("}\n");
+        fprintf(OUT,"}\n");
     }
     return 1;
 }
@@ -311,7 +315,7 @@ printj(nlistlist);
         if (state & (OPEN|CLOSE)) {
 	    rc = opencloseblock(act, state);
 	    if (rc) {
-		fprintf(stderr, "parser error at: %d:%d \"%c\"\n", linecnt,  linecharcnt, c);
+		fprintf(ERR,"parser error at: %d:%d \"%c\"\n", linecnt,  linecharcnt, c);
                 return rc;
             }
         }

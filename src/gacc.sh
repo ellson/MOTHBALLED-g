@@ -135,11 +135,8 @@ leg2=""
 
 g_node() {
     sm_term
-    if test "${NODE[$1]}" = ""; then
-        NODE[$1]="1"
-        sm_state $1
-	sm_node $1
-    fi
+    sm_state $1
+    sm_node $1
 }
 
 g_edge() {
@@ -333,7 +330,7 @@ for s in ${statelist[@]}; do
 	    nprops=0
         fi
         printf " %d,%s," "$((nxtindx-indx))" "$nprops"
-#DEBUG  echo "state=$s indx=$indx next=$next nxtindx=$nxtindx diff=$(( $nxtindx - $indx ))" >&2
+#DEBUG echo "state=$s indx=$indx next=$next nxtindx=$nxtindx diff=$(( $nxtindx - $indx ))" >&2
     done
     spos=${SPOS[$s]}
     printf " 0,$((spos/2)),\n"
