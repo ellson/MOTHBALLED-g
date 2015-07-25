@@ -27,7 +27,7 @@ static char *get_name(char *p) {
 }
 
 static void print_edge( char *tail, char *head ) {
-    printf("%s %s %s %s", styleLAN, tail, head, styleRAN);
+    printf("%s%s %s%s", styleLAN, get_name(tail), get_name(head), styleRAN);
 }
 
 static void print_attr ( char attr, char *name, int *cnt ) {
@@ -43,7 +43,6 @@ static void print_prop(char prop) {
     if (prop & (ALT|OPT|SREP|REP|REC)) {
         cnt=0;
         printf("%s", styleLBR);
-        putc ('[',stdout);
         print_attr( prop & ALT, "ALT", &cnt);
         print_attr( prop & OPT, "OPT", &cnt);
         print_attr( prop & SREP, "SREP", &cnt);
@@ -74,7 +73,7 @@ static void printg_next(char *p, int indent) {
 
 // recursively walk the grammar - tests all possible transitions
 void printg (void) {
-    printg_next(&state_machine[ACT<<1], 0);
+    printg_next(state_machine, 0);
 }
 
 static void print_chars ( char *p ) {
@@ -117,10 +116,12 @@ void dumpg (void) {
     }
 }
 
-static unsigned char *inp, c;
-static int in;
+static unsigned char c;
+static char *inp;
 
 #if 0
+static int in;
+
 static int parse_next(int s) {
     int *pn, n, rc;
 
@@ -164,7 +165,7 @@ static int parse_next(int s) {
 
 static int parse_next(char *p) {
     char *tp, *hp, prop;
-    int i, hi;
+    int hi;
 
     tp = p;
     while ((hi = *p++)) {

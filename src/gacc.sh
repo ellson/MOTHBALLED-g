@@ -229,7 +229,6 @@ cat >>$ofh <<EOF
 extern char state_names[];
 extern unsigned char char2state[];
 extern char state_machine[];
-extern int sizeof_state_machine;
 
 EOF
 ##############################################
@@ -251,7 +250,7 @@ EOF
 printf "char state_names[] = {\n"
 for n in ${namelist[@]}; do
     spos=${SPOS[$n]}
-    printf "    /* %3d */  %s,\n" "$((spos/2))" "$n"
+    printf "    /* %3d */  %s,\n" "$((spos/2))" "${NAME[$n]}"
 done
 printf "};\n\n"
 ) >>$ofc
@@ -341,6 +340,9 @@ for s in ${statelist[@]}; do
     printf " 0,$((spos/2)),\n"
 done
 printf "};\n\n"
-
-printf "int sizeof_state_machine = sizeof(state_machine);\n\n"
 ) >>$ofc
+
+cat >>$ofh  <<EOF
+#define  sizeof_state_machine $(($indx *2))
+
+EOF
