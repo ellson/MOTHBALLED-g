@@ -22,12 +22,30 @@ void set_sstyle (void) {
 }
 
 static char *get_name(char *p) {
-    while (*p++) p++;             // traverse to terminator
-    return &state_names[(*p<<1)]; // get index for string from the byte after the terminator
+    while (*p) p+=2;            // traverse to terminator
+    return (state_names + (*++p) * 2); // get index for string from the byte after the terminator
 }
 
-static void print_edge( char *tail, char *head ) {
-    printf("%s%s %s%s", styleLAN, get_name(tail), get_name(head), styleRAN);
+static char *oleg1=NULL, *oleg2=NULL;
+static char *sleg1, *sleg2;
+
+static void print_edge( char *leg1, char *leg2 ) {
+    if (leg1 != oleg1) {
+	oleg1 = leg1;
+        sleg1 = get_name(leg1);
+        oleg2 = NULL;
+    }
+    else {
+	sleg1 = "=";
+    }
+    if (leg2 != oleg1) {
+	oleg2 = leg2;
+        sleg2 = get_name(leg2);
+    }
+    else {
+	sleg2 = "=";
+    }
+    printf("%s%s %s%s", styleLAN, sleg1, sleg2, styleRAN);
 }
 
 static void print_attr ( char attr, char *name, int *cnt ) {
@@ -59,15 +77,15 @@ static void printg_next(char *p, int indent) {
     tp = p;
     while ((hi = *p++)) {
         prop = *p++;
-        hp = p+(hi<<1);
+        hp = p + (hi<<1);
 
         for (i = indent; i--; ) putc (' ', stdout);
         print_edge(tp, hp);
         print_prop(prop);
-        printf("%s", styleLBE);
+        printf("%s\n", styleLBE);
 	if (! (prop & REC)) printg_next(hp, indent+2);
         for (i = indent; i--; ) putc (' ', stdout);
-        printf("%s", styleRBE);
+        printf("%s\n", styleRBE);
     }
 }
 
@@ -103,14 +121,14 @@ void dumpg (void) {
                 hp = p+(hi<<1);
                 print_edge(tp, hp);
                 print_prop(prop);
-                printf("\n");
 	    }
+            printf("\n");
 	    p++;
 	}
 	else {
 	    printf("%s%s", get_name(p), styleLBE);
             print_chars(p);
-	    printf("%s", styleRBE);
+	    printf("%s\n", styleRBE);
 	    p+=2;	
 	}
     }

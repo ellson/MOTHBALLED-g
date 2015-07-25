@@ -52,23 +52,18 @@ sm_node() {
 }
 
 sm_state() {
+    if test "$state" != ""; then
+        nextlist=("${nextlist[@]}" "")
+        proplist=("${proplist[@]}" "")
+        ((indx++))
+    fi
     state=$1
     statelist=("${statelist[@]}" "$1")
     POS[$1]=$indx
 }
 
-sm_end_state() {
-    if test "$1" != ""; then
-        nextlist=("${nextlist[@]}" "")
-        proplist=("${proplist[@]}" "")
-        ((indx++))
-    fi
-    state=""
-}
-
 sm_leg1() {
     if test "$state" != "$1"; then
-        sm_end_state $state
         sm_state $1
     fi
     sm_node $1
@@ -79,7 +74,6 @@ sm_leg2() {
 }
 
 sm_edge() {
-    sm_term
     next=$2
 }
 
@@ -104,28 +98,27 @@ sm_delete() {
 }
 
 sm_term() {
-    if test "$state" != ""; then
-        if test "$next" != ""; then
-            nextlist=("${nextlist[@]}" "$next")
+    if test "$next" != ""; then
+        nextlist=("${nextlist[@]}" "$next")
+	next=""
 
-	    nprop=""
-            if test "$prop" != ""; then
-                cnt=0
-                for p in $prop; do
-	            PROPS[$p]=""
-                    if test $cnt -ne 0;then
-		        nprop+=" $p"
-		    else
-	                nprop+="$p"
-		    fi
-		    ((cnt++))
-	        done
-            fi
-            proplist=("${proplist[@]}" "$nprop")
-            prop=""
-	    ((indx++))
-	    next=""
+        nprop=""
+        if test "$prop" != ""; then
+            cnt=0
+            for p in $prop; do
+	        PROPS[$p]=""
+                if test $cnt -ne 0;then
+	            nprop+=" $p"
+		else
+	            nprop+="$p"
+		fi
+		((cnt++))
+	    done
         fi
+        proplist=("${proplist[@]}" "$nprop")
+        prop=""
+
+	((indx++))
     fi
 }
 
@@ -133,23 +126,29 @@ sm_term() {
 # fairly generic functions for g traversal
 #    - expects input in the "shell friendly" format of g
 #
-# eventually to be replace by an output option on g
+# eventually to be replaced by an output option on g
 
 typeset -A NODE
 
+leg1=""
+leg2=""
+
 g_node() {
+    sm_term
     if test "${NODE[$1]}" = ""; then
         NODE[$1]="1"
-        sm_end_state $state
         sm_state $1
 	sm_node $1
     fi
 }
 
 g_edge() {
-    sm_leg1 $1
-    sm_leg2 $2
-    sm_edge $1 $2
+    sm_term
+    if test "$1" != "="; then leg1="$1"; fi
+    if test "$2" != "="; then leg2="$2"; fi
+    sm_leg1 $leg1
+    sm_leg2 $leg2
+    sm_edge $leg1 $leg2
 }
 
 g_list() {
@@ -334,6 +333,7 @@ for s in ${statelist[@]}; do
 	    nprops=0
         fi
         printf " %d,%s," "$((nxtindx-indx))" "$nprops"
+#DEBUG  echo "state=$s indx=$indx next=$next nxtindx=$nxtindx diff=$(( $nxtindx - $indx ))" >&2
     done
     spos=${SPOS[$s]}
     printf " 0,$((spos/2)),\n"
