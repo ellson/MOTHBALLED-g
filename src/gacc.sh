@@ -321,13 +321,13 @@ for s in ${statelist[@]}; do
 	    cnt=0
 	    for q in ${!PROPS[@]}; do
 		if test "$p" = "$q"; then
-		    ((nprops += 1<<cnt))
+		    ((nprops += (1<<cnt) ))
 		fi
+	        ((cnt++))
 	    done
-	    ((cnt++))
 	done
-        printf " %4d,%d," "$((nxtindx-indx))" "$nprops"
-#DEBUG echo "state=$s indx=$indx next=$next nxtindx=$nxtindx diff=$(( $nxtindx - $indx ))" >&2
+        printf " %4d,%d," $((nxtindx-indx)) $nprops
+#echo "state=$s indx=$indx next=$next nxtindx=$nxtindx diff=$(( $nxtindx - $indx )) props=$nprops" >&2
     done
     spos=${SPOS[$s]}
     printf " %4d,%d,\n" 0 $((spos/2))

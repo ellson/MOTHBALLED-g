@@ -204,7 +204,7 @@ static int parse_next(char *p) {
         print_edge(tp, hp);
         print_prop(prop);
         fprintf(OUT," {\n");
-//	if (! (prop & REC)) printg_next(hp, indent+2);
+	if (! (prop & REC)) parse_next(hp);
         fprintf(OUT,"}\n");
     }
     return 1;
@@ -212,8 +212,8 @@ static int parse_next(char *p) {
 
 int parse(unsigned char *in) {
     c = *in++;
-    inp = &state_machine[char2state[c]<<1];
-    return parse_next(&state_machine[ACT<<1]);
+    inp = state_machine+char2state[c]*2;
+    return parse_next(state_machine);
 }
 
 
