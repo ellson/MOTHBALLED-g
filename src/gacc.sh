@@ -268,7 +268,7 @@ printf "\n};\n\n"
 
 ####
 (
-printf "/* EBNF *************************************************\n *\n *"
+printf "/******************** eBNF ******************************\n *\n *"
 for s in ${statelist[@]}; do
     indx=${POS[$s]}
     printf "%21s ::=" "$s"
@@ -327,7 +327,6 @@ for s in ${statelist[@]}; do
 	    done
 	done
         printf "%4d,0x%02x," $((nxtindx-indx)) $nprops
-#echo "state=$s indx=$indx next=$next nxtindx=$nxtindx diff=$(( $nxtindx - $indx )) props=$nprops" >&2
     done
     spos=${SPOS[$s]}
     printf "%4d,%d,\n" 0 $((spos/2))
