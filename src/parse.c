@@ -105,9 +105,17 @@ static void print_chars ( char *p ) {
     cnt=0;
     for (i=0; i<0x100; i++) {
         if (si == char2state[i]) {
-	    if (cnt++) putc (' ', OUT);
+	    if (cnt++) {
+	        putc (' ', OUT);
+	    }
+	    else {
+		fprintf(OUT,"%s",styleLBE);
+	    }
             fprintf(OUT,"%02x", i);
 	}
+    }
+    if (cnt++) {
+	fprintf(OUT,"%s",styleRBE);
     }
 }
 
@@ -128,15 +136,14 @@ void dumpg (void) {
                 print_edge(tp, hp);
                 print_prop(prop);
 	    }
-            fprintf(OUT,"\n");
 	    p++;
 	}
 	else {
-	    fprintf(OUT,"%s%s", get_name(p), styleLBE);
+	    fprintf(OUT,"%s", get_name(p));
             print_chars(p);
-	    fprintf(OUT,"%s\n", styleRBE);
 	    p+=2;	
 	}
+        fprintf(OUT,"\n");
     }
 }
 
