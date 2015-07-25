@@ -48,7 +48,6 @@ sm_node() {
             NAME[$1]+=",'\\0'"
             ((sindx++))
         fi
-        prop=""
     fi
 }
 
@@ -80,8 +79,8 @@ sm_leg2() {
 }
 
 sm_edge() {
+    sm_term
     next=$2
-    prop=""
 }
 
 sm_list_elem() {
@@ -115,15 +114,15 @@ sm_term() {
                 for p in $prop; do
 	            PROPS[$p]=""
                     if test $cnt -ne 0;then
-		        nprop+=" $prop"
+		        nprop+=" $p"
 		    else
-	                nprop+="$prop"
+	                nprop+="$p"
 		    fi
 		    ((cnt++))
 	        done
-                prop=""
             fi
             proplist=("${proplist[@]}" "$nprop")
+            prop=""
 	    ((indx++))
 	    next=""
         fi
@@ -158,10 +157,10 @@ g_list() {
 }
 
 g_prop() {
-    sm_prop $*
+    sm_prop "$*"
 }
 g_cont() {
-    sm_cont $*
+    sm_cont "$*"
 }
 g_delete() {
     sm_delete
@@ -343,6 +342,6 @@ printf "};\n\n"
 ) >>$ofc
 
 cat >>$ofh  <<EOF
-#define  sizeof_state_machine $(($indx *2))
+#define  sizeof_state_machine $(( (indx+1)*2 ))
 
 EOF
