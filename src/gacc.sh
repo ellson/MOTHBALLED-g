@@ -11,11 +11,9 @@ if test ! -r "$ifn"; then
    exit 1
 fi
 
-of=${ifn%.s}
-# of=${ifn%.g}
+of=${ifn%.g}
 ofh=${of}.h
 ofc=${of}.c
-
 
 typeset -A POS NAME SPOS PROPS CHARMAP
 
@@ -165,6 +163,8 @@ g_term() {
     sm_term
 }
 
+sed '{s/</\n< /g;s/>/\n>/g;s/\[/\n \[ /g;s/\]/\n \]/g;s/{/\n { /g;s/}/\n }/g}' $ifn >${ifn}.s
+
 while read op toks; do
     if test "$op" = ""; then continue; fi
     case "$op" in
@@ -177,7 +177,9 @@ while read op toks; do
     ';' ) g_term ;;
     * ) g_node "$op";;
     esac
-done <$ifn
+done <${ifn}.s
+
+rm -f ${ifn}.s
 
 ##############################################
 #

@@ -18,11 +18,8 @@ grammar.png: g g2gv.sh
 grammar.g:
 	./g -d >grammar.g
 
-grammar.s: grammar.g spacer.sed
-	sed -f spacer.sed <grammar.g >grammar.s
-
-grammar.c grammar.h: grammar.s gacc.sh
-	./gacc.sh grammar.s
+grammar.c grammar.h: grammar.g gacc.sh
+	./gacc.sh grammar.g
 
 clean:
-	rm -f *.o g grammar.png grammar.[chs]
+	rm -f *.o g grammar.png grammar.[ch]
