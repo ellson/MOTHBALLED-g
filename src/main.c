@@ -13,14 +13,14 @@ int main (int argc, char *argv[]) {
 
 // FIXME - do options properly
     for (i=0; i<argc; i++) {
-        if (strcmp(argv[1], "-s") == 0) {
+        if (strcmp(argv[i], "-s") == 0) {
 	    set_sstyle();
         }
-        if (strcmp(argv[1], "-g") == 0) {
+        if (strcmp(argv[i], "-g") == 0) {
             printg();
 	    return 0;
         }
-        if (strcmp(argv[1], "-d") == 0) {
+        if (strcmp(argv[i], "-d") == 0) {
             dumpg();
 	    return 0;
         }
