@@ -25,7 +25,7 @@ void set_sstyle (void) {
 }
 
 static char *get_name(char *p) {
-    while (*p) p+=2; return (state_names + (unsigned char)(*++p) * 2); 
+    while (*p) p+=2; return (state_names + (unsigned char)(*++p) *2); 
 }
 
 static char *oleg1=NULL, *oleg2=NULL;
@@ -81,7 +81,7 @@ static void printg_next(char *p, int indent) {
     tp = p;
     while ((indx = *p++)) {
         prop = *p++;
-        hp = p + indx * 2;
+        hp = p + indx INDXMULT;
 
         for (i = indent; i--; ) putc (' ', OUT);
         print_edge(tp, hp);
@@ -131,7 +131,7 @@ void dumpg (void) {
         if (*p) {
             while ((indx = *p++)) {
                 prop = *p++;
-                hp = p + indx * 2;
+                hp = p + indx INDXMULT;
 
                 print_edge(tp, hp);
                 print_prop(prop);
@@ -163,7 +163,7 @@ static int parse_next(char *p, unsigned char *in) {
         fprintf(OUT,"EOF\n");
     }
 
-    inp = &state_machine[char2state[c]*2];
+    inp = &state_machine[char2state[c] INDXMULT];
 
     if (inp == p) {
 #if 1
@@ -175,7 +175,7 @@ static int parse_next(char *p, unsigned char *in) {
     rc = 1;
     while ((indx = *p++)) {
         prop = *p++;
-        np = p + indx * 2;
+        np = p + indx INDXMULT;
 
 	if      ( (prop & ALT)) {
 		if (( rc = parse_next(np,in) ) != 0) continue;

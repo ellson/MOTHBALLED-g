@@ -307,11 +307,46 @@ printf "\n ********************************************************/\n\n"
 ) >>$ofc
 
 ####
+largest=0
+for s in ${statelist[@]}; do
+    indx=${POS[$s]}
+    while true; do
+        next=${nextlist[$indx]}
+	prop=${proplist[$indx]}
+        ((indx++))
+        if test "$next" = ""; then break; fi
+        nxtindx=${POS[$next]}
+        if test $nxtindx -gt $indx;then
+	    absoffset=$((nxtindx-indx))
+	else
+	    absoffset=$((indx-nextindx))
+        fi
+        if test $absoffset -gt $largest; then
+	    largest=$absoffset
+	fi
+    done
+done
+if test $largest -lt 64; then
+    PREINDXMULT="*2"
+    INDXMULT=""
+else
+    PREINDXMULT=""
+    INDXMULT="*2"
+fi
+
+cat >>$ofh  <<EOF
+#define sizeof_state_machine $(( indx * 2 ))
+#define PREINDXMULT $PREINDXMULT
+#define INDXMULT $INDXMULT
+
+EOF
+
+####
 (
 printf "char state_machine[] = {\n"
 for s in ${statelist[@]}; do
     indx=${POS[$s]}
-    printf "    /* %3s %12s */  " "$indx" "$s"
+    printf "    /* %3d %12s */  " $(( indx $PREINDXMULT )) "$s"
     while true; do
         next=${nextlist[$indx]}
 	prop=${proplist[$indx]}
@@ -328,15 +363,10 @@ for s in ${statelist[@]}; do
 	        ((cnt++))
 	    done
 	done
-        printf "%4d,0x%02x," $((nxtindx-indx)) $nprops
+        printf "%4d,0x%02x," $(( (nxtindx-indx) $PREINDXMULT )) $nprops
     done
     spos=${SPOS[$s]}
     printf "%4d,%d,\n" 0 $((spos/2))
 done
 printf "};\n\n"
 ) >>$ofc
-
-cat >>$ofh  <<EOF
-#define  sizeof_state_machine $(( (indx+1)*2 ))
-
-EOF
