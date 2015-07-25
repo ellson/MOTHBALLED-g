@@ -6,7 +6,7 @@
 #include "list.h"
 #include "parse.h"
 
-#define OUT stderr
+#define OUT stdout
 #define ERR stderr
 
 #define styleLAN sstyle?"< ":"<"
@@ -25,8 +25,11 @@ void set_sstyle (void) {
 }
 
 static char *get_name(char *p) {
-    while (*p) p+=2;                   // traverse to terminator
-    return (state_names + ((*++p)<<1)); // get index to state_name from the byte after the terminator
+    unsigned char sindx;              // absolute offset
+
+    while (*p) p+=2;                  // traverse to terminator
+    sindx = *++p;                     // get to state_name from the byte after the terminator
+    return (state_names + sindx * 2); // use as offset from beginning of table
 }
 
 static char *oleg1=NULL, *oleg2=NULL;
@@ -58,7 +61,7 @@ static void print_attr ( char attr, char *attrid, int *inlist ) {
     }
 }
 
-static void print_prop(char prop) {
+static void print_prop(unsigned char prop) {
     int inlist;
 
     if (prop & (ALT|OPT|SREP|REP|REC)) {
@@ -74,13 +77,15 @@ static void print_prop(char prop) {
 }
 
 static void printg_next(char *p, int indent) {
-    char *tp, *hp, prop;
-    int indx, i;
+    char *tp, *hp;
+    char  indx; // relative offset, can be -ve
+    unsigned char prop;
+    int i;
 
     tp = p;
     while ((indx = *p++)) {
         prop = *p++;
-        hp = p + (indx<<1);
+        hp = p + indx * 2;
 
         for (i = indent; i--; ) putc (' ', OUT);
         print_edge(tp, hp);
@@ -112,8 +117,9 @@ static void print_chars ( char *p ) {
 
 // just dump the grammar linearly,  should result in same logical graph as printg()
 void dumpg (void) {
-    int indx;
-    char *p, *tp, *hp, prop;
+    char *p, *tp, *hp;
+    char  indx; // relative offset, can be -ve
+    unsigned char prop;
 
     p = state_machine;
     while (p < (state_machine + sizeof_state_machine)) {
@@ -121,7 +127,7 @@ void dumpg (void) {
         if (*p) {
             while ((indx = *p++)) {
                 prop = *p++;
-                hp = p + (indx<<1);
+                hp = p + indx * 2;
 
                 print_edge(tp, hp);
                 print_prop(prop);
@@ -186,13 +192,14 @@ static int parse_next(int s) {
 #endif
 
 static int parse_next(char *p) {
-    char *tp, *hp, prop;
-    int indx;
+    char *tp, *hp;
+    char  indx; // relative offset, can be -ve
+    unsigned char prop;
 
     tp = p;
     while ((indx = *p++)) {
         prop = *p++;
-        hp = p + (indx<<1);
+        hp = p + indx *2;
 
         print_edge(tp, hp);
         print_prop(prop);
