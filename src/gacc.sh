@@ -271,7 +271,7 @@ printf "\n};\n\n"
 printf "/* EBNF *************************************************\n\n"
 for s in ${statelist[@]}; do
     indx=${POS[$s]}
-    printf "%26s ::=" "$s"
+    printf "%23s ::=" "$s"
     alts=0
     while true; do
         next=${nextlist[$indx]}
@@ -282,7 +282,7 @@ for s in ${statelist[@]}; do
 	for p in $prop; do
 	    case $p in
             ALT ) if test $alts -ne 0; then
-		      printf "\n%30s" "|"
+		      printf "\n%27s" "|"
 		  fi
 		  (( alts++))
 		  ;;
@@ -309,31 +309,28 @@ printf "\n********************************************************/\n\n"
 printf "char state_machine[] = {\n"
 for s in ${statelist[@]}; do
     indx=${POS[$s]}
-    printf "    /* %3s %15s */  " "$indx" "$s"
+    printf "    /* %3s %12s */  " "$indx" "$s"
     while true; do
         next=${nextlist[$indx]}
 	prop=${proplist[$indx]}
         ((indx++))
         if test "$next" = ""; then break; fi
         nxtindx=${POS[$next]}
-        nprops=""
-        cnt=0
+        nprops=0
 	for p in $prop; do
-	    if test $cnt -eq 0; then
-		nprops=$p
-	    else
-		nprops+="|$p"
-	    fi
+	    cnt=0
+	    for q in ${!PROPS[@]}; do
+		if test "$p" = "$q"; then
+		    ((nprops += 1<<cnt))
+		fi
+	    done
 	    ((cnt++))
 	done
-	if test $cnt -eq 0; then
-	    nprops=0
-        fi
-        printf " %d,%s," "$((nxtindx-indx))" "$nprops"
+        printf " %4d,%d," "$((nxtindx-indx))" "$nprops"
 #DEBUG echo "state=$s indx=$indx next=$next nxtindx=$nxtindx diff=$(( $nxtindx - $indx ))" >&2
     done
     spos=${SPOS[$s]}
-    printf " 0,$((spos/2)),\n"
+    printf " %4d,%d,\n" 0 $((spos/2))
 done
 printf "};\n\n"
 ) >>$ofc
