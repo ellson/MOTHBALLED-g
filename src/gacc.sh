@@ -309,7 +309,7 @@ printf "\n ********************************************************/\n\n"
 
 ####
 ( printf "char state_machine[] = {\n"        )  >${ofc}.states
-( printf "unsigned char state_props[] = {\n" )  >${ofc}.states
+( printf "unsigned char state_props[] = {\n" )  >${ofc}.props
 for s in ${statelist[@]}; do
     indx=${POS[$s]}
     ( printf "    /* %3d %12s */  " $indx $s ) >>${ofc}.states

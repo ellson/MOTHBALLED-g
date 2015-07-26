@@ -24,16 +24,16 @@ void set_sstyle (void) {
     sstyle=1;
 }
 
-#define PROPP(p) (p + (state_props - state_machine))
+#define PROPP(p) (p + ((char*)state_props - state_machine))
 
 static char *get_name(char *p) {
-    while (*p) p+=2; return (state_names + (*PROPP) *2); 
+    while (*p) p++; return (state_names + (*PROPP(p)) *2); 
 }
 
 static char *oleg1=NULL, *oleg2=NULL;
 static char *sleg1, *sleg2;
 
-static void print_edge( char *leg1, char *leg2 ) {
+static void print_next( char *leg1, char *leg2 ) {
     if (leg1 != oleg1) {
 	oleg1 = leg1;
         sleg1 = get_name(leg1);
@@ -59,9 +59,11 @@ static void print_attr ( char attr, char *attrid, int *inlist ) {
     }
 }
 
-static void print_prop(unsigned char prop) {
+static void print_prop(char *p) {
+    unsigned char prop;
     int inlist;
 
+    prop = *PROPP(p);
     if (prop & (ALT|OPT|SREP|REP|REC)) {
         inlist=0;
         fprintf(OUT,"%s", styleLBR);
@@ -76,19 +78,15 @@ static void print_prop(unsigned char prop) {
 
 static void printg_next(char *sp, int indent) {
     char *p;
-    char  indx; // relative offset, can be -ve
-    unsigned char prop;
     int i;
 
     p = sp;
     while (*p) {
-        prop = *PROP(p)
-
         for (i = indent; i--; ) putc (' ', OUT);
-        print_edge(sp, p);
-        print_prop(prop);
+        print_next(sp, p);
+        print_prop(p);
         fprintf(OUT,"%s\n", styleLBE);
-	if (! (prop & REC)) printg_next(p, indent+2);
+	if (! (*PROPP(p) & REC)) printg_next(p, indent+2);
         for (i = indent; i--; ) putc (' ', OUT);
         fprintf(OUT,"%s\n", styleRBE);
 
@@ -129,11 +127,11 @@ void dumpg (void) {
     p = state_machine;
     while (p < (state_machine + sizeof_state_machine)) {
         if (*p) {
-            while ((next = *p)) {
-                print_edge(p, p+next);
-                print_prop(*PROPP(p));
+            while (*p) {
+                print_next(p, p+*p);
+                print_prop(p);
+	        p++;
 	    }
-	    p++;
 	}
 	else {
 	    fprintf(OUT,"%s", get_name(p));
@@ -147,7 +145,6 @@ void dumpg (void) {
 static int parse_next(char *p, unsigned char *in) {
     unsigned char c;
     char *np, *inp;
-    char  indx; // relative offset, can be -ve
     unsigned char prop;
     int rc;
 
@@ -160,7 +157,7 @@ static int parse_next(char *p, unsigned char *in) {
         fprintf(OUT,"EOF\n");
     }
 
-    inp = &state_machine[char2state[c] INDXMULT];
+    inp = state_machine + char2state[c];
 
     if (inp == p) {
 #if 1
@@ -170,9 +167,9 @@ static int parse_next(char *p, unsigned char *in) {
     }
 
     rc = 1;
-    while ((indx = *p++)) {
-        prop = *p++;
-        np = p + indx INDXMULT;
+    while (*p) {
+        prop = *PROPP(p);
+        np = p + *p;
 
 	if      ( (prop & ALT)) {
 		if (( rc = parse_next(np,in) ) != 0) continue;
