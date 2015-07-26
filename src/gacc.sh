@@ -330,14 +330,14 @@ for s in ${statelist[@]}; do
 	fi
     done
 done
-if test $largest -lt 64; then
+if test $abslargest -lt 64; then
     PREINDXMULT="*2"
     INDXMULT=""
     reason="Because this is <64 the offsets have not been divided by 2 in the state_machine[]"
 else
     PREINDXMULT=""
     INDXMULT="*2"
-    reason="Because this is >=64 the offsets require multiplication by 2 before us"
+    reason="Because this is >=64 the offsets require multiplication by 2 before use"
 fi
 
 cat >>$ofh  <<EOF

@@ -1,0 +1,39 @@
+- fix parser 
+- in eBNF show chars as chars when ABC or terminal tokens
+- canonicalize subject
+	- lists
+	- retain order
+- support SAMEEND
+- patterns
+	- pattern syntax
+	- pattern matching
+- buffer management
+	- minimize need for malloc()
+	- ref count or equiv from frags
+	- free reference to  SAMEND string as soon as possible
+	- know when all refs have gone, then reuse
+- TWO character tokens
+	- EOL
+	- ESC
+	- CMNTs
+		-- /* ... */
+		-- // ... EOL
+		-- # ... EOL
+	- EDGEOP
+		-- ->
+		-- --
+- WS handling 
+	- CRLF
+	- SREP
+- Other quoting mechanisms
+	- HTML-like
+	- Content-Length:
+	- multipart
+- Meta state events:
+	- pattern_match
+	- end_of_statement
+	- end_of_sameend_statements
+	- error
+	- end_of_stream
+	
+	
