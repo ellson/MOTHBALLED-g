@@ -307,35 +307,42 @@ printf "\n ********************************************************/\n\n"
 ) >>$ofc
 
 ####
-largest=0
+abslargest=0
+largeststate=""
 for s in ${statelist[@]}; do
     indx=${POS[$s]}
     while true; do
         next=${nextlist[$indx]}
-	prop=${proplist[$indx]}
         ((indx++))
         if test "$next" = ""; then break; fi
         nxtindx=${POS[$next]}
-        if test $nxtindx -gt $indx;then
-	    absoffset=$((nxtindx-indx))
+        offset=$((nxtindx-indx))
+        if test $offset -gt 0;then
+	    absoffset=$offset
 	else
-	    absoffset=$((indx-nextindx))
+	    absoffset=$((0 - offset))
         fi
-        if test $absoffset -gt $largest; then
-	    largest=$absoffset
+        if test $absoffset -gt $abslargest; then
+	    abslargest=$absoffset
+	    largest=$offset
+	    largestnext=$next
+	    largeststate=$s
 	fi
     done
 done
 if test $largest -lt 64; then
     PREINDXMULT="*2"
     INDXMULT=""
+    reason="Because this is <64 the offsets have not been divided by 2 in the state_machine[]"
 else
     PREINDXMULT=""
     INDXMULT="*2"
+    reason="Because this is >=64 the offsets require multiplication by 2 before us"
 fi
 
 cat >>$ofh  <<EOF
 #define sizeof_state_machine $(( indx * 2 ))
+
 #define PREINDXMULT $PREINDXMULT
 #define INDXMULT $INDXMULT
 
@@ -370,3 +377,10 @@ for s in ${statelist[@]}; do
 done
 printf "};\n\n"
 ) >>$ofc
+
+cat >>$ofc  <<EOF
+
+// $largeststate has the largest offset $largest (*2 bytes) to $largestnext
+// $reason
+// The #define "INDXMULT" provides the required multiplication for offset values from the table
+EOF
