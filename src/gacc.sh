@@ -122,9 +122,8 @@ sm_term() {
 
 #############################################
 # fairly generic functions for g traversal
-#    - expects input in the "shell friendly" format of g
-#
-# eventually to be replaced by an output option on g
+#    - expects input in the "shell friendly" formatting of g
+#    -  ( hence the sed script below )
 
 typeset -A NODE
 
@@ -151,10 +150,10 @@ g_list() {
 }
 
 g_prop() {
-    sm_prop "$*"
+    sm_prop $*
 }
 g_cont() {
-    sm_cont "$*"
+    sm_cont $*
 }
 g_delete() {
     sm_delete
@@ -163,16 +162,17 @@ g_term() {
     sm_term
 }
 
+# add newline befor all interesting tokens, and a space after
 sed '{s/</\n< /g;s/>/\n>/g;s/\[/\n \[ /g;s/\]/\n \]/g;s/{/\n { /g;s/}/\n }/g}' $ifn >${ifn}.s
 
-while read op toks; do
+while read op rest; do
     if test "$op" = ""; then continue; fi
     case "$op" in
     '>' | ')' | ']' | '}' ) ;;
-    '<' ) g_edge $toks;;
-    '(' ) g_list $toks;;
-    '[' ) g_prop $toks;;
-    '{' ) g_cont $toks;;
+    '<' ) g_edge $rest;;
+    '(' ) g_list $rest;;
+    '[' ) g_prop $rest;;
+    '{' ) g_cont $rest;;
     '~' ) g_delete ;;
     ';' ) g_term ;;
     * ) g_node "$op";;
@@ -226,6 +226,7 @@ cat >>$ofh <<EOF
 extern char state_names[];
 extern unsigned char char2state[];
 extern char state_machine[];
+extern unsigned char state_props[];
 
 EOF
 ##############################################
@@ -307,59 +308,19 @@ printf "\n ********************************************************/\n\n"
 ) >>$ofc
 
 ####
-abslargest=0
-largeststate=""
+( printf "char state_machine[] = {\n"        )  >${ofc}.states
+( printf "unsigned char state_props[] = {\n" )  >${ofc}.states
 for s in ${statelist[@]}; do
     indx=${POS[$s]}
-    while true; do
-        next=${nextlist[$indx]}
-        ((indx++))
-        if test "$next" = ""; then break; fi
-        nxtindx=${POS[$next]}
-        offset=$((nxtindx-indx))
-        if test $offset -gt 0;then
-	    absoffset=$offset
-	else
-	    absoffset=$((0 - offset))
-        fi
-        if test $absoffset -gt $abslargest; then
-	    abslargest=$absoffset
-	    largest=$offset
-	    largestnext=$next
-	    largeststate=$s
-	fi
-    done
-done
-if test $abslargest -lt 64; then
-    PREINDXMULT="*2"
-    INDXMULT=""
-    reason="Because this is <64 the offsets have not been divided by 2 in the state_machine[]"
-else
-    PREINDXMULT=""
-    INDXMULT="*2"
-    reason="Because this is >=64 the offsets require multiplication by 2 before use"
-fi
-
-cat >>$ofh  <<EOF
-#define sizeof_state_machine $(( indx * 2 ))
-
-#define PREINDXMULT $PREINDXMULT
-#define INDXMULT $INDXMULT
-
-EOF
-
-####
-(
-printf "char state_machine[] = {\n"
-for s in ${statelist[@]}; do
-    indx=${POS[$s]}
-    printf "    /* %3d %12s */  " $(( indx $PREINDXMULT )) "$s"
+    ( printf "    /* %3d %12s */  " $indx $s ) >>${ofc}.states
+    ( printf "    /* %3d %12s */  " $indx $s ) >>${ofc}.props
     while true; do
         next=${nextlist[$indx]}
 	prop=${proplist[$indx]}
         ((indx++))
         if test "$next" = ""; then break; fi
         nxtindx=${POS[$next]}
+
         nprops=0
 	for p in $prop; do
 	    cnt=0
@@ -370,17 +331,22 @@ for s in ${statelist[@]}; do
 	        ((cnt++))
 	    done
 	done
-        printf "%4d,0x%02x," $(( (nxtindx-indx) $PREINDXMULT )) $nprops
+
+        ( printf " %4d," $((nxtindx-indx))   ) >>${ofc}.states
+        ( printf " 0x%02x," $nprops          ) >>${ofc}.props
+        ((indx++))
     done
     spos=${SPOS[$s]}
-    printf "%4d,%d,\n" 0 $((spos/2))
+    ( printf " %4d,\n" 0                     ) >>${ofc}.states
+    ( printf " %4d,\n" $((spos/2))           ) >>${ofc}.props
 done
-printf "};\n\n"
-) >>$ofc
+( printf "};\n\n"                            ) >>${ofc}.states
+( printf "};\n\n"                            ) >>${ofc}.props
 
-cat >>$ofc  <<EOF
+cat ${ofc}.states ${ofc}.props >>$ofc
+rm -f ${ofc}.states ${ofc}.props
 
-// $largeststate has the largest offset $largest (*2 bytes) to $largestnext
-// $reason
-// The #define "INDXMULT" provides the required multiplication for offset values from the table
+cat >>$ofh  <<EOF
+#define sizeof_state_machine $indx
+
 EOF
