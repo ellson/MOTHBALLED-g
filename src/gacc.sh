@@ -317,7 +317,6 @@ for s in ${statelist[@]}; do
     while true; do
         next=${nextlist[$indx]}
 	prop=${proplist[$indx]}
-        ((indx++))
         if test "$next" = ""; then break; fi
         nxtindx=${POS[$next]}
 

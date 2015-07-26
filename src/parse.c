@@ -24,10 +24,13 @@ void set_sstyle (void) {
     sstyle=1;
 }
 
-#define PROPP(p) (p + ((char*)state_props - state_machine))
+#define PROPP(p) (state_props + (p - state_machine))
 
 static char *get_name(char *p) {
-    while (*p) p++; return (state_names + (*PROPP(p)) *2); 
+    int offset;
+    while (*p) p++;
+    offset = *PROPP(p) * 2;
+    return state_names + offset;
 }
 
 static char *oleg1=NULL, *oleg2=NULL;
@@ -77,16 +80,16 @@ static void print_prop(char *p) {
 }
 
 static void printg_next(char *sp, int indent) {
-    char *p;
+    char *p, nxt;
     int i;
 
     p = sp;
-    while (*p) {
+    while (( nxt = *p )) {
         for (i = indent; i--; ) putc (' ', OUT);
-        print_next(sp, p);
+        print_next(sp, p+nxt);
         print_prop(p);
         fprintf(OUT,"%s\n", styleLBE);
-	if (! (*PROPP(p) & REC)) printg_next(p, indent+2);
+	if (! (*PROPP(p) & REC)) printg_next(p+nxt, indent+2);
         for (i = indent; i--; ) putc (' ', OUT);
         fprintf(OUT,"%s\n", styleRBE);
 
@@ -122,22 +125,23 @@ static void print_chars ( char *p ) {
 
 // just dump the grammar linearly,  should result in same logical graph as printg()
 void dumpg (void) {
-    char *p;
+    char *p, *sp, nxt;
 
     p = state_machine;
     while (p < (state_machine + sizeof_state_machine)) {
-        if (*p) {
-            while (*p) {
-                print_next(p, p+*p);
+        if (*p) { // non-terminal
+            sp = p;
+            while (( nxt = *p )) {
+                print_next(sp, p+nxt);
                 print_prop(p);
-	        p++;
+		p++;
 	    }
 	}
-	else {
+	else { // else terminal
 	    fprintf(OUT,"%s", get_name(p));
             print_chars(p);
-	    p++;
 	}
+        p++;
         fprintf(OUT,"\n");
     }
 }
