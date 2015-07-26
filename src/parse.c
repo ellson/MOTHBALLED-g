@@ -24,8 +24,10 @@ void set_sstyle (void) {
     sstyle=1;
 }
 
+#define PROPP(p) (p + (state_props - state_machine))
+
 static char *get_name(char *p) {
-    while (*p) p+=2; return (state_names + (unsigned char)(*++p) *2); 
+    while (*p) p+=2; return (state_names + (*PROPP) *2); 
 }
 
 static char *oleg1=NULL, *oleg2=NULL;
@@ -72,24 +74,25 @@ static void print_prop(unsigned char prop) {
     }
 }
 
-static void printg_next(char *p, int indent) {
-    char *tp, *hp;
+static void printg_next(char *sp, int indent) {
+    char *p;
     char  indx; // relative offset, can be -ve
     unsigned char prop;
     int i;
 
-    tp = p;
-    while ((indx = *p++)) {
-        prop = *p++;
-        hp = p + indx INDXMULT;
+    p = sp;
+    while (*p) {
+        prop = *PROP(p)
 
         for (i = indent; i--; ) putc (' ', OUT);
-        print_edge(tp, hp);
+        print_edge(sp, p);
         print_prop(prop);
         fprintf(OUT,"%s\n", styleLBE);
-	if (! (prop & REC)) printg_next(hp, indent+2);
+	if (! (prop & REC)) printg_next(p, indent+2);
         for (i = indent; i--; ) putc (' ', OUT);
         fprintf(OUT,"%s\n", styleRBE);
+
+        p++;
     }
 }
 
@@ -101,7 +104,7 @@ void printg (void) {
 static void print_chars ( char *p ) {
     int i, cnt, si;
 
-    si = (p - state_machine)>>1;
+    si = (p - state_machine);
     cnt=0;
     for (i=0; i<0x100; i++) {
         if (si == char2state[i]) {
@@ -121,27 +124,21 @@ static void print_chars ( char *p ) {
 
 // just dump the grammar linearly,  should result in same logical graph as printg()
 void dumpg (void) {
-    char *p, *tp, *hp;
-    char  indx; // relative offset, can be -ve
-    unsigned char prop;
+    char *p;
 
     p = state_machine;
     while (p < (state_machine + sizeof_state_machine)) {
-        tp = p;
         if (*p) {
-            while ((indx = *p++)) {
-                prop = *p++;
-                hp = p + indx INDXMULT;
-
-                print_edge(tp, hp);
-                print_prop(prop);
+            while ((next = *p)) {
+                print_edge(p, p+next);
+                print_prop(*PROPP(p));
 	    }
 	    p++;
 	}
 	else {
 	    fprintf(OUT,"%s", get_name(p));
             print_chars(p);
-	    p+=2;	
+	    p++;
 	}
         fprintf(OUT,"\n");
     }
