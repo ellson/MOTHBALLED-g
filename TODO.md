@@ -8,7 +8,7 @@
 	- g.man
 	- .... extended discussion paper ?
 - fix parser 
-	- separate state and prop into parallel arrays
+	DONE - separate state and prop into parallel arrays
 	- deal with terminations
 		- single char token
 		- frags

@@ -146,44 +146,50 @@ void dumpg (void) {
     }
 }
 
-static int parse_next(char *p, unsigned char *in) {
-    unsigned char c;
-    char *np, *inp;
+static unsigned char c, *in;
+static char *inp;
+
+static int parse_next(char *sp) {
     unsigned char prop;
+    char *p, *np;
     int rc;
 
 #if 1
-    fprintf(OUT,"%s ", get_name(p));
+    fprintf(OUT,"%s ", get_name(sp));
 #endif
 
-    c = *in++;
-    if (!c) {
-        fprintf(OUT,"EOF\n");
-    }
-
-    inp = state_machine + char2state[c];
-
-    if (inp == p) {
+    if (inp == sp) {
 #if 1
         fprintf(OUT, "%c\n", c);
 #endif
+        inp = NULL;
 	return 0;
+    }
+    if (inp == NULL) {
+        c = *in++;
+        if (!c) {
+            fprintf(OUT,"EOF\n");
+        }
+        inp = state_machine + char2state[c];
     }
 
     rc = 1;
+    p = sp;
     while (*p) {
         prop = *PROPP(p);
         np = p + *p;
 
 	if      ( (prop & ALT)) {
-		if (( rc = parse_next(np,in) ) != 0) continue;
+		if (( rc = parse_next(np) ) != 0) continue;
 	} 
 	else if (!(prop & OPT)) {
-		if (( rc = parse_next(np,in) ) != 0) break; 
+		if (( rc = parse_next(np) ) != 0) break; 
 	}
 	if      ( (prop & (REP|SREP))) {
-		while (( rc = parse_next(np,in) ) == 0); break;
+		while (( rc = parse_next(np) ) == 0); break;
 	}
+
+        p++;
     }
     return rc;
 }
@@ -191,7 +197,7 @@ static int parse_next(char *p, unsigned char *in) {
 int parse(unsigned char *in) {
     int rc;
 
-    rc = parse_next(state_machine, in);
+    rc = parse_next(state_machine);
     if (rc) {
         fprintf(OUT,"ERROR\n");
     }
