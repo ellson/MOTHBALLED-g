@@ -148,8 +148,29 @@ void dumpg (void) {
     }
 }
 
-static unsigned char c, *in;
+static unsigned char c, sep, *in, *frag;
 static char *insp;
+static int flen;
+
+static int get_frag(void) {
+    frag = in;
+    flen = 0;
+    if (char2state[c] == ABC) {
+        c = *in++;
+	flen++;
+	return 0;
+    }
+    return 1;
+}
+
+static void print_frag(void) {
+    int i;
+    unsigned char *f;
+    
+    for (i=0, f=frag; i<flen; i++) {
+	putc(*f++, OUT);
+    }
+}
 
 static int parse_r(char *sp, int indent) {
     unsigned char prop;
@@ -184,6 +205,16 @@ static int parse_r(char *sp, int indent) {
         prop = *PROPP(p);
         np = p + nxt;
 
+	if ( np == state_machine + STRING) {
+	    if (( rc = get_frag() ) != 0) {
+	        break;
+	    }
+#if 1
+            print_frag();
+#endif
+	    p++;
+	    break;
+	}
 	if ( (prop & ALT)) {
 	    if (( rc = parse_r(np, indent+2) ) != 0) {
                 p++;
@@ -195,7 +226,7 @@ static int parse_r(char *sp, int indent) {
 		break; 
 	    }
 	}
-	if ( (prop & (REP|SREP))) {
+	if (( sep = (prop & (REP|SREP)) )) {
 	    while (( rc = parse_r(np, indent+2) ) == 0) { }
 	    p++;
 	    break;
