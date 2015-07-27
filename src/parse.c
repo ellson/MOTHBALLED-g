@@ -78,7 +78,7 @@ static void print_prop(char *p) {
     }
 }
 
-static void printg_recurse(char *sp, int indent) {
+static void printg_r(char *sp, int indent) {
     char *p, *np, nxt;
     int i;
 
@@ -90,7 +90,7 @@ static void printg_recurse(char *sp, int indent) {
         print_prop(p);
         fprintf(OUT,"%s\n", styleLBE);
 	if (np != state_machine) { // stop recursion
-            printg_recurse(np, indent+2);
+            printg_r(np, indent+2);
         }
         for (i = indent; i--; ) putc (' ', OUT);
         fprintf(OUT,"%s\n", styleRBE);
@@ -101,7 +101,7 @@ static void printg_recurse(char *sp, int indent) {
 
 // recursively walk the grammar - tests all possible transitions
 void printg (void) {
-    printg_recurse(state_machine, 0);
+    printg_r(state_machine, 0);
 }
 
 static void print_chars ( char *p ) {
@@ -151,12 +151,13 @@ void dumpg (void) {
 static unsigned char c, *in;
 static char *insp;
 
-static int parse_recurse(char *sp, int indent) {
+static int parse_r(char *sp, int indent) {
     unsigned char prop;
     char *p, *np, nxt;
     int i, rc;
 
 #if 1
+    fprintf(OUT, "\n");
     for (i = indent; i--; ) putc (' ', OUT);
     fprintf(OUT,"%s ", get_name(sp));
 #endif
@@ -183,26 +184,28 @@ static int parse_recurse(char *sp, int indent) {
         prop = *PROPP(p);
         np = p + nxt;
 
-	if      ( (prop & ALT)) {
-	    if (( rc = parse_recurse(np, indent+2) ) != 0) {
+	if ( (prop & ALT)) {
+	    if (( rc = parse_r(np, indent+2) ) != 0) {
+                p++;
 		continue;
 	    }
 	} 
 	if (!(prop & OPT)) {
-	    if (( rc = parse_recurse(np, indent+2) ) != 0) {
+	    if (( rc = parse_r(np, indent+2) ) != 0) {
 		break; 
 	    }
 	}
-	if      ( (prop & (REP|SREP))) {
-	    while (( rc = parse_recurse(np, indent+2) ) == 0) { }
+	if ( (prop & (REP|SREP))) {
+	    while (( rc = parse_r(np, indent+2) ) == 0) { }
+	    p++;
 	    break;
 	}
 	if ( (prop & OPT)) {
-	    if (( rc = parse_recurse(np, indent+2) ) == 0) {
+	    if (( rc = parse_r(np, indent+2) ) == 0) {
+		p++;
 		break; 
 	    }
 	}
-
         p++;
     }
     return rc;
@@ -212,7 +215,7 @@ int parse(unsigned char *input) {
     int rc;
 
     in = input;
-    rc = parse_recurse(state_machine, 0);
+    rc = parse_r(state_machine, 0);
     if (rc) {
         fprintf(OUT,"ERROR\n");
     }
