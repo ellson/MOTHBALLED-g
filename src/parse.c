@@ -67,29 +67,31 @@ static void print_prop(char *p) {
     int inlist;
 
     prop = *PROPP(p);
-    if (prop & (ALT|OPT|SREP|REP|REC)) {
+    if (prop & (ALT|OPT|SREP|REP)) {
         inlist=0;
         fprintf(OUT,"%s", styleLBR);
         print_attr( prop & ALT, "ALT", &inlist);
         print_attr( prop & OPT, "OPT", &inlist);
         print_attr( prop & SREP, "SREP", &inlist);
         print_attr( prop & REP, "REP", &inlist);
-        print_attr( prop & REC, "REC", &inlist);
         fprintf(OUT,"%s", styleRBR);
     }
 }
 
-static void printg_next(char *sp, int indent) {
-    char *p, nxt;
+static void printg_recurse(char *sp, int indent) {
+    char *p, *np, nxt;
     int i;
 
     p = sp;
     while (( nxt = *p )) {
+        np = p+nxt;
         for (i = indent; i--; ) putc (' ', OUT);
-        print_next(sp, p+nxt);
+        print_next(sp, np);
         print_prop(p);
         fprintf(OUT,"%s\n", styleLBE);
-	if (! (*PROPP(p) & REC)) printg_next(p+nxt, indent+2);
+	if (np != state_machine) { // stop recursion
+            printg_recurse(np, indent+2);
+        }
         for (i = indent; i--; ) putc (' ', OUT);
         fprintf(OUT,"%s\n", styleRBE);
 
@@ -99,7 +101,7 @@ static void printg_next(char *sp, int indent) {
 
 // recursively walk the grammar - tests all possible transitions
 void printg (void) {
-    printg_next(state_machine, 0);
+    printg_recurse(state_machine, 0);
 }
 
 static void print_chars ( char *p ) {
@@ -147,46 +149,58 @@ void dumpg (void) {
 }
 
 static unsigned char c, *in;
-static char *inp;
+static char *insp;
 
-static int parse_next(char *sp) {
+static int parse_recurse(char *sp, int indent) {
     unsigned char prop;
-    char *p, *np;
-    int rc;
+    char *p, *np, nxt;
+    int i, rc;
 
 #if 1
+    for (i = indent; i--; ) putc (' ', OUT);
     fprintf(OUT,"%s ", get_name(sp));
 #endif
 
-    if (inp == sp) {
-#if 1
-        fprintf(OUT, "%c\n", c);
-#endif
-        inp = NULL;
-	return 0;
-    }
-    if (inp == NULL) {
+    if (insp == NULL) {
         c = *in++;
         if (!c) {
             fprintf(OUT,"EOF\n");
+	    return 1;
         }
-        inp = state_machine + char2state[c];
+        insp = state_machine + char2state[c];
+    }
+    if (insp == sp) {
+#if 1
+        fprintf(OUT, "%c", c);
+#endif
+        insp = NULL;
+	return 0;
     }
 
     rc = 1;
     p = sp;
-    while (*p) {
+    while (( nxt = *p )) {
         prop = *PROPP(p);
-        np = p + *p;
+        np = p + nxt;
 
 	if      ( (prop & ALT)) {
-		if (( rc = parse_next(np) ) != 0) continue;
+	    if (( rc = parse_recurse(np, indent+2) ) != 0) {
+		continue;
+	    }
 	} 
-	else if (!(prop & OPT)) {
-		if (( rc = parse_next(np) ) != 0) break; 
+	if (!(prop & OPT)) {
+	    if (( rc = parse_recurse(np, indent+2) ) != 0) {
+		break; 
+	    }
 	}
 	if      ( (prop & (REP|SREP))) {
-		while (( rc = parse_next(np) ) == 0); break;
+	    while (( rc = parse_recurse(np, indent+2) ) == 0) { }
+	    break;
+	}
+	if ( (prop & OPT)) {
+	    if (( rc = parse_recurse(np, indent+2) ) == 0) {
+		break; 
+	    }
 	}
 
         p++;
@@ -194,10 +208,11 @@ static int parse_next(char *sp) {
     return rc;
 }
 
-int parse(unsigned char *in) {
+int parse(unsigned char *input) {
     int rc;
 
-    rc = parse_next(state_machine);
+    in = input;
+    rc = parse_recurse(state_machine, 0);
     if (rc) {
         fprintf(OUT,"ERROR\n");
     }
@@ -223,7 +238,7 @@ static int opencloseblock(act_t *act, state_t state) {
     return 0;
 }
 
-int parse(unsigned char *inp) {
+int parse(unsigned char *insp) {
     unsigned char c;
     int rc, linecharcnt, linecnt, charsize;
     int state;
@@ -247,12 +262,12 @@ int parse(unsigned char *inp) {
     frag = NULL;
     linecharcnt = 0;
     linecnt = 0;
-    while ((c = *inp++)) {
+    while ((c = *insp++)) {
         linecharcnt++;
         state = char2state[c];
         charsize = 1;
         if (state & TWO) {
-            if ((c = *inp)) {
+            if ((c = *insp)) {
 	        state = char2state[c];
 
                 // we work out what the character pair is by combining the 
@@ -261,7 +276,7 @@ int parse(unsigned char *inp) {
                 state |= charTWOstate2props[state];
                 state &= proptypemask;
                 if (state) {
-		    inp++;
+		    insp++;
                     charsize++;
 	            if ((state & EOL)) {
                         linecnt++;
@@ -281,11 +296,11 @@ int parse(unsigned char *inp) {
                         frag->u.str.len += charsize;
                     }
                     else if (state & ESCAPE) {  // STRING frag that starts at this char - needs a new frag to skip BSL char
-			frag = newelem(STRING, inp-1, 1, 0);
+			frag = newelem(STRING, insp-1, 1, 0);
 			appendlist(fraglist, frag);
                     }
                     else { // DQTSTR|SQTSTR -- prop that start at next char - so new frag to skip this char
-			frag = newelem(state & proptypemask, inp, 0, 0);
+			frag = newelem(state & proptypemask, insp, 0, 0);
 			appendlist(fraglist, frag);
                     }
                 }
@@ -321,17 +336,17 @@ printj(nlistlist);
         if (!frag) { // no current frag
             if (state & (STRING|ESCAPE)) {
 		fraglist->state = (STRING|ESCAPE);
-		frag = newelem(STRING, inp-1, 1, 0);
+		frag = newelem(STRING, insp-1, 1, 0);
 		appendlist(fraglist, frag);
             }
             else if (state & (DQTSTR|SQTSTR)) {
 		fraglist->state = (STRING|ESCAPE);
-		frag = newelem(STRING, inp, 0, 0);
+		frag = newelem(STRING, insp, 0, 0);
 		appendlist(fraglist, frag);
             }
 	    else if (state & SPACE) {
 		fraglist->state = SPACE;
-		frag = newelem(SPACE, inp-1, 1, 0);
+		frag = newelem(SPACE, insp-1, 1, 0);
 		appendlist(fraglist, frag);
 	    }
 // FIXME - something for quoted strings

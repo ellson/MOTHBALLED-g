@@ -8,11 +8,10 @@
 unsigned char *test=(unsigned char*)"<aa bb cc>";
 
 int main (int argc, char *argv[]) {
-    unsigned char *inp;
     int rc, i;
 
 // FIXME - do options properly
-    for (i=0; i<argc; i++) {
+    for (i=1; i<argc; i++) {
         if (strcmp(argv[i], "-s") == 0) {
 	    set_sstyle();
         }
@@ -26,9 +25,7 @@ int main (int argc, char *argv[]) {
         }
     }
 
-    inp = test;
-    
-    rc = parse(inp);
+    rc = parse(test);
 
     return rc;
 }
