@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "emit.h"
 #include "grammar.h"
 #include "list.h"
 #include "parse.h"
@@ -40,6 +41,7 @@ static void print_next( char *leg1, char *leg2 ) {
     if (leg1 != oleg1) {
 	oleg1 = leg1;
         sleg1 = get_name(leg1);
+
         oleg2 = NULL;
     }
     else {
@@ -178,9 +180,9 @@ static void print_string(void) {
     }
 }
 
-static int parse_r(char *sp, int indent) {
+static int parse_r(char *p, int indent) {
     unsigned char prop;
-    char *p, *np, nxt;
+    char *np, nxt;
     int i, rc;
 
     if (insp == NULL) {
@@ -194,11 +196,10 @@ static int parse_r(char *sp, int indent) {
     frag = in-1;
     flen = 0;
 
-#if 1
-    fprintf(OUT,"%s ", get_name(sp));
-#endif
+    emit_start_state(NULL, p);
 
-    if (sp == state_machine + STRING) {
+    rc = 1;
+    if (p == state_machine + STRING) {
         if (insp == state_machine + ABC) {
             while  (( insp = state_machine + char2state[c]) == state_machine + ABC) {
                 c = *in++;
@@ -208,65 +209,57 @@ static int parse_r(char *sp, int indent) {
 #if 1
 	    putc(' ', OUT);
             print_string();
-            putc('\n', OUT);
-            for (i = indent; i--; ) putc (' ', OUT);
-            fprintf(OUT,"%d", rc);
 #endif
             frag = in-1;
             flen=1;
-            return rc;
         }
     }
-    else if (sp == insp) {
+    else if (p == insp) {
 	insp = NULL;
         rc = 0;
 #if 1
         putc(' ', OUT);
         putc(c, OUT);
-        putc('\n', OUT);
-        for (i = indent; i--; ) putc (' ', OUT);
-        fprintf(OUT,"%d", rc);
 #endif
-	return rc;
     }
 
-    rc = 1;
-    p = sp;
-    while (( nxt = *p )) { // iterate over sequeces or ALT sets
-        prop = *PROPP(p);
+    if (rc == 1) {
+        while (( nxt = *p )) { // iterate over sequeces or ALT sets
+            prop = *PROPP(p);
 
 #if 1
-        putc('\n', OUT);
-        for (i = indent+2; i--; ) putc (' ', OUT);
-        putc(char_prop(prop,'_'), OUT);
+            putc('\n', OUT);
+            for (i = indent+2; i--; ) putc (' ', OUT);
+            putc(char_prop(prop,'_'), OUT);
 #endif
 
-        np = p + nxt;
+            np = p + nxt;
 
-	if ( (prop & ALT)) { // if we fail an ALT then try next
-	    if (( rc = parse_r(np, indent+2) ) != 0) {
-                p++;
-		continue;
+	    if ( (prop & ALT)) { // if we fail an ALT then try next
+	        if (( rc = parse_r(np, indent+2) ) != 0) {
+                    p++;
+		    continue;
+	        }
+                break;
+	    } 
+	    if ( (prop & OPT)) {  // optional (can't fail)
+	        if (( parse_r(np, indent+2) ) == 0) {
+	            if (( sep = (prop & (REP|SREP)) )) {
+	                while (( parse_r(np, indent+2) ) == 0) { }
+	            }
+	        }
+                rc = 0;
 	    }
-            break;
-	} 
-	if ( (prop & OPT)) {  // optional (can't fail)
-	    if (( parse_r(np, indent+2) ) == 0) {
+	    else { // else not OPTional
+	        if (( rc = parse_r(np, indent+2) ) != 0) {
+		    break;
+                }
 	        if (( sep = (prop & (REP|SREP)) )) {
 	            while (( parse_r(np, indent+2) ) == 0) { }
 	        }
 	    }
-            rc = 0;
-	}
-	else { // else not OPTional
-	    if (( rc = parse_r(np, indent+2) ) != 0) {
-		break;
-            }
-	    if (( sep = (prop & (REP|SREP)) )) {
-	        while (( parse_r(np, indent+2) ) == 0) { }
-	    }
-	}
-	p++;
+	    p++;
+        }
     }
 
 #if 1

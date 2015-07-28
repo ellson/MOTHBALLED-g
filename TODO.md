@@ -10,15 +10,19 @@
 - fix parser 
 	DONE - separate state and prop into parallel arrays
 	- deal with terminations
-		- single char token
-		- frags
-		- two char tokens
+	- single char token
+	- frags
+	- two char tokens
+- command line options
+- jump table for emitters
+	- minimal | pretty | shell | eBNF
+- string joiner
 - in eBNF show chars as chars when ABC or terminal tokens
 - canonicalize subject
 	- retain order
 	- expand  endpointsets
 	- collapse lists with single element
-- support SAMEEND
+DONE - support SAMEEND
 - patterns
 	- pattern syntax
 	- pattern matching
@@ -51,7 +55,7 @@
 	- multipart
 - Meta state events:
 	- pattern_match
-	- end_of_statement
+	- end_of_statement (first indication of term)
 	- end_of_sameend_statements
 	- syntax in output ???  some kind of comment
 	- should not be needed for <g g> networks
@@ -67,7 +71,7 @@
 		- buffer space
 		- end_of_stream
 - comment frag
-	- permit retention of comments in order
+	- permit retention of comments in order ??? NO?
 	- retain introducers and eol if comment terminator
 - whitespace
 		-- whitespace not retained?
@@ -78,13 +82,10 @@
 		- pretty
 		- shell friendly
 			-- with or without meta events
-	- option to retain comments
+	- option to retain comments ???
 	- option to print in
 		- canonical (expanded endsets)
 		- or with endsets
-- Options
-	- minimal | pretty | shell
-
 - Environment
 	- Container props ?
 	- stream stats
