@@ -178,8 +178,7 @@ static int parse_r(char *sp, int indent) {
     flen = 1;
 
 #if 1
-    for (i = indent; i--; ) putc (' ', OUT);
-    fprintf(OUT,"%s", get_name(sp));
+    fprintf(OUT,"%s ", get_name(sp));
 #endif
 
     if (sp == state_machine + STRING) {
@@ -191,7 +190,6 @@ static int parse_r(char *sp, int indent) {
 #if 1
 	    putc(' ', OUT);
             print_string();
-            putc('\n', OUT);
 #endif
             frag = in-1;
             flen=1;
@@ -202,19 +200,23 @@ static int parse_r(char *sp, int indent) {
 #if 1
         putc(' ', OUT);
         putc(c, OUT);
-        putc('\n', OUT);
 #endif
 	insp = NULL;
 	return 0;
     }
-#if 1
-    putc('\n', OUT);
-#endif
 
     rc = 1;
     p = sp;
     while (( nxt = *p )) { // iterate over sequeces or ALT sets
         prop = *PROPP(p);
+
+#if 1
+        putc('\n', OUT);
+        for (i = indent+2; i--; ) putc (' ', OUT);
+        putc('+', OUT);
+        print_prop(p);
+#endif
+
         np = p + nxt;
 
 	if ( (prop & ALT)) { // if we fail an ALT then try next
@@ -228,8 +230,6 @@ static int parse_r(char *sp, int indent) {
 	        if (( sep = (prop & (REP|SREP)) )) {
 	            while (( parse_r(np, indent+2) ) == 0) { }
 	        }
-	        p++;
-	        continue;
 	    }
 	}
 	else { // else not OPTional
@@ -239,11 +239,16 @@ static int parse_r(char *sp, int indent) {
 	    if (( sep = (prop & (REP|SREP)) )) {
 	        while (( parse_r(np, indent+2) ) == 0) { }
 	    }
-	    p++;
-	    continue;
 	}
 	p++;
     }
+
+#if 1
+    putc('\n', OUT);
+    for (i = indent; i--; ) putc (' ', OUT);
+    fprintf(OUT,"-%s", get_name(sp));
+#endif
+
     return rc;
 }
 
