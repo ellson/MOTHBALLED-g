@@ -37,10 +37,16 @@ int main (int argc, char *argv[]) {
         }
         else {
             f = fopen(argv[i],"r");
-	    sz = fread(nextp, 1, space, f);
-	    fclose(f);
-            space -= sz;
-            nextp += sz;
+	    if (f) {
+	        sz = fread(nextp, 1, space, f);
+                space -= sz;
+                nextp += sz;
+                fclose(f);
+	    }
+	    else {
+		fprintf(stderr, "file \"%s\" is not readable\n", argv[i]);
+		exit(1);
+	    }
         }
     }
 
