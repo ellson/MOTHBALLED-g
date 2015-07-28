@@ -67,6 +67,10 @@ void emit_end_state_machine(context_t *C) {
     putc('\n', OUT);
 }
 
+void emit_term(context_t *C) {
+    putc('\n', OUT);
+}
+
 void emit_error(context_t *C, char *message) {
     fprintf(OUT, "\nError: %s\n", message);
     exit(1);

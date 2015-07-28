@@ -141,7 +141,7 @@ void dumpg (void) {
     }
 }
 
-static unsigned char c, sep, *in, *frag;
+static unsigned char c, unterm, sep, *in, *frag;
 static int flen;
 static char *insp, subj;
 static context_t *C;
@@ -155,6 +155,10 @@ static int parse_r(char *p) {
     emit_start_state(C, p);
 
     if (p == state_machine + ACT) {
+        if (unterm) {
+ 	    emit_term(C);
+	}
+	unterm = 1;
 	// FIXME create new context
     }
     if (p == state_machine + SUBJECT) {
@@ -174,7 +178,8 @@ static int parse_r(char *p) {
         ins = char2state[c];
     }
     if (ins == NLL) { //EOF
-        return 1;
+        emit_term(C);
+	exit(9);
     }
     insp = state_machine + ins;
     frag = in-1;
@@ -238,7 +243,9 @@ static int parse_r(char *p) {
     }
 
     if (rc == 0) {
-        if (np == state_machine + EDGE) {
+        ins = np - state_machine;
+	switch (ins) {
+	case EDGE :
 	    if (subj == 0) {
 	        subj = EDGE;
 	    }
@@ -246,8 +253,8 @@ static int parse_r(char *p) {
 	        emit_error(C, "EDGE found in NODE SUBJECT");
 	        rc = 1;
 	    }
-        }
-        if (np == state_machine + NODE) {
+            break;
+	case NODE :
 	    if (subj == 0) {
 	        subj = NODE;
 	    }
@@ -255,7 +262,15 @@ static int parse_r(char *p) {
 	        emit_error(C, "NODE found in EDGE SUBJECT");
 	        rc = 1;
 	    }
-        }
+            break;
+        case TERM :
+        case CONTAINER :
+            if (unterm) {
+ 	        emit_term(C);
+	    }
+	    unterm = 0;
+	    break;
+	}
     }
 
     C->nest--;
