@@ -6,15 +6,6 @@
 #define OUT stdout
 #define ERR stderr
 
-#define PROPP(p) (state_props + (p - state_machine))
-
-static char *get_name(char *p) {
-    int offset;
-    while (*p) p++;
-    offset = *PROPP(p) * 2;
-    return state_names + offset;
-}
-
 static void print_string(unsigned char *frag, int flen) {
     int i;
     unsigned char *f;
@@ -45,7 +36,7 @@ void emit_start_state_machine(context_t *C) {
 }
 
 void emit_start_state(context_t *C, char *p) {
-    fprintf(OUT,"%s ", get_name(p));
+    fprintf(OUT,"%s ", NAMEP(p));
 }
 
 void emit_indent(context_t *C) {

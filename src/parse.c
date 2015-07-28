@@ -25,22 +25,13 @@ void set_sstyle (void) {
     sstyle=1;
 }
 
-#define PROPP(p) (state_props + (p - state_machine))
-
-static char *get_name(char *p) {
-    int offset;
-    while (*p) p++;
-    offset = *PROPP(p) * 2;
-    return state_names + offset;
-}
-
 static char *oleg1=NULL, *oleg2=NULL;
 static char *sleg1, *sleg2;
 
 static void print_next( char *leg1, char *leg2 ) {
     if (leg1 != oleg1) {
 	oleg1 = leg1;
-        sleg1 = get_name(leg1);
+        sleg1 = NAMEP(leg1);
 
         oleg2 = NULL;
     }
@@ -49,7 +40,7 @@ static void print_next( char *leg1, char *leg2 ) {
     }
     if (leg2 != oleg1) {
 	oleg2 = leg2;
-        sleg2 = get_name(leg2);
+        sleg2 = NAMEP(leg2);
     }
     else {
 	sleg2 = "=";
@@ -142,7 +133,7 @@ void dumpg (void) {
 	    }
 	}
 	else { // else terminal
-	    fprintf(OUT,"%s", get_name(p));
+	    fprintf(OUT,"%s", NAMEP(p));
             print_chars(p);
 	}
         p++;

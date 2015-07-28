@@ -2,6 +2,8 @@ typedef struct {
     int nest;
 } context_t;
 
+char *get_name(char *p);
+
 void emit_start_state_machine(context_t *C);
 void emit_indent(context_t *C);
 void emit_start_state(context_t *C, char *p);

@@ -345,7 +345,18 @@ done
 cat ${ofc}.states ${ofc}.props >>$ofc
 rm -f ${ofc}.states ${ofc}.props
 
+cat >>$ofc  <<EOF
+char *NAMEP(char *p) {
+    while (*p) p++;
+    return state_names + (*PROPP(p) *2);
+}
+
+EOF
+
 cat >>$ofh  <<EOF
 #define sizeof_state_machine $indx
+#define PROPP(p) (state_props + (p - state_machine))
+
+extern char *NAMEP(char *p);
 
 EOF
