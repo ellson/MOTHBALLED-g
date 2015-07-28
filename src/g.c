@@ -1,27 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 # include "parse.h"
 
 int main (int argc, char *argv[]) {
-    int i, sz, space;
+    int i, sz, space, opt;
     FILE *f;
     unsigned char *buf, *nextp;
 #define BUFSZ 100000
 
-// FIXME - do options properly
-    for (i=1; i<argc; i++) {
-        if (strcmp(argv[i], "-s") == 0) {
-	    set_sstyle();
-        }
-        if (strcmp(argv[i], "-g") == 0) {
-            printg();
-	    return 0;
-        }
-        if (strcmp(argv[i], "-d") == 0) {
+    while ((opt = getopt(argc, argv, "dg")) != -1) {
+        switch (opt) {
+        case 'd':
             dumpg();
-	    return 0;
+	    exit (0);
+            break;
+        case 'g':
+            printg();
+	    exit (0);
+            break;
+        default: /* '?' */
+            fprintf(stderr, "Usage: %s [ -d | -g | [ files ] [ - ]  \n", argv[0]);
+            exit(EXIT_FAILURE);
         }
     }
 

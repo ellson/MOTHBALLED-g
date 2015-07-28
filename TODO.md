@@ -9,8 +9,8 @@
 	- .... extended discussion paper ?
 - fix parser 
 	DONE - separate state and prop into parallel arrays
-	- deal with terminations
-	- single char token
+	DONE - deal with terminations
+	DONE - single char token
 	- frags
 	- two char tokens
 - command line options
@@ -22,7 +22,8 @@
 	- retain order
 	- expand  endpointsets
 	- collapse lists with single element
-DONE - support SAMEEND
+DONE - support SAMEEND grammar
+- support SAMEEND buffer management, use, and events
 - patterns
 	- pattern syntax
 	- pattern matching
@@ -89,6 +90,10 @@ DONE - support SAMEEND
 - Environment
 	- Container props ?
 	- stream stats
+		- time of last act
+		- term state (between acts, or not)
+		- max buffer use
+		- current buffer use
 	- meta event stats
 	- stream liveness (watchdogs? alternates? HA?)
 	- stream graph
