@@ -1,14 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 # include "parse.h"
 
-//unsigned char *test=(unsigned char*)"<a\\Aa 'bb' cc>";
-//unsigned char *test=(unsigned char*)"<aa 'bb' cc>";
-unsigned char *test=(unsigned char*)"<aa bb cc>";
-
 int main (int argc, char *argv[]) {
     int rc, i;
+    unsigned char *buf;
+#define BUFSZ 100000
 
 // FIXME - do options properly
     for (i=1; i<argc; i++) {
@@ -25,7 +24,12 @@ int main (int argc, char *argv[]) {
         }
     }
 
-    rc = parse(test);
+// FIXME - accept file argument(s)
+// FIXME - do proper buffer management
+    buf = malloc(BUFSZ);
+    fread(buf, 1, BUFSZ, stdin);
+
+    rc = parse(buf);
 
     return rc;
 }

@@ -148,7 +148,7 @@ static context_t *C;
 
 static int parse_r(char *p) {
     unsigned char prop;
-    char *np, nxt;
+    char *np, ins, nxt;
     int rc;
 
     C->nest++;
@@ -156,24 +156,30 @@ static int parse_r(char *p) {
 
     if (insp == NULL) {
         c = *in++;
-        insp = state_machine + char2state[c];
+        ins = char2state[c];
     }
-    while (insp == state_machine + WS) {
+    else {
+	ins = insp - state_machine;
+    }
+    while (ins == WS) {
         c = *in++;
-        insp = state_machine + char2state[c];
+        ins = char2state[c];
     }
+    insp = state_machine + ins;
     frag = in-1;
     flen = 0;
 
     rc = 1;
     if (p == state_machine + STRING) {
-        if (insp == state_machine + ABC) {
-            while  (( insp = state_machine + char2state[c]) == state_machine + ABC) {
+        if (ins == ABC) {
+            while  ( ins == ABC) {
                 c = *in++;
+		ins = char2state[c];
 	        flen++;
             }
             rc = 0;
 	    emit_string(C, frag, flen);
+            insp = state_machine + ins;
             frag = in-1;
             flen=1;
         }
@@ -234,7 +240,7 @@ int parse(unsigned char *input) {
     in = input;
     C->nest = 0;
     emit_start_state_machine(C);
-    rc = parse_r(state_machine);
+    while (( rc = parse_r(state_machine)) == 0) {}
     emit_end_state_machine(C);
     return rc;
 }

@@ -51,12 +51,10 @@ void emit_prop(context_t *C, unsigned char prop) {
 }
 
 void emit_string(context_t *C, unsigned char *frag, int flen) {
-    putc(' ', OUT);
     print_string(frag, flen);
 }
 
 void emit_token(context_t *C, unsigned char c) {
-    putc(' ', OUT);
     putc(c, OUT);
 }
 
