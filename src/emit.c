@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "emit.h"
 #include "grammar.h"
@@ -64,5 +65,10 @@ void emit_end_state(context_t *C, int rc) {
 
 void emit_end_state_machine(context_t *C) {
     putc('\n', OUT);
+}
+
+void emit_error(context_t *C, char *message) {
+    fprintf(OUT, "\nError: %s\n", message);
+    exit(1);
 }
 
