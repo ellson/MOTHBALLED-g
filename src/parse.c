@@ -167,11 +167,15 @@ static int parse_r(char *sp, int indent) {
     int i, rc;
 
     if (insp == NULL) {
-        frag = in;
-        flen=1;
         c = *in++;
         insp = state_machine + char2state[c];
     }
+    while (insp == state_machine + WS) {
+        c = *in++;
+        insp = state_machine + char2state[c];
+    }
+    frag = in-1;
+    flen = 1;
 
 #if 1
     for (i = indent; i--; ) putc (' ', OUT);
@@ -189,7 +193,8 @@ static int parse_r(char *sp, int indent) {
             print_string();
             putc('\n', OUT);
 #endif
-	    insp = NULL;
+            frag = in-1;
+            flen=1;
             return 0;
         }
     }
@@ -208,33 +213,36 @@ static int parse_r(char *sp, int indent) {
 
     rc = 1;
     p = sp;
-    while (( nxt = *p )) {
+    while (( nxt = *p )) { // iterate over sequeces or ALT sets
         prop = *PROPP(p);
         np = p + nxt;
 
-	if ( (prop & ALT)) {
+	if ( (prop & ALT)) { // if we fail an ALT then try next
 	    if (( rc = parse_r(np, indent+2) ) != 0) {
                 p++;
 		continue;
 	    }
 	} 
-	if (!(prop & OPT)) {
-	    if (( rc = parse_r(np, indent+2) ) != 0) {
-		break; 
-	    }
-	}
-	if (( sep = (prop & (REP|SREP)) )) {
-	    while (( rc = parse_r(np, indent+2) ) == 0) { }
-	    p++;
-	    break;
-	}
-	if ( (prop & OPT)) {
+	if ( (prop & OPT)) {  // optional (can't fail)
 	    if (( rc = parse_r(np, indent+2) ) == 0) {
-		p++;
-		break; 
+	        if (( sep = (prop & (REP|SREP)) )) {
+	            while (( parse_r(np, indent+2) ) == 0) { }
+	        }
+	        p++;
+	        continue;
 	    }
 	}
-        p++;
+	else { // else not OPTional
+	    if (( rc = parse_r(np, indent+2) ) != 0) {
+		break;
+            }
+	    if (( sep = (prop & (REP|SREP)) )) {
+	        while (( parse_r(np, indent+2) ) == 0) { }
+	    }
+	    p++;
+	    continue;
+	}
+	p++;
     }
     return rc;
 }
