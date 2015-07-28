@@ -149,21 +149,10 @@ void dumpg (void) {
 }
 
 static unsigned char c, sep, *in, *frag;
-static char *insp;
 static int flen;
+static char *insp;
 
-static int get_frag(void) {
-    frag = in;
-    flen = 0;
-    if (char2state[c] == ABC) {
-        c = *in++;
-	flen++;
-	return 0;
-    }
-    return 1;
-}
-
-static void print_frag(void) {
+static void print_string(void) {
     int i;
     unsigned char *f;
     
@@ -177,27 +166,45 @@ static int parse_r(char *sp, int indent) {
     char *p, *np, nxt;
     int i, rc;
 
-#if 1
-    fprintf(OUT, "\n");
-    for (i = indent; i--; ) putc (' ', OUT);
-    fprintf(OUT,"%s ", get_name(sp));
-#endif
-
     if (insp == NULL) {
+        frag = in;
+        flen=1;
         c = *in++;
-        if (!c) {
-            fprintf(OUT,"EOF\n");
-	    return 1;
-        }
         insp = state_machine + char2state[c];
     }
-    if (insp == sp) {
+
 #if 1
-        fprintf(OUT, "%c", c);
+    for (i = indent; i--; ) putc (' ', OUT);
+    fprintf(OUT,"%s", get_name(sp));
 #endif
-        insp = NULL;
+
+    if (sp == state_machine + STRING) {
+        if (insp == state_machine + ABC) {
+            while  (( insp = state_machine + char2state[c]) == state_machine + ABC) {
+                c = *in++;
+	        flen++;
+            }
+#if 1
+	    putc(' ', OUT);
+            print_string();
+            putc('\n', OUT);
+#endif
+	    insp = NULL;
+            return 0;
+        }
+    }
+    else if (sp == insp) {
+#if 1
+        putc(' ', OUT);
+        putc(c, OUT);
+        putc('\n', OUT);
+#endif
+	insp = NULL;
 	return 0;
     }
+#if 1
+    putc('\n', OUT);
+#endif
 
     rc = 1;
     p = sp;
@@ -205,16 +212,6 @@ static int parse_r(char *sp, int indent) {
         prop = *PROPP(p);
         np = p + nxt;
 
-	if ( np == state_machine + STRING) {
-	    if (( rc = get_frag() ) != 0) {
-	        break;
-	    }
-#if 1
-            print_frag();
-#endif
-	    p++;
-	    break;
-	}
 	if ( (prop & ALT)) {
 	    if (( rc = parse_r(np, indent+2) ) != 0) {
                 p++;
