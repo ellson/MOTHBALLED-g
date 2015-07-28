@@ -78,6 +78,23 @@ static void print_prop(char *p) {
     }
 }
 
+static char char_prop(unsigned char prop, char noprop) {
+    char c;
+
+    if (prop & ALT) { c = '|'; }
+    else {
+        if (prop & OPT) {
+            if (prop & (SREP|REP)) { c = '*'; }
+	    else { c = '?'; }
+        }
+        else {
+            if (prop & (SREP|REP)) { c = '+'; }
+	    else { c = noprop; }
+        }
+    }
+    return c;
+}
+
 static void printg_r(char *sp, int indent) {
     char *p, *np, nxt;
     int i;
@@ -175,7 +192,7 @@ static int parse_r(char *sp, int indent) {
         insp = state_machine + char2state[c];
     }
     frag = in-1;
-    flen = 1;
+    flen = 0;
 
 #if 1
     fprintf(OUT,"%s ", get_name(sp));
@@ -187,22 +204,30 @@ static int parse_r(char *sp, int indent) {
                 c = *in++;
 	        flen++;
             }
+            rc = 0;
 #if 1
 	    putc(' ', OUT);
             print_string();
+            putc('\n', OUT);
+            for (i = indent; i--; ) putc (' ', OUT);
+            fprintf(OUT,"%d", rc);
 #endif
             frag = in-1;
             flen=1;
-            return 0;
+            return rc;
         }
     }
     else if (sp == insp) {
+	insp = NULL;
+        rc = 0;
 #if 1
         putc(' ', OUT);
         putc(c, OUT);
+        putc('\n', OUT);
+        for (i = indent; i--; ) putc (' ', OUT);
+        fprintf(OUT,"%d", rc);
 #endif
-	insp = NULL;
-	return 0;
+	return rc;
     }
 
     rc = 1;
@@ -213,8 +238,7 @@ static int parse_r(char *sp, int indent) {
 #if 1
         putc('\n', OUT);
         for (i = indent+2; i--; ) putc (' ', OUT);
-        putc('+', OUT);
-        print_prop(p);
+        putc(char_prop(prop,'_'), OUT);
 #endif
 
         np = p + nxt;
@@ -224,13 +248,15 @@ static int parse_r(char *sp, int indent) {
                 p++;
 		continue;
 	    }
+            break;
 	} 
 	if ( (prop & OPT)) {  // optional (can't fail)
-	    if (( rc = parse_r(np, indent+2) ) == 0) {
+	    if (( parse_r(np, indent+2) ) == 0) {
 	        if (( sep = (prop & (REP|SREP)) )) {
 	            while (( parse_r(np, indent+2) ) == 0) { }
 	        }
 	    }
+            rc = 0;
 	}
 	else { // else not OPTional
 	    if (( rc = parse_r(np, indent+2) ) != 0) {
@@ -246,7 +272,7 @@ static int parse_r(char *sp, int indent) {
 #if 1
     putc('\n', OUT);
     for (i = indent; i--; ) putc (' ', OUT);
-    fprintf(OUT,"-%s", get_name(sp));
+    fprintf(OUT,"%d", rc);
 #endif
 
     return rc;
@@ -256,10 +282,8 @@ int parse(unsigned char *input) {
     int rc;
 
     in = input;
+    putc(char_prop(0,'_'), OUT);
     rc = parse_r(state_machine, 0);
-    if (rc) {
-        fprintf(OUT,"ERROR\n");
-    }
     return rc;
 }
 
