@@ -173,8 +173,7 @@ static int parse_r(char *p) {
         c = *in++;
         ins = char2state[c];
     }
-    if (ins == NLL) {
-        emit_error(C, "end of input stream");
+    if (ins == NLL) { //EOF
         return 1;
     }
     insp = state_machine + ins;

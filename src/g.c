@@ -5,8 +5,9 @@
 # include "parse.h"
 
 int main (int argc, char *argv[]) {
-    int rc, i;
-    unsigned char *buf;
+    int rc, i, sz, space;
+    FILE *f;
+    unsigned char *buf, *nextp;
 #define BUFSZ 100000
 
 // FIXME - do options properly
@@ -24,10 +25,24 @@ int main (int argc, char *argv[]) {
         }
     }
 
-// FIXME - accept file argument(s)
 // FIXME - do proper buffer management
     buf = malloc(BUFSZ);
-    fread(buf, 1, BUFSZ, stdin);
+
+    nextp = buf;
+    space = BUFSZ;
+    for (i=1; i<argc; i++) {
+        if (strcmp(argv[i], "-") == 0) {
+            fread(nextp, 1, space, stdin);
+	    break;
+        }
+        else {
+            f = fopen(argv[i],"r");
+	    sz = fread(nextp, 1, space, f);
+	    fclose(f);
+            space -= sz;
+            nextp += sz;
+        }
+    }
 
     rc = parse(buf);
 
