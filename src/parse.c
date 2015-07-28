@@ -80,23 +80,6 @@ static void print_prop(char *p) {
     }
 }
 
-static char char_prop(unsigned char prop, char noprop) {
-    char c;
-
-    if (prop & ALT) { c = '|'; }
-    else {
-        if (prop & OPT) {
-            if (prop & (SREP|REP)) { c = '*'; }
-	    else { c = '?'; }
-        }
-        else {
-            if (prop & (SREP|REP)) { c = '+'; }
-	    else { c = noprop; }
-        }
-    }
-    return c;
-}
-
 static void printg_r(char *sp, int indent) {
     char *p, *np, nxt;
     int i;
@@ -170,20 +153,15 @@ void dumpg (void) {
 static unsigned char c, sep, *in, *frag;
 static int flen;
 static char *insp;
+static context_t *C;
 
-static void print_string(void) {
-    int i;
-    unsigned char *f;
-    
-    for (i=0, f=frag; i<flen; i++) {
-	putc(*f++, OUT);
-    }
-}
-
-static int parse_r(char *p, int indent) {
+static int parse_r(char *p) {
     unsigned char prop;
     char *np, nxt;
-    int i, rc;
+    int rc;
+
+    C->nest++;
+    emit_start_state(C, p);
 
     if (insp == NULL) {
         c = *in++;
@@ -196,8 +174,6 @@ static int parse_r(char *p, int indent) {
     frag = in-1;
     flen = 0;
 
-    emit_start_state(NULL, p);
-
     rc = 1;
     if (p == state_machine + STRING) {
         if (insp == state_machine + ABC) {
@@ -206,10 +182,7 @@ static int parse_r(char *p, int indent) {
 	        flen++;
             }
             rc = 0;
-#if 1
-	    putc(' ', OUT);
-            print_string();
-#endif
+	    emit_string(C, frag, flen);
             frag = in-1;
             flen=1;
         }
@@ -217,66 +190,61 @@ static int parse_r(char *p, int indent) {
     else if (p == insp) {
 	insp = NULL;
         rc = 0;
-#if 1
-        putc(' ', OUT);
-        putc(c, OUT);
-#endif
+        emit_token(C, c);
     }
 
     if (rc == 1) {
         while (( nxt = *p )) { // iterate over sequeces or ALT sets
             prop = *PROPP(p);
 
-#if 1
-            putc('\n', OUT);
-            for (i = indent+2; i--; ) putc (' ', OUT);
-            putc(char_prop(prop,'_'), OUT);
-#endif
+	    emit_indent(C);
+	    emit_prop(C,prop);
 
             np = p + nxt;
 
 	    if ( (prop & ALT)) { // if we fail an ALT then try next
-	        if (( rc = parse_r(np, indent+2) ) != 0) {
+	        if (( rc = parse_r(np)) != 0) {
                     p++;
 		    continue;
 	        }
                 break;
 	    } 
 	    if ( (prop & OPT)) {  // optional (can't fail)
-	        if (( parse_r(np, indent+2) ) == 0) {
+	        if (( parse_r(np)) == 0) {
 	            if (( sep = (prop & (REP|SREP)) )) {
-	                while (( parse_r(np, indent+2) ) == 0) { }
+	                while (( parse_r(np)) == 0) { }
 	            }
 	        }
                 rc = 0;
 	    }
 	    else { // else not OPTional
-	        if (( rc = parse_r(np, indent+2) ) != 0) {
+	        if (( rc = parse_r(np)) != 0) {
 		    break;
                 }
 	        if (( sep = (prop & (REP|SREP)) )) {
-	            while (( parse_r(np, indent+2) ) == 0) { }
+	            while (( parse_r(np)) == 0) { }
 	        }
 	    }
 	    p++;
         }
     }
 
-#if 1
-    putc('\n', OUT);
-    for (i = indent; i--; ) putc (' ', OUT);
-    fprintf(OUT,"%d", rc);
-#endif
-
+    C->nest--;
+    emit_indent(C);
+    emit_end_state(C, rc);
     return rc;
 }
 
 int parse(unsigned char *input) {
     int rc;
 
+    C = malloc(sizeof(context_t));
+
     in = input;
-    putc(char_prop(0,'_'), OUT);
-    rc = parse_r(state_machine, 0);
+    C->nest = 0;
+    emit_start_state_machine(C);
+    rc = parse_r(state_machine);
+    emit_end_state_machine(C);
     return rc;
 }
 
