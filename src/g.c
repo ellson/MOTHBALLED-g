@@ -5,7 +5,7 @@
 # include "parse.h"
 
 int main (int argc, char *argv[]) {
-    int rc, i, sz, space;
+    int i, sz, space;
     FILE *f;
     unsigned char *buf, *nextp;
 #define BUFSZ 100000
@@ -44,7 +44,7 @@ int main (int argc, char *argv[]) {
         }
     }
 
-    rc = parse(buf);
+    parse(buf);
 
-    return rc;
+    return 0;
 }
