@@ -12,7 +12,7 @@ static void api_start_state_machine(context_t *C) {
 
 static void api_start_state(context_t *C, char *p) {
     // FIXME - weird C bug
-    //       - without this empty func the parser behave differemtly
+    //       - without this empty func the parser behaves differemtly!
 }
 
 #if 0

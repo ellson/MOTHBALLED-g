@@ -7,9 +7,6 @@
 #include "list.h"
 #include "parse.h"
 
-#define OUT stdout
-#define ERR stderr
-
 #define styleLAN sstyle?"< ":"<"
 #define styleRAN sstyle?"\n>\n":">"
 #define styleLPN sstyle?"\n  ( ":"("
