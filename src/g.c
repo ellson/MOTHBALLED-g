@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
+# include "emit.h"
 # include "parse.h"
 # include "dumpg.h"
 
@@ -27,6 +28,8 @@ int main (int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
     }
+
+    emit = emit_trace_api;
 
 // FIXME - do proper buffer management
     buf = malloc(BUFSZ);
