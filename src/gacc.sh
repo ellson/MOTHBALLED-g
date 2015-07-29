@@ -31,19 +31,14 @@ sm_node() {
     if test "${NAME[$1]}" = ""; then
         namelist=("${namelist[@]}" "$1")
         SPOS[$1]=$sindx
-        charc=0
+        NAME[$1]="${#1},"
+        ((sindx++))
         for (( i=0; i<${#1}; i++ )); do
-            if test $charc -ne 0; then
-                NAME[$1]+=","
-            fi
-            ((charc++))
-            NAME[$1]+="'${1:$i:1}'"
+            NAME[$1]+="'${1:$i:1}',"
 	    ((sindx++)) 
         done
-        NAME[$1]+=",'\\0'"
-        ((sindx++))
         if test $(( sindx % 2 )) -eq 1; then
-            NAME[$1]+=",'\\0'"
+            NAME[$1]+="0,"
             ((sindx++))
         fi
     fi
@@ -223,7 +218,7 @@ printf "\n} state_t;\n\n"
 
 cat >>$ofh <<EOF
 
-extern char state_names[];
+extern unsigned char state_names[];
 extern unsigned char char2state[];
 extern char state_machine[];
 extern unsigned char state_props[];
@@ -245,10 +240,10 @@ EOF
 
 ####
 (
-printf "char state_names[] = {\n"
+printf "unsigned char state_names[] = {\n"
 for n in ${namelist[@]}; do
     spos=${SPOS[$n]}
-    printf "    /* %3d */  %s,\n" "$((spos/2))" "${NAME[$n]}"
+    printf "    /* %3d */  %s\n" "$((spos/2))" "${NAME[$n]}"
 done
 printf "};\n\n"
 ) >>$ofc
@@ -346,9 +341,9 @@ cat ${ofc}.states ${ofc}.props >>$ofc
 rm -f ${ofc}.states ${ofc}.props
 
 cat >>$ofc  <<EOF
-char *NAMEP(char *p) {
-    while (*p) p++;
-    return state_names + (*PROPP(p) *2);
+unsigned char *NAMEP(char *sp) {
+    while (*sp) sp++;
+    return state_names + (*PROPP(sp) * 2);
 }
 
 EOF
@@ -357,6 +352,6 @@ cat >>$ofh  <<EOF
 #define sizeof_state_machine $indx
 #define PROPP(p) (state_props + (p - state_machine))
 
-extern char *NAMEP(char *p);
+extern unsigned char *NAMEP(char *p);
 
 EOF

@@ -8,7 +8,7 @@
 #include "parse.h"
 
 static unsigned char c, unterm, sep, *in, *frag;
-static int flen;
+static int len;
 static char *insp, subj;
 static context_t *C;
 
@@ -49,7 +49,7 @@ static int parse_r(char *sp) {
     }
     insp = state_machine + insi;
     frag = in-1;
-    flen = 0;
+    len = 0;
 
     rc = 1;
     if (sp == state_machine + STRING) {
@@ -57,13 +57,13 @@ static int parse_r(char *sp) {
             while  ( insi == ABC) {
                 c = *in++;
 		insi = char2state[c];
-	        flen++;
+	        len++;
             }
             rc = 0;
-	    emit_string(C, frag, flen);
+	    emit_frag(C, len, frag);
             insp = state_machine + insi;
             frag = in-1;
-            flen=1;
+            len=0;
         }
     }
     else if (sp == insp) {

@@ -28,8 +28,8 @@ static void api_prop(context_t *C, unsigned char prop) {
 }
 #endif
 
-static void api_string(context_t *C, unsigned char *frag, int flen) {
-    print_string(frag, flen);
+static void api_frag(context_t *C, unsigned char len, unsigned char *frag) {
+    print_frag(len, frag);
     putc(' ', OUT);
 }
 
@@ -63,7 +63,7 @@ static emit_t api = {
     /* api_indent */              NULL,
     /* api_start_state */         api_start_state,
     /* api_prop */                NULL,
-    /* api_string */              api_string,
+    /* api_frag */                api_frag,
     /* api_token */               api_token,
     /* api_end_state */           NULL,
     /* api_term */                NULL,

@@ -23,7 +23,9 @@ void set_sstyle (void) {
 }
 
 static char *oleg1=NULL, *oleg2=NULL;
-static char *sleg1, *sleg2;
+static unsigned char *sleg1, *sleg2;
+
+static unsigned char SAME[]={1,'='};
 
 static void print_next( char *leg1, char *leg2 ) {
     if (leg1 != oleg1) {
@@ -33,16 +35,20 @@ static void print_next( char *leg1, char *leg2 ) {
         oleg2 = NULL;
     }
     else {
-	sleg1 = "=";
+	sleg1 = SAME;
     }
     if (leg2 != oleg1) {
 	oleg2 = leg2;
         sleg2 = NAMEP(leg2);
     }
     else {
-	sleg2 = "=";
+	sleg2 = SAME;
     }
-    fprintf(OUT,"%s%s %s%s", styleLAN, sleg1, sleg2, styleRAN);
+    fprintf(OUT,"%s", styleLAN);
+    print_string(sleg1);
+    putc(' ', OUT);
+    print_string(sleg2);
+    fprintf(OUT,"%s", styleRAN);
 }
 
 static void print_attr ( char attr, char *attrid, int *inlist ) {
@@ -130,10 +136,10 @@ void dumpg (void) {
 	    }
 	}
 	else { // else terminal
-	    fprintf(OUT,"%s", NAMEP(p));
+	    print_string(NAMEP(p));
             print_chars(p);
 	}
         p++;
-        fprintf(OUT,"\n");
+        putc('\n',OUT);
     }
 }

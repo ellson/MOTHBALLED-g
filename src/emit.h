@@ -6,7 +6,8 @@ typedef struct {
 #define ERR stderr
 
 char *get_name(char *p);
-void print_string(unsigned char *frag, int flen);
+void print_string(unsigned char *len_frag);
+void print_frag(unsigned char len, unsigned char *frag);
 char char_prop(unsigned char prop, char noprop);
 
 typedef struct {
@@ -14,7 +15,7 @@ typedef struct {
     void (*indent) (context_t *C);
     void (*start_state) (context_t *C, char *p);
     void (*prop) (context_t *C, unsigned char prop);
-    void (*string) (context_t *C, unsigned char *frag, int flen);
+    void (*frag) (context_t *C, unsigned char len, unsigned char *frag);
     void (*token) (context_t *C, unsigned char c);
     void (*end_state) (context_t *C, int rc);
     void (*term) (context_t *C);
@@ -31,8 +32,8 @@ typedef struct {
     if (emit->start_state) emit->start_state(C, p)
 #define emit_prop(C, prop) \
     if (emit->prop) emit->prop(C, prop)
-#define emit_string(C, ftag, flen) \
-    if (emit->string) emit->string(C, ftag, flen)
+#define emit_frag(C, len, frag) \
+    if (emit->frag) emit->frag(C, len, frag)
 #define emit_token(C, c) \
     if (emit->token) emit->token(C, c)
 #define emit_end_state(C, rc) \
