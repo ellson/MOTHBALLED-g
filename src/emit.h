@@ -45,6 +45,7 @@ typedef struct {
     if (emit->error) emit->error(C, message)
 
 extern emit_t *emit,
-    *emit_trace_api;
+    *emit_trace_api,
+    *emit_g_api;
 
 

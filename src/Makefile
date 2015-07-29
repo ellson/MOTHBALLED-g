@@ -1,6 +1,6 @@
 CFLAGS = -g -O0 -Wall
 
-g: parse.o dumpg.o grammar.o list.o emit.o emit_trace.o g.o
+g: parse.o dumpg.o grammar.o list.o emit.o emit_trace.o emit_g.o g.o
 
 parse.o: parse.c grammar.h list.h parse.h emit.h
 
@@ -13,6 +13,8 @@ list.o: list.c list.h
 emit.o: emit.c emit.h
 
 emit_trace.o: emit_trace.c emit.h
+
+emit_g.o: emit_g.c emit.h
 
 g.o: g.c parse.h dumpg.h emit.h
 

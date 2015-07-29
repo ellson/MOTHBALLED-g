@@ -13,7 +13,9 @@ int main (int argc, char *argv[]) {
     unsigned char *buf, *nextp;
 #define BUFSZ 100000
 
-    while ((opt = getopt(argc, argv, "dg")) != -1) {
+    emit = emit_g_api;
+
+    while ((opt = getopt(argc, argv, "dgt")) != -1) {
         switch (opt) {
         case 'd':
             dumpg();
@@ -23,20 +25,21 @@ int main (int argc, char *argv[]) {
             printg();
 	    exit (0);
             break;
+        case 't':
+	    emit = emit_trace_api;
+	    break;
         default: /* '?' */
             fprintf(stderr, "Usage: %s [ -d | -g | [ files ] [ - ]  \n", argv[0]);
             exit(EXIT_FAILURE);
         }
     }
 
-    emit = emit_trace_api;
-
 // FIXME - do proper buffer management
     buf = malloc(BUFSZ);
 
     nextp = buf;
     space = BUFSZ;
-    for (i=1; i<argc; i++) {
+    for (i=optind; i<argc; i++) {
         if (strcmp(argv[i], "-") == 0) {
             fread(nextp, 1, space, stdin);
 	    break;
