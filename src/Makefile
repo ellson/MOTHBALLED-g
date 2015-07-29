@@ -1,8 +1,10 @@
 CFLAGS = -g -O0 -Wall
 
-g: parse.o grammar.o list.o emit.o g.o
+g: parse.o dumpg.o grammar.o list.o emit.o g.o
 
 parse.o: parse.c grammar.h list.h parse.h emit.h
+
+dumpg.o: dumpg.c dumpg.h
 
 grammar.o: grammar.c grammar.h
 
@@ -10,7 +12,7 @@ list.o: list.c list.h
 
 emit.o: emit.c emit.h
 
-g.o: g.c parse.h
+g.o: g.c parse.h dumpg.h
 
 grammar.png: g g2gv.sh
 	./g -g | ./g2gv.sh | dot -Tpng -o grammar.png

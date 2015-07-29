@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 # include "parse.h"
+# include "dumpg.h"
 
 int main (int argc, char *argv[]) {
     int i, sz, space, opt;
