@@ -8,11 +8,13 @@
 static void api_start_state_machine(context_t *C) {
     putc(char_prop(0,'_'), OUT);
 }
+#endif
 
 static void api_start_state(context_t *C, char *p) {
-    fprintf(OUT,"%s ", NAMEP(p));
+//    fprintf(OUT,"%s ", NAMEP(p));
 }
 
+#if 0
 static void api_indent(context_t *C) {
     int i;
 
@@ -58,7 +60,7 @@ static void api_error(context_t *C, char *message) {
 static emit_t api = {
     /* api_start_state_machine */ NULL,
     /* api_indent */              NULL,
-    /* api_start_state */         NULL,
+    /* api_start_state */         api_start_state,
     /* api_prop */                NULL,
     /* api_string */              api_string,
     /* api_token */               api_token,

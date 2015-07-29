@@ -12,78 +12,79 @@ static int flen;
 static char *insp, subj;
 static context_t *C;
 
-static int parse_r(char *p) {
+static int parse_r(char *sp) {
     unsigned char prop;
-    char *np, ins, nxt;
+    char *np, insi, si, nxt;
     int rc;
 
     C->nest++;
-    emit_start_state(C, p);
-
-    if (p == state_machine + ACT) {
+    si = sp - state_machine;
+    switch (si) {
+    case ACT:
         if (unterm) {
  	    emit_term(C);
 	}
 	unterm = 1;
 	// FIXME create new context
-    }
-    if (p == state_machine + SUBJECT) {
+	break;
+    case SUBJECT:
 	// FIXME need to be in context
         subj = 0;
+	break;
     }
-
+    emit_start_state(C, sp);
     if (insp == NULL) {
         c = *in++;
-        ins = char2state[c];
+        insi = char2state[c];
     }
     else {
-	ins = insp - state_machine;
+	insi = insp - state_machine;
     }
-    while (ins == WS) {
+    while (insi == WS) {
         c = *in++;
-        ins = char2state[c];
+        insi = char2state[c];
     }
-    if (ins == NLL) { //EOF
+    if (insi == NLL) { //EOF
         emit_term(C);
 	exit(9);
     }
-    insp = state_machine + ins;
+    insp = state_machine + insi;
     frag = in-1;
     flen = 0;
 
     rc = 1;
-    if (p == state_machine + STRING) {
-        if (ins == ABC) {
-            while  ( ins == ABC) {
+    if (sp == state_machine + STRING) {
+        if (insi == ABC) {
+            while  ( insi == ABC) {
                 c = *in++;
-		ins = char2state[c];
+		insi = char2state[c];
 	        flen++;
             }
             rc = 0;
 	    emit_string(C, frag, flen);
-            insp = state_machine + ins;
+            insp = state_machine + insi;
             frag = in-1;
             flen=1;
         }
     }
-    else if (p == insp) {
+    else if (sp == insp) {
 	insp = NULL;
         rc = 0;
         emit_token(C, c);
     }
 
     if (rc == 1) {
-        while (( nxt = *p )) { // iterate over sequeces or ALT sets
-            prop = *PROPP(p);
+        while (( nxt = *sp )) { // iterate over sequeces or ALT sets
+            prop = *PROPP(sp);
 
 	    emit_indent(C);
 	    emit_prop(C,prop);
 
-            np = p + nxt;
+            np = sp + nxt;
 
 	    if ( (prop & ALT)) { // if we fail an ALT then try next
 	        if (( rc = parse_r(np)) != 0) {
-                    p++;
+                    sp++;
 		    continue;
 	        }
                 break;
@@ -104,13 +105,13 @@ static int parse_r(char *p) {
 	            while (( parse_r(np)) == 0) { }
 	        }
 	    }
-	    p++;
+	    sp++;
         }
     }
 
     if (rc == 0) {
-        ins = np - state_machine;
-	switch (ins) {
+        si = np - state_machine;
+	switch (si) {
 	case EDGE :
 	    if (subj == 0) {
 	        subj = EDGE;
