@@ -33,4 +33,3 @@ char char_prop(unsigned char prop, char noprop) {
     }
     return c;
 }
-

@@ -277,6 +277,7 @@ for s in ${statelist[@]}; do
         ((indx++))
         if test "$next" = ""; then break; fi
         ord=0
+        ws=""
 	for p in $prop; do
 	    case $p in
             ALT ) if test $alts -ne 0; then
@@ -284,8 +285,9 @@ for s in ${statelist[@]}; do
 		  fi
 		  (( alts++))
 		  ;;
-            REP | SREP) ((ord|=2));;
             OPT ) ((ord|=1));;
+            REP)  ((ord|=2));;
+            SREP) ((ord|=2)); ws='_';;
 	    *) ;;
 	    esac
         done
@@ -295,7 +297,7 @@ for s in ${statelist[@]}; do
 	2 ) ordc="+";; 
 	3 ) ordc="*";; 
 	esac
-        printf " %s%s" "$next" "$ordc"
+        printf " %s%s%s" "$ws" "$next" "$ordc"
     done
     printf "\n *"
 done

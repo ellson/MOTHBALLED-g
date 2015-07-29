@@ -7,14 +7,14 @@
 #include "list.h"
 #include "parse.h"
 
-static unsigned char c, unterm, sep, *in, *frag;
+static unsigned char unterm, sep, *in, *frag;
 static int len;
 static char *insp, subj;
 static context_t *C;
 
 static int parse_r(char *sp) {
     unsigned char prop;
-    char *np, insi, si, nxt;
+    char *np, insi, si, ni;
     int rc;
 
     C->nest++;
@@ -34,52 +34,54 @@ static int parse_r(char *sp) {
     }
     emit_start_state(C, sp);
     if (insp == NULL) {
-        c = *in++;
-        insi = char2state[c];
+        frag = in;
+        len = 0;
+        insi = char2state[*in++];
     }
     else {
 	insi = insp - state_machine;
     }
-    while (insi == WS) {
-        c = *in++;
-        insi = char2state[c];
+
+    if (insi == WS) {
+        while ( (insi = char2state[*in++]) == WS) {}
+        frag = in-1;
+	len = 0;
     }
     if (insi == NLL) { //EOF
         emit_term(C);
     }
     insp = state_machine + insi;
-    frag = in-1;
-    len = 0;
 
     rc = 1;
-    if (sp == state_machine + STRING) {
+    if (si == STRING) {
         if (insi == ABC) {
-            while  ( insi == ABC) {
-                c = *in++;
-		insi = char2state[c];
-	        len++;
+	    len++;
+            while ( (insi = char2state[*in++]) == ABC) {
+		len++;
             }
             rc = 0;
-	    emit_frag(C, len, frag);
+	    emit_frag(C,len,frag);
             insp = state_machine + insi;
             frag = in-1;
-            len=0;
+	    len = 0;
         }
     }
-    else if (sp == insp) {
+    else if (si == insi) {
+        emit_frag(C,1,frag);
 	insp = NULL;
+        frag = in;
+        len = 0;
         rc = 0;
-        emit_token(C, c);
     }
 
     if (rc == 1) {
-        while (( nxt = *sp )) { // iterate over sequeces or ALT sets
+        while (( ni = *sp )) { // iterate over sequences or ALT sets
             prop = *PROPP(sp);
 
 	    emit_indent(C);
 	    emit_prop(C,prop);
 
-            np = sp + nxt;
+            np = sp + ni;
 
 	    if ( (prop & ALT)) { // if we fail an ALT then try next
 	        if (( rc = parse_r(np)) != 0) {

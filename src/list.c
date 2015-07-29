@@ -36,19 +36,19 @@ static elem_t* newelem_private(elemtype_t type, int state) {
 elem_t* newlist(int state) {
     elem_t* elem;
 
-    elem = newelem_private(LST, state);
-    elem ->u.lst.first = NULL;
-    elem ->u.lst.last = NULL;
+    elem = newelem_private(LIST, state);
+    elem ->u.list.first = NULL;
+    elem ->u.list.last = NULL;
     return elem;
 }
 
-elem_t* newelem(int state, unsigned char *buf, int len, int allocated) {
+elem_t* newfrag(int state, unsigned char *frag, int len, int allocated) {
     elem_t* elem;
     
-    elem = newelem_private(STR, state);
-    elem->u.str.buf = buf;
-    elem->u.str.len = len;
-    elem->u.str.allocated = allocated;
+    elem = newelem_private(FRAG, state);
+    elem->u.frag.frag = frag;
+    elem->u.frag.len = len;
+    elem->u.frag.allocated = allocated;
     return elem;
 }
 
@@ -57,47 +57,55 @@ elem_t* newelem(int state, unsigned char *buf, int len, int allocated) {
 elem_t *list2elem(elem_t *list) {
     elem_t *elem;
 
-    assert(list->type == LST);
+    assert(list->type == LIST);
 
     elem = newlist(0);
-    elem->u.lst.first = list->u.lst.first;
-    elem->u.lst.last = list->u.lst.last;
+    elem->u.list.first = list->u.list.first;
+    elem->u.list.last = list->u.list.last;
     elem->state = list->state;
-    list->u.lst.first = NULL;
-    list->u.lst.last = NULL;
+    list->u.list.first = NULL;
+    list->u.list.last = NULL;
     list->state = 0;
     return elem;
 }
 
 void appendlist(elem_t *list, elem_t *elem) {
 
-    assert(list->type == LST);
+    assert(list->type == LIST);
 
-    if (list->u.lst.first) {
-	list->u.lst.last->next = elem;
+    if (list->u.list.first) {
+	list->u.list.last->next = elem;
     }
     else {
-	list->u.lst.first = elem;
+	list->u.list.first = elem;
     }
-    list->u.lst.last = elem;
+    list->u.list.last = elem;
+}
+
+void prependlist(elem_t *list, elem_t *elem) {
+
+    assert(list->type == LIST);
+
+    elem->next = list->u.list.first;
+    list->u.list.first = elem;
 }
 
 void freelist(elem_t *list) {
     elem_t *elem, *next;
 
-    assert(list->type == LST);
+    assert(list->type == LIST);
 
     // free list of elem, but really just put them back on the elem_freelist
-    elem = list->u.lst.first;
+    elem = list->u.list.first;
     while (elem) {
 	next = elem->next;
         switch (elem->type) {
-        case STR :
-	    if (elem->u.str.allocated) { // if the elem contains an allocated buf, then really free that
-	        free(elem->u.str.buf);
+        case FRAG :
+	    if (elem->u.frag.allocated) { // if the elem contains an allocated buf, then really free that
+	        free(elem->u.frag.frag);
             }
 	    break;
-        case LST :
+        case LIST :
 	    freelist(elem);  // recursively free lists of lists
 	    break;
 	}
@@ -110,8 +118,8 @@ void freelist(elem_t *list) {
     }
 
     // clean up emptied list
-    list->u.lst.first = NULL;
-    list->u.lst.last = NULL;
+    list->u.list.first = NULL;
+    list->u.list.last = NULL;
     list->state = 0;
 }
         
@@ -121,16 +129,16 @@ static void printj_private(elem_t *list, int indent) {
     unsigned char *cp;
     int len, cnt;
 
-    assert(list->type == LST);
+    assert(list->type == LIST);
     cnt = 0;
-    elem = list->u.lst.first;
+    elem = list->u.list.first;
     type = elem->type;
     switch (type) {
-    case STR :
+    case FRAG :
         while (elem) {
             assert(elem->type == type);  // check all the same type
-            cp = elem->u.str.buf;
-            len = elem->u.str.len;
+            cp = elem->u.frag.frag;
+            len = elem->u.frag.len;
             if (len) {
         	if (! cnt++) while (indent--) putc (' ', stdout);
                 while (len--) putc (*cp++, stdout);
@@ -139,7 +147,7 @@ static void printj_private(elem_t *list, int indent) {
         }
         if (cnt) putc ('\n', stdout);
         break;
-    case LST :
+    case LIST :
         while (elem) {
             assert(elem->type == type);  // check all the same type
 	    printj_private(elem, indent+2);  // recursively print lists
