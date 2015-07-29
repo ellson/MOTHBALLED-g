@@ -46,7 +46,6 @@ static int parse_r(char *sp) {
     }
     if (insi == NLL) { //EOF
         emit_term(C);
-	exit(9);
     }
     insp = state_machine + insi;
     frag = in-1;

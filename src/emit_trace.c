@@ -35,11 +35,11 @@ static void api_end_state(context_t *C, int rc) {
     fprintf(OUT,"%d", rc);
 }
 
-static void api_end_state_machine(context_t *C) {
+static void api_term(context_t *C) {
     putc('\n', OUT);
 }
 
-static void api_term(context_t *C) {
+static void api_end_state_machine(context_t *C) {
     putc('\n', OUT);
 }
 

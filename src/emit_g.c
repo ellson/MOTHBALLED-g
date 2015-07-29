@@ -11,7 +11,8 @@ static void api_start_state_machine(context_t *C) {
 #endif
 
 static void api_start_state(context_t *C, char *p) {
-//    fprintf(OUT,"%s ", NAMEP(p));
+    // FIXME - weird C bug
+    //       - without this empty func the parser behave differemtly
 }
 
 #if 0
@@ -42,14 +43,14 @@ static void api_end_state(context_t *C, int rc) {
     fprintf(OUT,"%d", rc);
 }
 
-static void api_end_state_machine(context_t *C) {
-    putc('\n', OUT);
-}
-
 static void api_term(context_t *C) {
     putc('\n', OUT);
 }
 #endif
+
+static void api_end_state_machine(context_t *C) {
+    putc('\n', OUT);
+}
 
 static void api_error(context_t *C, char *message) {
     fprintf(OUT, "\nError: %s\n", message);
@@ -66,7 +67,7 @@ static emit_t api = {
     /* api_token */               api_token,
     /* api_end_state */           NULL,
     /* api_term */                NULL,
-    /* api_end_state_machine */   NULL,
+    /* api_end_state_machine */   api_end_state_machine,
     /* api_error */               api_error
 };
 
