@@ -28,7 +28,7 @@ static void api_prop(context_t *C, unsigned char prop) {
 }
 
 static void api_frag(context_t *C, unsigned char len, unsigned char *frag) {
-    print_frag(len, frag);
+    print_frag(OUT, len, frag);
 }
 
 static void api_end_state(context_t *C, int rc) {

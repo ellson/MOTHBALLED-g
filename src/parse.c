@@ -13,19 +13,22 @@ static char *insp, subj;
 static context_t *C;
 
 static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
-    unsigned char prop, ws;
+    unsigned char prop;
     char *np, insi, si, ni;
     int rc;
 
     si = sp - state_machine;
-//fprintf(stderr,"si=%d sep=%x nest=%d\n", si, sep, nest);
+
+//FIXME _ make this an emit call
+fprintf(stderr,"%d sep=%x nest=%d\n", si, sep, nest);
+
+    nest++;
     switch (si) {
     case ACT:
         if (unterm) {
  	    emit_term(C);
 	}
 	unterm = 1;
-	nest++;
 	// FIXME create new context
 	break;
     case SUBJECT:
@@ -35,100 +38,94 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
     }
     emit_start_state(C, sp);
     if (insp == NULL) {
-        frag = in;
-        len = 0;
         insi = char2state[*in++];
     }
     else {
 	insi = insp - state_machine;
     }
 
+    if (sep & SREP) {
+        if (insi == WS) {
+            emit_sep(C);
+        }
+//	else {
+//	    rc = 1;
+//	    goto done;
+//	}
+    }
     if (insi == WS) {
-        ws = SREP;
         while ( (insi = char2state[*in++]) == WS) {}
-        frag = in-1;
-	len = 0;
     }
-#if 1
-    else {
-	ws = 8;  // FIXME - this is crazy!
-    }
-#endif
     if (insi == NLL) { //EOF
         emit_term(C);
     }
     insp = state_machine + insi;
 
-    rc = 1;
-    if (si == STRING) {
+    // deal with terminals
+    if (si == STRING) { // STRING terminals
         if (insi == ABC) {
-	    if (sep&SREP) {
-	        if (ws&SREP) {
-		    emit_sep(C);
-		    rc = 0;
-		}
-            }
-	    else {
-		rc = 0;
-	    }
-	    len++;
+            frag = in-1;
+            len = 1;
             while ( (insi = char2state[*in++]) == ABC) {
 		len++;
             }
+print_frag(ERR, len, frag);
+putc('\n',ERR);
 	    emit_frag(C,len,frag);
             insp = state_machine + insi;
-            frag = in-1;
-	    len = 0;
+	    rc = 0;
+            goto done;
         }
     }
-    else if (si == insi) {
-        emit_frag(C,1,frag);
-	insp = NULL;
-        frag = in;
-        len = 0;
+    else if (si == insi) { // tokens
+        frag = in-1;
+print_frag(ERR, 1, frag);
+putc('\n',ERR);
+        emit_frag(C,1,frag);   //FIXME - use new emit_tok and include insi
+        insi = char2state[*in++];
+        insp = state_machine + insi;
         rc = 0;
+        goto done;
     }
 
-    if (rc == 1) {
-        while (( ni = *sp )) { // iterate over sequences or ALT sets
-            prop = *PROPP(sp);
-	    emit_prop(C,prop);
+    rc = 1; // in case no next state is found
+    while (( ni = *sp )) { // iterate over ALTs or sequences
+        prop = *PROPP(sp);
+	emit_prop(C,prop);
 
-            np = sp + ni;
-
-	    if ( (prop & ALT)) { // if we fail an ALT then try next
-	        if (( rc = parse_r(np,sep,nest)) != 0) {
-                    sp++;
-		    continue;
-	        }
-                break;
-	    } 
-	    if ( (prop & OPT)) {  // optional (can't fail)
-	        if (( parse_r(np,sep|prop,nest)) == 0) {
+        np = sp + ni;
+	if ( (prop & ALT)) { // look for ALT
+	    if (( rc = parse_r(np,prop|sep,nest)) == 0) {
+                break;  // ALT satisfied
+	    }
+	    // if we fail an ALT then cwcontinue iteration to try next
+	} 
+	else { // else it is a sequence
+	    if ( (prop & OPT)) { // optional
+	        if (( parse_r(np,prop|sep,nest)) == 0) {
 	            if ( prop & (REP|SREP)) {
-//fprintf(stderr,"type=* prop=%x sep=%x\n", prop, sep);
-	                while ( parse_r(np,sep|prop,nest) == 0) { }
+	                while ( parse_r(np,prop|sep,nest) == 0) { }
 	            }
 	        }
-                rc = 0;
+                rc = 0; // optional can't fail
 	    }
 	    else { // else not OPTional
-	        if (( rc = parse_r(np,sep|prop,nest)) != 0) {
-		    break;
+	        if (( rc = parse_r(np,prop|sep,nest)) != 0) {
+		    break; 
                 }
+                // rc is the rc of the first term, which at this point is success
                 if ( prop & (REP|SREP)) {
-//fprintf(stderr,"type=+ prop=%x sep=%x\n", prop, sep);
-	            while ( parse_r(np,sep|prop,nest) == 0) { }
+	            while ( parse_r(np,prop|sep,nest) == 0) { }
 	        }
 	    }
-	    sp++;
-        }
+	}
+	sp++;  // next ALT (if not yet satisfied)  or next sequence item
     }
 
     if (rc == 0) {
-        si = np - state_machine;
+        ni = np - state_machine;
 #if 0
-	switch (si) {
+	switch (ni) {
 	case EDGE :
 	    if (subj == 0) {
 	        subj = EDGE;
@@ -158,6 +155,9 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 #endif
     }
 
+done:
+    nest--;
+fprintf(stderr,"%d rc=%d\n", si, rc);
     emit_end_state(C, rc);
     return rc;
 }
