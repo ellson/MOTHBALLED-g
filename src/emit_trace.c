@@ -12,6 +12,10 @@ static void api_start_state(context_t *C, char *p) {
     print_string(NAMEP(p));
 }
 
+static void api_sep(context_t *C) {
+    putc (' ', OUT);
+}
+
 static void api_indent(context_t *C) {
     int i;
 
@@ -25,10 +29,6 @@ static void api_prop(context_t *C, unsigned char prop) {
 
 static void api_frag(context_t *C, unsigned char len, unsigned char *frag) {
     print_frag(len, frag);
-}
-
-static void api_token(context_t *C, unsigned char c) {
-    putc(c, OUT);
 }
 
 static void api_end_state(context_t *C, int rc) {
@@ -51,11 +51,11 @@ static void api_error(context_t *C, char *message) {
 
 static emit_t api = {
     /* api_start_state_machine */ api_start_state_machine,
+    /* api_sep */                 api_sep,
     /* api_indent */              api_indent,
     /* api_start_state */         api_start_state,
     /* api_prop */                api_prop,
     /* api_frag */                api_frag,
-    /* api_token */               api_token,
     /* api_end_state */           api_end_state,
     /* api_term */                api_term,
     /* api_end_state_machine */   api_end_state_machine,

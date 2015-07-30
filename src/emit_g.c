@@ -8,11 +8,17 @@
 static void api_start_state_machine(context_t *C) {
     putc(char_prop(0,'_'), OUT);
 }
-#endif
 
 static void api_start_state(context_t *C, char *p) {
+    //     print_string(NAMEP(p));
+    
     // FIXME - weird C bug
     //       - without this empty func the parser behaves differemtly!
+}
+#endif
+
+static void api_sep(context_t *C) {
+    putc (' ', OUT);
 }
 
 #if 0
@@ -30,12 +36,6 @@ static void api_prop(context_t *C, unsigned char prop) {
 
 static void api_frag(context_t *C, unsigned char len, unsigned char *frag) {
     print_frag(len, frag);
-    putc(' ', OUT);
-}
-
-static void api_token(context_t *C, unsigned char c) {
-    putc(c, OUT);
-    putc(' ', OUT);
 }
 
 #if 0
@@ -60,11 +60,11 @@ static void api_error(context_t *C, char *message) {
 
 static emit_t api = {
     /* api_start_state_machine */ NULL,
+    /* api_sep */                 api_sep,
     /* api_indent */              NULL,
-    /* api_start_state */         api_start_state,
+    /* api_start_state */         NULL,
     /* api_prop */                NULL,
     /* api_frag */                api_frag,
-    /* api_token */               api_token,
     /* api_end_state */           NULL,
     /* api_term */                NULL,
     /* api_end_state_machine */   api_end_state_machine,
