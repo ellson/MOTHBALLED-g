@@ -19,8 +19,9 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 
     si = sp - state_machine;
 
+    emit_start_state(C, sp);
 //FIXME _ make this an emit call
-fprintf(stderr,"%d sep=%x nest=%d\n", si, sep, nest);
+//fprintf(stderr,"%d sep=%x nest=%d\n", si, sep, nest);
 
     nest++;
     switch (si) {
@@ -36,7 +37,6 @@ fprintf(stderr,"%d sep=%x nest=%d\n", si, sep, nest);
         subj = 0;
 	break;
     }
-    emit_start_state(C, sp);
     if (insp == NULL) {
         insi = char2state[*in++];
     }
@@ -78,8 +78,8 @@ fprintf(stderr,"%d sep=%x nest=%d\n", si, sep, nest);
             while ( (insi = char2state[*in++]) == ABC) {
 		len++;
             }
-print_frag(ERR, len, frag);
-putc('\n',ERR);
+//print_frag(ERR, len, frag);
+//putc('\n',ERR);
 	    emit_frag(C,len,frag);
             insp = state_machine + insi;
 	    rc = 0;
@@ -88,8 +88,8 @@ putc('\n',ERR);
     }
     else if (si == insi) { // tokens
         frag = in-1;
-print_frag(ERR, 1, frag);
-putc('\n',ERR);
+//print_frag(ERR, 1, frag);
+//putc('\n',ERR);
         emit_frag(C,1,frag);   //FIXME - use new emit_tok and include insi
         insi = char2state[*in++];
         insp = state_machine + insi;
@@ -133,7 +133,6 @@ putc('\n',ERR);
 
     if (rc == 0) {
         ni = np - state_machine;
-#if 0
 	switch (ni) {
 	case EDGE :
 	    if (subj == 0) {
@@ -161,12 +160,11 @@ putc('\n',ERR);
 	    unterm = 0;
 	    break;
 	}
-#endif
     }
 
 done:
     nest--;
-fprintf(stderr,"%d rc=%d\n", si, rc);
+//fprintf(stderr,"%d rc=%d\n", si, rc);
     emit_end_state(C, rc);
     return rc;
 }
