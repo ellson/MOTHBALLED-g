@@ -49,9 +49,11 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
         frag = in-1;
 	len = 0;
     }
+#if 1
     else {
-	ws = 9;
+	ws = 8;  // FIXME - this is crazy!
     }
+#endif
     if (insi == NLL) { //EOF
         emit_term(C);
     }
@@ -125,6 +127,7 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 
     if (rc == 0) {
         si = np - state_machine;
+#if 0
 	switch (si) {
 	case EDGE :
 	    if (subj == 0) {
@@ -152,6 +155,7 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 	    unterm = 0;
 	    break;
 	}
+#endif
     }
 
     emit_end_state(C, rc);
