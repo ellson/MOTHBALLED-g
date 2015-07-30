@@ -13,24 +13,44 @@ int main (int argc, char *argv[]) {
     unsigned char *buf, *nextp;
 #define BUFSZ 100000
 
-    emit = emit_g_api;
+    emit = emit_g_api1;
 
-    while ((opt = getopt(argc, argv, "dgt")) != -1) {
+    while ((opt = getopt(argc, argv, "d:g:t")) != -1) {
         switch (opt) {
         case 'd':
-            dumpg();
-	    exit (0);
+            switch (atoi(optarg)) {
+	    case 1: dumpg(); exit(0); break;
+	    case 2: printg(); exit(0); break;
+	    default:
+		fprintf(stderr, "%s\n",
+		    "-d1 = linear walk, -d2 = recursive walk"
+		);
+		exit(1);
+		break;
+	    }
+            
             break;
         case 'g':
-            printg();
-	    exit (0);
+            switch (atoi(optarg)) {
+	    case 1: emit = emit_g_api1; break;
+	    case 2: emit = emit_g_api2; break;
+	    default:
+		fprintf(stderr, "%s\n",
+		    "-g1 = minimal space, -g2 = shell-friendly spacing"
+		);
+		exit(1);
+		break;
+	    }
             break;
         case 't':
 	    emit = emit_trace_api;
 	    break;
         default: /* '?' */
-            fprintf(stderr, "Usage: %s [ -d | -g | [ files ] [ - ]  \n", argv[0]);
-            exit(EXIT_FAILURE);
+            fprintf(stderr,
+		"Usage: %s [ -d[12] | -g[12] | [ files ] [ - ]  \n",
+		argv[0]
+	    );
+            exit(1);
         }
     }
 

@@ -19,9 +19,7 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 
     si = sp - state_machine;
 
-    emit_start_state(C, sp);
-//FIXME _ make this an emit call
-//fprintf(stderr,"%d sep=%x nest=%d\n", si, sep, nest);
+    emit_start_state(C, si, sep, nest);
 
     nest++;
     switch (si) {
@@ -81,8 +79,6 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
             while ( (insi = char2state[*in++]) == ABC) {
 		len++;
             }
-//print_frag(ERR, len, frag);
-//putc('\n',ERR);
 	    emit_frag(C,len,frag);
 	    insep = insi;
             insp = state_machine + insi;
@@ -93,8 +89,6 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
             frag = in-1;
             len = 1;
             insi = char2state[*in++];
-//print_frag(ERR, len, frag);
-//putc('\n',ERR);
 	    emit_frag(C,len,frag);
 	    insep = insi;
             insp = state_machine + insi;
@@ -104,9 +98,7 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
     }
     else if (si == insi) { // tokens
         frag = in-1;
-//print_frag(ERR, 1, frag);
-//putc('\n',ERR);
-        emit_frag(C,1,frag);   //FIXME - use new emit_tok and include insi
+        emit_tok(C,si,1,frag);
 	insep = insi;
         insi = char2state[*in++];
         insp = state_machine + insi;
@@ -181,8 +173,7 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 
 done:
     nest--;
-//fprintf(stderr,"%d rc=%d\n", si, rc);
-    emit_end_state(C, rc);
+    emit_end_state(C, si, rc);
     return rc;
 }
 
