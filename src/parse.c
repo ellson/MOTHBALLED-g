@@ -7,7 +7,7 @@
 #include "list.h"
 #include "parse.h"
 
-static unsigned char unterm, *in, *frag;
+static unsigned char unterm, *in, insep, *frag;
 static int len;
 static char *insp, subj;
 static context_t *C;
@@ -38,28 +38,31 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 	break;
     }
     if (insp == NULL) {
+        insep = WS;
         insi = char2state[*in++];
     }
     else {
 	insi = insp - state_machine;
         if (sep & SREP) {
-            if (insi == WS) {
+            if (insep == WS) {
+                if (insi == WS) {
+                    while ( (insi = char2state[*in++]) == WS) {}
+		}
                 emit_sep(C);
             }
         }
         else if (sep & REP) {
-            if (insi == WS) {
+            if (insep == WS) {
 	        rc = 1;
 	        goto done;
 	    }
         }
 	else {
-            if (insi == WS) {
-                while ( (insi = char2state[*in++]) == WS) {}
-                if (insi == ABC) {
+            if (si == STRING) {
+                if (insep == EQL) {
                     emit_sep(C);
-		}
-            }
+	        }
+	    }
 	}
     }
     if (insi == WS) {
@@ -81,6 +84,19 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 //print_frag(ERR, len, frag);
 //putc('\n',ERR);
 	    emit_frag(C,len,frag);
+	    insep = insi;
+            insp = state_machine + insi;
+	    rc = 0;
+            goto done;
+        }
+        else if (insi == EQL) {
+            frag = in-1;
+            len = 1;
+            insi = char2state[*in++];
+//print_frag(ERR, len, frag);
+//putc('\n',ERR);
+	    emit_frag(C,len,frag);
+	    insep = insi;
             insp = state_machine + insi;
 	    rc = 0;
             goto done;
@@ -91,6 +107,7 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 //print_frag(ERR, 1, frag);
 //putc('\n',ERR);
         emit_frag(C,1,frag);   //FIXME - use new emit_tok and include insi
+	insep = insi;
         insi = char2state[*in++];
         insp = state_machine + insi;
         rc = 0;
@@ -104,27 +121,27 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 
         np = sp + ni;
 	if ( (prop & ALT)) { // look for ALT
-	    if (( rc = parse_r(np,prop|sep,nest)) == 0) {
+	    if (( rc = parse_r(np,prop,nest)) == 0) {
                 break;  // ALT satisfied
 	    }
 	    // if we fail an ALT then cwcontinue iteration to try next
 	} 
 	else { // else it is a sequence
 	    if ( (prop & OPT)) { // optional
-	        if (( parse_r(np,prop|sep,nest)) == 0) {
+	        if (( parse_r(np,prop,nest)) == 0) {
 	            if ( prop & (REP|SREP)) {
-	                while ( parse_r(np,prop|sep,nest) == 0) { }
+	                while ( parse_r(np,prop,nest) == 0) { }
 	            }
 	        }
                 rc = 0; // optional can't fail
 	    }
 	    else { // else not OPTional
-	        if (( rc = parse_r(np,prop|sep,nest)) != 0) {
+	        if (( rc = parse_r(np,prop,nest)) != 0) {
 		    break; 
                 }
                 // rc is the rc of the first term, which at this point is success
                 if ( prop & (REP|SREP)) {
-	            while ( parse_r(np,prop|sep,nest) == 0) { }
+	            while ( parse_r(np,prop,nest) == 0) { }
 	        }
 	    }
 	}
@@ -177,7 +194,7 @@ int parse(unsigned char *input) {
     in = input;
     C->nest = 0;
     emit_start_state_machine(C);
-    while (( rc = parse_r(state_machine,0,0)) == 0) {}
+    while (( rc = parse_r(state_machine,SREP,0)) == 0) {}
     emit_end_state_machine(C);
     return rc;
 }
