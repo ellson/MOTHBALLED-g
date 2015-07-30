@@ -46,13 +46,22 @@ fprintf(stderr,"%d sep=%x nest=%d\n", si, sep, nest);
             if (insi == WS) {
                 emit_sep(C);
             }
-//	    else {
-//	        rc = 1;
-//	        goto done;
-//	    }
         }
+        else if (sep & REP) {
+            if (insi == WS) {
+	        rc = 1;
+	        goto done;
+	    }
+        }
+	else {
+            if (insi == WS) {
+                while ( (insi = char2state[*in++]) == WS) {}
+                if (insi == ABC) {
+                    emit_sep(C);
+		}
+            }
+	}
     }
-
     if (insi == WS) {
         while ( (insi = char2state[*in++]) == WS) {}
     }
@@ -170,7 +179,7 @@ int parse(unsigned char *input) {
     in = input;
     C->nest = 0;
     emit_start_state_machine(C);
-    while (( rc = parse_r(state_machine,SREP,0)) == 0) {}
+    while (( rc = parse_r(state_machine,0,0)) == 0) {}
     emit_end_state_machine(C);
     return rc;
 }
