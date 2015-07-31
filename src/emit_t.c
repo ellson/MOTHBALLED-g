@@ -33,6 +33,7 @@ static void api_frag(context_t *C, unsigned char len, unsigned char *frag) {
 
 static void api_tok(context_t *C, char class, unsigned char len, unsigned char *frag) {
     putc('\t', OUT);
+    putc('\t', OUT);
     print_frag(OUT, len, frag);
 }
 
