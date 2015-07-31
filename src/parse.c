@@ -23,6 +23,10 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 
     emit_start_state(C, si, prop, nest, repc);
 
+    if ((prop & SREP) && repc > 0) {
+        emit_sep(C);
+    }
+
     nest++;
     assert (nest >= 0); // catch overflows
         switch (si) {
@@ -99,6 +103,8 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	}
         insp = state_machine + insi;
 	if (slen > 0) {
+            emit_string(C,string,slen);
+	    free_list(string);
 	    rc = 0;
         }
 	else {
@@ -151,10 +157,6 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 
 
     if (rc == 0) {
-// FIXME
-        if ((prop & SREP) && repc > 0) {
-	    emit_sep(C);
-        }
         switch (si) {
 //        case ACT:
 //            if (unterm) {
@@ -166,9 +168,6 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
         case SUBJECT:
             subj = savesubj; // pop subj
 	    break;
-	case STRING:
-            emit_string(C,string,slen);
-	    free_list(string);
         }
         ni = np - state_machine;
 	switch (ni) {
@@ -214,15 +213,17 @@ done:
     return rc;
 }
 
+static context_t context;
+
 int parse(unsigned char *input) {
     int rc;
+    context_t *C;
 
-    C = malloc(sizeof(context_t));
+    C = &context;
 
     in = input;
-    C->nest = 0;
     emit_start_state_machine(C);
-    while (( rc = parse_r(state_machine,SREP,0,0)) == 0) {}
+    rc = parse_r(state_machine,SREP,0,0);
     emit_end_state_machine(C);
     return rc;
 }
