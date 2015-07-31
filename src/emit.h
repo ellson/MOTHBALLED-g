@@ -13,12 +13,10 @@ char char_prop(unsigned char prop, char noprop);
 typedef struct {
     void (*start_state_machine) (context_t *C);
     void (*sep) (context_t *C);
-    void (*indent) (context_t *C);
-    void (*start_state) (context_t *C, char class, unsigned char sep, unsigned char nest);
-    void (*prop) (context_t *C, unsigned char prop);
+    void (*start_state) (context_t *C, char class, unsigned char prop, int nest);
     void (*frag) (context_t *C, unsigned char len, unsigned char *frag);
     void (*tok) (context_t *C, char class, unsigned char len, unsigned char *frag);
-    void (*end_state) (context_t *C, char class, int rc);
+    void (*end_state) (context_t *C, char class, int rc, int nest);
     void (*term) (context_t *C);
     void (*end_state_machine) (context_t *C);
     void (*error) (context_t *C, char *message);
@@ -29,18 +27,14 @@ typedef struct {
     if (emit->start_state_machine) {emit->start_state_machine(C);}
 #define emit_sep(C) \
     if (emit->sep) {emit->sep(C);}
-#define emit_indent(C) \
-    if (emit->indent) {emit->indent(C);}
-#define emit_start_state(C, class, sep, nest) \
-    if (emit->start_state) {emit->start_state(C, class, sep, nest);}
-#define emit_prop(C, prop) \
-    if (emit->prop) {emit->prop(C, prop);}
+#define emit_start_state(C, class, prop, nest) \
+    if (emit->start_state) {emit->start_state(C, class, prop, nest);}
 #define emit_frag(C, len, frag) \
     if (emit->frag) {emit->frag(C, len, frag);}
 #define emit_tok(C, class, len, frag) \
     if (emit->tok) {emit->tok(C, class, len, frag);}
-#define emit_end_state(C, class, rc) \
-    if (emit->end_state) {emit->end_state(C, class, rc);}
+#define emit_end_state(C, class, rc, nest) \
+    if (emit->end_state) {emit->end_state(C, class, rc, nest);}
 #define emit_term(C) \
     if (emit->term) {emit->term(C);}
 #define emit_end_state_machine(C) \
@@ -49,7 +43,7 @@ typedef struct {
     if (emit->error) {emit->error(C, message);}
 
 extern emit_t *emit,
-    *emit_trace_api,
+    *emit_t_api,
     *emit_g_api1,
     *emit_g_api2;
 

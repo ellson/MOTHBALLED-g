@@ -8,39 +8,28 @@
 static void api_start_state_machine(context_t *C) {
     putc(char_prop(0,'_'), OUT);
 }
-
-static void api_frag(context_t *C, unsigned char len, unsigned char *frag) {
-    print_frag(OUT, len, frag);
-}
 #endif
 
 static void api_sep(context_t *C) {
     putc (' ', OUT);
 }
 
-#if 0
-static void api_indent(context_t *C) {
-    int i;
-
-    putc('\n', OUT);
-    for (i = C->nest*2; i--; ) putc (' ', OUT);
-}
-
-static void api_prop(context_t *C, unsigned char prop) {
-    putc(char_prop(prop,'_'), OUT);
-}
-#endif
-
 static void api_frag(context_t *C, unsigned char len, unsigned char *frag) {
     print_frag(OUT, len, frag);
 }
 
-static void api_tok(context_t *C, char class, unsigned char len, unsigned char *frag) {
+static void api1_tok(context_t *C, char class, unsigned char len, unsigned char *frag) {
     print_frag(OUT, len, frag);
 }
 
+static void api2_tok(context_t *C, char class, unsigned char len, unsigned char *frag) {
+    putc('\n', OUT);
+    print_frag(OUT, len, frag);
+    putc(' ', OUT);
+}
+
 #if 0
-static void api_end_state(context_t *C, char class, int rc) {
+static void api_end_state(context_t *C, char class, int rc, int nest) {
     fprintf(OUT,"%d", rc);
 }
 
@@ -61,11 +50,9 @@ static void api_error(context_t *C, char *message) {
 static emit_t api1 = {
     /* api_start_state_machine */ NULL,
     /* api_sep */                 api_sep,
-    /* api_indent */              NULL,
     /* api_start_state */         NULL,
-    /* api_prop */                NULL,
     /* api_frag */                api_frag,
-    /* api_tok */                 api_tok,
+    /* api_tok */                 api1_tok,
     /* api_end_state */           NULL,
     /* api_term */                NULL,
     /* api_end_state_machine */   api_end_state_machine,
@@ -75,11 +62,9 @@ static emit_t api1 = {
 static emit_t api2 = {
     /* api_start_state_machine */ NULL,
     /* api_sep */                 api_sep,
-    /* api_indent */              NULL,
     /* api_start_state */         NULL,
-    /* api_prop */                NULL,
     /* api_frag */                api_frag,
-    /* api_tok */                 api_tok,
+    /* api_tok */                 api2_tok,
     /* api_end_state */           NULL,
     /* api_term */                NULL,
     /* api_end_state_machine */   api_end_state_machine,

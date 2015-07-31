@@ -12,16 +12,30 @@ static int len;
 static char *insp, subj;
 static context_t *C;
 
-static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
-    unsigned char prop;
-    char *np, insi, si, ni;
+static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
+    unsigned char nprop;
+    char *np, insi, si, ni, savesubj;
     int rc;
 
     si = sp - state_machine;
 
-    emit_start_state(C, si, sep, nest);
+    emit_start_state(C, si, prop, nest);
 
     nest++;
+    assert (nest >= 0); // catch overflows
+        switch (si) {
+//        case ACT:
+//            if (unterm) {
+// 	        emit_term(C);
+//	    }
+//	    unterm = 1;
+//	    // FIXME create new context
+//	    break;
+        case SUBJECT:
+            savesubj = subj; // push subj
+	    subj = 0;
+	    break;
+        }
     switch (si) {
     case ACT:
         if (unterm) {
@@ -31,7 +45,7 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 	// FIXME create new context
 	break;
     case SUBJECT:
-	// FIXME need to be in context
+        savesubj = subj;  // might be a nested subject
         subj = 0;
 	break;
     }
@@ -41,7 +55,7 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
     }
     else {
 	insi = insp - state_machine;
-        if (sep & SREP) {
+        if (prop & SREP) {
             if (insep == WS) {
                 if (insi == WS) {
                     while ( (insi = char2state[*in++]) == WS) {}
@@ -49,7 +63,7 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
                 emit_sep(C);
             }
         }
-        else if (sep & REP) {
+        else if (prop & REP) {
             if (insep == WS) {
 	        rc = 1;
 	        goto done;
@@ -95,6 +109,16 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 	    rc = 0;
             goto done;
         }
+        else if (insi == AST) {
+            frag = in-1;
+            len = 1;
+            insi = char2state[*in++];
+	    emit_frag(C,len,frag);
+	    insep = insi;
+            insp = state_machine + insi;
+	    rc = 0;
+            goto done;
+        }
     }
     else if (si == insi) { // tokens
         frag = in-1;
@@ -108,56 +132,74 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 
     rc = 1; // in case no next state is found
     while (( ni = *sp )) { // iterate over ALTs or sequences
-        prop = *PROPP(sp);
-	emit_prop(C,prop);
-
+        nprop = *PROPP(sp);
         np = sp + ni;
-	if ( (prop & ALT)) { // look for ALT
-	    if (( rc = parse_r(np,prop,nest)) == 0) {
+	if ( (nprop & ALT)) { // look for ALT
+	    if (( rc = parse_r(np,nprop,nest)) == 0) {
                 break;  // ALT satisfied
 	    }
 	    // if we fail an ALT then cwcontinue iteration to try next
 	} 
 	else { // else it is a sequence
-	    if ( (prop & OPT)) { // optional
-	        if (( parse_r(np,prop,nest)) == 0) {
-	            if ( prop & (REP|SREP)) {
-	                while ( parse_r(np,prop,nest) == 0) { }
+	    if ( (nprop & OPT)) { // optional
+	        if (( parse_r(np,nprop,nest)) == 0) {
+	            if ( nprop & (REP|SREP)) {
+	                while ( parse_r(np,nprop,nest) == 0) { }
 	            }
 	        }
                 rc = 0; // optional can't fail
 	    }
 	    else { // else not OPTional
-	        if (( rc = parse_r(np,prop,nest)) != 0) {
+	        if (( rc = parse_r(np,nprop,nest)) != 0) {
 		    break; 
                 }
                 // rc is the rc of the first term, which at this point is success
-                if ( prop & (REP|SREP)) {
-	            while ( parse_r(np,prop,nest) == 0) { }
+                if ( nprop & (REP|SREP)) {
+	            while ( parse_r(np,nprop,nest) == 0) { }
 	        }
 	    }
 	}
 	sp++;  // next ALT (if not yet satisfied)  or next sequence item
     }
 
+
     if (rc == 0) {
+        switch (si) {
+//        case ACT:
+//            if (unterm) {
+// 	        emit_term(C);
+//	    }
+//	    unterm = 1;
+//	    // FIXME create new context
+//	    break;
+        case SUBJECT:
+            subj = savesubj; // pop subj
+	    break;
+        }
         ni = np - state_machine;
 	switch (ni) {
 	case EDGE :
 	    if (subj == 0) {
 	        subj = EDGE;
+//fprintf(OUT," (edge)");
 	    }
 	    else {
-	        emit_error(C, "EDGE found in NODE SUBJECT");
-	        rc = 1;
+                if (subj == NODE) {
+//FIXME	            emit_error(C, "NODE found in EDGE SUBJECT");
+	            rc = 1;
+		}
 	    }
             break;
 	case NODE :
 	    if (subj == 0) {
-	        subj = NODE;
+	        subj = ni;
+//fprintf(OUT," (%s)", ni==NODE?"node":"child");
 	    }
 	    else {
-	        emit_error(C, "NODE found in EDGE SUBJECT");
+                if (subj == EDGE) {
+	            emit_error(C, "EDGE found in NODE SUBJECT");
+	            rc = 1;
+		}
 	        rc = 1;
 	    }
             break;
@@ -173,7 +215,8 @@ static int parse_r(char *sp, unsigned char sep, unsigned char nest) {
 
 done:
     nest--;
-    emit_end_state(C, si, rc);
+    assert (nest >= 0);
+    emit_end_state(C, si, rc, nest);
     return rc;
 }
 

@@ -43,7 +43,7 @@ int main (int argc, char *argv[]) {
 	    }
             break;
         case 't':
-	    emit = emit_trace_api;
+	    emit = emit_t_api;
 	    break;
         default: /* '?' */
             fprintf(stderr,
