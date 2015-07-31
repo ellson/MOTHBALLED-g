@@ -272,6 +272,11 @@ ebnf() {
     for s in ${statelist[@]}; do
         indx=${POS[$s]}
 	class="${CONTENT[$s]}"
+        if test "$s" = "BIN" -o "$s" = "UTF" -o "$s" = "NLL" -o "$s" = "WS"; then
+	    printable=0
+	else
+	    printable=1
+	fi
         printf "%13s ::=" "$s"
         alts=0
         while true; do
@@ -314,11 +319,11 @@ ebnf() {
 		    fi
 		fi
 		((altc++))
-#		if test "$s" = "ABC"; then
-#                    printf "'a'"	
-#		else
+		if test $printable -eq 1; then
+                    printf "'\x$c'"	
+		else
                     printf "'0x$c'"	
-#		fi
+		fi
 	    done
 	fi
         printf "\n"
