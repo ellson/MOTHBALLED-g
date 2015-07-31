@@ -9,26 +9,16 @@ static void api_start_state_machine(context_t *C) {
     putc(char_prop(0,'_'), OUT);
 }
 
-static void api_start_state(context_t *C, char class, unsigned char prop, int nest) {
+static void api_start_state(context_t *C, char class, unsigned char prop, int nest, int repc) {
     putc('\n', OUT);
     putc(char_prop(prop,'_'), OUT);
-    fprintf(OUT,"%4d%4d ", class, nest);
+    fprintf(OUT,"%4d%4d%4d ", class, nest, repc);
     print_string(NAMEP(class+state_machine));
 }
 
-#if 0
-static void api_sep(context_t *C) {
-    putc (' ', OUT);
-}
-#endif
-
-static void api_string(context_t *C, elem_t *string) {
-//    print_list(OUT, string);
-}
-
-static void api_frag(context_t *C, unsigned char len, unsigned char *frag) {
+static void api_string(context_t *C, elem_t *string, int slen) {
     putc('\t', OUT);
-    print_frag(OUT, len, frag);
+    print_list(OUT, string);
 }
 
 static void api_tok(context_t *C, char class, unsigned char len, unsigned char *frag) {
@@ -37,16 +27,10 @@ static void api_tok(context_t *C, char class, unsigned char len, unsigned char *
     print_frag(OUT, len, frag);
 }
 
-static void api_end_state(context_t *C, char class, int rc, int nest) {
-    fprintf(OUT,"\n%d%4d%4d ", rc, class, nest);
+static void api_end_state(context_t *C, char class, int rc, int nest, int repc) {
+    fprintf(OUT,"\n%d%4d%4d%4d ", rc, class, nest, repc);
     print_string(NAMEP(class+state_machine));
 }
-
-#if 0
-static void api_term(context_t *C) {
-    putc('\n', OUT);
-}
-#endif
 
 static void api_end_state_machine(context_t *C) {
     putc('\n', OUT);
@@ -63,7 +47,7 @@ static emit_t api = {
     /* api_sep */                 NULL,
     /* api_start_state */         api_start_state,
     /* api_string */              api_string,
-    /* api_frag */                api_frag,
+    /* api_frag */                NULL,
     /* api_tok */                 api_tok,
     /* api_end_state */           api_end_state,
     /* api_term */                NULL,

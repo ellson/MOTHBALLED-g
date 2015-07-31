@@ -48,7 +48,7 @@ int main (int argc, char *argv[]) {
 	    break;
         default: /* '?' */
             fprintf(stderr,
-		"Usage: %s [ -d[12] | -g[12] | [ files ] [ - ]  \n",
+		"Usage: %s [-d[12] | [-t] | [-g[12]] [ files ] [ - ]  \n",
 		argv[0]
 	    );
             exit(1);

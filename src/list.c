@@ -7,7 +7,7 @@
 
 static elem_t *elem_freelist;
 
-static elem_t* newelem_private(elemtype_t type, int state) {
+static elem_t* newelem_r(elemtype_t type, int state) {
     elem_t *elem, *next;
     int i;
 
@@ -36,7 +36,7 @@ static elem_t* newelem_private(elemtype_t type, int state) {
 elem_t* newlist(int state) {
     elem_t* elem;
 
-    elem = newelem_private(LISTELEM, state);
+    elem = newelem_r(LISTELEM, state);
     elem ->u.list.first = NULL;
     elem ->u.list.last = NULL;
     return elem;
@@ -45,7 +45,7 @@ elem_t* newlist(int state) {
 elem_t* newfrag(int state, unsigned char *frag, int len, int allocated) {
     elem_t* elem;
     
-    elem = newelem_private(FRAGELEM, state);
+    elem = newelem_r(FRAGELEM, state);
     elem->u.frag.frag = frag;
     elem->u.frag.len = len;
     elem->u.frag.allocated = allocated;
@@ -123,7 +123,7 @@ void free_list(elem_t *list) {
     list->state = 0;
 }
         
-static void print_list_private(FILE *chan, elem_t *list, int indent) {
+static void print_list_r(FILE *chan, elem_t *list, int indent) {
     elem_t *elem;
     elemtype_t type;
     unsigned char *cp;
@@ -139,18 +139,17 @@ static void print_list_private(FILE *chan, elem_t *list, int indent) {
             assert(elem->type == type);  // check all the same type
             cp = elem->u.frag.frag;
             len = elem->u.frag.len;
-            if (len) {
-        	if (! cnt++) while (indent--) putc (' ', chan);
-                while (len--) putc (*cp++, chan);
-            }
+	    assert(len > 0);
+            while (len--) putc (*cp++, chan);
             elem = elem->next;
         }
-        if (cnt) putc ('\n', chan);
         break;
     case LISTELEM :
         while (elem) {
             assert(elem->type == type);  // check all the same type
-	    print_list_private(chan, elem, indent+2);  // recursively print lists
+//            if (! cnt++) while (indent--) putc (' ', chan);
+            if (cnt++) putc (' ', chan);
+	    print_list_r(chan, elem, indent+2);  // recursively print lists
             elem = elem->next;
 	}
 	break;
@@ -158,5 +157,5 @@ static void print_list_private(FILE *chan, elem_t *list, int indent) {
 }
 
 void print_list(FILE* chan, elem_t *list) {
-    print_list_private(chan, list, 0);
+    print_list_r(chan, list, 0);
 }

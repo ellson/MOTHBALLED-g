@@ -8,20 +8,20 @@
 #include "parse.h"
 
 static unsigned char unterm, *in, insep, *frag;
-static int len;
+static int len, slen;
 static char *insp, subj;
 static context_t *C;
 elem_t *string;
 
-static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
+static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
     unsigned char nprop;
-    char *np, insi, si, ni, savesubj;
+    char *np, insi, ftyp, si, ni, savesubj;
     int rc;
     elem_t *elem;
 
     si = sp - state_machine;
 
-    emit_start_state(C, si, prop, nest);
+    emit_start_state(C, si, prop, nest, repc);
 
     nest++;
     assert (nest >= 0); // catch overflows
@@ -57,27 +57,12 @@ static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
     }
     else {
 	insi = insp - state_machine;
-        if (prop & SREP) {
-            if (insep == WS) {
-                if (insi == WS) {
-                    while ( (insi = char2state[*in++]) == WS) {}
-		}
-                emit_sep(C);
-            }
-        }
-        else if (prop & REP) {
-            if (insep == WS) {
+        if (prop & REP) {
+            if (insep == WS) { // whitespace not accepted between REP
 	        rc = 1;
 	        goto done;
 	    }
         }
-	else {
-            if (si == STRING) {
-                if (insep == EQL) {
-                    emit_sep(C);
-	        }
-	    }
-	}
     }
     if (insi == WS) {
         while ( (insi = char2state[*in++]) == WS) {}
@@ -87,46 +72,39 @@ static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
     }
     insp = state_machine + insi;
 
-    if (si == STRING) { // deal with terminals
+    // deal with terminals
+    if (si == STRING) { // strinds 
 	string = newlist(STRING);
-        if (insi == ABC) {
+        slen = 0;
+        insep = insi;
+	while(1) {
             frag = in-1;
             len = 1;
-            while ( (insi = char2state[*in++]) == ABC) {
-		len++;
+	    ftyp = insi;
+            if (insi == ABC) {
+                while ( (insi = char2state[*in++]) == ABC) {
+		    len++;
+                }
             }
-	    emit_frag(C,len,frag);
-	    elem = newfrag(ABC,frag,len,0);
-	    append_list(string, elem);
-	    insep = insi;
-            insp = state_machine + insi;
+            else if (insi == EQL || insi == AST) {
+                insi = char2state[*in++];
+            }
+	    else {
+	        break;
+	    }
+            emit_frag(C,len,frag);
+            elem = newfrag(ftyp,frag,len,0);
+            append_list(string, elem);
+	    slen += len;
+	}
+        insp = state_machine + insi;
+	if (slen > 0) {
 	    rc = 0;
-            goto done;
         }
-        else if (insi == EQL) {
-            frag = in-1;
-            len = 1;
-            insi = char2state[*in++];
-	    emit_frag(C,len,frag);
-	    elem = newfrag(EQL,frag,len,0);
-	    append_list(string, elem);
-	    insep = insi;
-            insp = state_machine + insi;
-	    rc = 0;
-            goto done;
-        }
-        else if (insi == AST) {
-            frag = in-1;
-            len = 1;
-            insi = char2state[*in++];
-	    emit_frag(C,len,frag);
-	    elem = newfrag(AST,frag,len,0);
-	    append_list(string, elem);
-	    insep = insi;
-            insp = state_machine + insi;
-	    rc = 0;
-            goto done;
-        }
+	else {
+	    rc = 1;
+	}
+        goto done;
     }
     else if (si == insi) { // tokens
         frag = in-1;
@@ -142,28 +120,29 @@ static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
     while (( ni = *sp )) { // iterate over ALTs or sequences
         nprop = *PROPP(sp);
         np = sp + ni;
-	if ( (nprop & ALT)) { // look for ALT
-	    if (( rc = parse_r(np,nprop,nest)) == 0) {
+	if (nprop & ALT) { // look for ALT
+	    if (( rc = parse_r(np,nprop,nest,0)) == 0) {
                 break;  // ALT satisfied
 	    }
 	    // if we fail an ALT then cwcontinue iteration to try next
 	} 
 	else { // else it is a sequence
-	    if ( (nprop & OPT)) { // optional
-	        if (( parse_r(np,nprop,nest)) == 0) {
-	            if ( nprop & (REP|SREP)) {
-	                while ( parse_r(np,nprop,nest) == 0) { }
+	    repc = 0;
+	    if (nprop & OPT) { // optional
+	        if (( parse_r(np,nprop,nest,repc++)) == 0) {
+	            if (nprop & (REP|SREP)) {
+	                while ( parse_r(np,nprop,nest,repc++) == 0) { }
 	            }
 	        }
                 rc = 0; // optional can't fail
 	    }
 	    else { // else not OPTional
-	        if (( rc = parse_r(np,nprop,nest)) != 0) {
+	        if (( rc = parse_r(np,nprop,nest,repc++)) != 0) {
 		    break; 
                 }
                 // rc is the rc of the first term, which at this point is success
-                if ( nprop & (REP|SREP)) {
-	            while ( parse_r(np,nprop,nest) == 0) { }
+	        if (nprop & (REP|SREP)) {
+	            while ( parse_r(np,nprop,nest,repc++) == 0) { }
 	        }
 	    }
 	}
@@ -172,6 +151,10 @@ static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
 
 
     if (rc == 0) {
+// FIXME
+        if ((prop & SREP) && repc > 0) {
+	    emit_sep(C);
+        }
         switch (si) {
 //        case ACT:
 //            if (unterm) {
@@ -184,7 +167,7 @@ static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
             subj = savesubj; // pop subj
 	    break;
 	case STRING:
-	    emit_string(C, string);
+            emit_string(C,string,slen);
 	    free_list(string);
         }
         ni = np - state_machine;
@@ -227,7 +210,7 @@ static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
 done:
     nest--;
     assert (nest >= 0);
-    emit_end_state(C, si, rc, nest);
+    emit_end_state(C, si, rc, nest, repc);
     return rc;
 }
 
@@ -239,144 +222,7 @@ int parse(unsigned char *input) {
     in = input;
     C->nest = 0;
     emit_start_state_machine(C);
-    while (( rc = parse_r(state_machine,SREP,0)) == 0) {}
+    while (( rc = parse_r(state_machine,SREP,0,0)) == 0) {}
     emit_end_state_machine(C);
     return rc;
 }
-
-
-#if 0
-typedef struct {
-    elem_t
-	fraglist,       // string fragments forming a single string
-	npathlist,      // strings components forming a path
-	nlistlist,      // paths descibing sets of nodes or endpoints
-        edgelist,       // list of endpoints sets describing one or more edges
-        elistlist,      // list of edges or of edge sets
-    	nproplist,      // list of node properties
-    	eproplist,      // list of edge properties
-	cproplist,      // list of container properties
-        containerlist;  // list of acts
-} act_t;
-
-static int opencloseblock(act_t *act, state_t state) {
-    return 0;
-}
-
-int parse(unsigned char *insp) {
-    unsigned char c;
-    int rc, linecharcnt, linecnt, charsize;
-    int state;
-    act_t *act;
-    elem_t *fraglist, *npathlist, *nlistlist /*, *edgelist, *elistlist,
-	*nproplist, *eproplist, *cproplist, *containerlist */;
-    elem_t *frag, *npathelem, *nlistelem;
-
-    act = calloc(sizeof(act_t), 1);
-
-    fraglist = &(act->fraglist);
-    npathlist = &(act->npathlist);
-    nlistlist = &(act->nlistlist);
-/*  edgelist = &(act->edgelist);
-    elistlist = &(act->elistlist);
-    nproplist = &(act->nproplist);
-    eproplist = &(act->eproplist);
-    cproplist = &(act->cproplist);
-    containerlist = &(act->containerlist); */
-
-    frag = NULL;
-    linecharcnt = 0;
-    linecnt = 0;
-    while ((c = *insp++)) {
-        linecharcnt++;
-        state = char2state[c];
-        charsize = 1;
-        if (state & TWO) {
-            if ((c = *insp)) {
-	        state = char2state[c];
-
-                // we work out what the character pair is by combining the 
-                // charpros from both chars  (this means that CRLF is only a single EOL)
-                // and then masking out the TWO and other unrelated bits
-                state |= charTWOstate2props[state];
-                state &= proptypemask;
-                if (state) {
-		    insp++;
-                    charsize++;
-	            if ((state & EOL)) {
-                        linecnt++;
-                        linecharcnt = 0;
-                    }
-		}
-	    }
-        }
-        if (frag) {    // a frag already exists from a previous iteration of the while loop
-            assert (frag->type == STR);
-            if (state & frag->state) {  // matching state, just continue appending to frag
-                frag->u.str.len += charsize;
-            }
-	    else {
-                if (state & fraglist->state) {  // if matches fraglist 
- 		    if (state & (STRING|SPACE)) {  // STRING or SPACE char that can be simply appended
-                        frag->u.str.len += charsize;
-                    }
-                    else if (state & ESCAPE) {  // STRING frag that starts at this char - needs a new frag to skip BSL char
-			frag = newelem(STRING, insp-1, 1, 0);
-			appendlist(fraglist, frag);
-                    }
-                    else { // DQTSTR|SQTSTR -- prop that start at next char - so new frag to skip this char
-			frag = newelem(state & proptypemask, insp, 0, 0);
-			appendlist(fraglist, frag);
-                    }
-                }
- 		else { // new state don't match, so something got terminated and needs promoting
-//printj(fraglist);
-                    if (fraglist->state & (STRING|ESCAPE)) {
-			npathelem = list2elem(fraglist);
-			appendlist(npathlist, npathelem);
-//printj(npathlist);
-
-//FIXME - something in here to deal with path separators:  :/ <abc>/ <abc> :: <abc> : <abc>
-			nlistelem = list2elem(npathlist);
-			appendlist(nlistlist, nlistelem);
-printj(nlistlist);
-		    } 
-                    freelist(fraglist);  // free anything that hasn't been promoted,  e.g. WS
-                    frag = NULL;
-		}
-            }
-        }
-
-        if (state & (OPEN|CLOSE)) {
-	    rc = opencloseblock(act, state);
-	    if (rc) {
-		fprintf(ERR,"parser error at: %d:%d \"%c\"\n", linecnt,  linecharcnt, c);
-                return rc;
-            }
-        }
-// FIXME - deal with OPEN and CLOSE
-//     NPATH | NLIST --> EDGE
-//     EDGE --> ELIST
-
-        if (!frag) { // no current frag
-            if (state & (STRING|ESCAPE)) {
-		fraglist->state = (STRING|ESCAPE);
-		frag = newelem(STRING, insp-1, 1, 0);
-		appendlist(fraglist, frag);
-            }
-            else if (state & (DQTSTR|SQTSTR)) {
-		fraglist->state = (STRING|ESCAPE);
-		frag = newelem(STRING, insp, 0, 0);
-		appendlist(fraglist, frag);
-            }
-	    else if (state & SPACE) {
-		fraglist->state = SPACE;
-		frag = newelem(SPACE, insp-1, 1, 0);
-		appendlist(fraglist, frag);
-	    }
-// FIXME - something for quoted strings
-	}
-    }
-    return 0;
-}
-#endif
