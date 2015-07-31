@@ -14,8 +14,9 @@ fi
 of=${ifn%.g}
 ofh=${of}.h
 ofc=${of}.c
+ofe=${of}.ebnf
 
-typeset -A POS NAME SPOS PROPS CHARMAP
+typeset -A POS NAME SPOS PROPS CHARMAP CONTENT
 
 namelist=()
 state=""
@@ -80,6 +81,7 @@ sm_prop() {
 }
 
 sm_cont() {
+    CONTENT[$state]="$*"
     for i in $*; do
         CHARMAP["$i"]="$state"
     done
@@ -265,49 +267,78 @@ printf "\n};\n\n"
 ) >>$ofc
 
 ####
-(
-printf "\n"
-printf "/******************** eBNF - start ***********************\n"
-printf "\n"
-for s in ${statelist[@]}; do
-    indx=${POS[$s]}
-    printf "%23s ::=" "$s"
-    alts=0
-    while true; do
-        next=${nextlist[$indx]}
-        prop=${proplist[$indx]}
-        ((indx++))
-        if test "$next" = ""; then break; fi
-        ord=0
-        ws=""
-	for p in $prop; do
-	    case $p in
-            ALT ) if test $alts -ne 0; then
-		      printf "\n%27s" "|"
-		  fi
-		  (( alts++))
-		  ;;
-            OPT ) ((ord|=1));;
-            REP)  ((ord|=2));;
-            SREP) ((ord|=2)); ws='_';;
-	    *) ;;
+
+ebnf() {
+    for s in ${statelist[@]}; do
+        indx=${POS[$s]}
+	class="${CONTENT[$s]}"
+        printf "%13s ::=" "$s"
+        alts=0
+        while true; do
+            next=${nextlist[$indx]}
+            prop=${proplist[$indx]}
+            ((indx++))
+            if test "$next" = ""; then break; fi
+            ord=0
+            ws=""
+	    for p in $prop; do
+	        case $p in
+                ALT ) if test $alts -ne 0; then
+		          printf "\n%17s" "|"
+		      fi
+		      (( alts++))
+		      ;;
+                OPT ) ((ord|=1));;
+                REP)  ((ord|=2));;
+                SREP) ((ord|=2)); ws='_';;
+	        *) ;;
+	        esac
+            done
+	    case $ord in
+	    0 ) ordc="";; 
+	    1 ) ordc="?";; 
+	    2 ) ordc="+";; 
+	    3 ) ordc="*";; 
 	    esac
+            printf " %s%s%s" "$ws" "$next" "$ordc"
         done
-	case $ord in
-	0 ) ordc="";; 
-	1 ) ordc="?";; 
-	2 ) ordc="+";; 
-	3 ) ordc="*";; 
-	esac
-        printf "   %s%s%s" "$ws" "$next" "$ordc"
+        if test "$class" != ""; then
+	    altc=0
+            printf " "
+	    for c in $class; do
+		if test $altc -gt 0; then
+		    if test $(( altc % 8 )) -eq 0; then
+                        printf "\n%18s" "| "
+		    else
+                        printf "|"	
+		    fi
+		fi
+		((altc++))
+#		if test "$s" = "ABC"; then
+#                    printf "'a'"	
+#		else
+                    printf "'0x$c'"	
+#		fi
+	    done
+	fi
+        printf "\n"
     done
-    printf "\n"
-done
-printf "\n"
-printf "********************* eBNF - end ************************/\n"
-printf "\n"
-printf "\n"
-) >>$ofc
+}
+
+cat >>$ofc <<EOF
+
+/******************** eBNF - start ***********************
+
+EOF
+
+( ebnf ) >>$ofc
+( ebnf ) >$ofe
+
+cat >>$ofc <<EOF
+
+"******************** eBNF - end ************************/
+
+EOF
 
 ####
 ( printf "char state_machine[] = {\n"        )  >${ofc}.states
