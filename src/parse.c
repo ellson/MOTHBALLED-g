@@ -7,18 +7,19 @@
 #include "emit.h"
 #include "parse.h"
 
-static unsigned char unterm, *in, insep, *frag;
+static unsigned char unterm, *in, *frag;
 static int len, slen;
-static char *insp, subj;
+static char *insp, subj, insep;
 static context_t *C;
 static elem_t *string;
 
-static int more(unsigned char *in, unsigned char prop) {
+static int more(unsigned char *in, unsigned char prop, char bi) {
     char ei;
 
     if (! (prop & (REP|SREP))) return 0;
     ei = char2state[*(in-1)];
     if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) return 0;
+    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE ) return 1;
     if (prop & SREP) emit_sep(C);
     return 1;
 }
@@ -142,7 +143,7 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	    repc = 0;
 	    if (nprop & OPT) { // optional
 	        if (( parse_r(np,nprop,nest,repc++)) == 0) {
-	            while (more(in, nprop)) {
+	            while (more(in, nprop, insep)) {
                         if (parse_r(np,nprop,nest,repc++) != 0) break;
 		    }
 	        }
@@ -151,7 +152,7 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	    else { // else not OPTional
 	        if (( rc = parse_r(np,nprop,nest,repc++)) != 0) break; 
                 // rc is the rc of the first term, which at this point is success
-	        while (more(in, nprop)) {
+	        while (more(in, nprop, insep)) {
                     if (parse_r(np,nprop,nest,repc++) != 0) break;
 		}
 	    }
