@@ -7,7 +7,7 @@
 
 static elem_t *elem_freelist;
 
-static elem_t* newelem_r(elemtype_t type, int state) {
+static elem_t* new_elem_r(elemtype_t type, int state) {
     elem_t *elem, *next;
     int i;
 
@@ -33,19 +33,19 @@ static elem_t* newelem_r(elemtype_t type, int state) {
     return elem;
 }
 
-elem_t* newlist(int state) {
+elem_t* new_list(int state) {
     elem_t* elem;
 
-    elem = newelem_r(LISTELEM, state);
+    elem = new_elem_r(LISTELEM, state);
     elem ->u.list.first = NULL;
     elem ->u.list.last = NULL;
     return elem;
 }
 
-elem_t* newfrag(int state, unsigned char *frag, int len, int allocated) {
+elem_t* new_frag(int state, unsigned char *frag, int len, int allocated) {
     elem_t* elem;
     
-    elem = newelem_r(FRAGELEM, state);
+    elem = new_elem_r(FRAGELEM, state);
     elem->u.frag.frag = frag;
     elem->u.frag.len = len;
     elem->u.frag.allocated = allocated;
@@ -59,7 +59,7 @@ elem_t *list2elem(elem_t *list) {
 
     assert(list->type == LISTELEM);
 
-    elem = newlist(0);
+    elem = new_list(0);
     elem->u.list.first = list->u.list.first;
     elem->u.list.last = list->u.list.last;
     elem->state = list->state;

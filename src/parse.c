@@ -11,7 +11,7 @@ static unsigned char unterm, *in, *frag;
 static int len, slen;
 static char *insp, subj, insep;
 static context_t *C;
-static elem_t *string;
+static elem_t *list;
 
 static int more(unsigned char *in, unsigned char prop, char bi) {
     char ei;
@@ -85,7 +85,7 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 
     // deal with terminals
     if (si == STRING) { // strinds 
-	string = newlist(STRING);
+	list = new_list(si);
         slen = 0;
         insep = insi;
 	while(1) {
@@ -104,14 +104,13 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	        break;
 	    }
             emit_frag(C,len,frag);
-            elem = newfrag(ftyp,frag,len,0);
-            append_list(string, elem);
+            elem = new_frag(ftyp,frag,len,0);
+            append_list(list, elem);
 	    slen += len;
 	}
         insp = state_machine + insi;
 	if (slen > 0) {
-            emit_string(C,string,slen);
-	    free_list(string);
+            emit_string(C,list,slen);
 	    rc = 0;
         }
 	else {
