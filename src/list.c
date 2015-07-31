@@ -5,28 +5,28 @@
 
 #include "list.h"
 
-static elem_t *elem_freelist;
+static elem_t *Freelist;
 
 static elem_t* new_elem_r(elemtype_t type, int state) {
     elem_t *elem, *next;
     int i;
 
-    if (elem_freelist) {       // if elem in freelist
-        elem = elem_freelist;   // use first
+    if (Freelist) {       // if elem in freelist
+        elem = Freelist;   // use first
     }
     else {                     // else no elems in freelist
 #define LISTALLOCNUM 100
-        elem_freelist = malloc (LISTALLOCNUM * sizeof(elem_t));
-        next = elem_freelist;
-        for (i=0; i<LISTALLOCNUM; i++) {   // ... so add LISTALLOCNUM elemes to free list
+        Freelist = calloc(LISTALLOCNUM, sizeof(elem_t));
+        next = &Freelist[0];
+        for (i=0; i<LISTALLOCNUM;) {   // ... so add LISTALLOCNUM elems to free list
 	    elem = next;
-            next = elem + sizeof(elem_t);
+            next = &Freelist[++i];
 	    elem->next = next;
         }
 	elem->next = NULL;      // terminate last elem
-        elem = elem_freelist;   // add chain of elems to freelist
+        elem = Freelist;   // add chain of elems to freelist
     }
-    elem_freelist = elem->next;  // update freelist to point to next available
+    Freelist = elem->next;  // update freelist to point to next available
     elem->type = type;
     elem->state = state;
     elem->next = NULL;
@@ -42,12 +42,12 @@ elem_t* new_list(int state) {
     return elem;
 }
 
-elem_t* new_frag(int state, unsigned char *frag, int len, int allocated) {
+elem_t* new_frag(int state, unsigned char *frag, int len, void *allocated) {
     elem_t* elem;
     
     elem = new_elem_r(FRAGELEM, state);
     elem->u.frag.frag = frag;
-    elem->u.frag.len = len;
+    elem->len = len;
     elem->u.frag.allocated = allocated;
     return elem;
 }
@@ -111,8 +111,8 @@ void free_list(elem_t *list) {
 	}
 
         // insert elem at beginning of freelist
-        elem->next = elem_freelist;
-        elem_freelist = elem;
+        elem->next = Freelist;
+        Freelist = elem;
 
 	elem = next;
     }
@@ -123,7 +123,7 @@ void free_list(elem_t *list) {
     list->state = 0;
 }
         
-static void print_list_r(FILE *chan, elem_t *list, int indent) {
+static void print_list_r(FILE *chan, elem_t *list, int nest) {
     elem_t *elem;
     elemtype_t type;
     unsigned char *cp;
@@ -138,7 +138,7 @@ static void print_list_r(FILE *chan, elem_t *list, int indent) {
         while (elem) {
             assert(elem->type == type);  // check all the same type
             cp = elem->u.frag.frag;
-            len = elem->u.frag.len;
+            len = elem->len;
 	    assert(len > 0);
             while (len--) putc (*cp++, chan);
             elem = elem->next;
@@ -147,9 +147,8 @@ static void print_list_r(FILE *chan, elem_t *list, int indent) {
     case LISTELEM :
         while (elem) {
             assert(elem->type == type);  // check all the same type
-//            if (! cnt++) while (indent--) putc (' ', chan);
             if (cnt++) putc (' ', chan);
-	    print_list_r(chan, elem, indent+2);  // recursively print lists
+	    print_list_r(chan, elem, nest++);  // recursively print lists
             elem = elem->next;
 	}
 	break;

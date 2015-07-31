@@ -7,11 +7,14 @@
 #include "emit.h"
 #include "parse.h"
 
+static context_t Context;
+static elem_t Branch, Leaves;
+
 static unsigned char unterm, *in, *frag;
 static int len, slen;
 static char *insp, subj, insep;
 static context_t *C;
-static elem_t *list;
+static elem_t *elem, *branch, *leaves;
 
 static int more(unsigned char *in, unsigned char prop, char bi) {
     char ei;
@@ -28,7 +31,6 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
     unsigned char nprop;
     char *np, insi, ftyp, si, ni, savesubj;
     int rc;
-    elem_t *elem;
 
     si = sp - state_machine;
 
@@ -85,7 +87,7 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 
     // deal with terminals
     if (si == STRING) { // strinds 
-	list = new_list(si);
+        leaves = &Leaves;
         slen = 0;
         insep = insi;
 	while(1) {
@@ -105,12 +107,13 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	    }
             emit_frag(C,len,frag);
             elem = new_frag(ftyp,frag,len,0);
-            append_list(list, elem);
+            append_list(leaves, elem);
 	    slen += len;
 	}
         insp = state_machine + insi;
 	if (slen > 0) {
-            emit_string(C,list,slen);
+            emit_string(C,leaves,slen);
+	    append_list(branches, leaves);
 	    rc = 0;
         }
 	else {
@@ -217,13 +220,12 @@ done:
     return rc;
 }
 
-static context_t context;
-
 int parse(unsigned char *input) {
     int rc;
     context_t *C;
 
-    C = &context;
+    C = &Context;
+    branch = &Branch;
 
     in = input;
     emit_start_state_machine(C);

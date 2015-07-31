@@ -16,9 +16,9 @@ static void api_start_state(context_t *C, char class, unsigned char prop, int ne
     print_string(NAMEP(class+state_machine));
 }
 
-static void api_string(context_t *C, elem_t *string, int slen) {
+static void api_string(context_t *C, elem_t *leaves, int slen) {
     putc('\t', OUT);
-    print_list(OUT, string);
+    print_list(OUT, leaves);
 }
 
 static void api_tok(context_t *C, char class, unsigned char len, unsigned char *frag) {

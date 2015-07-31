@@ -9,8 +9,8 @@ static void api_sep(context_t *C) {
     putc (' ', OUT);
 }
 
-static void api_string(context_t *C, elem_t *string, int slen) {
-    print_list(OUT, string);
+static void api_string(context_t *C, elem_t *leaves, int slen) {
+    print_list(OUT, leaves);
 }
 
 static void api_tok(context_t *C, char class, unsigned char len, unsigned char *frag) {
@@ -43,9 +43,9 @@ static emit_t api1 = {
     /* api_error */               api_error
 };
 
-static void api2_string(context_t *C, elem_t *string, int slen) {
+static void api2_string(context_t *C, elem_t *leaves, int slen) {
     putc(' ', OUT);
-    print_list(OUT, string);
+    print_list(OUT, leaves);
 }
 
 static void api2_tok(context_t *C, char class, unsigned char len, unsigned char *frag) {

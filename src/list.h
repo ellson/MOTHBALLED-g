@@ -4,8 +4,9 @@ typedef struct elem_s elem_t;
 typedef enum {LISTELEM, FRAGELEM} elemtype_t;
 
 struct elem_s {
-    elem_t *next;
     int state;
+    int len; // length of frag, or length of all frags in a list
+    elem_t *next;
     elemtype_t type;
     union {
         struct {
@@ -14,14 +15,13 @@ struct elem_s {
         } list;
 	struct {
 	    unsigned char *frag;
-            int len;
-    	    int allocated;  // FIXME - for buffer nabagement
+    	    void *allocated;  // FIXME - for buffer nabagement
         } frag;
     } u;
 };
 
 elem_t* new_list(int state);
-elem_t* new_frag(int state, unsigned char *frag, int len, int allocated);
+elem_t* new_frag(int state, unsigned char *frag, int len, void *allocated);
 elem_t *list2elem(elem_t *list);
 void prepend_list(elem_t *list, elem_t *elem);
 void append_list(elem_t *list, elem_t *elem);
