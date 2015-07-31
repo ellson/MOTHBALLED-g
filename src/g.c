@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
+# include "list.h"
 # include "emit.h"
 # include "parse.h"
 # include "dumpg.h"

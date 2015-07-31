@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "grammar.h"
+#include "list.h"
 #include "emit.h"
 
 #if 0
@@ -12,6 +13,10 @@ static void api_start_state_machine(context_t *C) {
 
 static void api_sep(context_t *C) {
     putc (' ', OUT);
+}
+
+static void api_string(context_t *C, elem_t *string) {
+//    print_list(OUT, string);
 }
 
 static void api_frag(context_t *C, unsigned char len, unsigned char *frag) {
@@ -51,6 +56,7 @@ static emit_t api1 = {
     /* api_start_state_machine */ NULL,
     /* api_sep */                 api_sep,
     /* api_start_state */         NULL,
+    /* api_string */              api_string,
     /* api_frag */                api_frag,
     /* api_tok */                 api1_tok,
     /* api_end_state */           NULL,
@@ -63,6 +69,7 @@ static emit_t api2 = {
     /* api_start_state_machine */ NULL,
     /* api_sep */                 api_sep,
     /* api_start_state */         NULL,
+    /* api_string */              api_string,
     /* api_frag */                api_frag,
     /* api_tok */                 api2_tok,
     /* api_end_state */           NULL,

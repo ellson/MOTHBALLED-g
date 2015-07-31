@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "emit.h"
 #include "grammar.h"
 #include "list.h"
 #include "parse.h"
+#include "emit.h"
 
 #define styleLAN sstyle?"< ":"<"
 #define styleRAN sstyle?"\n>\n":">"

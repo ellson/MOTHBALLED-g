@@ -36,7 +36,7 @@ static elem_t* newelem_private(elemtype_t type, int state) {
 elem_t* newlist(int state) {
     elem_t* elem;
 
-    elem = newelem_private(LIST, state);
+    elem = newelem_private(LISTELEM, state);
     elem ->u.list.first = NULL;
     elem ->u.list.last = NULL;
     return elem;
@@ -45,7 +45,7 @@ elem_t* newlist(int state) {
 elem_t* newfrag(int state, unsigned char *frag, int len, int allocated) {
     elem_t* elem;
     
-    elem = newelem_private(FRAG, state);
+    elem = newelem_private(FRAGELEM, state);
     elem->u.frag.frag = frag;
     elem->u.frag.len = len;
     elem->u.frag.allocated = allocated;
@@ -57,7 +57,7 @@ elem_t* newfrag(int state, unsigned char *frag, int len, int allocated) {
 elem_t *list2elem(elem_t *list) {
     elem_t *elem;
 
-    assert(list->type == LIST);
+    assert(list->type == LISTELEM);
 
     elem = newlist(0);
     elem->u.list.first = list->u.list.first;
@@ -69,9 +69,9 @@ elem_t *list2elem(elem_t *list) {
     return elem;
 }
 
-void appendlist(elem_t *list, elem_t *elem) {
+void append_list(elem_t *list, elem_t *elem) {
 
-    assert(list->type == LIST);
+    assert(list->type == LISTELEM);
 
     if (list->u.list.first) {
 	list->u.list.last->next = elem;
@@ -82,31 +82,31 @@ void appendlist(elem_t *list, elem_t *elem) {
     list->u.list.last = elem;
 }
 
-void prependlist(elem_t *list, elem_t *elem) {
+void prepend_list(elem_t *list, elem_t *elem) {
 
-    assert(list->type == LIST);
+    assert(list->type == LISTELEM);
 
     elem->next = list->u.list.first;
     list->u.list.first = elem;
 }
 
-void freelist(elem_t *list) {
+void free_list(elem_t *list) {
     elem_t *elem, *next;
 
-    assert(list->type == LIST);
+    assert(list->type == LISTELEM);
 
     // free list of elem, but really just put them back on the elem_freelist
     elem = list->u.list.first;
     while (elem) {
 	next = elem->next;
         switch (elem->type) {
-        case FRAG :
+        case FRAGELEM :
 	    if (elem->u.frag.allocated) { // if the elem contains an allocated buf, then really free that
 	        free(elem->u.frag.frag);
             }
 	    break;
-        case LIST :
-	    freelist(elem);  // recursively free lists of lists
+        case LISTELEM :
+	    free_list(elem);  // recursively free lists of lists
 	    break;
 	}
 
@@ -123,40 +123,40 @@ void freelist(elem_t *list) {
     list->state = 0;
 }
         
-static void printj_private(elem_t *list, int indent) {
+static void print_list_private(FILE *chan, elem_t *list, int indent) {
     elem_t *elem;
     elemtype_t type;
     unsigned char *cp;
     int len, cnt;
 
-    assert(list->type == LIST);
+    assert(list->type == LISTELEM);
     cnt = 0;
     elem = list->u.list.first;
     type = elem->type;
     switch (type) {
-    case FRAG :
+    case FRAGELEM :
         while (elem) {
             assert(elem->type == type);  // check all the same type
             cp = elem->u.frag.frag;
             len = elem->u.frag.len;
             if (len) {
-        	if (! cnt++) while (indent--) putc (' ', stdout);
-                while (len--) putc (*cp++, stdout);
+        	if (! cnt++) while (indent--) putc (' ', chan);
+                while (len--) putc (*cp++, chan);
             }
             elem = elem->next;
         }
-        if (cnt) putc ('\n', stdout);
+        if (cnt) putc ('\n', chan);
         break;
-    case LIST :
+    case LISTELEM :
         while (elem) {
             assert(elem->type == type);  // check all the same type
-	    printj_private(elem, indent+2);  // recursively print lists
+	    print_list_private(chan, elem, indent+2);  // recursively print lists
             elem = elem->next;
 	}
 	break;
     }
 }
 
-void printj(elem_t *list) {
-    printj_private(list, 0);
+void print_list(FILE* chan, elem_t *list) {
+    print_list_private(chan, list, 0);
 }

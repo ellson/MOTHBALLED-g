@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "emit.h"
 #include "grammar.h"
+#include "list.h"
+#include "emit.h"
 
 emit_t *emit;
 

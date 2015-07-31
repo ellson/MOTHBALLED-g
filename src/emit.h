@@ -14,6 +14,7 @@ typedef struct {
     void (*start_state_machine) (context_t *C);
     void (*sep) (context_t *C);
     void (*start_state) (context_t *C, char class, unsigned char prop, int nest);
+    void (*string) (context_t *C, elem_t *string);
     void (*frag) (context_t *C, unsigned char len, unsigned char *frag);
     void (*tok) (context_t *C, char class, unsigned char len, unsigned char *frag);
     void (*end_state) (context_t *C, char class, int rc, int nest);
@@ -29,6 +30,8 @@ typedef struct {
     if (emit->sep) {emit->sep(C);}
 #define emit_start_state(C, class, prop, nest) \
     if (emit->start_state) {emit->start_state(C, class, prop, nest);}
+#define emit_string(C, string) \
+    if (emit->string) {emit->string(C, string);}
 #define emit_frag(C, len, frag) \
     if (emit->frag) {emit->frag(C, len, frag);}
 #define emit_tok(C, class, len, frag) \

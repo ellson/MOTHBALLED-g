@@ -1,7 +1,7 @@
 typedef struct elem_s elem_t;
 
 // LST must = 0 for calloc of list headers
-typedef enum {LIST, FRAG} elemtype_t;
+typedef enum {LISTELEM, FRAGELEM} elemtype_t;
 
 struct elem_s {
     elem_t *next;
@@ -23,7 +23,7 @@ struct elem_s {
 elem_t* newlist(int state);
 elem_t* newfrag(int state, unsigned char *frag, int len, int allocated);
 elem_t *list2elem(elem_t *list);
-void prependlist(elem_t *list, elem_t *elem);
-void appendlist(elem_t *list, elem_t *elem);
-void freelist(elem_t *list);
-void printj(elem_t *list);
+void prepend_list(elem_t *list, elem_t *elem);
+void append_list(elem_t *list, elem_t *elem);
+void free_list(elem_t *list);
+void print_list(FILE *chan, elem_t *list);

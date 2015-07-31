@@ -2,20 +2,22 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "emit.h"
 #include "grammar.h"
 #include "list.h"
+#include "emit.h"
 #include "parse.h"
 
 static unsigned char unterm, *in, insep, *frag;
 static int len;
 static char *insp, subj;
 static context_t *C;
+elem_t *string;
 
 static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
     unsigned char nprop;
     char *np, insi, si, ni, savesubj;
     int rc;
+    elem_t *elem;
 
     si = sp - state_machine;
 
@@ -85,8 +87,11 @@ static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
     }
     insp = state_machine + insi;
 
-    // deal with terminals
-    if (si == STRING) { // STRING terminals
+    if (si == STRING) { // deal with compounds
+	string = newlist(STRING);
+    }
+
+    if (si == FRAG) { // deal with terminals
         if (insi == ABC) {
             frag = in-1;
             len = 1;
@@ -94,6 +99,8 @@ static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
 		len++;
             }
 	    emit_frag(C,len,frag);
+	    elem = newfrag(ABC,frag,len,0);
+	    append_list(string, elem);
 	    insep = insi;
             insp = state_machine + insi;
 	    rc = 0;
@@ -104,6 +111,8 @@ static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
             len = 1;
             insi = char2state[*in++];
 	    emit_frag(C,len,frag);
+	    elem = newfrag(EQL,frag,len,0);
+	    append_list(string, elem);
 	    insep = insi;
             insp = state_machine + insi;
 	    rc = 0;
@@ -114,6 +123,8 @@ static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
             len = 1;
             insi = char2state[*in++];
 	    emit_frag(C,len,frag);
+	    elem = newfrag(AST,frag,len,0);
+	    append_list(string, elem);
 	    insep = insi;
             insp = state_machine + insi;
 	    rc = 0;
@@ -175,6 +186,9 @@ static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
         case SUBJECT:
             subj = savesubj; // pop subj
 	    break;
+	case STRING:
+	    emit_string(C, string);
+	    free_list(string);
         }
         ni = np - state_machine;
 	switch (ni) {
