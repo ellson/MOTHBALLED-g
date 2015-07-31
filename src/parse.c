@@ -87,11 +87,8 @@ static int parse_r(char *sp, unsigned char prop, unsigned char nest) {
     }
     insp = state_machine + insi;
 
-    if (si == STRING) { // deal with compounds
+    if (si == STRING) { // deal with terminals
 	string = newlist(STRING);
-    }
-
-    if (si == FRAG) { // deal with terminals
         if (insi == ABC) {
             frag = in-1;
             len = 1;

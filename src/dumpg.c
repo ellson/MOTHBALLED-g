@@ -75,12 +75,12 @@ static void print_prop(char *p) {
 }
 
 static void printg_r(char *sp, int indent) {
-    char *p, *np, nxt;
+    char *p, *np, ni;
     int i;
 
     p = sp;
-    while (( nxt = *p )) {
-        np = p+nxt;
+    while (( ni = *p )) {
+        np = p+ni;
         for (i = indent; i--; ) putc (' ', OUT);
         print_next(sp, np);
         print_prop(p);
@@ -123,14 +123,14 @@ static void print_chars ( char *p ) {
 
 // just dump the grammar linearly,  should result in same logical graph as printg()
 void dumpg (void) {
-    char *p, *sp, nxt;
+    char *p, *sp, ni;
 
     p = state_machine;
     while (p < (state_machine + sizeof_state_machine)) {
         if (*p) { // non-terminal
             sp = p;
-            while (( nxt = *p )) {
-                print_next(sp, p+nxt);
+            while (( ni = *p )) {
+                print_next(sp, p+ni);
                 print_prop(p);
 		p++;
 	    }

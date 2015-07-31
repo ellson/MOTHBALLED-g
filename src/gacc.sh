@@ -266,10 +266,12 @@ printf "\n};\n\n"
 
 ####
 (
-printf "/******************** eBNF ******************************\n *\n *"
+printf "\n"
+printf "/******************** eBNF - start ***********************\n"
+printf "\n"
 for s in ${statelist[@]}; do
     indx=${POS[$s]}
-    printf "%21s ::=" "$s"
+    printf "%23s ::=" "$s"
     alts=0
     while true; do
         next=${nextlist[$indx]}
@@ -281,7 +283,7 @@ for s in ${statelist[@]}; do
 	for p in $prop; do
 	    case $p in
             ALT ) if test $alts -ne 0; then
-		      printf "\n *%25s" "|"
+		      printf "\n%27s" "|"
 		  fi
 		  (( alts++))
 		  ;;
@@ -297,11 +299,14 @@ for s in ${statelist[@]}; do
 	2 ) ordc="+";; 
 	3 ) ordc="*";; 
 	esac
-        printf " %s%s%s" "$ws" "$next" "$ordc"
+        printf "   %s%s%s" "$ws" "$next" "$ordc"
     done
-    printf "\n *"
+    printf "\n"
 done
-printf "\n ********************************************************/\n\n"
+printf "\n"
+printf "********************* eBNF - end ************************/\n"
+printf "\n"
+printf "\n"
 ) >>$ofc
 
 ####
@@ -351,7 +356,7 @@ unsigned char *NAMEP(char *sp) {
 EOF
 
 cat >>$ofh  <<EOF
-#define sizeof_state_machine $indx
+#define sizeof_state_machine $((++indx))
 #define PROPP(p) (state_props + (p - state_machine))
 
 extern unsigned char *NAMEP(char *p);
