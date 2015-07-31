@@ -3,7 +3,7 @@
 	- retain comment in grammar.g from "g -d"  ???
 		- but would increase size of binary
 	- have gacc.sh put more comments in grammar.c
-	- have gacc.sh print grammar.ebnf ???
+	- DONE have gacc.sh print grammar.ebnf ???
 	- README.md
 	- g.man
 	- .... extended discussion paper ?
@@ -13,11 +13,11 @@
 	DONE - single char token
 	- frags
 	- two char tokens
-- command line options
-- jump table for emitters
-	- minimal | pretty | shell | eBNF
-- string joiner
-- in eBNF show chars as chars when ABC or terminal tokens
+DONE - command line options
+DONE - jump table for emitters
+	DONE - minimal | pretty | shell | eBNF
+DONE - string joiner
+DONE - in eBNF show chars as chars when ABC or terminal tokens
 - canonicalize subject
 	- retain order
 	- expand  endpointsets
