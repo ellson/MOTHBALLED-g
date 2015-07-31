@@ -11,7 +11,17 @@ static unsigned char unterm, *in, insep, *frag;
 static int len, slen;
 static char *insp, subj;
 static context_t *C;
-elem_t *string;
+static elem_t *string;
+
+static int more(unsigned char *in, unsigned char prop) {
+    char ei;
+
+    if (! (prop & (REP|SREP))) return 0;
+    ei = char2state[*(in-1)];
+    if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) return 0;
+    if (prop & SREP) emit_sep(C);
+    return 1;
+}
 
 static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
     unsigned char nprop;
@@ -22,10 +32,6 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
     si = sp - state_machine;
 
     emit_start_state(C, si, prop, nest, repc);
-
-    if ((prop & SREP) && repc > 0) {
-        emit_sep(C);
-    }
 
     nest++;
     assert (nest >= 0); // catch overflows
@@ -136,20 +142,18 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	    repc = 0;
 	    if (nprop & OPT) { // optional
 	        if (( parse_r(np,nprop,nest,repc++)) == 0) {
-	            if (nprop & (REP|SREP)) {
-	                while ( parse_r(np,nprop,nest,repc++) == 0) { }
-	            }
+	            while (more(in, nprop)) {
+                        if (parse_r(np,nprop,nest,repc++) != 0) break;
+		    }
 	        }
                 rc = 0; // optional can't fail
 	    }
 	    else { // else not OPTional
-	        if (( rc = parse_r(np,nprop,nest,repc++)) != 0) {
-		    break; 
-                }
+	        if (( rc = parse_r(np,nprop,nest,repc++)) != 0) break; 
                 // rc is the rc of the first term, which at this point is success
-	        if (nprop & (REP|SREP)) {
-	            while ( parse_r(np,nprop,nest,repc++) == 0) { }
-	        }
+	        while (more(in, nprop)) {
+                    if (parse_r(np,nprop,nest,repc++) != 0) break;
+		}
 	    }
 	}
 	sp++;  // next ALT (if not yet satisfied)  or next sequence item
