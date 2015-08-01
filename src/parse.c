@@ -8,7 +8,7 @@
 #include "parse.h"
 
 static context_t Context;
-static elem_t Branch, Leaves;
+static elem_t Leaves;
 
 static unsigned char unterm, *in, *frag;
 static int len, slen;
@@ -87,6 +87,7 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 
     // deal with terminals
     if (si == STRING) { // strinds 
+        branch = new_list(si);
         leaves = &Leaves;
         slen = 0;
         insep = insi;
@@ -112,8 +113,10 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	}
         insp = state_machine + insi;
 	if (slen > 0) {
-            emit_string(C,leaves,slen);
-	    append_list(branches, leaves);
+	    elem = list2elem(leaves);
+	    append_list(branch, elem);
+            emit_string(C,branch,slen);
+	    free_list(branch);
 	    rc = 0;
         }
 	else {
@@ -225,7 +228,6 @@ int parse(unsigned char *input) {
     context_t *C;
 
     C = &Context;
-    branch = &Branch;
 
     in = input;
     emit_start_state_machine(C);
