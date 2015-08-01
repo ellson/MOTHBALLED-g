@@ -21,9 +21,9 @@ g.o: g.c parse.h dumpg.h emit.h
 grammar.png: g g2gv.sh
 	./g -g | ./g2gv.sh | dot -Tpng -o grammar.png
 
-grammar.h grammar.c: grammar.ebnf
+grammar.c: grammar.h
 
-grammar.ebnf: grammar.g gacc.sh
+grammar.h grammar.ebnf: grammar.g gacc.sh
 	./gacc.sh grammar.g
 
 # grammar.g can be built by g, but need to avoid the dependency loop

@@ -171,7 +171,7 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	    }
 	    else {
                 if (subj == NODE) {
-//FIXME	            emit_error(C, "NODE found in EDGE SUBJECT");
+	            emit_error(C, "NODE found in EDGE SUBJECT");
 	            rc = 1;
 		}
 	    }

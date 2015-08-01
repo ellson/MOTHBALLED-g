@@ -9,7 +9,7 @@
 # include "dumpg.h"
 
 int main (int argc, char *argv[]) {
-    int i, sz, space, opt, optnum;
+    int i, sz, space, opt, optnum, needstdin;
     FILE *f;
     unsigned char *buf, *nextp;
 #define BUFSZ 100000
@@ -48,7 +48,7 @@ int main (int argc, char *argv[]) {
         case 't':
 	    emit = emit_t_api;
 	    break;
-        default: /* '?' */
+        default:
             fprintf(stderr,
 		"Usage: %s [-d[01] | [-t] | [-g[01]] [files] [-]  \n",
 		argv[0]
@@ -62,12 +62,14 @@ int main (int argc, char *argv[]) {
 
     nextp = buf;
     space = BUFSZ;
+    needstdin = 1;
     for (i=optind; i<argc; i++) {
         if (strcmp(argv[i], "-") == 0) {
-            fread(nextp, 1, space, stdin);
+            needstdin = 1;
 	    break;
         }
         else {
+            needstdin = 0;
             f = fopen(argv[i],"r");
 	    if (f) {
 	        sz = fread(nextp, 1, space, f);
@@ -80,6 +82,9 @@ int main (int argc, char *argv[]) {
 		exit(1);
 	    }
         }
+    }
+    if (needstdin) {
+        fread(nextp, 1, space, stdin);
     }
 
     parse(buf);
