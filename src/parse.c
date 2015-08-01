@@ -106,9 +106,9 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	}
         insp = state_machine + insi;
 	if (slen > 0) {
-	    elem = list2elem(leaves);
+	    elem = list2elem(leaves,slen);
 	    append_list(branch, elem);
-            emit_string(C,branch,slen);
+            emit_string(C,branch);
 	    rc = 0;
         }
 	else {
@@ -162,9 +162,6 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
         case SUBJECT:
             subj = savesubj; // pop subj
 	    break;
-        }
-        ni = np - state_machine;
-	switch (ni) {
 	case EDGE :
 	    if (subj == 0) {
 	        subj = EDGE;
@@ -202,7 +199,7 @@ done:
     nest--;
     assert (nest >= 0);
 
-    elem = list2elem(branch);
+    elem = list2elem(branch, repc);
     branch = parent_branch;
     if (rc) {
 	free_list(elem);

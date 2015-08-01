@@ -16,9 +16,14 @@ static void api_start_state(context_t *C, char class, unsigned char prop, int ne
     print_string(NAMEP(class+state_machine));
 }
 
-static void api_string(context_t *C, elem_t *leaves, int slen) {
+static void api_tree(context_t *C, elem_t *tree) {
     putc('\t', OUT);
-    print_list(OUT, leaves);
+    print_list(OUT, tree);
+}
+
+static void api_string(context_t *C, elem_t *branch) {
+    putc('\t', OUT);
+    print_list(OUT, branch);
 }
 
 static void api_tok(context_t *C, char class, unsigned char len, unsigned char *frag) {
@@ -41,11 +46,25 @@ static void api_error(context_t *C, char *message) {
     exit(1);
 }
 
-
 static emit_t api = {
     /* api_start_state_machine */ api_start_state_machine,
     /* api_sep */                 NULL,
     /* api_start_state */         api_start_state,
+    /* api_tree */                api_tree,
+    /* api_string */              api_string,
+    /* api_frag */                NULL,
+    /* api_tok */                 api_tok,
+    /* api_end_state */           api_end_state,
+    /* api_term */                NULL,
+    /* api_end_state_machine */   api_end_state_machine,
+    /* api_error */               api_error
+};
+
+static emit_t api1 = {
+    /* api_start_state_machine */ api_start_state_machine,
+    /* api_sep */                 NULL,
+    /* api_start_state */         api_start_state,
+    /* api_tree */                NULL,
     /* api_string */              api_string,
     /* api_frag */                NULL,
     /* api_tok */                 api_tok,
@@ -56,3 +75,4 @@ static emit_t api = {
 };
 
 emit_t *emit_t_api = &api;
+emit_t *emit_t_api1 = &api1;

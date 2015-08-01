@@ -22,7 +22,7 @@ struct elem_s {
 
 elem_t* new_list(int state);
 elem_t* new_frag(int state, unsigned char *frag, int len, void *allocated);
-elem_t *list2elem(elem_t *list);
+elem_t *list2elem(elem_t *list, int len);
 void prepend_list(elem_t *list, elem_t *elem);
 void append_list(elem_t *list, elem_t *elem);
 void free_list(elem_t *list);

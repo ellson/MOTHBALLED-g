@@ -7,7 +7,7 @@
 
 static elem_t *Freelist;
 
-static elem_t* new_elem_r(elemtype_t type, int state) {
+static elem_t* new_elem_sub(elemtype_t type, int state) {
     elem_t *elem, *next;
     int i;
 
@@ -16,6 +16,7 @@ static elem_t* new_elem_r(elemtype_t type, int state) {
     }
     else {                     // else no elems in freelist
 #define LISTALLOCNUM 100
+//FIXME - keep stats of elems allocated
         Freelist = calloc(LISTALLOCNUM, sizeof(elem_t));
         next = &Freelist[0];
         for (i=0; i<LISTALLOCNUM;) {   // ... so add LISTALLOCNUM elems to free list
@@ -36,7 +37,7 @@ static elem_t* new_elem_r(elemtype_t type, int state) {
 elem_t* new_list(int state) {
     elem_t* elem;
 
-    elem = new_elem_r(LISTELEM, state);
+    elem = new_elem_sub(LISTELEM, state);
     elem ->u.list.first = NULL;
     elem ->u.list.last = NULL;
     return elem;
@@ -45,16 +46,17 @@ elem_t* new_list(int state) {
 elem_t* new_frag(int state, unsigned char *frag, int len, void *allocated) {
     elem_t* elem;
     
-    elem = new_elem_r(FRAGELEM, state);
+    elem = new_elem_sub(FRAGELEM, state);
     elem->u.frag.frag = frag;
     elem->len = len;
     elem->u.frag.allocated = allocated;
     return elem;
 }
 
-// to allow statically allocated list headers, list2elem copies the header into
-// a new elem, and then reinitializes the old header.
-elem_t *list2elem(elem_t *list) {
+// To allow statically allocated list headers, list2elem
+// copies the header into a new elem, and then reinitializes
+// the old header.
+elem_t *list2elem(elem_t *list, int len) {
     elem_t *elem;
 
     assert(list->type == LISTELEM);
@@ -62,10 +64,13 @@ elem_t *list2elem(elem_t *list) {
     elem = new_list(0);
     elem->u.list.first = list->u.list.first;
     elem->u.list.last = list->u.list.last;
-    elem->state = list->state;
+    elem->state = list->state;  // get state from first elem
+    elem->len = len;            // caller provides len 
+				// -  not used internally by list code
     list->u.list.first = NULL;
     list->u.list.last = NULL;
     list->state = 0;
+    list->len = 0;
     return elem;
 }
 
@@ -96,13 +101,15 @@ void free_list(elem_t *list) {
     assert(list);
     assert(list->type == LISTELEM);
 
-    // free list of elem, but really just put them back on the elem_freelist
+    // free list of elem, but really just put them backs
+    // on the elem_freelist (declared at the top of this file)`
     elem = list->u.list.first;
     while (elem) {
 	next = elem->next;
         switch (elem->type) {
         case FRAGELEM :
-	    if (elem->u.frag.allocated) { // if the elem contains an allocated buf, then really free that
+	    if (elem->u.frag.allocated) { // if the elem containss
+				//  an allocated buf, then really free that
 	        free(elem->u.frag.frag);
             }
 	    break;
@@ -122,6 +129,7 @@ void free_list(elem_t *list) {
     list->u.list.first = NULL;
     list->u.list.last = NULL;
     list->state = 0;
+    list->len = 0;
 }
         
 static void print_list_r(FILE *chan, elem_t *list, int nest) {

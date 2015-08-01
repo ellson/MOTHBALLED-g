@@ -14,7 +14,8 @@ typedef struct {
     void (*start_state_machine) (context_t *C);
     void (*sep) (context_t *C);
     void (*start_state) (context_t *C, char class, unsigned char prop, int nest, int repc);
-    void (*string) (context_t *C, elem_t *leaves, int slen);
+    void (*tree) (context_t *C, elem_t *root);
+    void (*string) (context_t *C, elem_t *branch);
     void (*frag) (context_t *C, unsigned char len, unsigned char *frag);
     void (*tok) (context_t *C, char class, unsigned char len, unsigned char *frag);
     void (*end_state) (context_t *C, char class, int rc, int nest, int repc);
@@ -30,8 +31,8 @@ typedef struct {
     if (emit->sep) {emit->sep(C);}
 #define emit_start_state(C, class, prop, nest, repc) \
     if (emit->start_state) {emit->start_state(C, class, prop, nest, repc);}
-#define emit_string(C, leaves, slen) \
-    if (emit->string) {emit->string(C, leaves, slen);}
+#define emit_string(C, branch) \
+    if (emit->string) {emit->string(C, branch);}
 #define emit_frag(C, len, frag) \
     if (emit->frag) {emit->frag(C, len, frag);}
 #define emit_tok(C, class, len, frag) \
@@ -47,6 +48,7 @@ typedef struct {
 
 extern emit_t *emit,
     *emit_t_api,
+    *emit_t_api1,
     *emit_g_api,
     *emit_g_api1;
 

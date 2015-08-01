@@ -16,7 +16,7 @@ int main (int argc, char *argv[]) {
 
     emit = emit_g_api;
 
-    while ((opt = getopt(argc, argv, "d::g::t")) != -1) {
+    while ((opt = getopt(argc, argv, "d::g::t::")) != -1) {
 	if (optarg) optnum = atoi(optarg);
 	else optnum = 0;
         switch (opt) {
@@ -46,11 +46,20 @@ int main (int argc, char *argv[]) {
 	    }
             break;
         case 't':
-	    emit = emit_t_api;
-	    break;
+            switch (optnum) {
+	    case 0: emit = emit_t_api; break;
+	    case 1: emit = emit_t_api1; break;
+	    default:
+		fprintf(stderr, "%s\n",
+		    "-t0 = parse tree, -t1 = grammar walk"
+		);
+		exit(1);
+		break;
+	    }
+            break;
         default:
             fprintf(stderr,
-		"Usage: %s [-d[01] | [-t] | [-g[01]] [files] [-]  \n",
+		"Usage: %s [-d[01] | [-t[01]] | [-g[01]] [files] [-]  \n",
 		argv[0]
 	    );
             exit(1);
