@@ -9,13 +9,12 @@
 
 static context_t Context;
 static elem_t Tree;
-static elem_t Leaves;
 
 static unsigned char unterm, *in, *frag;
 static int len, slen;
 static char *insp, subj, insep;
 static context_t *C;
-static elem_t *branch, *leaves;
+static elem_t *branch;
 
 static int more(unsigned char *in, unsigned char prop, char bi) {
     char ei;
@@ -81,7 +80,6 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
     insp = state_machine + insi;
 
     // deal with terminals
-    leaves = &Leaves;
     if (si == STRING) { // strinds 
         slen = 0;
         insep = insi;
@@ -102,12 +100,12 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	    }
             emit_frag(C,len,frag);
             elem = new_frag(ftyp,frag,len,NULL);
-            append_list(leaves, elem);
+            append_list(branch, elem);
 	    slen += len;
 	}
         insp = state_machine + insi;
 	if (slen > 0) {
-	    elem = list2elem(leaves,slen);
+	    elem = list2elem(branch,slen);
             emit_string(C,elem);
 	    rc = 0;
         }
@@ -119,6 +117,9 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
     }
     else if (si == insi) { // tokens
         frag = in-1;
+        elem = new_frag(insi,frag,1,NULL);
+        append_list(branch, elem);
+	elem = list2elem(branch,slen);
         emit_tok(C,si,1,frag);
 	insep = insi;
         insi = char2state[*in++];
@@ -200,16 +201,12 @@ done:
     nest--;
     assert (nest >= 0);
 
+    branch = parent_branch;
     if (elem) {
-        elem = list2elem(branch, repc);
-	branch = parent_branch;
 	append_list(branch, elem);
 	if (si == ACT) {
 	    emit_tree(C, elem);
 	}
-    }
-    else {
-	branch = parent_branch;
     }
 
     emit_end_state(C, si, rc, nest, repc);
