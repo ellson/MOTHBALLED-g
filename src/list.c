@@ -16,7 +16,7 @@ static elem_t* new_elem_sub(elemtype_t type, int state) {
     }
     else {                     // else no elems in freelist
 #define LISTALLOCNUM 100
-//FIXME - keep stats of elems allocated
+//FIXME - keep stats of elems allocated & memory used
         Freelist = calloc(LISTALLOCNUM, sizeof(elem_t));
         next = &Freelist[0];
         for (i=0; i<LISTALLOCNUM;) {   // ... so add LISTALLOCNUM elems to free list
@@ -132,18 +132,18 @@ void free_list(elem_t *list) {
     list->len = 0;
 }
         
-static void print_list_r(FILE *chan, elem_t *list, int nest) {
+void print_list(FILE *chan, elem_t *list, int nest, char sep) {
     elem_t *elem;
     elemtype_t type;
     unsigned char *cp;
-    int len, cnt;
+    int len, i;
 
     assert(list->type == LISTELEM);
-    cnt = 0;
     elem = list->u.list.first;
     type = elem->type;
     switch (type) {
     case FRAGELEM :
+        if (sep) putc(sep, chan);
         while (elem) {
             assert(elem->type == type);  // check all the same type
             cp = elem->u.frag.frag;
@@ -156,14 +156,17 @@ static void print_list_r(FILE *chan, elem_t *list, int nest) {
     case LISTELEM :
         while (elem) {
             assert(elem->type == type);  // check all the same type
-            if (cnt++) putc (' ', chan);
-	    print_list_r(chan, elem, nest++);  // recursively print lists
+            if (nest >= 0) {
+	        for (i=nest; i>0; i--) fprintf(chan, "  ");
+	        fprintf(chan, "%3d", elem->type);
+	        print_list(chan, elem, nest++, sep);  // recurse
+                putc('\n', chan);
+	    }
+	    else {
+	        print_list(chan, elem, nest, sep);  // recurse
+	    }
             elem = elem->next;
 	}
 	break;
     }
-}
-
-void print_list(FILE* chan, elem_t *list) {
-    print_list_r(chan, list, 0);
 }

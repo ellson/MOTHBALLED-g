@@ -26,4 +26,4 @@ elem_t *list2elem(elem_t *list, int len);
 void prepend_list(elem_t *list, elem_t *elem);
 void append_list(elem_t *list, elem_t *elem);
 void free_list(elem_t *list);
-void print_list(FILE *chan, elem_t *list);
+void print_list(FILE *chan, elem_t *list, int nest, char sep);

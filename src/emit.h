@@ -31,6 +31,8 @@ typedef struct {
     if (emit->sep) {emit->sep(C);}
 #define emit_start_state(C, class, prop, nest, repc) \
     if (emit->start_state) {emit->start_state(C, class, prop, nest, repc);}
+#define emit_tree(C, root) \
+    if (emit->tree) {emit->tree(C, root);}
 #define emit_string(C, branch) \
     if (emit->string) {emit->string(C, branch);}
 #define emit_frag(C, len, frag) \
@@ -51,5 +53,3 @@ extern emit_t *emit,
     *emit_t_api1,
     *emit_g_api,
     *emit_g_api1;
-
-

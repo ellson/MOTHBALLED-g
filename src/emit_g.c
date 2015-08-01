@@ -10,15 +10,11 @@ static void api_sep(context_t *C) {
 }
 
 static void api_string(context_t *C, elem_t *branch) {
-    print_list(OUT, branch);
+    print_list(OUT, branch, -1, 0);
 }
 
 static void api_tok(context_t *C, char class, unsigned char len, unsigned char *frag) {
     print_frag(OUT, len, frag);
-}
-
-static void api_term(context_t *C) {
-    putc('\n', OUT);
 }
 
 static void api_end_state_machine(context_t *C) {
@@ -45,14 +41,16 @@ static emit_t api = {
 };
 
 static void api1_string(context_t *C, elem_t *branch) {
-    putc(' ', OUT);
-    print_list(OUT, branch);
+    print_list(OUT, branch, -1, ' ');
 }
 
 static void api1_tok(context_t *C, char class, unsigned char len, unsigned char *frag) {
     putc('\n', OUT);
     print_frag(OUT, len, frag);
-    putc(' ', OUT);
+}
+
+static void api1_term(context_t *C) {
+    putc('\n', OUT);
 }
 
 static emit_t api1 = {
@@ -64,8 +62,8 @@ static emit_t api1 = {
     /* api_frag */                NULL,
     /* api_tok */                 api1_tok,
     /* api_end_state */           NULL,
-    /* api_term */                api_term,
-    /* api_end_state_machine */   api_end_state_machine,
+    /* api_term */                api1_term,
+    /* api_end_state_machine */   NULL,
     /* api_error */               api_error
 };
 

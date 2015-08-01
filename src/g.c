@@ -51,7 +51,7 @@ int main (int argc, char *argv[]) {
 	    case 1: emit = emit_t_api1; break;
 	    default:
 		fprintf(stderr, "%s\n",
-		    "-t0 = parse tree, -t1 = grammar walk"
+		    "-t0 = input parse, -t1 = output tree"
 		);
 		exit(1);
 		break;

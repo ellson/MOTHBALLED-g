@@ -205,6 +205,9 @@ done:
 	free_list(elem);
     }
     else {
+	if (si == ACT) {
+	    emit_tree(C, branch);
+	}
 	append_list(branch, elem);
     }
 
