@@ -14,7 +14,7 @@ int main (int argc, char *argv[]) {
     unsigned char *buf, *nextp;
 #define BUFSZ 100000
 
-    emit = emit_g_api1;
+    emit = emit_g_api;
 
     while ((opt = getopt(argc, argv, "d::g::t")) != -1) {
 	if (optarg) optnum = atoi(optarg);
@@ -22,12 +22,11 @@ int main (int argc, char *argv[]) {
         switch (opt) {
         case 'd':
             switch (optnum) {
-	    case 0:
-	    case 1: dumpg(); exit(0); break;
-	    case 2: printg(); exit(0); break;
+	    case 0: dumpg(); exit(0); break;
+	    case 1: printg(); exit(0); break;
 	    default:
 		fprintf(stderr, "%s\n",
-		    "-d1 = linear walk, -d2 = recursive walk"
+		    "-d0 = linear walk, -d1 = recursive walk"
 		);
 		exit(1);
 		break;
@@ -36,12 +35,11 @@ int main (int argc, char *argv[]) {
             break;
         case 'g':
             switch (optnum) {
-	    case 0:
+	    case 0: emit = emit_g_api; break;
 	    case 1: emit = emit_g_api1; break;
-	    case 2: emit = emit_g_api2; break;
 	    default:
 		fprintf(stderr, "%s\n",
-		    "-g1 = minimal space, -g2 = shell-friendly spacing"
+		    "-g0 = minimal space, -g1 = shell-friendly spacing"
 		);
 		exit(1);
 		break;
@@ -52,7 +50,7 @@ int main (int argc, char *argv[]) {
 	    break;
         default: /* '?' */
             fprintf(stderr,
-		"Usage: %s [-d[12] | [-t] | [-g[12]] [ files ] [ - ]  \n",
+		"Usage: %s [-d[01] | [-t] | [-g[01]] [files] [-]  \n",
 		argv[0]
 	    );
             exit(1);
