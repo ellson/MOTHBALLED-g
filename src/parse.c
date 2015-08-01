@@ -8,6 +8,7 @@
 #include "parse.h"
 
 static context_t Context;
+static elem_t Tree;
 static elem_t Leaves;
 
 static unsigned char unterm, *in, *frag;
@@ -37,40 +38,27 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 
     emit_start_state(C, si, prop, nest, repc);
 
-    parent_branch = branch;
-    branch = new_list(si);
+    parent_branch = branch;  // save state of caller's result list
+    branch = new_list(si);   // create new list for my result
 
     nest++;
     assert (nest >= 0); // catch overflows
-        switch (si) {
-//        case ACT:
-//            if (unterm) {
-// 	        emit_term(C);
-//	    }
-//	    unterm = 1;
-//	    // FIXME create new context
-//	    break;
-        case SUBJECT:
-            savesubj = subj; // push subj
-	    subj = 0;
-	    break;
-        }
     switch (si) {
-    case ACT:
-        if (unterm) {
+    case ACT:              // starting a new ACT
+        if (unterm) {      // implicitly terminates preceeding ACT
  	    emit_term(C);
 	}
-	unterm = 1;
-	// FIXME create new context
+	unterm = 1;        // indicate that this ACT is unterminated
 	break;
     case SUBJECT:
-        savesubj = subj;  // might be a nested subject
-        subj = 0;
+        savesubj = subj;  // push parent's subject
+        subj = 0;         // clear this subject type until known
 	break;
     }
-    if (insp == NULL) {
-        insep = WS;
-        insi = char2state[*in++];
+    if (insp == NULL) {  // state_nschine just started
+        insep = WS;      // pretend preceeded by WS
+			// to satisfy toplevel SREP or REP
+        insi = char2state[*in++]; // get first input state
     }
     else {
 	insi = insp - state_machine;
@@ -81,11 +69,13 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	    }
         }
     }
-    if (insi == WS) {
+    if (insi == WS) {  // eat all leading whitespace
         while ( (insi = char2state[*in++]) == WS) {}
     }
     if (insi == NLL) { //EOF
         emit_term(C);
+	rc = 1;
+	goto done;
     }
     insp = state_machine + insi;
 
@@ -167,16 +157,8 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	sp++;  // next ALT (if not yet satisfied)  or next sequence item
     }
 
-
     if (rc == 0) {
         switch (si) {
-//        case ACT:
-//            if (unterm) {
-// 	        emit_term(C);
-//	    }
-//	    unterm = 1;
-//	    // FIXME create new context
-//	    break;
         case SUBJECT:
             subj = savesubj; // pop subj
 	    break;
@@ -186,7 +168,6 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	case EDGE :
 	    if (subj == 0) {
 	        subj = EDGE;
-//fprintf(OUT," (edge)");
 	    }
 	    else {
                 if (subj == NODE) {
@@ -197,8 +178,7 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
             break;
 	case NODE :
 	    if (subj == 0) {
-	        subj = ni;
-//fprintf(OUT," (%s)", ni==NODE?"node":"child");
+	        subj = NODE;
 	    }
 	    else {
                 if (subj == EDGE) {
@@ -208,7 +188,7 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	        rc = 1;
 	    }
             break;
-        case TERM :
+        case TERM :   
         case CONTAINER :
             if (unterm) {
  	        emit_term(C);
@@ -224,15 +204,12 @@ done:
 
     elem = list2elem(branch);
     branch = parent_branch;
-
-#if 0
     if (rc) {
 	free_list(elem);
     }
     else {
 	append_list(branch, elem);
     }
-#endif
 
     emit_end_state(C, si, rc, nest, repc);
     return rc;
@@ -243,6 +220,7 @@ int parse(unsigned char *input) {
     context_t *C;
 
     C = &Context;
+    branch = &Tree;
 
     in = input;
     emit_start_state_machine(C);
