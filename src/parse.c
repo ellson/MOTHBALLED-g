@@ -205,10 +205,10 @@ done:
 	free_list(elem);
     }
     else {
+	append_list(branch, elem);
 	if (si == ACT) {
 	    emit_tree(C, branch);
 	}
-	append_list(branch, elem);
     }
 
     emit_end_state(C, si, rc, nest, repc);

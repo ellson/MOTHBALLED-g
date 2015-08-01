@@ -140,6 +140,7 @@ void print_list(FILE *chan, elem_t *list, int nest, char sep) {
 
     assert(list->type == LISTELEM);
     elem = list->u.list.first;
+    assert(elem);    // not sure how to explain this ..
     type = elem->type;
     switch (type) {
     case FRAGELEM :
