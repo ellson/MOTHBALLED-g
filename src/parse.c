@@ -204,8 +204,9 @@ done:
     branch = parent_branch;
     if (elem) {
 	append_list(branch, elem);
+	emit_tree(C, elem);
 	if (si == ACT) {
-	    emit_tree(C, elem);
+//	    emit_tree(C, elem);
 	}
     }
 
