@@ -15,7 +15,7 @@ static unsigned char unterm, *in, *frag;
 static int len, slen;
 static char *insp, subj, insep;
 static context_t *C;
-static elem_t *elem, *branch, *leaves;
+static elem_t *branch, *leaves;
 
 static int more(unsigned char *in, unsigned char prop, char bi) {
     char ei;
@@ -32,7 +32,7 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
     unsigned char nprop;
     char *np, insi, ftyp, si, ni, savesubj;
     int rc;
-    elem_t *parent_branch;
+    elem_t *elem, *parent_branch;
 
     si = sp - state_machine;
 
@@ -40,6 +40,7 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 
     parent_branch = branch;  // save state of caller's result list
     branch = new_list(si);   // create new list for my result
+    elem = NULL;
 
     nest++;
     assert (nest >= 0); // catch overflows
@@ -80,8 +81,8 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
     insp = state_machine + insi;
 
     // deal with terminals
+    leaves = &Leaves;
     if (si == STRING) { // strinds 
-        leaves = &Leaves;
         slen = 0;
         insep = insi;
 	while(1) {
@@ -100,18 +101,18 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	        break;
 	    }
             emit_frag(C,len,frag);
-            elem = new_frag(ftyp,frag,len,0);
+            elem = new_frag(ftyp,frag,len,NULL);
             append_list(leaves, elem);
 	    slen += len;
 	}
         insp = state_machine + insi;
 	if (slen > 0) {
 	    elem = list2elem(leaves,slen);
-	    append_list(branch, elem);
-            emit_string(C,branch);
+            emit_string(C,elem);
 	    rc = 0;
         }
 	else {
+	    elem = NULL;
 	    rc = 1;
 	}
         goto done;
@@ -199,16 +200,16 @@ done:
     nest--;
     assert (nest >= 0);
 
-    elem = list2elem(branch, repc);
-    branch = parent_branch;
-    if (rc) {
-	free_list(elem);
-    }
-    else {
+    if (elem) {
+        elem = list2elem(branch, repc);
+	branch = parent_branch;
 	append_list(branch, elem);
 	if (si == ACT) {
-	    emit_tree(C, branch);
+	    emit_tree(C, elem);
 	}
+    }
+    else {
+	branch = parent_branch;
     }
 
     emit_end_state(C, si, rc, nest, repc);
