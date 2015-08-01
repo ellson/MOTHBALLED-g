@@ -9,17 +9,20 @@
 # include "dumpg.h"
 
 int main (int argc, char *argv[]) {
-    int i, sz, space, opt;
+    int i, sz, space, opt, optnum;
     FILE *f;
     unsigned char *buf, *nextp;
 #define BUFSZ 100000
 
     emit = emit_g_api1;
 
-    while ((opt = getopt(argc, argv, "d:g:t")) != -1) {
+    while ((opt = getopt(argc, argv, "d::g::t")) != -1) {
+	if (optarg) optnum = atoi(optarg);
+	else optnum = 0;
         switch (opt) {
         case 'd':
-            switch (atoi(optarg)) {
+            switch (optnum) {
+	    case 0:
 	    case 1: dumpg(); exit(0); break;
 	    case 2: printg(); exit(0); break;
 	    default:
@@ -32,7 +35,8 @@ int main (int argc, char *argv[]) {
             
             break;
         case 'g':
-            switch (atoi(optarg)) {
+            switch (optnum) {
+	    case 0:
 	    case 1: emit = emit_g_api1; break;
 	    case 2: emit = emit_g_api2; break;
 	    default:
