@@ -31,10 +31,14 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
     unsigned char nprop;
     char *np, insi, ftyp, si, ni, savesubj;
     int rc;
+    elem_t *parent_branch;
 
     si = sp - state_machine;
 
     emit_start_state(C, si, prop, nest, repc);
+
+    parent_branch = branch;
+    branch = new_list(si);
 
     nest++;
     assert (nest >= 0); // catch overflows
@@ -87,7 +91,6 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 
     // deal with terminals
     if (si == STRING) { // strinds 
-        branch = new_list(si);
         leaves = &Leaves;
         slen = 0;
         insep = insi;
@@ -116,7 +119,6 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	    elem = list2elem(leaves);
 	    append_list(branch, elem);
             emit_string(C,branch,slen);
-	    free_list(branch);
 	    rc = 0;
         }
 	else {
@@ -219,6 +221,19 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 done:
     nest--;
     assert (nest >= 0);
+
+    elem = list2elem(branch);
+    branch = parent_branch;
+
+#if 0
+    if (rc) {
+	free_list(elem);
+    }
+    else {
+	append_list(branch, elem);
+    }
+#endif
+
     emit_end_state(C, si, rc, nest, repc);
     return rc;
 }

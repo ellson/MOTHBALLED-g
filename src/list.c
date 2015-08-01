@@ -93,6 +93,7 @@ void prepend_list(elem_t *list, elem_t *elem) {
 void free_list(elem_t *list) {
     elem_t *elem, *next;
 
+    assert(list);
     assert(list->type == LISTELEM);
 
     // free list of elem, but really just put them back on the elem_freelist
