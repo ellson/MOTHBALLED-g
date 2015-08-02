@@ -7,16 +7,11 @@
 #include "emit.h"
 #include "parse.h"
 
-static context_t Context;
-static elem_t Tree;
-
 static unsigned char unterm, *in, *frag;
 static int len, slen;
 static char *insp, subj, insep;
-static context_t *C;
-static elem_t *branch;
 
-static int more(unsigned char *in, unsigned char prop, char bi) {
+static int more(context_t *C, unsigned char *in, unsigned char prop, char bi) {
     char ei;
 
     if (! (prop & (REP|SREP))) return 0;
@@ -27,19 +22,19 @@ static int more(unsigned char *in, unsigned char prop, char bi) {
     return 1;
 }
 
-static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
+static int parse_r(context_t *C, elem_t *root,
+		char *sp, unsigned char prop, int nest, int repc) {
     unsigned char nprop;
     char *np, insi, ftyp, si, ni, savesubj;
     int rc;
-    elem_t *elem, *parent_branch;
+    elem_t *elem;
+    static elem_t branch;
 
     si = sp - state_machine;
+    elem = NULL;
 
     emit_start_state(C, si, prop, nest, repc);
 
-    parent_branch = branch;  // save state of caller's result list
-    branch = new_list(si);   // create new list for my result
-    elem = NULL;
 
     nest++;
     assert (nest >= 0); // catch overflows
@@ -100,13 +95,13 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	    }
             emit_frag(C,len,frag);
             elem = new_frag(ftyp,frag,len,NULL);
-            append_list(branch, elem);
+            append_list(&branch, elem);
 	    slen += len;
 	}
         insp = state_machine + insi;
 	if (slen > 0) {
-	    elem = list2elem(branch,slen);
-            emit_string(C,elem);
+            emit_string(C,&branch);
+	    elem = list2elem(&branch,slen);
 	    rc = 0;
         }
 	else {
@@ -117,9 +112,6 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
     }
     else if (si == insi) { // tokens
         frag = in-1;
-        elem = new_frag(insi,frag,1,NULL);
-        append_list(branch, elem);
-	elem = list2elem(branch,slen);
         emit_tok(C,si,1,frag);
 	insep = insi;
         insi = char2state[*in++];
@@ -133,7 +125,7 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
         nprop = *PROPP(sp);
         np = sp + ni;
 	if (nprop & ALT) { // look for ALT
-	    if (( rc = parse_r(np,nprop,nest,0)) == 0) {
+	    if (( rc = parse_r(C, &branch, np,nprop,nest,0)) == 0) {
                 break;  // ALT satisfied
 	    }
 	    // if we fail an ALT then cwcontinue iteration to try next
@@ -141,18 +133,18 @@ static int parse_r(char *sp, unsigned char prop, int nest, int repc) {
 	else { // else it is a sequence
 	    repc = 0;
 	    if (nprop & OPT) { // optional
-	        if (( parse_r(np,nprop,nest,repc++)) == 0) {
-	            while (more(in, nprop, insep)) {
-                        if (parse_r(np,nprop,nest,repc++) != 0) break;
+	        if (( parse_r(C, &branch, np,nprop,nest,repc++)) == 0) {
+	            while (more(C, in, nprop, insep)) {
+                        if (parse_r(C, &branch, np,nprop,nest,repc++) != 0) break;
 		    }
 	        }
                 rc = 0; // optional can't fail
 	    }
 	    else { // else not OPTional
-	        if (( rc = parse_r(np,nprop,nest,repc++)) != 0) break; 
+	        if (( rc = parse_r(C, &branch, np,nprop,nest,repc++)) != 0) break; 
                 // rc is the rc of the first term, which at this point is success
-	        while (more(in, nprop, insep)) {
-                    if (parse_r(np,nprop,nest,repc++) != 0) break;
+	        while (more(C, in, nprop, insep)) {
+                    if (parse_r(C, &branch, np,nprop,nest,repc++) != 0) break;
 		}
 	    }
 	}
@@ -201,12 +193,11 @@ done:
     nest--;
     assert (nest >= 0);
 
-    branch = parent_branch;
     if (elem) {
-	append_list(branch, elem);
-	emit_tree(C, elem);
+        elem = list2elem(&branch,slen);
+	append_list(root, elem);
 	if (si == ACT) {
-//	    emit_tree(C, elem);
+	    emit_tree(C, &branch);
 	}
     }
 
@@ -214,16 +205,12 @@ done:
     return rc;
 }
 
-int parse(unsigned char *input) {
+int parse(context_t *C, unsigned char *input) {
     int rc;
-    context_t *C;
-
-    C = &Context;
-    branch = &Tree;
 
     in = input;
     emit_start_state_machine(C);
-    rc = parse_r(state_machine,SREP,0,0);
+    rc = parse_r(C, &(C->Tree), state_machine,SREP,0,0);
     emit_end_state_machine(C);
     return rc;
 }

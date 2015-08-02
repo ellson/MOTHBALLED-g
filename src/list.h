@@ -1,13 +1,13 @@
 typedef struct elem_s elem_t;
 
 // LST must = 0 for calloc of list headers
-typedef enum {LISTELEM, FRAGELEM} elemtype_t;
+typedef enum {
+	LISTELEM=0,     // a list elem managed by new_list() and free_list()
+	FRAGELEM        // a frag elem managed by new_frag() and free_list()
+} elemtype_t;
 
 struct elem_s {
-    int state;
-    int len; // length of frag, or length of all frags in a list
     elem_t *next;
-    elemtype_t type;
     union {
         struct {
 	    elem_t *first; // for prepend and fforward walk
@@ -18,9 +18,11 @@ struct elem_s {
     	    void *allocated;  // FIXME - for buffer nabagement
         } frag;
     } u;
+    elemtype_t type;
+    int state;
+    int len; // length of frag, or length of all frags in a list
 };
 
-elem_t* new_list(int state);
 elem_t* new_frag(int state, unsigned char *frag, int len, void *allocated);
 elem_t *list2elem(elem_t *list, int len);
 void prepend_list(elem_t *list, elem_t *elem);

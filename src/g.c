@@ -12,6 +12,7 @@ int main (int argc, char *argv[]) {
     int i, sz, space, opt, optnum, needstdin;
     FILE *f;
     unsigned char *buf, *nextp;
+    context_t context;
 #define BUFSZ 100000
 
     emit = emit_g_api;
@@ -96,7 +97,7 @@ int main (int argc, char *argv[]) {
         fread(nextp, 1, space, stdin);
     }
 
-    parse(buf);
+    parse(&context, buf);
 
     return 0;
 }

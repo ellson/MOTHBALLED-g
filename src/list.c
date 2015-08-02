@@ -7,48 +7,40 @@
 
 static elem_t *Freelist;
 
-static elem_t* new_elem_sub(elemtype_t type, int state) {
+static elem_t* new_elem_sub(elemtype_t type) {
     elem_t *elem, *next;
     int i;
 
-    if (Freelist) {       // if elem in freelist
-        elem = Freelist;   // use first
+    if (Freelist) {       // if there is one or more elems in freelist
+        elem = Freelist;  // use first
     }
-    else {                     // else no elems in freelist
+    else {                // else no elems in freelist
+			  // ... so add LISTALLOCNUM elems to free list
 #define LISTALLOCNUM 100
 //FIXME - keep stats of elems allocated & memory used
         Freelist = calloc(LISTALLOCNUM, sizeof(elem_t));
         next = &Freelist[0];
-        for (i=0; i<LISTALLOCNUM;) {   // ... so add LISTALLOCNUM elems to free list
+        for (i=0; i<LISTALLOCNUM;) {
 	    elem = next;
             next = &Freelist[++i];
 	    elem->next = next;
         }
-	elem->next = NULL;      // terminate last elem
+	elem->next = NULL; // terminate last elem
         elem = Freelist;   // add chain of elems to freelist
     }
     Freelist = elem->next;  // update freelist to point to next available
     elem->type = type;
-    elem->state = state;
     elem->next = NULL;
-    return elem;
-}
-
-elem_t* new_list(int state) {
-    elem_t* elem;
-
-    elem = new_elem_sub(LISTELEM, state);
-    elem ->u.list.first = NULL;
-    elem ->u.list.last = NULL;
     return elem;
 }
 
 elem_t* new_frag(int state, unsigned char *frag, int len, void *allocated) {
     elem_t* elem;
     
-    elem = new_elem_sub(FRAGELEM, state);
+    elem = new_elem_sub(FRAGELEM);
     elem->u.frag.frag = frag;
     elem->len = len;
+    elem->state = state;
     elem->u.frag.allocated = allocated;
     return elem;
 }
@@ -61,7 +53,7 @@ elem_t *list2elem(elem_t *list, int len) {
 
     assert(list->type == LISTELEM);
 
-    elem = new_list(0);
+    elem = new_elem_sub(LISTELEM);
     elem->u.list.first = list->u.list.first;
     elem->u.list.last = list->u.list.last;
     elem->state = list->state;  // get state from first elem
@@ -95,11 +87,12 @@ void prepend_list(elem_t *list, elem_t *elem) {
     list->u.list.first = elem;
 }
 
+// free the list contents, but not the lit header.
 void free_list(elem_t *list) {
     elem_t *elem, *next;
 
     assert(list);
-    assert(list->type == LISTELEM);
+    assert(list->type == LISTELEM );
 
     // free list of elem, but really just put them backs
     // on the elem_freelist (declared at the top of this file)`
