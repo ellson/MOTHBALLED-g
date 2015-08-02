@@ -60,6 +60,10 @@ static void api1_tree(context_t *C, elem_t *tree) {
     print_list(OUT, tree, 0, ' ');
 }
 
+static void api1_term(context_t *C) {
+    putc('\n',OUT);
+}
+
 static emit_t api1 = {
     /* api_start_state_machine */ NULL,
     /* api_sep */                 NULL,
@@ -69,7 +73,7 @@ static emit_t api1 = {
     /* api_frag */                NULL,
     /* api_tok */                 NULL,
     /* api_end_state */           NULL,
-    /* api_term */                NULL,
+    /* api_term */                api1_term,
     /* api_end_state_machine */   NULL,
     /* api_error */               api_error
 };

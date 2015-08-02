@@ -200,14 +200,12 @@ done:
     nest--;
     assert (nest >= 0);
 
-    if (elem) {
+    if (rc == 0) {
         elem = list2elem(&branch,0);
-	append_list(root, elem);
-#if 0
-	if (si == ACT) {
-	    emit_tree(C, &branch);
-	}
-#endif
+        if (si == ACT) {
+	    emit_tree(C, elem);
+        }
+        append_list(root, elem);
     }
 
     emit_end_state(C, si, rc, nest, repc);
