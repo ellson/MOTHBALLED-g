@@ -7,8 +7,7 @@
 #include "emit.h"
 #include "parse.h"
 
-static unsigned char unterm, *in, *frag;
-static int len, slen;
+static unsigned char unterm, *in;
 static char *insp, subj, insep;
 
 static int more(context_t *C, unsigned char *in, unsigned char prop, char bi) {
@@ -24,32 +23,19 @@ static int more(context_t *C, unsigned char *in, unsigned char prop, char bi) {
 
 static int parse_r(context_t *C, elem_t *root,
 		char *sp, unsigned char prop, int nest, int repc) {
-    unsigned char nprop;
+    unsigned char nprop, *frag;
     char *np, insi, ftyp, si, ni, savesubj;
-    int rc;
-    elem_t *elem;
+    int rc, len, slen;
     static elem_t branch;
+    elem_t *elem;
 
     si = sp - state_machine;
-    elem = NULL;
-
     emit_start_state(C, si, prop, nest, repc);
 
+    elem = NULL;
 
     nest++;
     assert (nest >= 0); // catch overflows
-    switch (si) {
-    case ACT:              // starting a new ACT
-        if (unterm) {      // implicitly terminates preceeding ACT
- 	    emit_term(C);
-	}
-	unterm = 1;        // indicate that this ACT is unterminated
-	break;
-    case SUBJECT:
-        savesubj = subj;  // push parent's subject
-        subj = 0;         // clear this subject type until known
-	break;
-    }
     if (insp == NULL) {  // state_nschine just started
         insep = WS;      // pretend preceeded by WS
 			// to satisfy toplevel SREP or REP
@@ -63,6 +49,22 @@ static int parse_r(context_t *C, elem_t *root,
 	        goto done;
 	    }
         }
+    }
+    switch (si) {
+    case ACT:              // starting a new ACT
+	if (insi == NLL || insep == NLL) {
+	    rc = 1;
+	    goto done;
+        }
+        if (unterm) {      // implicitly terminates preceeding ACT
+ 	    emit_term(C);
+	}
+	unterm = 1;        // indicate that this ACT is unterminated
+	break;
+    case SUBJECT:
+        savesubj = subj;  // push parent's subject
+        subj = 0;         // clear this subject type until known
+	break;
     }
     if (insi == WS) {  // eat all leading whitespace
         while ( (insi = char2state[*in++]) == WS) {}
@@ -100,8 +102,8 @@ static int parse_r(context_t *C, elem_t *root,
 	}
         insp = state_machine + insi;
 	if (slen > 0) {
-            emit_string(C,&branch);
 	    elem = list2elem(&branch,slen);
+	    emit_string(C,elem);
 	    rc = 0;
         }
 	else {
@@ -194,11 +196,13 @@ done:
     assert (nest >= 0);
 
     if (elem) {
-        elem = list2elem(&branch,slen);
+        elem = list2elem(&branch,0);
+#if 0
 	append_list(root, elem);
 	if (si == ACT) {
 	    emit_tree(C, &branch);
 	}
+#endif
     }
 
     emit_end_state(C, si, rc, nest, repc);

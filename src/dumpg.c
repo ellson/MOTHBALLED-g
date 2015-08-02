@@ -4,7 +4,6 @@
 
 #include "grammar.h"
 #include "list.h"
-#include "parse.h"
 #include "emit.h"
 
 #define styleLAN sstyle?"< ":"<"

@@ -129,11 +129,12 @@ void print_list(FILE *chan, elem_t *list, int nest, char sep) {
     elem_t *elem;
     elemtype_t type;
     unsigned char *cp;
-    int len, i;
+    int len;
 
+    if (!list) return;
     assert(list->type == LISTELEM);
     elem = list->u.list.first;
-    assert(elem);    // not sure how to explain this ..
+    if (!list) return;
     type = elem->type;
     switch (type) {
     case FRAGELEM :
@@ -150,15 +151,8 @@ void print_list(FILE *chan, elem_t *list, int nest, char sep) {
     case LISTELEM :
         while (elem) {
             assert(elem->type == type);  // check all the same type
-            if (nest >= 0) {
-	        for (i=nest; i>0; i--) fprintf(chan, "  ");
-	        fprintf(chan, "%3d", elem->type);
-	        print_list(chan, elem, nest++, sep);  // recurse
-                putc('\n', chan);
-	    }
-	    else {
-	        print_list(chan, elem, nest, sep);  // recurse
-	    }
+            fprintf(chan, "%4d", elem->type);
+	    print_list(chan, elem, nest++, sep);  // recurse
             elem = elem->next;
 	}
 	break;
