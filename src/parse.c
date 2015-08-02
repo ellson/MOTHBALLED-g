@@ -26,13 +26,19 @@ static int parse_r(context_t *C, elem_t *root,
     unsigned char nprop, *frag;
     char *np, insi, ftyp, si, ni, savesubj;
     int rc, len, slen;
-    static elem_t branch;
+    elem_t branch;
     elem_t *elem;
 
     si = sp - state_machine;
     emit_start_state(C, si, prop, nest, repc);
 
     elem = NULL;
+    branch.next = NULL;
+    branch.u.list.first = NULL;
+    branch.u.list.last = NULL;
+    branch.type = LISTELEM;
+    branch.len = 0;
+    branch.state = si;
 
     nest++;
     assert (nest >= 0); // catch overflows
@@ -70,7 +76,6 @@ static int parse_r(context_t *C, elem_t *root,
         while ( (insi = char2state[*in++]) == WS) {}
     }
     if (insi == NLL) { //EOF
-        emit_term(C);
 	rc = 1;
 	goto done;
     }
@@ -197,8 +202,8 @@ done:
 
     if (elem) {
         elem = list2elem(&branch,0);
-#if 0
 	append_list(root, elem);
+#if 0
 	if (si == ACT) {
 	    emit_tree(C, &branch);
 	}

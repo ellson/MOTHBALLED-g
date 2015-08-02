@@ -98,7 +98,6 @@ int main (int argc, char *argv[]) {
     }
 
     parse(&context, buf);
-    putc('\n', OUT);
 
     return 0;
 }
