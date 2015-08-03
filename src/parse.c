@@ -94,7 +94,7 @@ static int parse_r(context_t *C, elem_t *root,
 		    len++;
                 }
             }
-            else if (insi == EQL || insi == AST) {
+            else if (insi == AST) {
                 insi = char2state[*in++];
             }
 	    else {
