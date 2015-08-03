@@ -1,10 +1,10 @@
 typedef struct elem_s elem_t;
 
 // LST must = 0 for calloc of list headers
-typedef enum {
-	LISTELEM=0,     // a list elem managed by new_list() and free_list()
-	FRAGELEM        // a frag elem managed by new_frag() and free_list()
-} elemtype_t;
+
+// FIXME - Should use enum, but don't need an int to store a boolean
+#define LISTELEM 0
+#define FRAGELEM 1
 
 struct elem_s {
     elem_t *next;
@@ -18,8 +18,8 @@ struct elem_s {
     	    void *allocated;  // FIXME - for buffer nabagement
         } frag;
     } u;
-    elemtype_t type;
-    char state;
+    char type; // LISTELEM or FRAGELEM
+    char state;  // state_machine state that generated the list
     int len; // length of frag, or length of all frags in a list
 };
 

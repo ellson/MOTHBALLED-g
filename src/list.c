@@ -13,7 +13,7 @@ static elem_t *Freelist;
 // FIXME - need a way to read these
 static long int stat_listmemory, stat_elemcount;
 
-static elem_t* new_elem_sub(elemtype_t type) {
+static elem_t* new_elem_sub(char type) {
     elem_t *elem, *next;
     int i;
 
@@ -149,7 +149,7 @@ int print_string(FILE *chan, unsigned char *len_frag) {
         
 void print_list(FILE *chan, elem_t *list, int indent, char sep) {
     elem_t *elem;
-    elemtype_t type;
+    char type;
     unsigned char *cp;
     int ind, cnt, len, width;
 
