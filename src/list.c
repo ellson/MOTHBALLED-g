@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "list.h"
+#include "grammar.h"
 
 static elem_t *Freelist;
 
@@ -124,7 +125,19 @@ void free_list(elem_t *list) {
     list->state = 0;
     list->len = 0;
 }
-        
+
+void print_frag(FILE *chan, unsigned char len, unsigned char *frag) {
+    while (len--) putc(*frag++, chan);
+}
+
+int print_string(FILE *chan, unsigned char *len_frag) {
+    unsigned char len;
+
+    len = *len_frag++;
+    print_frag(chan, len, len_frag);
+    return len;
+}
+
 void print_list(FILE *chan, elem_t *list, int indent, char sep) {
     elem_t *elem;
     elemtype_t type;

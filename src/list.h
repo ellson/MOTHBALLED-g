@@ -28,4 +28,6 @@ elem_t *list2elem(elem_t *list, int len);
 void prepend_list(elem_t *list, elem_t *elem);
 void append_list(elem_t *list, elem_t *elem);
 void free_list(elem_t *list);
+int print_string(FILE *chan,unsigned char *len_frag);
+void print_frag(FILE* chan, unsigned char len, unsigned char *frag);
 void print_list(FILE *chan, elem_t *list, int nest, char sep);

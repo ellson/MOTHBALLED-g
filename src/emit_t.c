@@ -13,7 +13,7 @@ static void api_start_state(context_t *C, char class, unsigned char prop, int ne
     putc('\n', OUT);
     putc(char_prop(prop,'_'), OUT);
     fprintf(OUT,"%4d%4d%4d ", class, nest, repc);
-    print_string(NAMEP(class+state_machine));
+    print_string(OUT, NAMEP(class+state_machine));
 }
 
 static void api_string(context_t *C, elem_t *branch) {
@@ -30,7 +30,7 @@ static void api_tok(context_t *C, char class, unsigned char len, unsigned char *
 
 static void api_end_state(context_t *C, char class, int rc, int nest, int repc) {
     fprintf(OUT,"\n%d%4d%4d%4d ", rc, class, nest, repc);
-    print_string(NAMEP(class+state_machine));
+    print_string(OUT, NAMEP(class+state_machine));
 }
 
 static void api_end_state_machine(context_t *C) {

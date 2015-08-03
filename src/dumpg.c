@@ -44,9 +44,9 @@ static void print_next( char *leg1, char *leg2 ) {
 	sleg2 = SAME;
     }
     fprintf(OUT,"%s", styleLAN);
-    print_string(sleg1);
+    print_string(OUT, sleg1);
     putc(' ', OUT);
-    print_string(sleg2);
+    print_string(OUT, sleg2);
     fprintf(OUT,"%s", styleRAN);
 }
 
@@ -135,7 +135,7 @@ void dumpg (void) {
 	    }
 	}
 	else { // else terminal
-	    print_string(NAMEP(p));
+	    print_string(OUT, NAMEP(p));
             print_chars(p);
 	}
         p++;

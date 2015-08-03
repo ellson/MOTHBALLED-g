@@ -6,8 +6,6 @@ typedef struct {
 #define ERR stderr
 
 char *get_name(char *p);
-void print_string(unsigned char *len_frag);
-void print_frag(FILE* chan, unsigned char len, unsigned char *frag);
 char char_prop(unsigned char prop, char noprop);
 
 typedef struct {
