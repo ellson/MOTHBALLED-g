@@ -137,12 +137,12 @@ int print_string(FILE *chan, unsigned char *len_frag) {
     print_frag(chan, len, len_frag);
     return len;
 }
-
+        
 void print_list(FILE *chan, elem_t *list, int indent, char sep) {
     elem_t *elem;
     elemtype_t type;
     unsigned char *cp;
-    int i, cnt, len, width;
+    int ind, cnt, len, width;
 
     assert(list->type == LISTELEM);
     elem = list->u.list.first;
@@ -159,20 +159,26 @@ void print_list(FILE *chan, elem_t *list, int indent, char sep) {
             while (len--) putc (*cp++, chan);
             elem = elem->next;
         }
-        if (sep && (indent >= 0)) putc('\n', chan);
         break;
     case LISTELEM :
-        cnt = 9;
+        cnt = 0;
+        width = 0;
         while (elem) {
             assert(elem->type == type);  // check all the same type
-	    if (cnt) {
+	    if (cnt++) {
 		putc ('\n', chan);
-	        for (i = indent; i > 0; i--) putc(' ',chan);
+		putc (' ', chan);
+	        if (indent >= 0) {
+		    ind = indent;
+	            while (ind--) putc(' ',chan);
+                }
 	    }
-            width = fprintf(chan, "%4d", elem->state);
-            i = indent;
-	    if (indent >= 0) i += width;
-	    print_list(chan, elem, i, sep);  // recurse
+            else {
+		putc (' ', chan);
+            }
+            width = print_string(chan, NAMEP(state_machine+(elem->state)));
+            ind = indent + width + 1;;
+	    print_list(chan, elem, ind, sep);  // recurse
             elem = elem->next;
 	}
 	break;
