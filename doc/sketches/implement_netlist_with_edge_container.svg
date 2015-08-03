@@ -26,7 +26,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2"
-     inkscape:cx="309.71429"
+     inkscape:cx="230.21429"
      inkscape:cy="519"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -52,6 +52,13 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <rect
+       style="fill:#ffffff;fill-rule:evenodd;stroke:none;stroke-width:0.90600002;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3381"
+       width="544.09375"
+       height="314.09375"
+       x="189.05299"
+       y="405.31534" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -186,7 +193,7 @@
          sodipodi:role="line"
          id="tspan3406"
          x="404.5"
-         y="618.86218">// Use nodelist to specify all legs</tspan><tspan
+         y="618.86218">// Use nodelist and pattern to specify all legs</tspan><tspan
          sodipodi:role="line"
          x="404.5"
          y="636.04968"
@@ -203,44 +210,5 @@
          x="404.5"
          y="687.61218"
          id="tspan3412">}</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="405.5"
-       y="741.36218"
-       id="text3414"
-       sodipodi:linespacing="125%"><tspan
-         sodipodi:role="line"
-         id="tspan3416"
-         x="405.5"
-         y="741.36218">// Use edgepattern to implement</tspan><tspan
-         sodipodi:role="line"
-         x="405.5"
-         y="758.54968"
-         id="tspan3373">// all netlists in the container</tspan><tspan
-         sodipodi:role="line"
-         x="405.5"
-         y="775.73718"
-         id="tspan3375">&lt;(*) (*) (*)*&gt;  {</tspan><tspan
-         sodipodi:role="line"
-         x="405.5"
-         y="792.92468"
-         id="tspan3420">  hub [shape=point]</tspan><tspan
-         sodipodi:role="line"
-         x="405.5"
-         y="810.11218"
-         id="tspan3422">  &lt;(:*) hub&gt;</tspan><tspan
-         sodipodi:role="line"
-         x="405.5"
-         y="827.29968"
-         id="tspan3424">}</tspan><tspan
-         sodipodi:role="line"
-         x="405.5"
-         y="844.48718"
-         id="tspan3426">&lt;a b c&gt;</tspan><tspan
-         sodipodi:role="line"
-         x="405.5"
-         y="861.67468"
-         id="tspan3418" /></text>
   </g>
 </svg>
