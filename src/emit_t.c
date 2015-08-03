@@ -6,18 +6,23 @@
 #include "emit.h"
 
 static void api_start_state_machine(context_t *C) {
-    putc(char_prop(0,'_'), OUT);
+    fprintf(OUT, "// |-- on entry, '|' alt, '.' one, '?' zero or one, '*' zero or more, '+' one or more\n");
+    fprintf(OUT, "// |-- on exit, '0' success, '1' fail\n");
+    fprintf(OUT, "//     |-- state number\n");
+    fprintf(OUT, "//         |-- nesting\n");
+    fprintf(OUT, "//             |-- iteration\n");
+    fprintf(OUT, "//                 |-- state name\n");
+    fprintf(OUT, "//                              |-- string (if present)\n");
 }
 
 static void api_start_state(context_t *C, char class, unsigned char prop, int nest, int repc) {
-    putc('\n', OUT);
-    putc(char_prop(prop,'_'), OUT);
-    fprintf(OUT,"%4d%4d%4d ", class, nest, repc);
+    fprintf(OUT, "\n   ");
+    putc(char_prop(prop,'.'), OUT);
+    fprintf(OUT,"%4d%4d%4d   ", class, nest, repc);
     print_string(OUT, NAMEP(class+state_machine));
 }
 
 static void api_string(context_t *C, elem_t *branch) {
-    putc('\t', OUT);
     putc('\t', OUT);
     print_list(OUT, branch, -1, 0);
 }
@@ -29,12 +34,12 @@ static void api_tok(context_t *C, char class, unsigned char len, unsigned char *
 }
 
 static void api_end_state(context_t *C, char class, int rc, int nest, int repc) {
-    fprintf(OUT,"\n%d%4d%4d%4d ", rc, class, nest, repc);
+    fprintf(OUT,"\n   %d%4d%4d%4d   ", rc, class, nest, repc);
     print_string(OUT, NAMEP(class+state_machine));
 }
 
 static void api_end_state_machine(context_t *C) {
-    putc('\n', OUT);
+    fprintf(OUT, "\n   ");
 }
 
 static void api_error(context_t *C, char *message) {
