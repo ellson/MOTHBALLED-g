@@ -13,17 +13,19 @@ struct elem_s {
 	    elem_t *first; // for prepend and fforward walk
             elem_t *last;  // fpr append
         } list;
-	struct {
+        struct {
 	    unsigned char *frag;
     	    void *allocated;  // FIXME - for buffer nabagement
         } frag;
     } u;
     elemtype_t type;
-    int state;
+    char state;
     int len; // length of frag, or length of all frags in a list
 };
 
-elem_t* new_frag(int state, unsigned char *frag, int len, void *allocated);
+#define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
+
+elem_t* new_frag(char state, unsigned char *frag, int len, void *allocated);
 elem_t *list2elem(elem_t *list, int len);
 void prepend_list(elem_t *list, elem_t *elem);
 void append_list(elem_t *list, elem_t *elem);

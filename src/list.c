@@ -6,7 +6,12 @@
 #include "list.h"
 #include "grammar.h"
 
+#define LISTALLOCNUM 100
+
 static elem_t *Freelist;
+
+// FIXME - need a way to read these
+static long int stat_listmemory, stat_elemcount;
 
 static elem_t* new_elem_sub(elemtype_t type) {
     elem_t *elem, *next;
@@ -17,13 +22,15 @@ static elem_t* new_elem_sub(elemtype_t type) {
     }
     else {                // else no elems in freelist
 			  // ... so add LISTALLOCNUM elems to free list
-#define LISTALLOCNUM 100
-//FIXME - keep stats of elems allocated & memory used
-        Freelist = calloc(LISTALLOCNUM, sizeof(elem_t));
-        next = &Freelist[0];
-        for (i=0; i<LISTALLOCNUM;) {
-	    elem = next;
-            next = &Freelist[++i];
+        
+        Freelist = malloc(LISTALLOCNUM * size_elem_t);
+// FIXME - add proper run-time error handling
+        assert(Freelist);
+        stat_listmemory += LISTALLOCNUM * size_elem_t;
+        next = Freelist;
+        i = LISTALLOCNUM;
+        while (i--) {
+	    elem = next++;
 	    elem->next = next;
         }
 	elem->next = NULL; // terminate last elem
@@ -32,10 +39,11 @@ static elem_t* new_elem_sub(elemtype_t type) {
     Freelist = elem->next;  // update freelist to point to next available
     elem->type = type;
     elem->next = NULL;
+    stat_elemcount++;
     return elem;
 }
 
-elem_t* new_frag(int state, unsigned char *frag, int len, void *allocated) {
+elem_t* new_frag(char state, unsigned char *frag, int len, void *allocated) {
     elem_t* elem;
     
     elem = new_elem_sub(FRAGELEM);
@@ -115,6 +123,7 @@ void free_list(elem_t *list) {
         // insert elem at beginning of freelist
         elem->next = Freelist;
         Freelist = elem;
+        stat_elemcount--;
 
 	elem = next;
     }
