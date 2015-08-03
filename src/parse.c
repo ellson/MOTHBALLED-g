@@ -107,8 +107,7 @@ static int parse_r(context_t *C, elem_t *root,
 	}
         insp = state_machine + insi;
 	if (slen > 0) {
-	    elem = list2elem(&branch,slen);
-	    emit_string(C,elem);
+	    emit_string(C,&branch);
 	    rc = 0;
         }
 	else {
@@ -212,12 +211,14 @@ done:
     return rc;
 }
 
+static elem_t Tree;
+
 int parse(context_t *C, unsigned char *input) {
     int rc;
 
     in = input;
     emit_start_state_machine(C);
-    rc = parse_r(C, &(C->Tree), state_machine,SREP,0,0);
+    rc = parse_r(C, &Tree, state_machine,SREP,0,0);
     emit_end_state_machine(C);
     return rc;
 }

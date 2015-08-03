@@ -125,11 +125,11 @@ void free_list(elem_t *list) {
     list->len = 0;
 }
         
-void print_list(FILE *chan, elem_t *list, int nest, char sep) {
+void print_list(FILE *chan, elem_t *list, int indent, char sep) {
     elem_t *elem;
     elemtype_t type;
     unsigned char *cp;
-    int len;
+    int i, cnt, len, width;
 
     assert(list->type == LISTELEM);
     elem = list->u.list.first;
@@ -146,12 +146,20 @@ void print_list(FILE *chan, elem_t *list, int nest, char sep) {
             while (len--) putc (*cp++, chan);
             elem = elem->next;
         }
+        if (sep && (indent >= 0)) putc('\n', chan);
         break;
     case LISTELEM :
+        cnt = 9;
         while (elem) {
             assert(elem->type == type);  // check all the same type
-            fprintf(chan, "%4d", elem->state);
-	    print_list(chan, elem, nest++, sep);  // recurse
+	    if (cnt) {
+		putc ('\n', chan);
+	        for (i = indent; i > 0; i--) putc(' ',chan);
+	    }
+            width = fprintf(chan, "%4d", elem->state);
+            i = indent;
+	    if (indent >= 0) i += width;
+	    print_list(chan, elem, i, sep);  // recurse
             elem = elem->next;
 	}
 	break;
