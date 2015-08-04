@@ -4,6 +4,7 @@
 
 #include "grammar.h"
 #include "list.h"
+#include "inbuf.h"
 #include "emit.h"
 #include "parse.h"
 
@@ -75,7 +76,7 @@ static int parse_r(context_t *C, elem_t *root,
     if (insi == WS) {  // eat all leading whitespace
         while ( (insi = char2state[*in++]) == WS) {}
     }
-    if (insi == NLL) { //EOF
+    if (insi == NLL) { // end_of_buffer, or end_of_file
 	rc = 1;
 	goto done;
     }
@@ -213,12 +214,25 @@ done:
 
 static elem_t Tree;
 
-int parse(context_t *C, unsigned char *input) {
-    int rc;
+int parse(context_t *C, FILE *file) {
+    inbuf_t *inbuf;
+    int rc, sz;
 
-    in = input;
-    emit_start_state_machine(C);
-    rc = parse_r(C, &Tree, state_machine,SREP,0,0);
-    emit_end_state_machine(C);
+    emit_start_file(C);
+
+    rc = 0;
+    while (1) {
+        inbuf = new_inbuf();
+        assert(inbuf);
+        in = inbuf->buf;
+
+	sz = fread(in, 1, INBUFSIZE, file);
+
+        rc = parse_r(C, &Tree, state_machine,SREP,0,0);
+
+        if (!rc || sz != INBUFSIZE) break; 
+    }
+
+    emit_end_file(C);
     return rc;
 }

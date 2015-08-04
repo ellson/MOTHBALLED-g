@@ -5,7 +5,7 @@
 #include "list.h"
 #include "emit.h"
 
-static void api_start_state_machine(context_t *C) {
+static void api_start_file(context_t *C) {
     fprintf(OUT, "// |-- on entry, '|' alt, '.' one, '?' zero or one, '*' zero or more, '+' one or more\n");
     fprintf(OUT, "// |-- on exit, '0' success, '1' fail\n");
     fprintf(OUT, "//     |-- state number\n");
@@ -38,7 +38,7 @@ static void api_end_state(context_t *C, char class, int rc, int nest, int repc) 
     print_string(OUT, NAMEP(class+state_machine));
 }
 
-static void api_end_state_machine(context_t *C) {
+static void api_end_file(context_t *C) {
     fprintf(OUT, "\n   ");
 }
 
@@ -48,7 +48,7 @@ static void api_error(context_t *C, char *message) {
 }
 
 static emit_t api = {
-    /* api_start_state_machine */ api_start_state_machine,
+    /* api_start_file */          api_start_file,
     /* api_sep */                 NULL,
     /* api_start_state */         api_start_state,
     /* api_tree */                NULL,
@@ -57,7 +57,7 @@ static emit_t api = {
     /* api_tok */                 api_tok,
     /* api_end_state */           api_end_state,
     /* api_term */                NULL,
-    /* api_end_state_machine */   api_end_state_machine,
+    /* api_end_file */            api_end_file,
     /* api_error */               api_error
 };
 
@@ -70,7 +70,7 @@ static void api1_term(context_t *C) {
 }
 
 static emit_t api1 = {
-    /* api_start_state_machine */ NULL,
+    /* api_start_file */          NULL,
     /* api_sep */                 NULL,
     /* api_start_state */         NULL,
     /* api_tree */                api1_tree,
@@ -79,7 +79,7 @@ static emit_t api1 = {
     /* api_tok */                 NULL,
     /* api_end_state */           NULL,
     /* api_term */                api1_term,
-    /* api_end_state_machine */   NULL,
+    /* api_end_file */            NULL,
     /* api_error */               api_error
 };
 

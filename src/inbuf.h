@@ -4,8 +4,8 @@ typedef struct inbuf_s inbuf_t;
 
 struct inbuf_s {
     inbuf_t *next;
-    char buf[INBUFSIZE];
-    char end_of_buf;
+    unsigned char buf[INBUFSIZE];
+    unsigned char end_of_buf;
 };
 
 inbuf_t* new_inbuf(void);

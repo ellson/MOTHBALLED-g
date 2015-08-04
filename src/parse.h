@@ -1,1 +1,1 @@
-int parse(context_t *C, unsigned char *inp);
+int parse(context_t *C, FILE *inf);

@@ -9,13 +9,11 @@
 # include "dumpg.h"
 
 int main (int argc, char *argv[]) {
-    int i, sz, space, opt, optnum, needstdin;
+    int i, opt, optnum, needstdin, rc;
     FILE *f;
-    unsigned char *buf, *nextp;
-    context_t context;
-#define BUFSZ 100000
+    static context_t context;
 
-    emit = emit_g_api;
+    emit = emit_g_api;  // default emitter
 
     while ((opt = getopt(argc, argv, "d::g::t::")) != -1) {
 	if (optarg) optnum = atoi(optarg);
@@ -67,25 +65,19 @@ int main (int argc, char *argv[]) {
         }
     }
 
-// FIXME - do proper buffer management
-    buf = malloc(BUFSZ);
-
-    nextp = buf;
-    space = BUFSZ;
-    needstdin = 1;
+    needstdin = 1;        // with no args, read stdin
     for (i=optind; i<argc; i++) {
         if (strcmp(argv[i], "-") == 0) {
-            needstdin = 1;
+            needstdin = 1;    // with explicit '-' as last file arg, read stdin
 	    break;
         }
         else {
-            needstdin = 0;
+            needstdin = 0;   // indicate have args, so no default to reading stdin unless '-'
             f = fopen(argv[i],"r");
 	    if (f) {
-	        sz = fread(nextp, 1, space, f);
-                space -= sz;
-                nextp += sz;
+                rc = parse(&context, f);
                 fclose(f);
+                if (rc) exit(rc);
 	    }
 	    else {
 		fprintf(stderr, "file \"%s\" is not readable\n", argv[i]);
@@ -94,10 +86,9 @@ int main (int argc, char *argv[]) {
         }
     }
     if (needstdin) {
-        fread(nextp, 1, space, stdin);
+        rc = parse(&context, stdin);
+        if (rc) exit(rc);
     }
-
-    parse(&context, buf);
 
     return 0;
 }

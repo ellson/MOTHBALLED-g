@@ -9,7 +9,7 @@ char *get_name(char *p);
 char char_prop(unsigned char prop, char noprop);
 
 typedef struct {
-    void (*start_state_machine) (context_t *C);
+    void (*start_file) (context_t *C);
     void (*sep) (context_t *C);
     void (*start_state) (context_t *C, char class, unsigned char prop, int nest, int repc);
     void (*tree) (context_t *C, elem_t *root);
@@ -18,13 +18,13 @@ typedef struct {
     void (*tok) (context_t *C, char class, unsigned char len, unsigned char *frag);
     void (*end_state) (context_t *C, char class, int rc, int nest, int repc);
     void (*term) (context_t *C);
-    void (*end_state_machine) (context_t *C);
+    void (*end_file) (context_t *C);
     void (*error) (context_t *C, char *message);
 } emit_t;
 
 
-#define emit_start_state_machine(C) \
-    if (emit->start_state_machine) {emit->start_state_machine(C);}
+#define emit_start_file(C) \
+    if (emit->start_file) {emit->start_file(C);}
 #define emit_sep(C) \
     if (emit->sep) {emit->sep(C);}
 #define emit_start_state(C, class, prop, nest, repc) \
@@ -41,8 +41,8 @@ typedef struct {
     if (emit->end_state) {emit->end_state(C, class, rc, nest, repc);}
 #define emit_term(C) \
     if (emit->term) {emit->term(C);}
-#define emit_end_state_machine(C) \
-    if (emit->end_state_machine) {emit->end_state_machine(C);}
+#define emit_end_file(C) \
+    if (emit->end_file) {emit->end_file(C);}
 #define emit_error(C, message) \
     if (emit->error) {emit->error(C, message);}
 
