@@ -23,6 +23,70 @@ static int more_rep(context_t *C, unsigned char *in, unsigned char prop, char bi
     return 1;
 }
 
+#if 0
+static int get_frag (char si) {
+    static elem_t leaves;
+
+    insi = char2state[*in++];
+    if (insi == WS) {  // eat all leading whitespace
+	insep = WS;
+        while ( (insi = char2state[*in++]) == WS) {}
+    }
+    if (insi == NLL) { // end_of_buffer, or end_of_file
+        in = more_in(C);
+        if (!in) {
+	    insep = NLL;
+	    return 1;
+        }
+        insi = char2state[*in++];
+        if (insi == WS) {  // eat all remaining leading whitespace
+	    insep = WS;
+            while ( (insi = char2state[*in++]) == WS) {}
+        }
+    }
+    frag = in-1;
+    len = 1;
+    ftyp = insi;
+    if (si == STRING) {
+	while (1) {
+	    while (1) {
+	        switch (insi) {
+	        case ABC: while ( (insi = char2state[*in++]) == ABC) {len++};
+			  continue;
+	        case UTF: while ( (insi = char2state[*in++]) == UTF) {len++};
+			  continue;
+	        case AST: while ( (insi = char2state[*in++]) == AST) { /* ignore extra*/ };
+			  // FIXME - flag a pattern;
+			  continue;
+	        }
+	        break;
+	    }
+            emit_frag(C,len,frag);
+            elem = new_frag(ftyp,frag,len,NULL);
+            append_list(&leaves, elem);
+            slen += len;
+        }
+	if (slen > 0) {
+	    emit_string(C,&leaves);
+	    rc = 0;
+        }
+	else {
+	    rc = 1;
+	}
+    }
+    else if (si == insi) {
+        emit_tok(C,si,1,frag);
+	insep = insi;
+        insi = char2state[*in++];
+
+        insp = state_machine + insi;
+        rc = 0;
+        goto done;
+    }
+}
+#endif
+
+
 static int parse_r(context_t *C, elem_t *root,
 		char *sp, unsigned char prop, int nest, int repc) {
     unsigned char nprop, *frag;
@@ -43,6 +107,7 @@ static int parse_r(context_t *C, elem_t *root,
 
     nest++;
     assert (nest >= 0); // catch overflows
+
     if (insp == NULL) {  // state_machine just started
         insep = WS;      // pretend preceeded by WS
 			// to satisfy toplevel SREP or REP
@@ -57,6 +122,7 @@ static int parse_r(context_t *C, elem_t *root,
 	    }
         }
     }
+while (1) {
     switch (si) {
     case ACT:              // starting a new ACT
 	if (insi == NLL || insep == NLL) {
@@ -77,9 +143,16 @@ static int parse_r(context_t *C, elem_t *root,
         while ( (insi = char2state[*in++]) == WS) {}
     }
     if (insi == NLL) { // end_of_buffer, or end_of_file
-	rc = 1;
-	goto done;
+	in = more_in(C);
+	if (!in) {
+	    rc = 1;
+	    goto done;
+	}
+	insi = char2state[*in++];
+        continue;
     }
+    break;
+}
     insp = state_machine + insi;
 
     // deal with terminals
@@ -87,6 +160,14 @@ static int parse_r(context_t *C, elem_t *root,
         slen = 0;
         insep = insi;
 	while(1) {
+	    if (insi == NLL) {
+		in = more_in(C);
+		if (!in) {
+		    break;
+		}
+		insi = char2state[*in++];
+		continue;
+	    }
             frag = in-1;
             len = 1;
 	    ftyp = insi;
@@ -97,6 +178,7 @@ static int parse_r(context_t *C, elem_t *root,
             }
             else if (insi == AST) {
                 insi = char2state[*in++];
+                // FIXME - flag someone that string is a pattern
             }
 	    else {
 	        break;
