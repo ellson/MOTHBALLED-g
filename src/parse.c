@@ -34,7 +34,6 @@ static int parse_r(context_t *C, elem_t *root,
     si = sp - state_machine;
     emit_start_state(C, si, prop, nest, repc);
 
-    elem = NULL;
     branch.next = NULL;
     branch.u.list.first = NULL;
     branch.u.list.last = NULL;
@@ -44,7 +43,7 @@ static int parse_r(context_t *C, elem_t *root,
 
     nest++;
     assert (nest >= 0); // catch overflows
-    if (insp == NULL) {  // state_nschine just started
+    if (insp == NULL) {  // state_machine just started
         insep = WS;      // pretend preceeded by WS
 			// to satisfy toplevel SREP or REP
         insi = char2state[*in++]; // get first input state
@@ -84,7 +83,7 @@ static int parse_r(context_t *C, elem_t *root,
     insp = state_machine + insi;
 
     // deal with terminals
-    if (si == STRING) { // strinds 
+    if (si == STRING) { // strings are lists of fragments
         slen = 0;
         insep = insi;
 	while(1) {
@@ -113,7 +112,6 @@ static int parse_r(context_t *C, elem_t *root,
 	    rc = 0;
         }
 	else {
-	    elem = NULL;
 	    rc = 1;
 	}
         goto done;
