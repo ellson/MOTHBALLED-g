@@ -1,11 +1,13 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
 #include "inbuf.h"
 
+#define INBUFALLOCNUM 128
+
 static inbuf_t *free_inbuf_list;
 
-#define INBUFALLOCNUM 128
 
 // FIXME - need a way to read these
 static long int stat_inbufmemory, stat_inbufcount;
@@ -38,4 +40,19 @@ inbuf_t* new_inbuf(void) {
 
     stat_inbufcount++;   // stats
     return inbuf;
+}
+
+unsigned char * more_in(context_t *C) {
+    unsigned char *in;
+
+    if (C->size == -1) C->size = INBUFSIZE;   // new file - pretend there was a previous inbuf
+    if (C->size != INBUFSIZE) return NULL;       // if previous inbuf was short, then EOF
+
+    C->inbuf = new_inbuf();
+    assert(C->inbuf);
+    in = C->inbuf->buf;
+
+    C->size = fread(in, 1, INBUFSIZE, C->file);
+
+    return in;
 }

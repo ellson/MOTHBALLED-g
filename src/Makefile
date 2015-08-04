@@ -14,11 +14,11 @@ inbuf.o: inbuf.c inbuf.h
 
 emit.o: emit.c emit.h list.h grammar.h
 
-emit_t.o: emit_t.c emit.h list.h grammar.h
+emit_t.o: emit_t.c emit.h inbuf.h list.h grammar.h
 
-emit_g.o: emit_g.c emit.h list.h grammar.h
+emit_g.o: emit_g.c emit.h inbuf.h list.h grammar.h
 
-g.o: g.c parse.h dumpg.h emit.h
+g.o: g.c parse.h dumpg.h emit.h inbuf.h
 
 grammar.png: g g2gv.sh
 	./g -g | ./g2gv.sh | dot -Tpng -o grammar.png

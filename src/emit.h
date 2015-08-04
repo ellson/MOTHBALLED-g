@@ -1,7 +1,3 @@
-typedef struct {
-    elem_t Tree;
-} context_t;
-
 #define OUT stdout
 #define ERR stderr
 

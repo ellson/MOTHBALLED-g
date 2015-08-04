@@ -4,15 +4,19 @@
 #include <unistd.h>
 
 # include "list.h"
+# include "inbuf.h"
 # include "emit.h"
 # include "parse.h"
 # include "dumpg.h"
 
+static context_t context;
+
 int main (int argc, char *argv[]) {
     int i, opt, optnum, needstdin, rc;
     FILE *f;
-    static context_t context;
+    context_t *C;
 
+    C = &context;
     emit = emit_g_api;  // default emitter
 
     while ((opt = getopt(argc, argv, "d::g::t::")) != -1) {
@@ -73,9 +77,11 @@ int main (int argc, char *argv[]) {
         }
         else {
             needstdin = 0;   // indicate have args, so no default to reading stdin unless '-'
+            C->filename = argv[i];
             f = fopen(argv[i],"r");
 	    if (f) {
-                rc = parse(&context, f);
+		C->file = f;
+                rc = parse(&context);
                 fclose(f);
                 if (rc) exit(rc);
 	    }
@@ -86,9 +92,11 @@ int main (int argc, char *argv[]) {
         }
     }
     if (needstdin) {
-        rc = parse(&context, stdin);
+        C->filename = "-";
+        C->file = stdin;
+        rc = parse(&context);
         if (rc) exit(rc);
     }
 
-    return 0;
+    exit(0);
 }

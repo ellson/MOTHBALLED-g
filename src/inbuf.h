@@ -8,4 +8,12 @@ struct inbuf_s {
     unsigned char end_of_buf;
 };
 
-inbuf_t* new_inbuf(void);
+typedef struct {
+    FILE *file;
+    char *filename;
+    inbuf_t *inbuf;
+    int size;
+} context_t;
+
+inbuf_t * new_inbuf(void);
+unsigned char * more_in(context_t *C);

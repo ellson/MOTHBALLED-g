@@ -10,8 +10,9 @@
 
 static unsigned char unterm, *in;
 static char *insp, subj, insep;
+static elem_t Tree;
 
-static int more(context_t *C, unsigned char *in, unsigned char prop, char bi) {
+static int more_rep(context_t *C, unsigned char *in, unsigned char prop, char bi) {
     char ei;
 
     if (! (prop & (REP|SREP))) return 0;
@@ -141,7 +142,7 @@ static int parse_r(context_t *C, elem_t *root,
 	    repc = 0;
 	    if (nprop & OPT) { // optional
 	        if (( parse_r(C, &branch, np,nprop,nest,repc++)) == 0) {
-	            while (more(C, in, nprop, insep)) {
+	            while (more_rep(C, in, nprop, insep)) {
                         if (parse_r(C, &branch, np,nprop,nest,repc++) != 0) break;
 		    }
 	        }
@@ -150,7 +151,7 @@ static int parse_r(context_t *C, elem_t *root,
 	    else { // else not OPTional
 	        if (( rc = parse_r(C, &branch, np,nprop,nest,repc++)) != 0) break; 
                 // rc is the rc of the first term, which at this point is success
-	        while (more(C, in, nprop, insep)) {
+	        while (more_rep(C, in, nprop, insep)) {
                     if (parse_r(C, &branch, np,nprop,nest,repc++) != 0) break;
 		}
 	    }
@@ -212,26 +213,16 @@ done:
     return rc;
 }
 
-static elem_t Tree;
-
-int parse(context_t *C, FILE *file) {
-    inbuf_t *inbuf;
-    int rc, sz;
+int parse(context_t *C) {
+    int rc;
 
     emit_start_file(C);
+    C->size = -1;
 
-    rc = 0;
-    while (1) {
-        inbuf = new_inbuf();
-        assert(inbuf);
-        in = inbuf->buf;
+    in = more_in(C);
+    assert(in);
 
-	sz = fread(in, 1, INBUFSIZE, file);
-
-        rc = parse_r(C, &Tree, state_machine,SREP,0,0);
-
-        if (!rc || sz != INBUFSIZE) break; 
-    }
+    rc = parse_r(C, &Tree, state_machine,SREP,0,0);
 
     emit_end_file(C);
     return rc;

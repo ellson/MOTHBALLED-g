@@ -3,6 +3,7 @@
 
 #include "grammar.h"
 #include "list.h"
+#include "inbuf.h"
 #include "emit.h"
 
 static void api_start_file(context_t *C) {
