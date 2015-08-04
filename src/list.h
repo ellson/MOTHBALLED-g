@@ -1,7 +1,6 @@
 typedef struct elem_s elem_t;
 
-// LST must = 0 for calloc of list headers
-
+// LISTELEM must = 0 for static or calloc allocation of list headers
 // FIXME - Should use enum, but don't need an int to store a boolean
 #define LISTELEM 0
 #define FRAGELEM 1

@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 
 #include "list.h"
 #include "grammar.h"
 
-#define LISTALLOCNUM 100
+#define LISTALLOCNUM 128
 
-static elem_t *Freelist;
+static elem_t *free_elem_list;
 
 // FIXME - need a way to read these
 static long int stat_listmemory, stat_elemcount;
@@ -17,29 +16,29 @@ static elem_t* new_elem_sub(char type) {
     elem_t *elem, *next;
     int i;
 
-    if (Freelist) {       // if there is one or more elems in freelist
-        elem = Freelist;  // use first
-    }
-    else {                // else no elems in freelist
-			  // ... so add LISTALLOCNUM elems to free list
+    if (! free_elem_list) {       // if no elems in free_elem_list
         
-        Freelist = malloc(LISTALLOCNUM * size_elem_t);
+        free_elem_list = malloc(LISTALLOCNUM * size_elem_t);
 // FIXME - add proper run-time error handling
-        assert(Freelist);
+        assert(free_elem_list);
         stat_listmemory += LISTALLOCNUM * size_elem_t;
-        next = Freelist;
+
+        next = free_elem_list;  // link the new elems into free_elem_list
         i = LISTALLOCNUM;
         while (i--) {
 	    elem = next++;
 	    elem->next = next;
         }
 	elem->next = NULL; // terminate last elem
-        elem = Freelist;   // add chain of elems to freelist
+
     }
-    Freelist = elem->next;  // update freelist to point to next available
-    elem->type = type;
+    elem = free_elem_list;   // use first elem from free_elem_list
+    free_elem_list = elem->next;  // update list to point to next available
+
+    elem->type = type;  // init the new elem
     elem->next = NULL;
-    stat_elemcount++;
+
+    stat_elemcount++;   // stats
     return elem;
 }
 
@@ -47,7 +46,8 @@ elem_t* new_frag(char state, unsigned char *frag, int len, void *allocated) {
     elem_t* elem;
     
     elem = new_elem_sub(FRAGELEM);
-    elem->u.frag.frag = frag;
+
+    elem->u.frag.frag = frag;  // complete frag elem initialization
     elem->len = len;
     elem->state = state;
     elem->u.frag.allocated = allocated;
@@ -63,15 +63,18 @@ elem_t *list2elem(elem_t *list, int len) {
     assert(list->type == LISTELEM);
 
     elem = new_elem_sub(LISTELEM);
-    elem->u.list.first = list->u.list.first;
+
+    elem->u.list.first = list->u.list.first;  // complete as elem containing list
     elem->u.list.last = list->u.list.last;
     elem->state = list->state;  // get state from first elem
     elem->len = len;            // caller provides len 
 				// -  not used internally by list code
-    list->u.list.first = NULL;
+
+    list->u.list.first = NULL; // reset old header
     list->u.list.last = NULL;
     list->state = 0;
     list->len = 0;
+
     return elem;
 }
 
@@ -121,8 +124,8 @@ void free_list(elem_t *list) {
 	}
 
         // insert elem at beginning of freelist
-        elem->next = Freelist;
-        Freelist = elem;
+        elem->next = free_elem_list;
+        free_elem_list = elem;
         stat_elemcount--;
 
 	elem = next;
