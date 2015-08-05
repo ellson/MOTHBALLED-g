@@ -11,12 +11,17 @@
 static inbuf_t *free_inbuf_list;
 static elem_t *free_elem_list;
 
-// FIXME - need a way to read these
-static long int stat_inbufmemory, stat_inbufcount;
-static long int stat_listmemory, stat_elemcount;
+static long int stat_inbufmalloc, stat_inbufcount;
+static long int stat_elemmalloc, stat_elemcount;
 
+void print_stats(FILE *chan) {
+    fprintf(chan," inbufmalloc=%ld\n   inbufsize=%ld\n  inbufcount=%ld\n",
+	stat_inbufmalloc, sizeof(inbuf_t), stat_inbufcount);
+    fprintf(chan,"  elemmalloc=%ld\n    elemsize=%ld\n   elemcount=%ld\n",
+ 	stat_elemmalloc, size_elem_t, stat_elemcount);
+}
 
-inbuf_t* new_inbuf(void) {
+static inbuf_t* new_inbuf(void) {
     inbuf_t *inbuf, *next;
     int i;
 
@@ -25,7 +30,7 @@ inbuf_t* new_inbuf(void) {
         free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbuf_t));
 // FIXME - add proper run-time error handling
         assert(free_inbuf_list);
-        stat_inbufmemory += INBUFALLOCNUM * sizeof(inbuf_t);
+        stat_inbufmalloc += INBUFALLOCNUM * sizeof(inbuf_t);
 
         next = free_inbuf_list;    // link the new inbufs into free_inbuf_list
         i = INBUFALLOCNUM;
@@ -80,7 +85,7 @@ static elem_t* new_elem_sub(char type) {
         free_elem_list = malloc(LISTALLOCNUM * size_elem_t);
 // FIXME - add proper run-time error handling
         assert(free_elem_list);
-        stat_listmemory += LISTALLOCNUM * size_elem_t;
+        stat_elemmalloc += LISTALLOCNUM * size_elem_t;
 
         next = free_elem_list;  // link the new elems into free_elem_list
         i = LISTALLOCNUM;

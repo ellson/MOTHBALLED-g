@@ -104,7 +104,8 @@ int main (int argc, char *argv[]) {
     }
 
     if (needstats) {
-        fprintf(stdout, "\nStats:  (tbd)\n");
+        fprintf(stdout, "\n\nStats:\n");
+        print_stats(stdout);
     }
 
     exit(rc);

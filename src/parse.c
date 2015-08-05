@@ -244,8 +244,9 @@ done:
 
     if (rc == 0) {
         elem = list2elem(&branch,0);
-        if (si == ACTIVITY) {
+        if (si == ACTIVITY && nest == 0) {
 	    emit_tree(C, elem);
+	    free_list(elem);
         }
         append_list(root, elem);
     }

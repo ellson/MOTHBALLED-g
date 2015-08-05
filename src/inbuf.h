@@ -44,7 +44,6 @@ struct elem_s {
 
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 
-inbuf_t * new_inbuf(void);
 unsigned char * more_in(context_t *C);
 
 elem_t* new_frag(char state, unsigned char *frag, int len, inbuf_t *inbuf);
@@ -56,3 +55,4 @@ void free_list(elem_t *list);
 int print_string(FILE *chan,unsigned char *len_frag);
 void print_frag(FILE* chan, unsigned char len, unsigned char *frag);
 void print_list(FILE *chan, elem_t *list, int nest, char sep);
+void print_stats(FILE *chan);
