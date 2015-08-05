@@ -67,21 +67,21 @@ static int parse_r(context_t *C, elem_t *root,
     }
 
     ei = insi;                 // the char class that ended the last token
-    if (insi == WS) {          // eat all leading whitespace
-        while ( (insi = char2state[*in++]) == WS) {}
+    while (insi == WS) {          // eat all leading whitespace
+        insi = char2state[*in++];
     }
     while (insi == NLL) {      // end_of_buffer, or end_of_file, during whitespace
 	if ( !(in = more_in(C)) ) goto done;  // EOF
         insi = char2state[*in++];
-        if (insi == WS) {      // eat all remaining leading whitespace
-            while ( (insi = char2state[*in++]) == WS) {}
+        while (insi == WS) {      // eat all remaining leading whitespace
+            insi = char2state[*in++];
         }
     }
                                // deal with terminals
     if (si == STRING) {        // string terminals 
         bi = insi;             // the char class that begins this one
         slen = 0;
-	while (1) {
+	while (insi == ABC || insi == UTF || insi == AST) {
             frag = in-1;
             len = 1;
 	    while (1) {
@@ -94,9 +94,8 @@ static int parse_r(context_t *C, elem_t *root,
 	            continue;
                 }
 		if (insi == AST) {
-	 	    while ( (insi = char2state[*in++]) == AST) { /* ignore extra '*' */ }
-		    len++;
 // FIXME - flag a pattern;
+	 	    while ( (insi = char2state[*in++]) == AST) {len++;}
 		    continue;
 	        }
 	        break;
