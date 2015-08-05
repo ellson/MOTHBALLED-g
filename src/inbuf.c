@@ -15,10 +15,12 @@ static long int stat_inbufmalloc, stat_inbufmax, stat_inbufcount;
 static long int stat_elemmalloc, stat_elemmax, stat_elemcount;
 
 void print_stats(FILE *chan) {
+    fprintf(chan,"\nstats [\n");
     fprintf(chan," inbufmalloc=%ld\n   inbufsize=%ld\n    inbufmax=%ld\n  inbufcount=%ld\n",
 	stat_inbufmalloc, sizeof(inbuf_t), stat_inbufmax, stat_inbufcount);
     fprintf(chan,"  elemmalloc=%ld\n    elemsize=%ld\n     elemmax=%ld\n   elemcount=%ld\n",
  	stat_elemmalloc, size_elem_t, stat_elemmax, stat_elemcount);
+    fprintf(chan,"]\n");
 }
 
 static inbuf_t* new_inbuf(void) {
