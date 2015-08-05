@@ -9,17 +9,14 @@
 #include "parse.h"
 
 static unsigned char unterm, *in;
-static char *insp, subj, insep;
+static char *insp, subj, bi, ei;
 static elem_t Tree;
 
-static int more_rep(context_t *C, char insi, unsigned char *in, unsigned char prop, char bi) {
-    char ei;
-
+static int more_rep(context_t *C, unsigned char prop, char ei, char bi) {
     if (! (prop & (REP|SREP))) return 0;
-    ei = char2state[*(in-1)];
-    if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) return 0;
-    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE ) return 1;
-    if (prop & SREP) emit_sep(C);
+    if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) return 0; // no more
+    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE ) return 1; // more, but no sep needed
+    if (prop & SREP) emit_sep(C); // sep needed for SREP sequences
     return 1;
 }
 
@@ -46,7 +43,7 @@ static int parse_r(context_t *C, elem_t *root,
     assert (nest >= 0);        // catch overflows
 
     if (insp == NULL) {        // state_machine just started
-        insep = WS;            // pretend preceeded by WS
+        bi = WS;               // pretend preceeded by WS
 			       // to satisfy toplevel SREP or REP
 			       // (Note, first REP of a REP sequence *can* be preceeded by WS,
 			       //      just not the rest of the REPs. )
@@ -58,28 +55,31 @@ static int parse_r(context_t *C, elem_t *root,
     else {                     // else continuing state sequence
 	insi = insp - state_machine;
         if (prop & REP) {      // if the sequence is a non-space REPetition
-            if (insep == WS) { // whitespace not accepted between REP
-	        rc = 1;
+            if (bi == WS) {    // whitespace not accepted between REP
+	        rc = 1;        // so the REP is terminated
 	        goto done;
 	    }
         }
     }
+    if (!in) {                 // if we already hit EOF
+        rc = 1;                // then there is nothing to be done
+        goto done;
+    }
 
+    ei = insi;                 // the char class that ended the last token
     if (insi == WS) {          // eat all leading whitespace
-	insep = WS;
         while ( (insi = char2state[*in++]) == WS) {}
     }
-    while (insi == NLL) {      // end_of_buffer, or end_of_file, during whitspace
+    while (insi == NLL) {      // end_of_buffer, or end_of_file, during whitespace
 	if ( !(in = more_in(C)) ) goto done;  // EOF
         insi = char2state[*in++];
         if (insi == WS) {      // eat all remaining leading whitespace
-	    insep = WS;
             while ( (insi = char2state[*in++]) == WS) {}
         }
     }
-
                                // deal with terminals
     if (si == STRING) {        // string terminals 
+        bi = insi;             // the char class that begins this one
         slen = 0;
 	while (1) {
             frag = in-1;
@@ -105,7 +105,9 @@ static int parse_r(context_t *C, elem_t *root,
             append_list(&branch, elem);
             slen += len;
 
-            if (insi != NLL) break;
+            if (insi != NLL) {
+		break;
+            }
             // end_of_buffer during, or end_of_file terminating, string
 	    if ( ! (in = more_in(C)) ) break;   // EOF
 	    // else continue with next buffer
@@ -125,8 +127,9 @@ static int parse_r(context_t *C, elem_t *root,
         frag = in-1;
         emit_tok(C,si,1,frag);
 
-	insep = insi;
+	bi = insi;
         insi = char2state[*in++];
+	ei = insi;
 
         insp = state_machine + insi;
         rc = 0;
@@ -136,14 +139,10 @@ static int parse_r(context_t *C, elem_t *root,
     // else not terminal
     switch (si) {
     case ACT:                     // starting a new ACT
-	if (insi == NLL || insep == NLL) {
-	    rc = 1;
-	    goto done;
-        }
         if (unterm) {             // implicitly terminates preceeding ACT
  	    emit_term(C);
 	}
-	unterm = 1;               // indicate that this ACT is unterminated
+	unterm = 1;               // indicate that this new ACT is unterminated
 	break;
     case SUBJECT:
         savesubj = subj;          // push parent's subject
@@ -166,7 +165,7 @@ static int parse_r(context_t *C, elem_t *root,
 	    repc = 0;
 	    if (nprop & OPT) {    // optional
 	        if (( parse_r(C, &branch, np,nprop,nest,repc++)) == 0) {
-	            while (more_rep(C, insi, in, nprop, insep)) {
+	            while (more_rep(C, nprop, ei, bi)) {
                         if (parse_r(C, &branch, np,nprop,nest,repc++) != 0) break;
 		    }
 	        }
@@ -176,7 +175,7 @@ static int parse_r(context_t *C, elem_t *root,
 	        if (( rc = parse_r(C, &branch, np,nprop,nest,repc++)) != 0) break; 
                                   // rc is the rc of the first term,
                                   // which at this point is success
-	        while (more_rep(C, insi, in, nprop, insep)) {
+	        while (more_rep(C, nprop, ei, bi)) {
                     if (parse_r(C, &branch, np,nprop,nest,repc++) != 0) break;
 		}
 	    }
@@ -234,7 +233,7 @@ done:
         }
         append_list(root, elem);
     }
-    if (!in) rc = 1;
+    if (!in) rc = 1;   // mo more input, so we're done
 
     emit_end_state(C, si, rc, nest, repc);
     return rc;
@@ -244,7 +243,7 @@ int parse(context_t *C) {
     int rc;
 
     emit_start_file(C);
-    C->size = -1;
+    C->size = -1;      // tell more_in() that it is a new stream
 
     rc = parse_r(C, &Tree, state_machine,SREP,0,0);
 

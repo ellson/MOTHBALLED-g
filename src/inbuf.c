@@ -16,37 +16,37 @@ inbuf_t* new_inbuf(void) {
     inbuf_t *inbuf, *next;
     int i;
 
-    if (! free_inbuf_list) {    // if no inbufs in free_inbuf_list
+    if (! free_inbuf_list) {       // if no inbufs in free_inbuf_list
         
-        free_inbuf_list = malloc(INBUFALLOCNUM * INBUFSIZE);
+        free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbuf_t));
 // FIXME - add proper run-time error handling
         assert(free_inbuf_list);
-        stat_inbufmemory += INBUFALLOCNUM * INBUFSIZE;
+        stat_inbufmemory += INBUFALLOCNUM * sizeof(inbuf_t);
 
-        next = free_inbuf_list;  // link the new inbufs into free_inbuf_list
+        next = free_inbuf_list;    // link the new inbufs into free_inbuf_list
         i = INBUFALLOCNUM;
         while (i--) {
 	    inbuf = next++;
 	    inbuf->next = next;
         }
-	inbuf->next = NULL; // terminate last inbuf
+	inbuf->next = NULL;        // terminate last inbuf
 
     }
-    inbuf = free_inbuf_list;   // use first inbuf from free_inbuf_list
-    free_inbuf_list = inbuf->next;  // update list to point to next available
+    inbuf = free_inbuf_list;       // use first inbuf from free_inbuf_list
+    free_inbuf_list = inbuf->next; // update list to point to next available
 
     inbuf->next = NULL;
-    inbuf->end_of_buf = '\0';  // parse() sees this null like an EOF
+    inbuf->end_of_buf = '\0';      // parse() sees this null like an EOF
 
-    stat_inbufcount++;   // stats
+    stat_inbufcount++;             // stats
     return inbuf;
 }
 
 unsigned char * more_in(context_t *C) {
     unsigned char *in;
 
-    if (C->size == -1) C->size = INBUFSIZE;   // new file - pretend there was a previous inbuf
-    if (C->size != INBUFSIZE) return NULL;       // if previous inbuf was short, then EOF
+    if (C->size == -1) C->size = INBUFSIZE;   // new stream - pretend there was a previous inbuf
+    if (C->size != INBUFSIZE) return NULL;    // if previous inbuf was short, then EOF
 
     C->inbuf = new_inbuf();
     assert(C->inbuf);
