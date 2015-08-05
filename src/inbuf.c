@@ -11,14 +11,14 @@
 static inbuf_t *free_inbuf_list;
 static elem_t *free_elem_list;
 
-static long int stat_inbufmalloc, stat_inbufcount;
-static long int stat_elemmalloc, stat_elemcount;
+static long int stat_inbufmalloc, stat_inbufmax, stat_inbufcount;
+static long int stat_elemmalloc, stat_elemmax, stat_elemcount;
 
 void print_stats(FILE *chan) {
-    fprintf(chan," inbufmalloc=%ld\n   inbufsize=%ld\n  inbufcount=%ld\n",
-	stat_inbufmalloc, sizeof(inbuf_t), stat_inbufcount);
-    fprintf(chan,"  elemmalloc=%ld\n    elemsize=%ld\n   elemcount=%ld\n",
- 	stat_elemmalloc, size_elem_t, stat_elemcount);
+    fprintf(chan," inbufmalloc=%ld\n   inbufsize=%ld\n    inbufmax=%ld\n  inbufcount=%ld\n",
+	stat_inbufmalloc, sizeof(inbuf_t), stat_inbufmax, stat_inbufcount);
+    fprintf(chan,"  elemmalloc=%ld\n    elemsize=%ld\n     elemmax=%ld\n   elemcount=%ld\n",
+ 	stat_elemmalloc, size_elem_t, stat_elemmax, stat_elemcount);
 }
 
 static inbuf_t* new_inbuf(void) {
@@ -49,6 +49,7 @@ static inbuf_t* new_inbuf(void) {
     inbuf->end_of_buf = '\0';      // parse() sees this null like an EOF
 
     stat_inbufcount++;             // stats
+    if (stat_inbufcount > stat_inbufmax) stat_inbufmax = stat_inbufcount;
     return inbuf;
 }
 
@@ -103,6 +104,7 @@ static elem_t* new_elem_sub(char type) {
     elem->next = NULL;
 
     stat_elemcount++;   // stats
+    if (stat_elemcount > stat_elemmax) stat_elemmax = stat_elemcount;
     return elem;
 }
 
@@ -183,7 +185,7 @@ void free_list(elem_t *list) {
         switch (elem->type) {
         case FRAGELEM :
 	    assert(elem->u.frag.inbuf->refs > 0);
-	    if (--(elem->u.frag.inbuf->refs)) {
+	    if (--(elem->u.frag.inbuf->refs) == 0) {
 		free_inbuf(elem->u.frag.inbuf);
 	    }
 	    break;
