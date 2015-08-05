@@ -245,14 +245,21 @@ done:
 
     if (rc == 0) {
         elem = list2elem(&branch,0);
-        if (si == ACT) {
+        if (si == ACTIVITY) {
 	    emit_tree(C, elem);
         }
         append_list(root, elem);
     }
-    if (!in) rc = 1;   // mo more input, so we're done
 
     emit_end_state(C, si, rc, nest, repc);
+
+    if (!in) {
+	rc = 1;   // mo more input, so we're done
+        if (unterm) {
+ 	    emit_term(C);
+	}
+    }
+
     return rc;
 }
 
