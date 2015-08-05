@@ -24,14 +24,15 @@ static void api_start_state(context_t *C, char class, unsigned char prop, int ne
 }
 
 static void api_string(context_t *C, elem_t *branch) {
-    putc('\t', OUT);
+    fprintf(OUT,"\t\"");
     print_list(OUT, branch, -1, 0);
+    putc('"', OUT);
 }
 
 static void api_tok(context_t *C, char class, unsigned char len, unsigned char *frag) {
-    putc('\t', OUT);
-    putc('\t', OUT);
+    fprintf(OUT,"\t\t'");
     print_frag(OUT, len, frag);
+    putc('\'', OUT);
 }
 
 static void api_end_state(context_t *C, char class, int rc, int nest, int repc) {

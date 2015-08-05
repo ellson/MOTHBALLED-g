@@ -222,7 +222,7 @@ cat >>$ofh <<EOF
 
 extern unsigned char state_names[];
 extern unsigned char char2state[];
-extern char state_machine[];
+extern state_t state_machine[];
 extern unsigned char state_props[];
 
 EOF
@@ -346,7 +346,7 @@ cat >>$ofc <<EOF
 EOF
 
 ####
-( printf "char state_machine[] = {\n"        )  >${ofc}.states
+( printf "state_t state_machine[] = {\n"        )  >${ofc}.states
 ( printf "unsigned char state_props[] = {\n" )  >${ofc}.props
 for s in ${statelist[@]}; do
     indx=${POS[$s]}
@@ -384,7 +384,7 @@ cat ${ofc}.states ${ofc}.props >>$ofc
 rm -f ${ofc}.states ${ofc}.props
 
 cat >>$ofc  <<EOF
-unsigned char *NAMEP(char *sp) {
+unsigned char *NAMEP(state_t *sp) {
     while (*sp) sp++;
     return state_names + (*PROPP(sp) * 2);
 }
@@ -395,6 +395,6 @@ cat >>$ofh  <<EOF
 #define sizeof_state_machine $((++indx))
 #define PROPP(p) (state_props + (p - state_machine))
 
-extern unsigned char *NAMEP(char *p);
+extern unsigned char *NAMEP(state_t *p);
 
 EOF

@@ -9,21 +9,22 @@
 #include "parse.h"
 
 static unsigned char unterm, *in;
-static char *insp, subj, bi, ei;
+static state_t *insp, subj, bi, ei;
 static elem_t Tree;
 
 static int more_rep(context_t *C, unsigned char prop, char ei, char bi) {
     if (! (prop & (REP|SREP))) return 0;
+fprintf(OUT,"\n ei=%d bi=%d\n", ei, bi);
     if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) return 0; // no more
     if (bi == RPN || bi == RAN || bi == RBR || bi == RBE ) return 1; // more, but no sep needed
     if (prop & SREP) emit_sep(C); // sep needed for SREP sequences
     return 1;
 }
 
-static int parse_r(context_t *C, elem_t *root,
-		char *sp, unsigned char prop, int nest, int repc) {
+static int parse_r(context_t *C, elem_t *root, state_t *sp,
+		       unsigned char prop, int nest, int repc) {
     unsigned char nprop, *frag;
-    char *np, insi, si, ni, savesubj;
+    state_t *np, insi, si, ni, savesubj;
     int rc, len, slen;
     elem_t *elem;
     elem_t branch = {
@@ -50,9 +51,13 @@ static int parse_r(context_t *C, elem_t *root,
 	if (!in) {
 	    if ( !(in = more_in(C)) ) goto done;  // EOF
         }
-        insi = char2state[*in++]; // get first input state
+        insi = char2state[*in]; // get first input state
     }
     else {                     // else continuing state sequence
+        if (!in) {             // if we already hit EOF
+            rc = 1;            // then there is nothing to be done
+            goto done;
+        }
 	insi = insp - state_machine;
         if (prop & REP) {      // if the sequence is a non-space REPetition
             if (bi == WS) {    // whitespace not accepted between REP
@@ -61,41 +66,49 @@ static int parse_r(context_t *C, elem_t *root,
 	    }
         }
     }
-    if (!in) {                 // if we already hit EOF
-        rc = 1;                // then there is nothing to be done
-        goto done;
-    }
 
     ei = insi;                 // the char class that ended the last token
-    while (insi == WS) {          // eat all leading whitespace
-        insi = char2state[*in++];
+    while (insi == WS) {       // eat all leading whitespace
+        insi = char2state[*++in];
     }
     while (insi == NLL) {      // end_of_buffer, or end_of_file, during whitespace
 	if ( !(in = more_in(C)) ) goto done;  // EOF
-        insi = char2state[*in++];
+        insi = char2state[*in];
         while (insi == WS) {      // eat all remaining leading whitespace
-            insi = char2state[*in++];
+            insi = char2state[*++in];
         }
     }
                                // deal with terminals
     if (si == STRING) {        // string terminals 
-        bi = insi;             // the char class that begins this one
         slen = 0;
-	while (insi == ABC || insi == UTF || insi == AST) {
-            frag = in-1;
+	while (1) {
+	    if (insi != ABC && insi != UTF) {
+	        if (insi == AST) {
+                    // FIXME - flag a pattern;
+                }
+	        else {
+		    break;
+                }
+	    }
+            bi = insi;          // the char class that begins this one
+            frag = in;
             len = 1;
+	    insi = char2state[*++in];
 	    while (1) {
 	        if (insi == ABC) {
-	            while ( (insi = char2state[*in++]) == ABC) {len++;}
+                    len++;
+	            while ( (insi = char2state[*++in]) == ABC) {len++;}
 		    continue;
                 }
                 if (insi == UTF) {
-	            while ( (insi = char2state[*in++]) == UTF) {len++;}
+                    len++;
+	            while ( (insi = char2state[*++in]) == UTF) {len++;}
 	            continue;
                 }
 		if (insi == AST) {
-// FIXME - flag a pattern;
-	 	    while ( (insi = char2state[*in++]) == AST) {len++;}
+                    len++;
+                    // FIXME - flag a pattern;
+	 	    while ( (insi = char2state[*++in]) == AST) {len++;}
 		    continue;
 	        }
 	        break;
@@ -111,7 +124,7 @@ static int parse_r(context_t *C, elem_t *root,
             // end_of_buffer during, or end_of_file terminating, string
 	    if ( ! (in = more_in(C)) ) break;   // EOF
 	    // else continue with next buffer
-	    insi = char2state[*in++];
+	    insi = char2state[*in];
         }
 	if (slen > 0) {
 	    emit_string(C,&branch);
@@ -124,17 +137,17 @@ static int parse_r(context_t *C, elem_t *root,
         goto done;
     }
     else if (si == insi) {        // single character terminals matching state_machine expectation
-        frag = in-1;
-        emit_tok(C,si,1,frag);
+        emit_tok(C,si,1,in);
 
 	bi = insi;
-        insi = char2state[*in++];
+        insi = char2state[*++in];
 	ei = insi;
 
-        insp = state_machine + insi;
         rc = 0;
+        insp = state_machine + insi;
         goto done;
     }
+    insp = state_machine + insi;
 
     // else not terminal
     switch (si) {
@@ -148,8 +161,9 @@ static int parse_r(context_t *C, elem_t *root,
         savesubj = subj;          // push parent's subject
         subj = 0;                 // clear this subject type until known
 	break;
+    default:
+	break;
     }
-    insp = state_machine + insi;
 
     rc = 1;                       // init rc to "fail" in case no next state is found
     while (( ni = *sp )) {        // iterate over ALTs or sequences
@@ -218,6 +232,8 @@ static int parse_r(context_t *C, elem_t *root,
  	        emit_term(C);
 	    }
 	    unterm = 0;
+	    break;
+        default:
 	    break;
 	}
     }
