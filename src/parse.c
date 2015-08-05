@@ -9,22 +9,23 @@
 #include "parse.h"
 
 static unsigned char unterm, *in;
-static state_t *insp, subj, bi, ei;
+static char *insp;
+static state_t subj, bi, ei;
 static elem_t Tree;
 
-static int more_rep(context_t *C, unsigned char prop, char ei, char bi) {
+static int more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
     if (! (prop & (REP|SREP))) return 0;
-fprintf(OUT,"\n ei=%d bi=%d\n", ei, bi);
     if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) return 0; // no more
     if (bi == RPN || bi == RAN || bi == RBR || bi == RBE ) return 1; // more, but no sep needed
     if (prop & SREP) emit_sep(C); // sep needed for SREP sequences
     return 1;
 }
 
-static int parse_r(context_t *C, elem_t *root, state_t *sp,
+static int parse_r(context_t *C, elem_t *root, char *sp,
 		       unsigned char prop, int nest, int repc) {
     unsigned char nprop, *frag;
-    state_t *np, insi, si, ni, savesubj;
+    char *np;
+    state_t insi, si, ni, savesubj;
     int rc, len, slen;
     elem_t *elem;
     elem_t branch = {
@@ -36,7 +37,7 @@ static int parse_r(context_t *C, elem_t *root, state_t *sp,
 	.state = 0
     };
 
-    si = sp - state_machine;
+    si = (state_t)(sp - state_machine);
     emit_start_state(C, si, prop, nest, repc);
     branch.state = si;
 
@@ -58,7 +59,7 @@ static int parse_r(context_t *C, elem_t *root, state_t *sp,
             rc = 1;            // then there is nothing to be done
             goto done;
         }
-	insi = insp - state_machine;
+	insi = (state_t)(insp - state_machine);
         if (prop & REP) {      // if the sequence is a non-space REPetition
             if (bi == WS) {    // whitespace not accepted between REP
 	        rc = 1;        // so the REP is terminated
@@ -90,7 +91,6 @@ static int parse_r(context_t *C, elem_t *root, state_t *sp,
 		    break;
                 }
 	    }
-            bi = insi;          // the char class that begins this one
             frag = in;
             len = 1;
 	    insi = char2state[*++in];
@@ -133,7 +133,8 @@ static int parse_r(context_t *C, elem_t *root, state_t *sp,
 	else {
 	    rc = 1;
 	}
-        insp = state_machine + insi;
+        bi = insi;                // the char class that terminates the string
+        insp = state_machine + (char)insi;
         goto done;
     }
     else if (si == insi) {        // single character terminals matching state_machine expectation
@@ -144,10 +145,10 @@ static int parse_r(context_t *C, elem_t *root, state_t *sp,
 	ei = insi;
 
         rc = 0;
-        insp = state_machine + insi;
+        insp = state_machine + (char)insi;
         goto done;
     }
-    insp = state_machine + insi;
+    insp = state_machine + (char)insi;
 
     // else not terminal
     switch (si) {
@@ -166,9 +167,9 @@ static int parse_r(context_t *C, elem_t *root, state_t *sp,
     }
 
     rc = 1;                       // init rc to "fail" in case no next state is found
-    while (( ni = *sp )) {        // iterate over ALTs or sequences
+    while (( ni = (state_t)(*sp) )) {        // iterate over ALTs or sequences
         nprop = *PROPP(sp);
-        np = sp + ni;
+        np = sp + (char)ni;
 	if (nprop & ALT) {        // look for ALT
 	    if (( rc = parse_r(C, &branch, np,nprop,nest,0)) == 0) {
                 break;            // ALT satisfied

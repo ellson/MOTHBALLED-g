@@ -22,12 +22,12 @@ void set_sstyle (void) {
     sstyle=1;
 }
 
-static state_t *oleg1=NULL, *oleg2=NULL;
+static char *oleg1, *oleg2;
 static unsigned char *sleg1, *sleg2;
 
 static unsigned char SAME[]={1,'='};
 
-static void print_next( state_t *leg1, state_t *leg2 ) {
+static void print_next( char *leg1, char *leg2 ) {
     if (leg1 != oleg1) {
 	oleg1 = leg1;
         sleg1 = NAMEP(leg1);
@@ -58,7 +58,7 @@ static void print_attr ( char attr, char *attrid, int *inlist ) {
     }
 }
 
-static void print_prop(state_t *p) {
+static void print_prop(char *p) {
     unsigned char prop;
     int inlist;
 
@@ -74,8 +74,9 @@ static void print_prop(state_t *p) {
     }
 }
 
-static void printg_r(state_t *sp, int indent) {
-    state_t *p, *np, ni;
+static void printg_r(char *sp, int indent) {
+    char *p, *np;
+    state_t ni;
     int i;
 
     p = sp;
@@ -100,7 +101,7 @@ void printg (void) {
     printg_r(state_machine, 0);
 }
 
-static void print_chars ( state_t *p ) {
+static void print_chars ( char *p ) {
     int i, cnt, si;
 
     si = (p - state_machine);
@@ -123,14 +124,15 @@ static void print_chars ( state_t *p ) {
 
 // just dump the grammar linearly,  should result in same logical graph as printg()
 void dumpg (void) {
-    state_t *p, *sp, ni;
+    char *p, *sp;
+    state_t ni;
 
     p = state_machine;
     while (p < (state_machine + sizeof_state_machine)) {
         if (*p) { // non-terminal
             sp = p;
-            while (( ni = *p )) {
-                print_next(sp, p+ni);
+            while (( ni = (state_t)(*p) )) {
+                print_next(sp, p + (char)ni);
                 print_prop(p);
 		p++;
 	    }
