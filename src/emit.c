@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 #include "grammar.h"
-#include "list.h"
 #include "inbuf.h"
 #include "emit.h"
 

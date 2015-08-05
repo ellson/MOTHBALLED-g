@@ -3,7 +3,6 @@
 #include <assert.h>
 
 #include "grammar.h"
-#include "list.h"
 #include "inbuf.h"
 #include "emit.h"
 #include "parse.h"
@@ -114,7 +113,7 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	        break;
 	    }
             emit_frag(C,len,frag);
-            elem = new_frag(ABC,frag,len,NULL);
+            elem = new_frag(ABC,frag,len,C->inbuf);
             append_list(&branch, elem);
             slen += len;
 

@@ -3,7 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 
-# include "list.h"
 # include "inbuf.h"
 # include "emit.h"
 # include "parse.h"
@@ -12,14 +11,15 @@
 static context_t context;
 
 int main (int argc, char *argv[]) {
-    int i, opt, optnum, needstdin, rc;
+    int i, opt, optnum, needstdin, needstats, rc;
     FILE *f;
     context_t *C;
 
     C = &context;
     emit = emit_g_api;  // default emitter
+    needstats = 0;          // no default stats
 
-    while ((opt = getopt(argc, argv, "d::g::t::")) != -1) {
+    while ((opt = getopt(argc, argv, "d::g::t::s")) != -1) {
 	if (optarg) optnum = atoi(optarg);
 	else optnum = 0;
         switch (opt) {
@@ -60,15 +60,19 @@ int main (int argc, char *argv[]) {
 		break;
 	    }
             break;
+        case 's':
+	    needstats = 1;
+	    break;
         default:
             fprintf(stderr,
-		"Usage: %s [-d[01] | [-t[01]] | [-g[01]] [files] [-]  \n",
+		"Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n",
 		argv[0]
 	    );
             exit(1);
         }
     }
 
+    rc = 0;
     needstdin = 1;        // with no args, read stdin
     for (i=optind; i<argc; i++) {
         if (strcmp(argv[i], "-") == 0) {
@@ -83,7 +87,7 @@ int main (int argc, char *argv[]) {
 		C->file = f;
                 rc = parse(&context);
                 fclose(f);
-                if (rc) exit(rc);
+                if (rc) break;
 	    }
 	    else {
 		fprintf(stderr, "file \"%s\" is not readable\n", argv[i]);
@@ -91,12 +95,17 @@ int main (int argc, char *argv[]) {
 	    }
         }
     }
-    if (needstdin) {
-        C->filename = "-";
-        C->file = stdin;
-        rc = parse(&context);
-        if (rc) exit(rc);
+    if (!rc) {
+        if (needstdin) {
+            C->filename = "-";
+            C->file = stdin;
+            rc = parse(&context);
+        }
     }
 
-    exit(0);
+    if (needstats) {
+        fprintf(stdout, "\nStats:  (tbd)\n");
+    }
+
+    exit(rc);
 }
