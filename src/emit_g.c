@@ -42,29 +42,26 @@ static emit_t api = {
 };
 
 static void api1_string(context_t *C, elem_t *branch) {
-    print_list(OUT, branch, -1, ' ');
+    print_list(OUT, branch, -1, 0);
 }
 
 static void api1_tok(context_t *C, char class, unsigned char len, unsigned char *frag) {
     putc('\n', OUT);
     print_frag(OUT, len, frag);
-}
-
-static void api1_term(context_t *C) {
-    putc('\n', OUT);
+    putc(' ', OUT);
 }
 
 static emit_t api1 = {
     /* api_start_file */          NULL,
-    /* api_sep */                 NULL,
+    /* api_sep */                 api_sep,
     /* api_start_state */         NULL,
     /* api_tree */                NULL,
     /* api_string */              api1_string,
     /* api_frag */                NULL,
     /* api_tok */                 api1_tok,
     /* api_end_state */           NULL,
-    /* api_term */                api1_term,
-    /* api_end_file */            NULL,
+    /* api_term */                NULL,
+    /* api_end_file */            api_end_file,
     /* api_error */               api_error
 };
 

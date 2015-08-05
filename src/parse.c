@@ -95,6 +95,7 @@ static int parse_r(context_t *C, elem_t *root,
                 }
 		if (insi == AST) {
 	 	    while ( (insi = char2state[*in++]) == AST) { /* ignore extra '*' */ }
+		    len++;
 // FIXME - flag a pattern;
 		    continue;
 	        }
@@ -245,7 +246,7 @@ int parse(context_t *C) {
     emit_start_file(C);
     C->size = -1;      // tell more_in() that it is a new stream
 
-    rc = parse_r(C, &Tree, state_machine,SREP,0,0);
+    rc = parse_r(C, &Tree, state_machine, SREP, 0, 0);
 
     emit_end_file(C);
     return rc;

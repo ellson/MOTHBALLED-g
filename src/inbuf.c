@@ -43,16 +43,15 @@ inbuf_t* new_inbuf(void) {
 }
 
 unsigned char * more_in(context_t *C) {
-    unsigned char *in;
-
-    if (C->size == -1) C->size = INBUFSIZE;   // new stream - pretend there was a previous inbuf
-    if (C->size != INBUFSIZE) return NULL;    // if previous inbuf was short, then EOF
-
-    C->inbuf = new_inbuf();
+    if (C->size != INBUFSIZE) {    // if previous inbuf was short,
+        if (C->size != -1) {       //     unless its a new new stream 
+	    return NULL;           //         EOF
+        }
+    }
+    C->inbuf = new_inbuf();        // grab a buffer
     assert(C->inbuf);
-    in = C->inbuf->buf;
 
-    C->size = fread(in, 1, INBUFSIZE, C->file);
+    C->size = fread(C->inbuf->buf, 1, INBUFSIZE, C->file); // slurp in data from file stream
 
-    return in;
+    return C->inbuf->buf;
 }

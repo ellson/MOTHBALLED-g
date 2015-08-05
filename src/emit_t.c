@@ -80,7 +80,7 @@ static emit_t api1 = {
     /* api_tok */                 NULL,
     /* api_end_state */           NULL,
     /* api_term */                api1_term,
-    /* api_end_file */            NULL,
+    /* api_end_file */            api_end_file,
     /* api_error */               api_error
 };
 
