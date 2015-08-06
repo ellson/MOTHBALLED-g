@@ -15,11 +15,16 @@ static long int stat_inbufmalloc, stat_inbufmax, stat_inbufcount;
 static long int stat_elemmalloc, stat_elemmax, stat_elemcount;
 
 void print_stats(FILE *chan) {
-    fprintf(chan,"\nstats [\n");
-    fprintf(chan," inbufmalloc=%ld\n   inbufsize=%ld\n    inbufmax=%ld\n  inbufcount=%ld\n",
-	stat_inbufmalloc, sizeof(inbuf_t), stat_inbufmax, stat_inbufcount);
-    fprintf(chan,"  elemmalloc=%ld\n    elemsize=%ld\n     elemmax=%ld\n   elemcount=%ld\n",
- 	stat_elemmalloc, size_elem_t, stat_elemmax, stat_elemcount);
+    fprintf(chan,"\n");
+    fprintf(chan,"stats [\n");
+    fprintf(chan," inbufmalloc=%ld\n", stat_inbufmalloc);
+    fprintf(chan,"   inbufsize=%ld\n", sizeof(inbuf_t));
+    fprintf(chan,"    inbufmax=%ld\n", stat_inbufmax);
+    fprintf(chan,"  inbufcount=%ld\n", stat_inbufcount);
+    fprintf(chan,"  elemmalloc=%ld\n", stat_elemmalloc);
+    fprintf(chan,"    elemsize=%ld\n", size_elem_t);
+    fprintf(chan,"     elemmax=%ld\n", stat_elemmax);
+    fprintf(chan,"   elemcount=%ld\n", stat_elemcount);
     fprintf(chan,"]\n");
 }
 
@@ -106,7 +111,9 @@ static elem_t* new_elem_sub(char type) {
     elem->next = NULL;
 
     stat_elemcount++;   // stats
-    if (stat_elemcount > stat_elemmax) stat_elemmax = stat_elemcount;
+    if (stat_elemcount > stat_elemmax) {
+	stat_elemmax = stat_elemcount;
+    }
     return elem;
 }
 
@@ -115,39 +122,65 @@ elem_t* new_frag(char state, unsigned char *frag, int len, inbuf_t *inbuf) {
     
     elem = new_elem_sub(FRAGELEM);
 
-    elem->u.frag.frag = frag;  // complete frag elem initialization
-    elem->len = len;
-    elem->state = state;
-    elem->u.frag.inbuf = inbuf;
-
     assert (inbuf);
     assert (inbuf->refs >= 0);
+    assert (frag);
+    assert (len > 0);
 
-    inbuf->refs++;             // increment reference count in inbuf.
+				// complete frag elem initialization
+    elem->u.frag.inbuf = inbuf; // record inbuf for ref counting
+    elem->u.frag.frag = frag;   // pointer to begging of frag
+    elem->u.frag.len = len;     // length of frag
+    elem->state = state;        // state_machine state that created this frag
+
+    inbuf->refs++;              // increment reference count in inbuf.
     return elem;
 }
 
-// To allow statically allocated list headers, list2elem
-// copies the header into a new elem, and then reinitializes
-// the old header.
-elem_t *list2elem(elem_t *list, int len) {
+// clone_list -  clone a list header to a new elem
+//  -- ref count in first elem is not updated
+static elem_t *clone_list(elem_t *list) {
     elem_t *elem;
 
     assert(list->type == LISTELEM);
 
     elem = new_elem_sub(LISTELEM);
 
-    elem->u.list.first = list->u.list.first;  // complete as elem containing list
+    elem->u.list.first = list->u.list.first;  // copy details
     elem->u.list.last = list->u.list.last;
-    elem->state = list->state;  // get state from first elem
-    elem->len = len;            // caller provides len 
-				// -  not used internally by list code
+    elem->u.list.refs = 0;
+    return elem;
+}
+
+// move_list - move a list to a new elem
+//     implemented using clone_list
+//         clone_list didn't increase ref count in first elem,
+//         so no need to deref.
+//     clean up the old list header so it no longer references the list elems.
+elem_t *move_list(elem_t *list) {
+    elem_t *elem;
+
+    elem = clone_list(list);
 
     list->u.list.first = NULL; // reset old header
     list->u.list.last = NULL;
-    list->state = 0;
-    list->len = 0;
 
+    return elem;
+}
+
+// ref_list - reference a list from a new elem
+//     implement as a clone_list with a ref count adjustment
+//     if there is a first elem and if it is a LISTELEM, then
+//           increment its ref count.
+elem_t *ref_list(elem_t *list) {
+    elem_t *elem;
+
+    elem = clone_list(list);
+
+    if (list->u.list.first
+     && list->u.list.first->type == LISTELEM) {
+        list->u.list.first->u.list.refs++;   // increment ref count
+    }
     return elem;
 }
 
@@ -162,24 +195,19 @@ void append_list(elem_t *list, elem_t *elem) {
 	list->u.list.first = elem;
     }
     list->u.list.last = elem;
+    if (elem->type == LISTELEM) {
+        elem->u.list.refs++;   // increment ref count in appended elem
+    }
 }
 
-void prepend_list(elem_t *list, elem_t *elem) {
-
-    assert(list->type == LISTELEM);
-
-    elem->next = list->u.list.first;
-    list->u.list.first = elem;
-}
-
-// free the list contents, but not the lit header.
+// free the list contents, but not the list header.
 void free_list(elem_t *list) {
     elem_t *elem, *next;
 
     assert(list);
     assert(list->type == LISTELEM );
 
-    // free list of elem, but really just put them backs
+    // free list of elem, but really just put them back
     // on the elem_freelist (declared at the top of this file)`
     elem = list->u.list.first;
     while (elem) {
@@ -192,14 +220,18 @@ void free_list(elem_t *list) {
 	    }
 	    break;
         case LISTELEM :
-	    free_list(elem);  // recursively free lists of lists
+	    assert(elem->u.list.refs > 0);
+            if(--(elem->u.list.refs) == 0) {
+	        free_list(elem);  // recursively free lists that have no references
+            }
 	    break;
 	}
 
         // insert elem at beginning of freelist
         elem->next = free_elem_list;
         free_elem_list = elem;
-        stat_elemcount--;
+
+        stat_elemcount--;         // maintain stats
 
 	elem = next;
     }
@@ -207,15 +239,14 @@ void free_list(elem_t *list) {
     // clean up emptied list
     list->u.list.first = NULL;
     list->u.list.last = NULL;
-    list->state = 0;
-    list->len = 0;
+    // Note: ref count of header is not modified
 }
 
 void print_frag(FILE *chan, unsigned char len, unsigned char *frag) {
     while (len--) putc(*frag++, chan);
 }
 
-int print_string(FILE *chan, unsigned char *len_frag) {
+int print_len_frag(FILE *chan, unsigned char *len_frag) {
     unsigned char len;
 
     len = *len_frag++;
@@ -239,7 +270,7 @@ void print_list(FILE *chan, elem_t *list, int indent, char sep) {
         while (elem) {
             assert(elem->type == type);  // check all the same type
             cp = elem->u.frag.frag;
-            len = elem->len;
+            len = elem->u.frag.len;
 	    assert(len > 0);
             while (len--) putc (*cp++, chan);
             elem = elem->next;
@@ -261,7 +292,7 @@ void print_list(FILE *chan, elem_t *list, int indent, char sep) {
             else {
 		putc (' ', chan);
             }
-            width = print_string(chan, NAMEP(state_machine+(elem->state)));
+            width = print_len_frag(chan, NAMEP(state_machine+(elem->state)));
             ind = indent + width + 1;;
 	    print_list(chan, elem, ind, sep);  // recurse
             elem = elem->next;

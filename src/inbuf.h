@@ -31,15 +31,16 @@ struct elem_s {
         struct {
 	    elem_t *first; // for prepend and fforward walk
             elem_t *last;  // fpr append
+            int refs;      // reference count
         } list;
         struct {
-	    unsigned char *frag;
-    	    inbuf_t *inbuf;
+    	    inbuf_t *inbuf; // inbuf containing frag
+	    unsigned char *frag; // point to beginning of frag
+            int len;       // length of frag
         } frag;
     } u;
-    char type; // LISTELEM or FRAGELEM
-    char state;  // state_machine state that generated the list
-    int len; // length of frag, or length of all frags in a list
+    char type;             // LISTELEM or FRAGELEM
+    char state;            // state_machine state that generated this list
 };
 
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
@@ -47,12 +48,12 @@ struct elem_s {
 unsigned char * more_in(context_t *C);
 
 elem_t* new_frag(char state, unsigned char *frag, int len, inbuf_t *inbuf);
-elem_t *list2elem(elem_t *list, int len);
-void prepend_list(elem_t *list, elem_t *elem);
+elem_t *move_list(elem_t *list);
+elem_t *ref_list(elem_t *list);
 void append_list(elem_t *list, elem_t *elem);
 void free_list(elem_t *list);
 
-int print_string(FILE *chan,unsigned char *len_frag);
 void print_frag(FILE* chan, unsigned char len, unsigned char *frag);
+int print_len_frag(FILE *chan,unsigned char *len_frag);
 void print_list(FILE *chan, elem_t *list, int nest, char sep);
 void print_stats(FILE *chan);

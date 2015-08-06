@@ -31,8 +31,8 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	.next = NULL,
 	.u.list.first = NULL,
 	.u.list.last = NULL,
+	.u.list.refs = 0,
 	.type = LISTELEM,
-	.len = 0,
 	.state = 0
     };
 
@@ -243,7 +243,7 @@ done:
     assert (nest >= 0);
 
     if (rc == 0) {
-        elem = list2elem(&branch,0);
+        elem = move_list(&branch);
         if (si == ACTIVITY && nest == 0) {
 	    emit_tree(C, elem);
 	    free_list(elem);
