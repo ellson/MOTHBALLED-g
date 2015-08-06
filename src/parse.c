@@ -73,7 +73,10 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
         insi = char2state[*++in];
     }
     while (insi == NLL) {      // end_of_buffer, or end_of_file, during whitespace
-	if ( !(in = more_in(C)) ) goto done;  // EOF
+	if ( !(in = more_in(C)) ) {
+            rc = 1;
+	    goto done;  // EOF
+        }
         insi = char2state[*in];
         while (insi == WS) {      // eat all remaining leading whitespace
             insi = char2state[*++in];
