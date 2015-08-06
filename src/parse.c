@@ -250,15 +250,13 @@ done:
         if (branch.u.list.first) { // ignore empty lists
             elem = move_list(si, &branch);
             append_list(root, elem);
-            if (nest == 0) {
-            switch (si) {
-                case ACTIVITY:
-                   emit_tree(C, elem);
-	           free_list(elem);
-	           break;
-                default:
-	           break;
-	        }
+            if (nest == 0 && si == ACTIVITY) {
+                emit_tree(C, elem);
+	        free_list(elem);
+            }
+            if (si == EDGE) {
+		elem = ref_list(0, elem);
+	// let it leak!   want to see that the list is kept due to ref counting
             }
 	}
     }
