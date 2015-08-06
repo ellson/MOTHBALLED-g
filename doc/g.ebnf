@@ -1,189 +1,281 @@
-# The g language is used for describing graphs of nodes and edges.
+# The g language is for describing graphs of nodes and edges.
 
-# The g language is unusual in that there are no keywords in the language,  only key characters (and a few character pairs)
-# all of which are non-alpanumeric.  Consequently, strings only need quoting if they contain whitespace, or a special
-# character, and escaping is only needed for the quote character in quoted strings.
+# The g language is unusual in that there are no keywords in the language; only
+# key characters.  The key characters (and a few character pairs) are all
+# non-alpanumeric.  Consequently, strings only need quotingi if they contain
+# whitespace, or a special character,
 
-# Numbers are not used by the language, and so numbers (int, decimal, signed or unsigned) are all legal strings without
-# quoting.  (Attibute values can be interpreted as numbers later; they are just not treated differently by the parser.)
+# Numbers are not used by the language, and so numbers (integer, decimal,
+# or signed) are all legal strings without quoting.  (Attibute values can
+# be interpreted as numbers later; they are just treated as strings by the parser.)
 
-# A graph structure is built incrementally with a series of <acts>.
+# The definitive grammar is defined in src/grammar.g  which is maintained in git.
+# During the build process, the files:
+# 	src/grammar.c
+# 	src/grammar.h
+# 	src/grammar.ebnf
+# are all produced from:
+# 	src/grammar.g
 #
-# There is no hard begining or end, permitting any "graph" to be interpreted in the context
-# of any other graph,  where it may be used, prepended or appended by the graph, or contained in one of its nodes or edges..
+# This document is not definitative as it is a manually annotated
+# is a manually annotated copy of src/grammar.ebnf, which is itself a derivative
+# product.
+#
+# Note that the language g is defined in the language g.
+#
+# The executable ia able to describe its grammar from its internal tables
+# using:
+# 	 ./g -d >t.g
+# which should be identical to the src/grammar.g stored in git.
 
-                <act> ::= <action>? <subject> <properties>? <contents>? <term>?
+# In this eBNF:
+#          ? indicates an optional term
+#          + indicates a term can be repeated one or more times
+#          * indicates a term that can be repeated zero or more times
+#          _ indicates that a separator (typically whitespace) is
+#            required between repetitions. 
 
-# The default <action> is to add a, or to add to an existing, <subject>. '~' signals deletion
 
-             <action> ::= '~'
 
-# The <term> is mostly optional since it is rarely needed.
-# It serves two purposes.
-#   1) for people that like to end statements with a terminator.
-#   2) for when a stream of <act>s stop, to indicate that the
-#      last <act> is finished. Normally in a stream, an <act> is adequately
-#      syntactically terminated when the next <act> starts. but while the
-#      stream is stopped the last <act> gets stuck, syntacticaly, unless forced out with
-#      a <term>.  Think of it like a "flush" operator.
-# An <EOF> condition on the input stream is implicitly a <term>.
 
-               <term> ::= ';'
+# g is intended for incremental, streaming graph applications. The stream,
+# known as an ACTIVIY consists of an unbounded set of ACTs:
 
-# A <subject> of an <act> is one <object>, or a homogonous list of <object>s of the same type.
+     ACTIVITY ::= _ACT+
 
-            <subject> ::= <object>
-                        | '(' <object>+ ')'
+# Each ACT is an insertion, modification or deletion of some graph
+# object or objects
 
-             <object> ::= <node> 
-			| <edge>
+          ACT ::= ACTION? SUBJECT ATTRIBUTES? CONTAINER? TERM?
 
-# A <node> can be simple, or multi (think "stacks" of node, all in the same
-# place, all with the same <properties>, all with the same <contents>)
+# Any SUBJECT can have ATTRIBUTES and CONTENTS which are to be
+# added (or deleted) from the OBJECT(s) specified by the <subject>
 
-               <node> ::= <node_id> <disambiguator>?
-            <node_id> ::= <string>
-      <disambiguator> ::= '::' <disambiguator_id>
-   <disambiguator_id> ::= <string>
-
-# An <edge> can be simple, or multi (think "parallel" edges, all with the
-# same <endpoints> (modulo disambiguation), all with the same <properties>,
-# all with the same <contents>)
-
-# An <edge> can be fully contained in the current container, or one or more
-# of it endpoints can be in another container, descibed by a path relative
-# to the current container.
-
-# <edge> can induce <node>s
-
-               <edge> ::= '<' <leg> <leg>+ '>' <disambiguator>?
-
-		<leg> ::= <endpoint>
-			| '(' <endpoint> ')'
-
-# Note: The construct:  <(a b) z>
-#    is equivalent to:  (<a z> <b z>)
-
-           <endpoint> ::= <ancestor>? <decendent>? <localendpoint>
-
-           <ancestor> ::= ':/'
-
-         <descendent> ::= <obj> '/'
-
-      <localendpoint> ::= <node> <port>?
-                        | <port>
-
-               <port> ::= ':' <port_id>
-
-# Note: a <port> as a <localendpoint> refers the inside <port> on the <container>
-# in which the <endpoint> is in.  For <node> contents it uses the same <port_id>
-# inside as outside.  For <edge> contents it refers a particular <leg>
-# of the parent <edge> by means of a 1-based index, left to right
-
-# If <port> is not provided for a <node_port> then it defaults to the
-# center of the shape, with the line representing the <edge> clipped back
-# to the boundary of the shape.
-
-# Any <subject> can have <properties> and <contents> which are to be
-# added (or deleted) from the <object> or <object>s specified by the <subject>
-
-# <properties> of a <subject> affect the outside of any container it might have.
+# The PROPERTIES of a SUBJECT affect the outside of any CONTAINER it might have.
 # Think attributes like labels and shapes.
 
-# <container>s have an additional set of <properties> for describing the inside of the <container>
+# CONTAINER has an additional set of ATTRIBUTES for describing the inside of
+# the CONTAINER.
 # Think: layout engine,  graph/digraph, strict/nonstrict, ...
 
-# There is no <container> for the top <act>s, so its properties must be
+# There is no CONTAINER for the top ACTIVITY, so its properties must be
 # provided by the external environment, such as from the command line.
 
-# If a <value> is not provided then it defaults to the empty string, the interpretation of which is left undefined
-# by this syntax, and may be interpreted in different ways in differerent attributes.
+# The default ACTION is to add new, or modify existing, object(s).
+# A TLD (i.e, a '~') signals deletion,
 
-         <properties> ::= '[' <attribute_value>* ']'
+       ACTION ::= TLD
 
-    <attribute_value> ::= <attribute_id> <value_assign>?
+# The SUBJECT of an ACTION is either a single OBJECT, or an OBJECT_LIST
+# (containing OBJECTS all of the same type:  NODE or EDGE)
 
-       <attribute_id> ::= <string>
+      SUBJECT ::= OBJECT
+                | OBJECT_LIST
 
-       <value_assign> ::= '=' <value>
+  OBJECT_LIST ::= LPN _OBJECT+ RPN
 
-              <value> ::= <string>
+       OBJECT ::= EDGE
+                | NODE
 
-# <contents> consist of: a set of properties for the inside of the container (think layout_engine)
-# followed by: a contained "graph" using <act> recursively.
+# The OBJECT, or all the OBJECTS in an OBJECT_LIST, can be given properties
+# in the form of:  attr=value
 
-           <contents> ::= '{' <properties>? <act>* '}'
+# On "delete" operations, the VALUE is set to the empty string. 
+# ATTRs themselves i.e. the name of the ATTRIBUTE, can only be deleted,
+# by deleting the parent CONTAINER (and its entire contained graph).    
 
-# Finally, <string> (Note that only quoted strings can be empty)
+   ATTRIBUTES ::= LBR _ATTR* RBR
 
-             <string> ::= <simple_char>+
-                        | ''' <singlequoted_char>* '''
-                        | '"' <doublequoted_char>* '"'
-                        | '<' <html_like_char>* '>'
+         ATTR ::= ATTRID VALASSIGN?
 
-  <singlequoted_char> ::= <simple_char>
-                        | <special_char>
-                        | <angles>
-                        | '"'
-                        | <escape> '''     
-                        | <escape> <escape>
-                        
-  <doublequoted_char> ::= <simple_char>
-                        | <special_char>
-                        | <angles>
-                        | '''
-                        | <escape> '"'
-                        | <escape> <escape>
-                        
-     <html_like_char> ::= <simple_char>
-                        | <special_char>
-                        | '''
-                        | '"'
-                        | <angles>              .... '<', '>', must be balanced ...
-                        
-             <escape> ::= '\'
+    VALASSIGN ::= EQL VALUE
 
-# Note:  A few <alpha_uppercase> characters, when escaped, are used
-# as substitution variables:
+
+# Any NODE or EDGE can be a CONTAINER another graph.  In the case
+# of OBJECT_LIST, all the OBJECTs are given the same contents, but
+# those contents can evolve independently (i.e. they are not shared).
+
+# NODE, EDGE, and CONTAINER ATTR are each seperate namespaces
+# (dictionaries) that are local to the CONTAINER
+
+    CONTAINER ::= LBE ATTRIBUTES? ACTIVITY? RBE
+
+# The TERM is mostly optional since it is rarely needed.
+# It serves two purposes:
+#    1) for people that like to end statements with a terminator.
+#    2) for when a stream of ACTs stop, to indicate that the
+#       last ACT is finished. Normally in a stream, an ACT is adequately
+#       syntactically terminated when the next ACT starts. but while the
+#       stream is stopped the last ACT can get stuck, waiting for ATTRIBUTES
+#       or CONTAINER.  Think of TERM like a "flush" operator.
+# An <EOF> condition on the input stream is implicitly a TERM.
+
+         TERM ::= SCN
+
+# A NODE is minimally an OBJECT with a name.
+# The namespace of the NODEID is the parent CONTAINER
+
+          NODE ::= NODEID
+
+# An EDGE is a relationship between 1, 2, or more NODES:
+#   between 1 node is a dangling edge
+#   between 3 or more nodes is a netlist
+
+# The various ends of the EDGE are called LEGs
+# If there are multiple EDGEs between the same NODEs (non-strict graphs), then
+# they can be disambiguated 
+
+         EDGE ::= LAN _LEG+ RAN DISAMBIG?
+
+# LEG can be a simple ENDPOINT (basically a reference to a NODE)
+# or it can be a set of ENDPOINTS:
+# This is to permit the shorthand:
+# 		<(a b) (c d)>
+# to represent the equivalent:
+# 		(<a c> <a d> <b c> <b d>)
+
+# Another shorthand is the use of EQL '=' to indicate a "sameend"
+# as the corresponding LEG in an immediately preceeding ACT.
+# So: 
+# 		<longname a>[x=y]
+# 		<longname b>[m=n]
+# 		<longname c>[p=q]
+# can be written as:
+# 		<longname a>[x=y] <= b>[m=n] <= c>[p=q]
+
+          LEG ::= EQL
+                | ENDPOINTSET
+                | ENDPOINT
+
+  ENDPOINTSET ::= LPN ENDPOINT _ENDPOINT+ RPN
+
+# An ENDPOINT is a reference to a NODE, in this container, in a child container,
+# or in a cousin's container (where a "cousin" is any descendent of a common
+# ancestor.  So "cousin" includes uncles and cousins and cousin's children.
+
+     ENDPOINT ::= COUSIN
+                | SIBLING
+                | PORT
+
+       COUSIN ::= PARENT+ CHILD+ PORT?
+
+       PARENT ::= HAT FSL
+
+      SIBLING ::= NODEREF CHILD* PORT?
+
+        CHILD ::= FSL NODEREF
+
+      NODEREF ::= NODEID DISAMBIG?
+
+     DISAMBIG ::= TIC DISAMBID
+
+         PORT ::= CLN PORTID
+
+# Some examples:
 #
-#  \O is the name of the object
-#  \C is the name of the containing object
+#              sister
+#              brother/neice
+#              ^/^/uncle
+#              ^/^/uncle/cousin
+#              ^/^/uncle/cousin/kid
+
+# Single NODEs can usefully represent sets or classes of identical things, like a
+# deck of cards,  or line-cards in a telephony switch or multiplexer.
+# A disambiguator can be used to distinguish a particular instance as
+# the ENDPOINT of an edge, e.g:
 #
-# Any other character that is escaped, but which doesn't normally need
-# to be escaped, is taken as itself.
+#              cards`queen_of_hearts
+#              linecard`555-1212
 
-        <simple_char> ::= <alpha_uppercase>
-                        | <alpha_lowercase>
-                        | <digit>
-                        | '_' | '%'
-                        | '.' | ','
-                        | '-' | '+'
-                        | '&' | '^'
-                        | '$' | '@'
-                        | '!' | '|'
-                        | '`' | '?'
-			| \200 ... \377
+# EDGES can terminate on a particular place on a NODE, known as a PORT:
+#
+#              chip:pin3
+#              foo`1:w
 
-    <alpha_uppercase> ::= A...Z
-    <alpha_lowercase> ::= a...z
-              <digit> ::= 0...9
+# If PORT is not provided then it defaults to the center of the shape,
+# with the line representing the EDGE clipped back to the boundary of the shape.
 
-             <angles> ::= '<' | '>'
+# Note: a PORT used in isolation as an ENPOIINT refers the inside places on
+# the parent CONTAINER.   For NODE CONTAINER it uses the same PORTID
+# inside as outside.  For EDGE CONTAINER it refers a particular LEG
+# of the parent EDGE by means of a 1-based index, left to right
 
-       <special_char> ::= <whitespace> | <newline>
-                        | '{' | '}'
-                        | '(' | ')'
-                        | '[' | ']'
-                        | '~' | '='
-                        | ':' | ';'
-                        | '/' | '#'    ... only special because of comments ...
-                        | '*'
+# The various IDs are all represented by STRINGs
 
-           <comments> ::= '//' ... EOL
-                        | '#' ... EOL
-                        | '/*' ... '*/'
+       ATTRID ::= STRING
+        VALUE ::= STRING
+       NODEID ::= STRING
+       PORTID ::= STRING
+     DISAMBID ::= STRING
 
-# Note that  '+' '-' '.' ','  Are not special.  So numbers 
-# are usable as simple_strings in names and values.
+# STRINGs, without quoting or escapes, can contain any characters
+# in the ABC and UTF classes.  Also AST, which when present means that
+# the entire ACT is a pattern, which can be used to provide 
+# additional attributes or contents to future ACTs that match the pattern.
 
-# FIXME - patterns
+# Example:
+#              card_deck_* [shape=stackedcards]
+
+# FIXME - need more details on paterns
+
+
+# STRINGs can use various quoting and escape mechanisms to contain any
+# character withou special meaning
+
+# FIXME - details of various quoting schemes
+
+
+
+          BIN ::= '0x01'|'0x02'|'0x03'|'0x04'|'0x05'|'0x06'|'0x07'|'0x08'
+                | '0x0b'|'0x0c'|'0x0e'|'0x0f'|'0x10'|'0x11'|'0x12'|'0x13'
+                | '0x14'|'0x15'|'0x16'|'0x17'|'0x18'|'0x19'|'0x1a'|'0x1b'
+                | '0x1c'|'0x1d'|'0x1e'|'0x1f'|'0x7f'
+          ABC ::= '!'|'$'|'%'|'&'|'+'|','|'-'|'.'
+                | '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'
+                | '8'|'9'|'?'|'@'|'A'|'B'|'C'|'D'
+                | 'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'
+                | 'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'
+                | 'U'|'V'|'W'|'X'|'Y'|'Z'|'_'|'a'
+                | 'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'
+                | 'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'
+                | 'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'
+                | 'z'|'|'
+          UTF ::= '0x80'|'0x81'|'0x82'|'0x83'|'0x84'|'0x85'|'0x86'|'0x87'
+                | '0x88'|'0x89'|'0x8a'|'0x8b'|'0x8c'|'0x8d'|'0x8e'|'0x8f'
+                | '0x90'|'0x91'|'0x92'|'0x93'|'0x94'|'0x95'|'0x96'|'0x97'
+                | '0x98'|'0x99'|'0x9a'|'0x9b'|'0x9c'|'0x9d'|'0x9e'|'0x9f'
+                | '0xa0'|'0xa1'|'0xa2'|'0xa3'|'0xa4'|'0xa5'|'0xa6'|'0xa7'
+                | '0xa8'|'0xa9'|'0xaa'|'0xab'|'0xac'|'0xad'|'0xae'|'0xaf'
+                | '0xb0'|'0xb1'|'0xb2'|'0xb3'|'0xb4'|'0xb5'|'0xb6'|'0xb7'
+                | '0xb8'|'0xb9'|'0xba'|'0xbb'|'0xbc'|'0xbd'|'0xbe'|'0xbf'
+                | '0xc0'|'0xc1'|'0xc2'|'0xc3'|'0xc4'|'0xc5'|'0xc6'|'0xc7'
+                | '0xc8'|'0xc9'|'0xca'|'0xcb'|'0xcc'|'0xcd'|'0xce'|'0xcf'
+                | '0xd0'|'0xd1'|'0xd2'|'0xd3'|'0xd4'|'0xd5'|'0xd6'|'0xd7'
+                | '0xd8'|'0xd9'|'0xda'|'0xdb'|'0xdc'|'0xdd'|'0xde'|'0xdf'
+                | '0xe0'|'0xe1'|'0xe2'|'0xe3'|'0xe4'|'0xe5'|'0xe6'|'0xe7'
+                | '0xe8'|'0xe9'|'0xea'|'0xeb'|'0xec'|'0xed'|'0xee'|'0xef'
+                | '0xf0'|'0xf1'|'0xf2'|'0xf3'|'0xf4'|'0xf5'|'0xf6'|'0xf7'
+                | '0xf8'|'0xf9'|'0xfa'|'0xfb'|'0xfc'|'0xfd'|'0xfe'|'0xff'
+           WS ::= '0x09'|'0x0a'|'0x0d'|'0x20'
+          TLD ::= '~'
+          LBR ::= '['
+          RBR ::= ']'
+          LBE ::= '{'
+          RBE ::= '}'
+          SCN ::= ';'
+          LPN ::= '('
+          RPN ::= ')'
+          EQL ::= '='
+          LAN ::= '<'
+          RAN ::= '>'
+          HAT ::= '^'
+          FSL ::= '/'
+          CLN ::= ':'
+          TIC ::= '`'
+          DQT ::= '"'
+          SQT ::= '''
+          BSL ::= '\'
+          OCT ::= '#'
+          AST ::= '*'
+          NLL ::= '0x00'
+
