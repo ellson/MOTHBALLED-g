@@ -35,6 +35,14 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	.type = LISTELEM,
 	.state = 0
     };
+    elem_t sameend = {
+	.next = NULL,
+	.u.list.first = NULL,
+	.u.list.last = NULL,
+	.v.list.refs = 0,
+	.type = LISTELEM,
+	.state = 0
+    };
 
     rc = 0;
     si = (state_t)(sp - state_machine);
@@ -256,7 +264,10 @@ done:
             }
             if (si == EDGE) {
 		elem = ref_list(0, elem);
+                append_list(&sameend, elem);
 	// let it leak!   want to see that the list is kept due to ref counting
+	        free_list(&sameend);
+        // ok, lets see if we can free later.
             }
 	}
     }

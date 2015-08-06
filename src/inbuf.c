@@ -139,6 +139,7 @@ elem_t* new_frag(char state, unsigned char *frag, int len, inbuf_t *inbuf) {
 
 // clone_list -  clone a list header to a new elem
 //  -- ref count in first elem is not updated
+//     so this function is only for use by move_list() or ref_list()
 static elem_t *clone_list(char state, elem_t *list) {
     elem_t *elem;
 
@@ -222,9 +223,10 @@ void free_list(elem_t *list) {
 	    break;
         case LISTELEM :
 	    assert(elem->v.list.refs > 0);
-            if(--(elem->v.list.refs) == 0) {
-	        free_list(elem);  // recursively free lists that have no references
+            if(--(elem->v.list.refs) > 0) {
+		goto done;    // stop at any point with additional refs
             }
+	    free_list(elem);  // recursively free lists that have no references
 	    break;
 	}
 
@@ -237,6 +239,7 @@ void free_list(elem_t *list) {
 	elem = next;
     }
 
+done:
     // clean up emptied list
     list->u.list.first = NULL;
     list->u.list.last = NULL;
