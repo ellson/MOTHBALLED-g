@@ -36,6 +36,7 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	.state = 0
     };
 
+    rc = 0;
     si = (state_t)(sp - state_machine);
     emit_start_state(C, si, prop, nest, repc);
     branch.state = si;
@@ -136,7 +137,7 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
         insp = state_machine + (char)insi;
         goto done;
     }
-    else if (si == insi) {        // single character terminals matching state_machine expectation
+    if (si == insi) {        // single character terminals matching state_machine expectation
         emit_tok(C,si,1,in);
 
 	bi = insi;
@@ -254,7 +255,6 @@ done:
     emit_end_state(C, si, rc, nest, repc);
 
     if (!in) {
-	rc = 1;   // mo more input, so we're done
         if (unterm) {
  	    emit_term(C);
 	}
