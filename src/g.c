@@ -101,7 +101,7 @@ int main (int argc, char *argv[]) {
     }
 
     if (needstats) {
-        print_stats(stdout);
+        print_stats(stderr);
     }
 
     // any errors in parse() will be handled by emit_error().  If we get here
