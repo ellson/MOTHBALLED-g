@@ -11,7 +11,7 @@
 static context_t context;
 
 int main (int argc, char *argv[]) {
-    int i, opt, optnum, needstdin, needstats, rc;
+    int i, opt, optnum, needstdin, needstats;
     FILE *f;
     context_t *C;
 
@@ -72,22 +72,21 @@ int main (int argc, char *argv[]) {
         }
     }
 
-    rc = 0;
-    needstdin = 1;        // with no args, read stdin
+    needstdin = 1;           // with no args, read stdin
     for (i=optind; i<argc; i++) {
         if (strcmp(argv[i], "-") == 0) {
-            needstdin = 1;    // with explicit '-' as last file arg, read stdin
+            needstdin = 1;   // with explicit '-' as last file arg, read stdin
 	    break;
         }
         else {
-            needstdin = 0;   // indicate have args, so no default to reading stdin unless '-'
+            needstdin = 0;   // indicate have args, so do not default
+			     // to reading stdin unless '-' is explicitly given
             C->filename = argv[i];
             f = fopen(argv[i],"r");
 	    if (f) {
 		C->file = f;
-                rc = parse(&context);
+                parse(&context);
                 fclose(f);
-                if (rc) break;
 	    }
 	    else {
 		fprintf(stderr, "file \"%s\" is not readable\n", argv[i]);
@@ -95,17 +94,17 @@ int main (int argc, char *argv[]) {
 	    }
         }
     }
-    if (!rc) {
-        if (needstdin) {
-            C->filename = "-";
-            C->file = stdin;
-            rc = parse(&context);
-        }
+    if (needstdin) {
+        C->filename = "-";
+        C->file = stdin;
+        parse(&context);
     }
 
     if (needstats) {
         print_stats(stdout);
     }
 
-    exit(rc);
+    // any errors in parse() will be handled by emit_error().  If we get here
+    // then exit with success
+    exit(0);
 }
