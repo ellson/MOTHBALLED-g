@@ -31,7 +31,7 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	.next = NULL,
 	.u.list.first = NULL,
 	.u.list.last = NULL,
-	.u.list.refs = 0,
+	.v.list.refs = 0,
 	.type = LISTELEM,
 	.state = 0
     };

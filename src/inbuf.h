@@ -31,14 +31,23 @@ struct elem_s {
         struct {
 	    elem_t *first; // for prepend and fforward walk
             elem_t *last;  // fpr append
-            int refs;      // reference count
         } list;
         struct {
     	    inbuf_t *inbuf; // inbuf containing frag
 	    unsigned char *frag; // point to beginning of frag
-            int len;       // length of frag
         } frag;
     } u;
+    // FIXME -- There must be a better way ?
+    //          If these ints are included in the above union{}, then
+    //          the size of elem_t increases from 32 to 40 bytes.
+    union {
+        struct {
+            int refs;      // reference count
+        } list;
+        struct {
+            int len;       // length of frag
+        } frag;
+    } v;
     char type;             // LISTELEM or FRAGELEM
     char state;            // state_machine state that generated this list
 };

@@ -130,7 +130,7 @@ elem_t* new_frag(char state, unsigned char *frag, int len, inbuf_t *inbuf) {
 				// complete frag elem initialization
     elem->u.frag.inbuf = inbuf; // record inbuf for ref counting
     elem->u.frag.frag = frag;   // pointer to begging of frag
-    elem->u.frag.len = len;     // length of frag
+    elem->v.frag.len = len;     // length of frag
     elem->state = state;        // state_machine state that created this frag
 
     inbuf->refs++;              // increment reference count in inbuf.
@@ -148,7 +148,7 @@ static elem_t *clone_list(elem_t *list) {
 
     elem->u.list.first = list->u.list.first;  // copy details
     elem->u.list.last = list->u.list.last;
-    elem->u.list.refs = 0;
+    elem->v.list.refs = 0;
     return elem;
 }
 
@@ -179,7 +179,7 @@ elem_t *ref_list(elem_t *list) {
 
     if (list->u.list.first
      && list->u.list.first->type == LISTELEM) {
-        list->u.list.first->u.list.refs++;   // increment ref count
+        list->u.list.first->v.list.refs++;   // increment ref count
     }
     return elem;
 }
@@ -196,7 +196,7 @@ void append_list(elem_t *list, elem_t *elem) {
     }
     list->u.list.last = elem;
     if (elem->type == LISTELEM) {
-        elem->u.list.refs++;   // increment ref count in appended elem
+        elem->v.list.refs++;   // increment ref count in appended elem
     }
 }
 
@@ -220,8 +220,8 @@ void free_list(elem_t *list) {
 	    }
 	    break;
         case LISTELEM :
-	    assert(elem->u.list.refs > 0);
-            if(--(elem->u.list.refs) == 0) {
+	    assert(elem->v.list.refs > 0);
+            if(--(elem->v.list.refs) == 0) {
 	        free_list(elem);  // recursively free lists that have no references
             }
 	    break;
@@ -270,7 +270,7 @@ void print_list(FILE *chan, elem_t *list, int indent, char sep) {
         while (elem) {
             assert(elem->type == type);  // check all the same type
             cp = elem->u.frag.frag;
-            len = elem->u.frag.len;
+            len = elem->v.frag.len;
 	    assert(len > 0);
             while (len--) putc (*cp++, chan);
             elem = elem->next;
