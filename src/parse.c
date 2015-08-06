@@ -247,12 +247,20 @@ done:
     assert (nest >= 0);
 
     if (rc == 0) {
-        elem = move_list(si, &branch);
-        if (si == ACTIVITY && nest == 0) {
-	    emit_tree(C, elem);
-	    free_list(elem);
-        }
-        append_list(root, elem);
+        if (branch.u.list.first) { // ignore empty lists
+            elem = move_list(si, &branch);
+            append_list(root, elem);
+            if (nest == 0) {
+            switch (si) {
+                case ACTIVITY:
+                   emit_tree(C, elem);
+	           free_list(elem);
+	           break;
+                default:
+	           break;
+	        }
+            }
+	}
     }
 
     emit_end_state(C, si, rc, nest, repc);
