@@ -243,7 +243,7 @@ done:
     assert (nest >= 0);
 
     if (rc == 0) {
-        elem = move_list(&branch);
+        elem = move_list(si, &branch);
         if (si == ACTIVITY && nest == 0) {
 	    emit_tree(C, elem);
 	    free_list(elem);

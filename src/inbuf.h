@@ -57,8 +57,8 @@ struct elem_s {
 unsigned char * more_in(context_t *C);
 
 elem_t* new_frag(char state, unsigned char *frag, int len, inbuf_t *inbuf);
-elem_t *move_list(elem_t *list);
-elem_t *ref_list(elem_t *list);
+elem_t *move_list(char state, elem_t *list);
+elem_t *ref_list(char state, elem_t *list);
 void append_list(elem_t *list, elem_t *elem);
 void free_list(elem_t *list);
 
