@@ -218,6 +218,7 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
         subj = 0;                 // clear this subject type until known
 	break;
     case LEG:
+//fprintf(stdout, "\nsetting sameend = 0");
         sameend = 0;              // clear sameend flag until '=' seen
 	break;
     default:
@@ -263,8 +264,19 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 
     if (rc == 0) {
         switch (si) {
+        case ACT:
+            actcount++;
+	    break;
         case SUBJECT:
             subj = savesubj;      // pop subj
+	    break;
+	case LEG :
+	    if (bi == EQL) {
+		sameend=1;
+// FIXME - here we substitute sameend from saved value, or error
+// then there will be a value on &branch 
+//fprintf(stdout, "\nsetting sameend = 1");
+            }
 	    break;
 	case EDGE :
 	    if (subj == 0) {
@@ -315,8 +327,10 @@ done:
 	        free_list(elem);
             }
             if (si == LEG) {
+//fprintf(stdout,"\nsameend=%d", sameend);
 		elem = ref_list(0, elem);
                 append_list(&sameend_legs, elem);
+// FIXME - if compacting, then detect sameend here and subst '='
 	// let it leak!   want to see that the list is kept due to ref counting
 //	        free_list(&sameend);
         // ok, lets see if we can free later.
