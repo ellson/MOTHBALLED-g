@@ -10,8 +10,16 @@
 static unsigned char unterm, *in;
 static char *insp;
 static state_t subj, bi, ei;
-static int sameend;
+static elem_t *sameend_elem;
 static elem_t sameend_legs = {
+	.next = NULL,
+	.u.list.first = NULL,
+	.u.list.last = NULL,
+	.v.list.refs = 0,
+	.type = LISTELEM,
+	.state = 0
+};
+static elem_t new_sameend_legs = {
 	.next = NULL,
 	.u.list.first = NULL,
 	.u.list.last = NULL,
@@ -24,6 +32,8 @@ static int more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
     if (! (prop & (REP|SREP))) return 0;
     if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) return 0; // no more
     if (bi == RPN || bi == RAN || bi == RBR || bi == RBE ) return 1; // more, but no sep needed
+
+//FIXME -- missing changes here !
     if (prop & SREP) emit_sep(C); // sep needed for SREP sequences
     return 1;
 }
@@ -217,10 +227,6 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
         savesubj = subj;          // push parent's subject
         subj = 0;                 // clear this subject type until known
 	break;
-    case LEG:
-//fprintf(stdout, "\nsetting sameend = 0");
-        sameend = 0;              // clear sameend flag until '=' seen
-	break;
     default:
 	break;
     }
@@ -269,13 +275,38 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	    break;
         case SUBJECT:
             subj = savesubj;      // pop subj
+	    free_list(&sameend_legs);
+            sameend_legs = new_sameend_legs;
+
+// FIXME - more concise method of clearing
+new_sameend_legs.next = NULL;
+new_sameend_legs.u.list.first = NULL;
+new_sameend_legs.u.list.last = NULL;
+new_sameend_legs.v.list.refs = 0;
+new_sameend_legs.type = LISTELEM;
+new_sameend_legs.state = 0;
+
+//putc ('\n', stdout);
+//print_list(stdout, &sameend_legs, 0, ' ');
+//putc ('\n', stdout);
+	    sameend_elem = sameend_legs.u.list.first;
+//putc ('\n', stdout);
+//print_list(stdout, sameend_elem, 0, ' ');
+//putc ('\n', stdout);
 	    break;
 	case LEG :
+//fprintf(stdout,"\nei=%d bi=%d",ei, bi);
 	    if (bi == EQL) {
-		sameend=1;
-// FIXME - here we substitute sameend from saved value, or error
-// then there will be a value on &branch 
-//fprintf(stdout, "\nsetting sameend = 1");
+                if (! sameend_elem) {
+	            emit_error(C, "No prior LEG found for sameend substitution");
+	            rc = 1;
+	        }
+//              elem = ref_list(si, sameend_elem);
+// FIXME can be multiple ENDPOINTS in a LEG, need a while here
+                append_list(&branch, sameend_elem->u.list.first);
+            }
+            if (sameend_elem) {
+	        sameend_elem = sameend_elem -> next;
             }
 	    break;
 	case EDGE :
@@ -322,18 +353,24 @@ done:
         if (branch.u.list.first) { // ignore empty lists
             elem = move_list(si, &branch);
             append_list(root, elem);
+// FIXME - do containers in a separate context
             if (nest == 0 && si == ACTIVITY) {
                 emit_tree(C, elem);
 	        free_list(elem);
             }
             if (si == LEG) {
-//fprintf(stdout,"\nsameend=%d", sameend);
-		elem = ref_list(0, elem);
-                append_list(&sameend_legs, elem);
-// FIXME - if compacting, then detect sameend here and subst '='
-	// let it leak!   want to see that the list is kept due to ref counting
-//	        free_list(&sameend);
-        // ok, lets see if we can free later.
+// FIXME -- good to here,  but the '=' has already been emitted.
+//putc ('\n', stdout);
+//print_list(stdout, elem, 0, ' ');
+//putc ('\n', stdout);
+//	        free_list(&sameend_legs);      // free old sameend list
+//		elem = ref_list(si, root->u.list.last);  // replace with new list, fully substituted.
+                append_list(&new_sameend_legs, elem);
+                
+
+// putc ('\n', stdout);
+// print_list(stdout, &new_sameend_legs, 0, ' ');
+// putc ('\n', stdout);
             }
 	}
     }
