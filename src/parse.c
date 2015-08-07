@@ -19,6 +19,31 @@ static int more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
     return 1;
 }
 
+// consume all whitespace up to next token, or EOF
+// FIXME - this function is the place to deal with comments
+static int parse_whitespace(context_t *C, state_t *pinsi) {
+    state_t insi;
+    int rc;
+
+    insi = *pinsi;
+    rc = 0;
+    while (insi == WS) {       // eat all leading whitespace
+        insi = char2state[*++in];
+    }
+    while (insi == NLL) {      // end_of_buffer, or EOF, during whitespace
+	if ( !(in = more_in(C)) ) {
+	    rc = 1;            // EOF
+	    break;
+        }
+        insi = char2state[*in];
+        while (insi == WS) {      // eat all remaining leading whitespace
+            insi = char2state[*++in];
+        }
+    }
+    *pinsi = insi;
+    return rc;
+}
+
 static int parse_r(context_t *C, elem_t *root, char *sp,
 		       unsigned char prop, int nest, int repc) {
     unsigned char nprop, *frag;
@@ -76,19 +101,9 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
     }
 
     ei = insi;                 // the char class that ended the last token
-    while (insi == WS) {       // eat all leading whitespace
-        insi = char2state[*++in];
-    }
-    while (insi == NLL) {      // end_of_buffer, or end_of_file, during whitespace
-	if ( !(in = more_in(C)) ) {
-            rc = 1;
-	    goto done;  // EOF
-        }
-        insi = char2state[*in];
-        while (insi == WS) {      // eat all remaining leading whitespace
-            insi = char2state[*++in];
-        }
-    }
+
+    if ( (rc = parse_whitespace(C, &insi)) ) goto done;
+   
                                // deal with terminals
     if (si == STRING) {        // string terminals 
         slen = 0;
