@@ -14,7 +14,8 @@ static state_t subj, bi, ei;
 static int more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
     if (! (prop & (REP|SREP))) return 0;
     if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) return 0; // no more
-    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE ) return 1; // more, but no sep needed
+    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE ||
+        ei == LPN || ei == LAN || ei == LBR || ei == LBE) return 1; // more, but no sep needed
     if (prop & SREP) emit_sep(C); // sep needed for SREP sequences
     return 1;
 }
