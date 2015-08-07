@@ -44,12 +44,84 @@ static int parse_whitespace(context_t *C, state_t *pinsi) {
     return rc;
 }
 
+// collect fragments to form a STRING token
+// FIXME - this function is the place to deal with quoting and escaping
+static int parse_string(context_t *C, state_t *pinsi, elem_t *fraglist) {
+    int rc, slen, len;
+    unsigned char *frag;
+    state_t insi;
+    elem_t *elem;
+
+    insi = *pinsi;
+    slen = 0;
+    while (1) {
+        if (insi != ABC && insi != UTF) {
+            if (insi == AST) {
+                // FIXME - flag a pattern;
+            }
+            else {
+                break;
+            }
+        }
+        frag = in;
+        len = 1;
+        insi = char2state[*++in];
+        while (1) {
+            if (insi == ABC) {
+                len++;
+                while ( (insi = char2state[*++in]) == ABC) {len++;}
+                continue;
+            }
+            if (insi == UTF) {
+                len++;
+                while ( (insi = char2state[*++in]) == UTF) {len++;}
+                continue;
+            }
+            if (insi == AST) {
+                len++;
+                // FIXME - flag a pattern;
+                while ( (insi = char2state[*++in]) == AST) {len++;}
+                continue;
+            }
+            break;
+        }
+        emit_frag(C,len,frag);
+        elem = new_frag(ABC,frag,len,C->inbuf);
+        append_list(fraglist, elem);
+        slen += len;
+
+        if (insi != NLL) {
+            break;
+        }
+        // end_of_buffer during, or end_of_file terminating, string
+        if ( ! (in = more_in(C)) ) break;   // EOF
+        // else continue with next buffer
+        insi = char2state[*in];
+    }
+    if (slen > 0) {
+        emit_string(C,fraglist);
+        rc = 0;
+    }
+    else {
+        rc = 1;
+    }
+    *pinsi = insi;
+    return rc;
+}
+
+// process single character tokens
+static int parse_token(context_t *C, state_t *pinsi) {
+    emit_tok(C, *pinsi, 1, in);
+    *pinsi = char2state[*++in];
+    return 0;
+}
+
 static int parse_r(context_t *C, elem_t *root, char *sp,
 		       unsigned char prop, int nest, int repc) {
-    unsigned char nprop, *frag;
+    unsigned char nprop;
     char *np;
     state_t insi, si, ni, savesubj;
-    int rc, len, slen;
+    int rc;
     elem_t *elem;
     elem_t branch = {
 	.next = NULL,
@@ -100,82 +172,36 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
         }
     }
 
+
+    // deal with terminal states: whitespace, string, token
+    
     ei = insi;                 // the char class that ended the last token
-
-    if ( (rc = parse_whitespace(C, &insi)) ) goto done;
-   
-                               // deal with terminals
+    if ( (rc = parse_whitespace(C, &insi)) ) {
+	goto done;             // EOF during whitespace
+    }
+ 
     if (si == STRING) {        // string terminals 
-        slen = 0;
-	while (1) {
-	    if (insi != ABC && insi != UTF) {
-	        if (insi == AST) {
-                    // FIXME - flag a pattern;
-                }
-	        else {
-		    break;
-                }
-	    }
-            frag = in;
-            len = 1;
-	    insi = char2state[*++in];
-	    while (1) {
-	        if (insi == ABC) {
-                    len++;
-	            while ( (insi = char2state[*++in]) == ABC) {len++;}
-		    continue;
-                }
-                if (insi == UTF) {
-                    len++;
-	            while ( (insi = char2state[*++in]) == UTF) {len++;}
-	            continue;
-                }
-		if (insi == AST) {
-                    len++;
-                    // FIXME - flag a pattern;
-	 	    while ( (insi = char2state[*++in]) == AST) {len++;}
-		    continue;
-	        }
-	        break;
-	    }
-            emit_frag(C,len,frag);
-            elem = new_frag(ABC,frag,len,C->inbuf);
-            append_list(&branch, elem);
-            slen += len;
 
-            if (insi != NLL) {
-		break;
-            }
-            // end_of_buffer during, or end_of_file terminating, string
-	    if ( ! (in = more_in(C)) ) break;   // EOF
-	    // else continue with next buffer
-	    insi = char2state[*in];
-        }
-	if (slen > 0) {
-	    emit_string(C,&branch);
-	    rc = 0;
-        }
-	else {
-	    rc = 1;
-	}
-        bi = insi;                // the char class that terminates the string
+        rc = parse_string(C, &insi, &branch);
+        bi = insi;             // the char class that terminates the string
+
         insp = state_machine + (char)insi;
         goto done;
     }
-    if (si == insi) {        // single character terminals matching state_machine expectation
-        emit_tok(C,si,1,in);
+    if (si == insi) {          // single character terminals matching state_machine expectation
 
 	bi = insi;
-        insi = char2state[*++in];
+        rc = parse_token(C, &insi);
 	ei = insi;
 
-        rc = 0;
         insp = state_machine + (char)insi;
         goto done;
     }
     insp = state_machine + (char)insi;
 
-    // else not terminal
+
+    // else non terminal state -- some state entry processing
+ 
     switch (si) {
     case ACT:                     // starting a new ACT
         if (unterm) {             // implicitly terminates preceeding ACT
@@ -191,6 +217,8 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	break;
     }
 
+    // parse next state
+ 
     rc = 1;                       // init rc to "fail" in case no next state is found
     while (( ni = (state_t)(*sp) )) {        // iterate over ALTs or sequences
         nprop = *PROPP(sp);
@@ -223,6 +251,8 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	sp++;                     // next ALT (if not yet satisfied) 
 			          // or next sequence item
     }
+
+    // some state exit processing
 
     if (rc == 0) {
         switch (si) {
@@ -264,6 +294,7 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	}
     }
 
+    
 done:
     nest--;
     assert (nest >= 0);
