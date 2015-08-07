@@ -10,7 +10,6 @@
 static unsigned char unterm, *in;
 static char *insp;
 static state_t subj, bi, ei;
-static elem_t Tree;
 
 static int more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
     if (! (prop & (REP|SREP))) return 0;
@@ -285,11 +284,19 @@ done:
 
 int parse(context_t *C) {
     int rc;
+    elem_t root = {
+        .next = NULL,
+        .u.list.first = NULL,
+        .u.list.last = NULL,
+        .v.list.refs = 0,
+        .type = LISTELEM,
+        .state = 0
+    };
 
     emit_start_file(C);
     C->size = -1;      // tell more_in() that it is a new stream
 
-    rc = parse_r(C, &Tree, state_machine, SREP, 0, 0);
+    rc = parse_r(C, &root, state_machine, SREP, 0, 0);
 
     emit_end_file(C);
     return rc;
