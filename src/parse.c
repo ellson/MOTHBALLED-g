@@ -10,6 +10,15 @@
 static unsigned char unterm, *in;
 static char *insp;
 static state_t subj, bi, ei;
+static int sameend;
+static elem_t sameend_legs = {
+	.next = NULL,
+	.u.list.first = NULL,
+	.u.list.last = NULL,
+	.v.list.refs = 0,
+	.type = LISTELEM,
+	.state = 0
+};
 
 static int more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
     if (! (prop & (REP|SREP))) return 0;
@@ -131,14 +140,6 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	.type = LISTELEM,
 	.state = 0
     };
-    elem_t sameend = {
-	.next = NULL,
-	.u.list.first = NULL,
-	.u.list.last = NULL,
-	.v.list.refs = 0,
-	.type = LISTELEM,
-	.state = 0
-    };
 
     rc = 0;
     si = (state_t)(sp - state_machine);
@@ -195,6 +196,8 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	ei = insi;
 
         insp = state_machine + (char)insi;
+
+// FIXME - set flags for '~' and '='
         goto done;
     }
     insp = state_machine + (char)insi;
@@ -210,8 +213,12 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	unterm = 1;               // indicate that this new ACT is unterminated
 	break;
     case SUBJECT:
+        // FIXME - don't stack ... use context for this
         savesubj = subj;          // push parent's subject
         subj = 0;                 // clear this subject type until known
+	break;
+    case LEG:
+        sameend = 0;              // clear sameend flag until '=' seen
 	break;
     default:
 	break;
@@ -307,11 +314,11 @@ done:
                 emit_tree(C, elem);
 	        free_list(elem);
             }
-            if (si == EDGE) {
+            if (si == LEG) {
 		elem = ref_list(0, elem);
-                append_list(&sameend, elem);
+                append_list(&sameend_legs, elem);
 	// let it leak!   want to see that the list is kept due to ref counting
-	        free_list(&sameend);
+//	        free_list(&sameend);
         // ok, lets see if we can free later.
             }
 	}
