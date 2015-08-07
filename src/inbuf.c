@@ -1,30 +1,46 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <assert.h>
 
 #include "grammar.h"
 #include "inbuf.h"
 
 #define INBUFALLOCNUM 128
-#define LISTALLOCNUM 128
+#define LISTALLOCNUM 512
 
 static inbuf_t *free_inbuf_list;
 static elem_t *free_elem_list;
 
-static long int stat_inbufmalloc, stat_inbufmax, stat_inbufcount;
-static long int stat_elemmalloc, stat_elemmax, stat_elemcount;
+static long int stat_inchars;
+static long int stat_inbufmalloc, stat_inbufmax, stat_inbufnow;
+static long int stat_elemmalloc, stat_elemmax, stat_elemnow;
+
+#define STAT_FORMAT "%18s=%ld\n"
 
 void print_stats(FILE *chan) {
     fprintf(chan,"\n");
     fprintf(chan,"stats [\n");
-    fprintf(chan," inbufmalloc=%ld\n", stat_inbufmalloc);
-    fprintf(chan,"   inbufsize=%ld\n", sizeof(inbuf_t));
-    fprintf(chan,"    inbufmax=%ld\n", stat_inbufmax);
-    fprintf(chan,"  inbufcount=%ld\n", stat_inbufcount);
-    fprintf(chan,"  elemmalloc=%ld\n", stat_elemmalloc);
-    fprintf(chan,"    elemsize=%ld\n", size_elem_t);
-    fprintf(chan,"     elemmax=%ld\n", stat_elemmax);
-    fprintf(chan,"   elemcount=%ld\n", stat_elemcount);
+    fprintf(chan,STAT_FORMAT, "inchars",          stat_inchars);
+// FIXME - add chars_per_sec
+// FIXME - file_count
+// FIXME - act_count
+// FIXME - act__per_second
+// FIXME - thread_count (= container count)
+    fprintf(chan,"\n");
+    fprintf(chan,STAT_FORMAT, "inbufsize",        sizeof(inbuf_t));
+    fprintf(chan,STAT_FORMAT, "inbufmalloc",      stat_inbufmalloc);
+    fprintf(chan,STAT_FORMAT, "inbufmallocsize",  INBUFALLOCNUM*sizeof(inbuf_t));
+    fprintf(chan,STAT_FORMAT, "inbufmalloctotal", stat_inbufmalloc*INBUFALLOCNUM*sizeof(inbuf_t));
+    fprintf(chan,STAT_FORMAT, "inbufmax",         stat_inbufmax);
+    fprintf(chan,STAT_FORMAT, "inbufnow",         stat_inbufnow);
+    fprintf(chan,"\n");
+    fprintf(chan,STAT_FORMAT, "elemsize",         size_elem_t);
+    fprintf(chan,STAT_FORMAT, "elemmalloc",       stat_elemmalloc);
+    fprintf(chan,STAT_FORMAT, "elemmallocsize",   LISTALLOCNUM*size_elem_t);
+    fprintf(chan,STAT_FORMAT, "elemmalloctotal",  stat_elemmalloc*LISTALLOCNUM*size_elem_t);
+    fprintf(chan,STAT_FORMAT, "elemmax",          stat_elemmax);
+    fprintf(chan,STAT_FORMAT, "elemnow",          stat_elemnow);
     fprintf(chan,"]\n");
 }
 
@@ -37,7 +53,7 @@ static inbuf_t* new_inbuf(void) {
         free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbuf_t));
 // FIXME - add proper run-time error handling
         assert(free_inbuf_list);
-        stat_inbufmalloc += INBUFALLOCNUM * sizeof(inbuf_t);
+        stat_inbufmalloc++;
 
         next = free_inbuf_list;    // link the new inbufs into free_inbuf_list
         i = INBUFALLOCNUM;
@@ -55,8 +71,10 @@ static inbuf_t* new_inbuf(void) {
     inbuf->refs = 0;
     inbuf->end_of_buf = '\0';      // parse() sees this null like an EOF
 
-    stat_inbufcount++;             // stats
-    if (stat_inbufcount > stat_inbufmax) stat_inbufmax = stat_inbufcount;
+    stat_inbufnow++;             // stats
+    if (stat_inbufnow > stat_inbufmax) {
+        stat_inbufmax = stat_inbufnow;
+    }
     return inbuf;
 }
 
@@ -67,7 +85,7 @@ static void free_inbuf(inbuf_t *inbuf) {
     inbuf->next = free_inbuf_list;
     free_inbuf_list = inbuf;
 
-    stat_inbufcount--;             // stats
+    stat_inbufnow--;             // stats
 }
 
 unsigned char * more_in(context_t *C) {
@@ -80,7 +98,8 @@ unsigned char * more_in(context_t *C) {
     assert(C->inbuf);
 
     C->size = fread(C->inbuf->buf, 1, INBUFSIZE, C->file); // slurp in data from file stream
-
+    
+    stat_inchars += C->size;
     return C->inbuf->buf;
 }
 
@@ -93,7 +112,7 @@ static elem_t* new_elem_sub(char type) {
         free_elem_list = malloc(LISTALLOCNUM * size_elem_t);
 // FIXME - add proper run-time error handling
         assert(free_elem_list);
-        stat_elemmalloc += LISTALLOCNUM * size_elem_t;
+        stat_elemmalloc++;
 
         next = free_elem_list;  // link the new elems into free_elem_list
         i = LISTALLOCNUM;
@@ -110,9 +129,9 @@ static elem_t* new_elem_sub(char type) {
     elem->type = type;  // init the new elem
     elem->next = NULL;
 
-    stat_elemcount++;   // stats
-    if (stat_elemcount > stat_elemmax) {
-	stat_elemmax = stat_elemcount;
+    stat_elemnow++;   // stats
+    if (stat_elemnow > stat_elemmax) {
+	stat_elemmax = stat_elemnow;
     }
     return elem;
 }
@@ -234,7 +253,7 @@ void free_list(elem_t *list) {
         elem->next = free_elem_list;
         free_elem_list = elem;
 
-        stat_elemcount--;         // maintain stats
+        stat_elemnow--;         // maintain stats
 
 	elem = next;
     }
