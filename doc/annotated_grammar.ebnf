@@ -2,8 +2,8 @@
 
 # The g language is unusual in that there are no keywords in the language; only
 # key characters.  The key characters (and a few character pairs) are all
-# non-alpanumeric.  Consequently, strings only need quotingi if they contain
-# whitespace, or a special character,
+# non-alpanumeric.  Consequently, strings only need quoting if they contain
+# whitespace, or special characters.
 
 # Numbers are not used by the language, and so numbers (integer, decimal,
 # or signed) are all legal strings without quoting.  (Attibute values can
@@ -18,12 +18,11 @@
 # 	src/grammar.g
 #
 # This document is not definitative as it is a manually annotated
-# is a manually annotated copy of src/grammar.ebnf, which is itself a derivative
-# product.
+# copy of src/grammar.ebnf, which is itself a derivative product.
 #
 # Note that the language g is defined in the language g.
 #
-# The executable ia able to describe its grammar from its internal tables
+# The executable is able to describe its grammar from its internal tables
 # using:
 # 	 ./g -d >t.g
 # which should be identical to the src/grammar.g stored in git.
@@ -39,16 +38,23 @@
 
 
 # g is intended for incremental, streaming graph applications. The stream,
-# known as an ACTIVIY consists of an unbounded set of ACTs:
+# known as an ACTIVIY consists of an optional set of container attributes
+# followed unbounded set of ACTs:
 
-     ACTIVITY ::= _ACT+
+# Node, edge, and container ATTRIBUTES are collected in separate dictionaries,
+# but grammatically they all take the same form:
+
+# Note that if the input stream is from a set of files, the container
+# ATTRIBUTES can only occur once, in the first file of the set.  
+
+     ACTIVITY ::= ATTRIBUTES? _ACT+
 
 # Each ACT is an insertion, modification or deletion of some graph
-# object or objects
+# object or objects with (optional) attributes and contents.
 
           ACT ::= ACTION? SUBJECT ATTRIBUTES? CONTAINER? TERM?
 
-# Any SUBJECT can have ATTRIBUTES and CONTENTS which are to be
+# Any SUBJECT can have ATTRIBUTES ana/ord CONTENTS which are to be
 # added (or deleted) from the OBJECT(s) specified by the <subject>
 
 # The PROPERTIES of a SUBJECT affect the outside of any CONTAINER it might have.
@@ -61,8 +67,8 @@
 # There is no CONTAINER for the top ACTIVITY, so its properties must be
 # provided by the external environment, such as from the command line.
 
-# The default ACTION is to add new, or modify existing, object(s).
-# A TLD (i.e, a '~') signals deletion,
+# The default ACTION is to add non-existant, or modify existant, object or objects.
+# A TLD (i.e, a '~') signals deletion of an object or objects.
 
        ACTION ::= TLD
 
@@ -77,8 +83,7 @@
        OBJECT ::= EDGE
                 | NODE
 
-# The OBJECT, or all the OBJECTS in an OBJECT_LIST, can be given properties
-# in the form of:  attr=value
+# The OBJECT, or all the OBJECTS in an OBJECT_LIST, can be given ATTRIBUTES.
 
 # On "delete" operations, the VALUE is set to the empty string. 
 # ATTRs themselves i.e. the name of the ATTRIBUTE, can only be deleted,
@@ -90,15 +95,11 @@
 
     VALASSIGN ::= EQL VALUE
 
-
-# Any NODE or EDGE can be a CONTAINER another graph.  In the case
+# Any NODE or EDGE can be a CONTAINER of another graph.  In the case
 # of OBJECT_LIST, all the OBJECTs are given the same contents, but
 # those contents can evolve independently (i.e. they are not shared).
 
-# NODE, EDGE, and CONTAINER ATTR are each seperate namespaces
-# (dictionaries) that are local to the CONTAINER
-
-    CONTAINER ::= LBE ATTRIBUTES? ACTIVITY? RBE
+    CONTAINER ::= LBE ACTIVITY? RBE
 
 # The TERM is mostly optional since it is rarely needed.
 # It serves two purposes:
@@ -115,7 +116,7 @@
 # A NODE is minimally an OBJECT with a name.
 # The namespace of the NODEID is the parent CONTAINER
 
-          NODE ::= NODEID
+         NODE ::= NODEID
 
 # An EDGE is a relationship between 1, 2, or more NODES:
 #   between 1 node is a dangling edge
@@ -190,15 +191,20 @@
 # EDGES can terminate on a particular place on a NODE, known as a PORT:
 #
 #              chip:pin3
-#              foo`1:w
+#              foobar`1:w
 
 # If PORT is not provided then it defaults to the center of the shape,
 # with the line representing the EDGE clipped back to the boundary of the shape.
 
-# Note: a PORT used in isolation as an ENPOIINT refers the inside places on
-# the parent CONTAINER.   For NODE CONTAINER it uses the same PORTID
+# Note: a PORT used in isolation as an ENPOIINT refers the inside place of the
+# port on the parent CONTAINER.  For NODE CONTAINER it uses the same PORTID
 # inside as outside.  For EDGE CONTAINER it refers a particular LEG
-# of the parent EDGE by means of a 1-based index, left to right
+# of the parent EDGE by means of a 1-based index, left to right.
+#
+# In this example,  legs "b" and "c" are connected via "hub", but "a" is not connected.
+# Note that EDGE contents can be reused without knowlege of the LEG names in the parent.
+#
+#              <a b c> { < :2 hub > < :3 hub > }
 
 # The various IDs are all represented by STRINGs
 
@@ -216,7 +222,7 @@
 # Example:
 #              card_deck_* [shape=stackedcards]
 
-# FIXME - need more details on paterns
+# FIXME - need more details on patterns
 
 
 # STRINGs can use various quoting and escape mechanisms to contain any
