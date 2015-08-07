@@ -319,10 +319,11 @@ done:
 
     emit_end_state(C, si, rc, nest, repc);
 
-    if (!in) {
+    if (!in) {                      // if at EOF
         if (unterm) {
- 	    emit_term(C);
+ 	    emit_term(C);           // EOF is an implicit terminator
 	}
+	rc = 1;
     }
 
     return rc;

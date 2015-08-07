@@ -40,7 +40,7 @@ static void api_end_state(context_t *C, char class, int rc, int nest, int repc) 
 }
 
 static void api_end_file(context_t *C) {
-    fprintf(OUT, "\n   ");
+    fprintf(OUT, "\n\n");
 }
 
 static void api_error(context_t *C, char *message) {
