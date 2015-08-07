@@ -323,7 +323,7 @@ done:
         if (unterm) {
  	    emit_term(C);           // EOF is an implicit terminator
 	}
-	rc = 1;
+        // this does not change previously set rc
     }
 
     return rc;
