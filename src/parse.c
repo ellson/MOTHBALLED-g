@@ -338,7 +338,13 @@ new_sameend_legs.state = 0;
 	    }
             break;
         case TERM :   
+            if (unterm) {
+ 	        emit_term(C);
+	    }
+	    unterm = 0;
+	    break;
         case CONTAINER :
+	    stat_containercount++;
             if (unterm) {
  	        emit_term(C);
 	    }

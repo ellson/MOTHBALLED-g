@@ -1,6 +1,7 @@
 extern long stat_filecount;
-extern long stat_actcount;
 extern long stat_inchars;
+extern long stat_actcount;
+extern long stat_containercount;
 extern long stat_inbufmalloc;
 extern long stat_inbufmax;
 extern long stat_inbufnow;

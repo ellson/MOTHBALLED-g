@@ -11,8 +11,9 @@
 #define TEN9 1000000000
 
 long stat_filecount;
-long stat_actcount;
 long stat_inchars;
+long stat_actcount;
+long stat_containercount;
 long stat_inbufmalloc;
 long stat_inbufmax;
 long stat_inbufnow;
@@ -22,14 +23,14 @@ long stat_elemnow;
 
 void print_stats(FILE *chan, struct timespec *starttime) {
     int rc;
-    long runtime;
     struct timespec nowtime;
+    long runtime;
 
     rc = clock_gettime(CLOCK_MONOTONIC_RAW, &nowtime);
     assert(rc == 0);
 
     runtime = (nowtime.tv_sec * TEN9 + nowtime.tv_nsec)
-            - (starttime->tv_sec * TEN9 + starttime->tv_nsec);
+                - (starttime->tv_sec * TEN9 + starttime->tv_nsec);
     
     fprintf(chan,"\n");
     fprintf(chan,"stats [\n");
@@ -41,7 +42,8 @@ void print_stats(FILE *chan, struct timespec *starttime) {
     fprintf(chan,"\n");
     fprintf(chan,STAT_FORMAT"\n", "acts",              stat_actcount);
     fprintf(chan,STAT_FORMAT"\n", "acts_per_second",   stat_actcount * TEN9 / runtime);
-// FIXME - thread_count (= container count)
+    fprintf(chan,"\n");
+    fprintf(chan,STAT_FORMAT"\n", "containers",        stat_containercount);
     fprintf(chan,"\n");
     fprintf(chan,STAT_FORMAT"\n", "inbufsize",         sizeof(inbuf_t));
     fprintf(chan,STAT_FORMAT"\n", "inbufmalloc",       stat_inbufmalloc);
