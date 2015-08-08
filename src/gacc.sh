@@ -1,14 +1,14 @@
 #!/bin/bash
 
 if test $# -lt 1; then
-   echo "Usage: $0 <grammar spec in g>" >&2
-   exit 1
+    echo "Usage: $0 <grammar spec in g>" >&2
+    exit 1
 fi
 
 ifn="$1"
 if test ! -r "$ifn"; then
-   echo "$0 : \"$ifn\" is not readable"
-   exit 1
+    echo "$0 : \"$ifn\" is not readable"
+    exit 1
 fi
 
 of=${ifn%.g}
@@ -36,7 +36,7 @@ sm_node() {
         ((sindx++))
         for (( i=0; i<${#1}; i++ )); do
             NAME[$1]+="'${1:$i:1}',"
-	    ((sindx++)) 
+            ((sindx++)) 
         done
         if test $(( sindx % 2 )) -eq 1; then
             NAME[$1]+="0,"
@@ -95,25 +95,25 @@ sm_delete() {
 sm_term() {
     if test "$next" != ""; then
         nextlist=("${nextlist[@]}" "$next")
-	next=""
+        next=""
 
         nprop=""
         if test "$prop" != ""; then
             cnt=0
             for p in $prop; do
 	        PROPS[$p]=""
-                if test $cnt -ne 0;then
+	        if test $cnt -ne 0;then
 	            nprop+=" $p"
-		else
+	        else
 	            nprop+="$p"
-		fi
-		((cnt++))
-	    done
+	        fi
+	        ((cnt++))
+            done
         fi
         proplist=("${proplist[@]}" "$nprop")
         prop=""
 
-	((indx++))
+        ((indx++))
     fi
 }
 
@@ -184,38 +184,38 @@ rm -f ${ifn}.s
 
 cat >$ofh <<EOF
 /*
- * This is a generated file.  Do not edit.
- */
+* This is a generated file.  Do not edit.
+*/
 
 EOF
 
 ####
 
 (
-cnt=0
-printf "typedef enum {\n"
-for p in ${!PROPS[@]}; do
-    if test $cnt -ne 0; then 
-	printf ",\n"
-    fi
-    printf "    $p = 1<<$cnt"
-    ((cnt++))
-done
-printf "\n} props_t;\n\n"
+    cnt=0
+    printf "typedef enum {\n"
+    for p in ${!PROPS[@]}; do
+        if test $cnt -ne 0; then 
+            printf ",\n"
+        fi
+        printf "    $p = 1<<$cnt"
+        ((cnt++))
+    done
+    printf "\n} props_t;\n\n"
 ) >>$ofh
 
 ####
 (
-cnt=0
-printf "typedef enum {\n"
-for s in ${statelist[@]}; do
-    if test $cnt -ne 0; then 
-	printf ",\n"
-    fi
-    printf "    $s = ${POS[$s]}"
-    ((cnt++))
-done
-printf "\n} state_t;\n\n"
+    cnt=0
+    printf "typedef enum {\n"
+    for s in ${statelist[@]}; do
+        if test $cnt -ne 0; then 
+            printf ",\n"
+        fi
+        printf "    $s = ${POS[$s]}"
+        ((cnt++))
+    done
+    printf "\n} state_t;\n\n"
 ) >>$ofh
 
 cat >>$ofh <<EOF
@@ -233,8 +233,8 @@ EOF
 
 cat >$ofc <<EOF
 /*
- * This is a generated file.  Do not edit.
- */
+* This is a generated file.  Do not edit.
+*/
 
 #include "$ofh"
 
@@ -242,91 +242,91 @@ EOF
 
 ####
 (
-printf "unsigned char state_names[] = {\n"
-for n in ${namelist[@]}; do
-    spos=${SPOS[$n]}
-    printf "    /* %3d */  %s\n" "$((spos/2))" "${NAME[$n]}"
-done
-printf "};\n\n"
+    printf "unsigned char state_names[] = {\n"
+    for n in ${namelist[@]}; do
+        spos=${SPOS[$n]}
+        printf "    /* %3d */  %s\n" "$((spos/2))" "${NAME[$n]}"
+    done
+    printf "};\n\n"
 ) >>$ofc
 
 ####
 (
-printf "unsigned char char2state[] = {"
-for msb in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
-    printf "\n    /* ${msb}0 */   "
-    for lsb in 0 1 2 3 4 5 6 7; do
-	printf "%3s," "${CHARMAP[${msb}${lsb}]}"
+    printf "unsigned char char2state[] = {"
+    for msb in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
+        printf "\n    /* ${msb}0 */   "
+        for lsb in 0 1 2 3 4 5 6 7; do
+            printf "%3s," "${CHARMAP[${msb}${lsb}]}"
+        done
+        printf "\n    /* ${msb}8 */   "
+        for lsb in 8 9 a b c d e f; do
+            printf "%3s," "${CHARMAP[${msb}${lsb}]}"
+        done
     done
-    printf "\n    /* ${msb}8 */   "
-    for lsb in 8 9 a b c d e f; do
-	printf "%3s," "${CHARMAP[${msb}${lsb}]}"
-    done
-done
-printf "\n};\n\n"
+    printf "\n};\n\n"
 ) >>$ofc
 
 ####
 
 ebnf() {
     for s in ${statelist[@]}; do
-        indx=${POS[$s]}
-	class="${CONTENT[$s]}"
-        if test "$s" = "BIN" -o "$s" = "UTF" -o "$s" = "NLL" -o "$s" = "WS"; then
-	    printable=0
-	else
-	    printable=1
-	fi
-        printf "%13s ::=" "$s"
-        alts=0
-        while true; do
-            next=${nextlist[$indx]}
-            prop=${proplist[$indx]}
-            ((indx++))
-            if test "$next" = ""; then break; fi
-            ord=0
-            ws=""
-	    for p in $prop; do
-	        case $p in
-                ALT ) if test $alts -ne 0; then
-		          printf "\n%17s" "|"
-		      fi
-		      (( alts++))
-		      ;;
-                OPT ) ((ord|=1));;
-                REP)  ((ord|=2));;
-                SREP) ((ord|=2)); ws='_';;
-	        *) ;;
-	        esac
-            done
-	    case $ord in
-	    0 ) ordc="";; 
-	    1 ) ordc="?";; 
-	    2 ) ordc="+";; 
-	    3 ) ordc="*";; 
+    indx=${POS[$s]}
+    class="${CONTENT[$s]}"
+    if test "$s" = "BIN" -o "$s" = "UTF" -o "$s" = "NLL" -o "$s" = "WS"; then
+        printable=0
+    else
+        printable=1
+    fi
+    printf "%13s ::=" "$s"
+    alts=0
+    while true; do
+        next=${nextlist[$indx]}
+        prop=${proplist[$indx]}
+        ((indx++))
+        if test "$next" = ""; then break; fi
+        ord=0
+        ws=""
+        for p in $prop; do
+	    case $p in
+	    ALT ) if test $alts -ne 0; then
+		      printf "\n%17s" "|"
+	          fi
+	          (( alts++))
+	          ;;
+	    OPT ) ((ord|=1));;
+	    REP)  ((ord|=2));;
+	    SREP) ((ord|=2)); ws='_';;
+	    *) ;;
 	    esac
-            printf " %s%s%s" "$ws" "$next" "$ordc"
         done
-        if test "$class" != ""; then
-	    altc=0
-            printf " "
-	    for c in $class; do
-		if test $altc -gt 0; then
-		    if test $(( altc % 8 )) -eq 0; then
-                        printf "\n%18s" "| "
-		    else
-                        printf "|"	
-		    fi
-		fi
-		((altc++))
-		if test $printable -eq 1; then
-                    printf "'\x$c'"	
-		else
-                    printf "'0x$c'"	
-		fi
-	    done
-	fi
-        printf "\n"
+        case $ord in
+        0 ) ordc="";; 
+        1 ) ordc="?";; 
+        2 ) ordc="+";; 
+        3 ) ordc="*";; 
+        esac
+        printf " %s%s%s" "$ws" "$next" "$ordc"
+    done
+    if test "$class" != ""; then
+        altc=0
+        printf " "
+        for c in $class; do
+	    if test $altc -gt 0; then
+	        if test $(( altc % 8 )) -eq 0; then
+		    printf "\n%18s" "| "
+	        else
+		    printf "|"	
+	        fi
+	    fi
+	    ((altc++))
+	    if test $printable -eq 1; then
+	        printf "'\x$c'"	
+	    else
+	        printf "'0x$c'"	
+	    fi
+        done
+    fi
+    printf "\n"
     done
 }
 
@@ -354,21 +354,21 @@ for s in ${statelist[@]}; do
     ( printf "    /* %3d %12s */  " $indx $s ) >>${ofc}.props
     while true; do
         next=${nextlist[$indx]}
-	prop=${proplist[$indx]}
+        prop=${proplist[$indx]}
         if test "$next" = ""; then break; fi
         nxtindx=${POS[$next]}
-
+    
         nprops=0
-	for p in $prop; do
-	    cnt=0
-	    for q in ${!PROPS[@]}; do
-		if test "$p" = "$q"; then
-		    ((nprops += (1<<cnt) ))
-		fi
+        for p in $prop; do
+            cnt=0
+            for q in ${!PROPS[@]}; do
+	        if test "$p" = "$q"; then
+	            ((nprops += (1<<cnt) ))
+	        fi
 	        ((cnt++))
-	    done
-	done
-
+            done
+        done
+    
         ( printf " %4d," $((nxtindx-indx))   ) >>${ofc}.states
         ( printf " 0x%02x," $nprops          ) >>${ofc}.props
         ((indx++))
