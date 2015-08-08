@@ -5,10 +5,11 @@
 #include <time.h>
 #include <assert.h>
 
-# include "inbuf.h"
-# include "emit.h"
-# include "parse.h"
-# include "dumpg.h"
+#include "grammar.h"
+#include "inbuf.h"
+#include "emit.h"
+#include "parse.h"
+#include "dumpg.h"
 
 static context_t context;
 

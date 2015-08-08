@@ -39,13 +39,13 @@ static int more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
 
 // consume all whitespace up to next token, or EOF
 // FIXME - this function is the place to deal with comments
-static int parse_whitespace(context_t *C, state_t *pinsi) {
+static int parse_whitespace(context_t *C) {
     state_t insi;
     unsigned char *in;
     int rc;
 
     in = C->in;
-    insi = *pinsi;
+    insi = C->insi;
     rc = 0;
     while (insi == WS) {       // eat all leading whitespace
         insi = char2state[*++in];
@@ -60,21 +60,21 @@ static int parse_whitespace(context_t *C, state_t *pinsi) {
             insi = char2state[*++in];
         }
     }
-    *pinsi = insi;
+    C->insi = insi;
     C->in = in;
     return rc;
 }
 
 // collect fragments to form a STRING token
 // FIXME - this function is the place to deal with quoting and escaping
-static int parse_string(context_t *C, state_t *pinsi, elem_t *fraglist) {
+static int parse_string(context_t *C, elem_t *fraglist) {
     int rc, slen, len;
     unsigned char *frag, *in;
     state_t insi;
     elem_t *elem;
 
     in = C->in;
-    insi = *pinsi;
+    insi = C->insi;
     slen = 0;
     while (1) {
         if (insi != ABC && insi != UTF) {
@@ -127,15 +127,15 @@ static int parse_string(context_t *C, state_t *pinsi, elem_t *fraglist) {
     else {
         rc = 1;
     }
-    *pinsi = insi;
+    C->insi = insi;
     C->in = in;
     return rc;
 }
 
 // process single character tokens
-static int parse_token(context_t *C, state_t *pinsi) {
-    emit_tok(C, *pinsi, 1, C->in);
-    *pinsi = char2state[*++(C->in)];
+static int parse_token(context_t *C) {
+    emit_tok(C, C->insi, 1, C->in);
+    C->insi = char2state[*++(C->in)];
     return 0;
 }
 
@@ -143,7 +143,7 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 		       unsigned char prop, int nest, int repc) {
     unsigned char nprop;
     char *np;
-    state_t insi, si, ni, savesubj;
+    state_t si, ni, savesubj;
     int rc;
     elem_t *elem;
     elem_t branch = {
@@ -171,14 +171,14 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	if (!(C->in)) {
 	    if ( !(C->in = more_in(C)) ) goto done;  // EOF
         }
-        insi = char2state[*C->in]; // get first input state
+        C->insi = char2state[*C->in]; // get first input state
     }
     else {                     // else continuing state sequence
         if (!(C->in)) {        // if we already hit EOF
             rc = 1;            // then there is nothing to be done
             goto done;
         }
-	insi = (state_t)(insp - state_machine);
+	C->insi = (state_t)(insp - state_machine);
         if (prop & REP) {      // if the sequence is a non-space REPetition
             if (bi == WS) {    // whitespace not accepted between REP
 	        rc = 1;        // so the REP is terminated
@@ -190,31 +190,31 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 
     // deal with terminal states: whitespace, string, token
     
-    ei = insi;                 // the char class that ended the last token
-    if ( (rc = parse_whitespace(C, &insi)) ) {
+    ei = C->insi;                 // the char class that ended the last token
+    if ( (rc = parse_whitespace(C)) ) {
 	goto done;             // EOF during whitespace
     }
  
     if (si == STRING) {        // string terminals 
 
-        rc = parse_string(C, &insi, &branch);
-        bi = insi;             // the char class that terminates the string
+        rc = parse_string(C, &branch);
+        bi = C->insi;             // the char class that terminates the string
 
-        insp = state_machine + (char)insi;
+        insp = state_machine + (char)(C->insi);
         goto done;
     }
-    if (si == insi) {          // single character terminals matching state_machine expectation
+    if (si == C->insi) {          // single character terminals matching state_machine expectation
 
-	bi = insi;
-        rc = parse_token(C, &insi);
-	ei = insi;
+	bi = C->insi;
+        rc = parse_token(C);
+	ei = C->insi;
 
-        insp = state_machine + (char)insi;
+        insp = state_machine + (char)(C->insi);
 
 // FIXME - set flags for '~' and '='
         goto done;
     }
-    insp = state_machine + (char)insi;
+    insp = state_machine + (char)(C->insi);
 
 
     // else non terminal state -- some state entry processing

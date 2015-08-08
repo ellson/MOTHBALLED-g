@@ -17,6 +17,7 @@ typedef struct {
     inbuf_t *inbuf;
     int size;
     unsigned char *in;
+    state_t insi;
 } context_t;
 
 typedef struct elem_s elem_t;
