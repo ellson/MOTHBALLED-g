@@ -71,8 +71,12 @@ before viewing. )
 <ul>
 EOF
 
-for i in src/Makefile src/*.[chg] src/*.sh;do
+shopt -s nullglob
+for i in src/Makefile src/*.c src/*.sh;do
    echo "<li><a type=\"text/plain\" href=\"$i\">${i#src/}</a>"
+   for j in ${i%.c}.[hg]; do
+       echo "<a type=\"text/plain\" href=\"$j\">${j#src/}</a>"
+   done
 done
 
 cat <<EOF

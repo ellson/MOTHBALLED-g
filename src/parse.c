@@ -4,6 +4,7 @@
 
 #include "grammar.h"
 #include "inbuf.h"
+#include "stats.h"
 #include "emit.h"
 #include "parse.h"
 
@@ -275,7 +276,7 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
     if (rc == 0) {
         switch (si) {
         case ACT:
-            actcount++;
+            stat_actcount++;
 	    break;
         case SUBJECT:
             subj = savesubj;      // pop subj

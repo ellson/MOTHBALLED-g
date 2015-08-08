@@ -56,8 +56,8 @@ struct elem_s {
 
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 
-extern long filecount;
-extern long actcount;
+#define INBUFALLOCNUM 128
+#define LISTALLOCNUM 512
 
 unsigned char * more_in(context_t *C);
 

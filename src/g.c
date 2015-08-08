@@ -7,6 +7,7 @@
 
 #include "grammar.h"
 #include "inbuf.h"
+#include "stats.h"
 #include "emit.h"
 #include "parse.h"
 #include "dumpg.h"
@@ -25,8 +26,6 @@ int main (int argc, char *argv[]) {
 
     rc = clock_gettime(CLOCK_MONOTONIC_RAW, &starttime);
     assert(rc == 0);
-    filecount = 0;
-    actcount = 0;
 
     while ((opt = getopt(argc, argv, "d::g::t::s")) != -1) {
 	if (optarg) optnum = atoi(optarg);
@@ -93,7 +92,7 @@ int main (int argc, char *argv[]) {
             C->filename = argv[i];
             f = fopen(argv[i],"r");
 	    if (f) {
-                filecount++;
+                stat_filecount++;
 		C->file = f;
                 parse(&context);
                 fclose(f);
@@ -105,7 +104,7 @@ int main (int argc, char *argv[]) {
         }
     }
     if (needstdin) {
-        filecount++;
+        stat_filecount++;
         C->filename = "-";
         C->file = stdin;
         parse(&context);

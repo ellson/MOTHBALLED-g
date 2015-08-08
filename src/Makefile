@@ -1,7 +1,7 @@
 #CFLAGS = -g -O0 -Wall
 CFLAGS = -DNDEBUG
-OBJS = parse.o dumpg.o grammar.o inbuf.o emit.o emit_t.o emit_g.o g.o
-HDRS = grammar.h parse.h inbuf.h emit.h dumpg.h
+OBJS = grammar.o parse.o stats.o inbuf.o dumpg.o emit.o emit_t.o emit_g.o g.o
+HDRS = grammar.h parse.h stats.h inbuf.h dumpg.h emit.h
 
 all: test grammar.svg
 
