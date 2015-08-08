@@ -76,8 +76,17 @@ for i in src/Makefile src/*.[chg] src/*.sh;do
 done
 
 cat <<EOF
-</ul
-<li><a href="graphs/">Example "g" Graph Collection</a>
+</ul>
+<li><a href="src/">Example Graphs</a>
+<ul>
+EOF
+
+for i in graphs/*.g;do
+   echo "<li><a type=\"text/plain\" href=\"$i\">${i#graphs/}</a>"
+done
+
+cat <<EOF
+</ul>
 </ol>
 
 </body>

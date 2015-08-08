@@ -1,17 +1,13 @@
-index.html: g
+index.html: src/g index.html.sh
 	./index.html.sh >index.html
 
-g.tgz: g
-	tar -czf g.tgz \
-		--exclude */.git* \
-		--exclude *.tgz \
-		--exclude *.md \
-		--exclude *.o \
-		--exclude src/g \
-		../g
+.PHONY: g.tgz
+g.tgz: src/g
+	ln -s . g
+	find -H g -type f | egrep -v '(.git|g.tgz|.md$$|.o$$|src/g$$)' | xargs tar cfz g.tgz
+	rm -f g
 
-.PHONY: g
-g:
+src/g:
 	( cd src; make )
 
 clean:
