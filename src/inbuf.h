@@ -12,10 +12,11 @@ struct inbuf_s {
 };
 
 typedef struct {
-    FILE *file;
     char *filename;
+    FILE *file;
     inbuf_t *inbuf;
     int size;
+    unsigned char *in;
 } context_t;
 
 typedef struct elem_s elem_t;

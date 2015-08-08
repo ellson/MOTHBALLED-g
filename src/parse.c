@@ -7,7 +7,7 @@
 #include "emit.h"
 #include "parse.h"
 
-static unsigned char unterm, *in;
+static unsigned char unterm;
 static char *insp;
 static state_t subj, bi, ei;
 static elem_t *sameend_elem;
@@ -41,8 +41,10 @@ static int more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
 // FIXME - this function is the place to deal with comments
 static int parse_whitespace(context_t *C, state_t *pinsi) {
     state_t insi;
+    unsigned char *in;
     int rc;
 
+    in = C->in;
     insi = *pinsi;
     rc = 0;
     while (insi == WS) {       // eat all leading whitespace
@@ -59,6 +61,7 @@ static int parse_whitespace(context_t *C, state_t *pinsi) {
         }
     }
     *pinsi = insi;
+    C->in = in;
     return rc;
 }
 
@@ -66,10 +69,11 @@ static int parse_whitespace(context_t *C, state_t *pinsi) {
 // FIXME - this function is the place to deal with quoting and escaping
 static int parse_string(context_t *C, state_t *pinsi, elem_t *fraglist) {
     int rc, slen, len;
-    unsigned char *frag;
+    unsigned char *frag, *in;
     state_t insi;
     elem_t *elem;
 
+    in = C->in;
     insi = *pinsi;
     slen = 0;
     while (1) {
@@ -124,13 +128,14 @@ static int parse_string(context_t *C, state_t *pinsi, elem_t *fraglist) {
         rc = 1;
     }
     *pinsi = insi;
+    C->in = in;
     return rc;
 }
 
 // process single character tokens
 static int parse_token(context_t *C, state_t *pinsi) {
-    emit_tok(C, *pinsi, 1, in);
-    *pinsi = char2state[*++in];
+    emit_tok(C, *pinsi, 1, C->in);
+    *pinsi = char2state[*++(C->in)];
     return 0;
 }
 
@@ -163,13 +168,13 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 			       // to satisfy toplevel SREP or REP
 			       // (Note, first REP of a REP sequence *can* be preceeded by WS,
 			       //      just not the rest of the REPs. )
-	if (!in) {
-	    if ( !(in = more_in(C)) ) goto done;  // EOF
+	if (!(C->in)) {
+	    if ( !(C->in = more_in(C)) ) goto done;  // EOF
         }
-        insi = char2state[*in]; // get first input state
+        insi = char2state[*C->in]; // get first input state
     }
     else {                     // else continuing state sequence
-        if (!in) {             // if we already hit EOF
+        if (!(C->in)) {        // if we already hit EOF
             rc = 1;            // then there is nothing to be done
             goto done;
         }
@@ -376,7 +381,7 @@ done:
 
     emit_end_state(C, si, rc, nest, repc);
 
-    if (!in) {                      // if at EOF
+    if (!(C->in)) {                      // if at EOF
         if (unterm) {
  	    emit_term(C);           // EOF is an implicit terminator
 	}
