@@ -1,35 +1,34 @@
-CFLAGS = -g -O0 -Wall
+#CFLAGS = -g -O0 -Wall
+CFLAGS = -DNDEBUG
+OBJS = parse.o dumpg.o grammar.o inbuf.o emit.o emit_t.o emit_g.o g.o
+HDRS = grammar.h parse.h inbuf.h emit.h dumpg.h
 
-g: parse.o dumpg.o grammar.o inbuf.o emit.o emit_t.o emit_g.o g.o
+all: test grammar.svg
 
-parse.o: parse.c grammar.h parse.h inbuf.h emit.h
+g: ${OBJS}
 
-dumpg.o: dumpg.c dumpg.h inbuf.h grammar.h
-
-grammar.o: grammar.c grammar.h
-
-inbuf.o: inbuf.c inbuf.h grammar.h
-
-emit.o: emit.c emit.h grammar.h
-
-emit_t.o: emit_t.c emit.h inbuf.h grammar.h
-
-emit_g.o: emit_g.c emit.h inbuf.h grammar.h
-
-g.o: g.c parse.h dumpg.h emit.h inbuf.h
-
-grammar.png: g g2gv.sh
-	./g -g | ./g2gv.sh | dot -Tpng -o grammar.png
+${OBJS}: ${HDRS}
 
 grammar.c: grammar.h
 
 grammar.h grammar.ebnf: grammar.g gacc.sh
 	./gacc.sh grammar.g
 
-# grammar.g can be built by g, but need to avoid the dependency loop
+# grammar.g can be built by g, but we need to avoid the dependency loop
 # and allow hand modifications to be made locally and stored in git
-grammar.g:
-	./g -d >grammar.g
+# So here we just check that the output grammar exactly matches the input
+test_grammar.g: g
+	./g -d >test_grammar.g
+	diff grammar.g test_grammar.g
+
+grammar.svg: g g2gv.sh
+	./g -d | ./g2gv.sh | dot -Tsvg -o grammar.svg
+
+# grammar.g (or test_grammar.g) provides a convinient test graph
+# This test processes 1000 copies of the graph to generate some stats
+.PHONY: test
+test: g
+	(for i in {1..1000}; do ./g -d; done) | ./g -s >/dev/null
 
 clean:
-	rm -f *.o g grammar.png grammar.[ch] grammar.ebnf
+	rm -f ${OBJS} g grammar.png grammar.[ch] grammar.ebnf test_grammar.g grammar.svg

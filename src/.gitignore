@@ -3,3 +3,4 @@ g
 grammar.c
 grammar.h
 grammar.ebnf
+grammar.svg
