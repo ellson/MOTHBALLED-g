@@ -1,3 +1,5 @@
+cat <<EOF
+
 <html>
 <head>
 <title>The "g" graph language</title>
@@ -53,7 +55,7 @@ before viewing. )
 <ul>
 <li><a type="text/plain" href="doc/annotated_grammar.ebnf">Annotated eBNF (not definitive)</a>
 <li><a type="text/plain" href="src/grammar.g">The definitive source in "g"</a>
-<li><a href="src/grammar.ebnf">Rendered in eBNF from definitive source</a>
+<li><a type="text/plain" href="src/grammar.ebnf">Rendered in eBNF from definitive source</a>
 <li><a href="src/grammar.svg">Rendered by dot from definitive source</a>
 </ul>
 <li>Some hand drawn examples:
@@ -66,10 +68,19 @@ before viewing. )
 <li><a href="doc/sketches/multi_node_multi_edge.svg">multi_node_multi_edge</a>
 </ul>
 <li><a href="src/">Sources</a>
+<ul>
+EOF
+
+for i in src/Makefile src/*.[chg] src/*.sh;do
+   echo "<li><a type=\"text/plain\" href=\"$i\">${i#src/}</a>"
+done
+
+cat <<EOF
+</ul
 <li><a href="graphs/">Example "g" Graph Collection</a>
 </ol>
 
-
 </body>
 </html>
+EOF
 
