@@ -54,25 +54,30 @@ static void free_inbuf(inbuf_t *inbuf) {
     stat_inbufnow--;             // stats
 }
 
-unsigned char * more_in(context_t *C) {
-    if (C->size != INBUFSIZE) {    // if previous inbuf was short,
-        if (C->size != -1) {       //     unless its a new new stream 
-	    return NULL;           //         EOF
-        }
-    }
-    C->inbuf = new_inbuf();        // grab a buffer
-    assert(C->inbuf);
+int more_in(context_t *C) {
+    int size;
 
-    C->size = fread(C->inbuf->buf, 1, INBUFSIZE, C->file); // slurp in data from file stream
+    if (! C->inbuf || C->in == &(C->inbuf->end_of_buf)) {
+        C->inbuf = new_inbuf();        // grab a buffer
+        assert(C->inbuf);
+        C->in = C->inbuf->buf;
+    }
+    size = fread(C->in, 1, &(C->inbuf->end_of_buf) - C->in, C->file); // slurp in data from file stream
+    C->in[size] = '\0';  // ensure terminated (we have an extra character in inbuf_t so this is safe)
+    C->insi = char2state[*C->in];
+
+    if (size == 0 && feof(C->file)) {
+	return 1;
+    }
     
-    stat_inchars += C->size;
-    return C->inbuf->buf;
+    stat_inchars += size;
+    return 0;
 }
 
 static elem_t* new_elem_sub(char type) {
     elem_t *elem, *next;
     int i;
-
+ 
     if (! free_elem_list) {       // if no elems in free_elem_list
         
         free_elem_list = malloc(LISTALLOCNUM * size_elem_t);

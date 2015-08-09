@@ -50,7 +50,6 @@ typedef struct {
     char *filename;        // name of file currently being processed, or "-" for stdin
     FILE *file;            // open file handle for file currently being processed
     inbuf_t *inbuf;        // the active input buffer
-    int size;              // number of characters in the input buffer currently
     unsigned char *in;     // next charater to be processed
     state_t insi;          // state represented by last character read
     elem_t subject;        // header of subject stack for containment
@@ -62,7 +61,7 @@ typedef struct {
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
-unsigned char * more_in(context_t *C);
+int more_in(context_t *C);
 
 elem_t* new_frag(char state, unsigned char *frag, int len, inbuf_t *inbuf);
 elem_t *move_list(char state, elem_t *list);

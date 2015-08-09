@@ -29,24 +29,18 @@ static int parse_whitespace(context_t *C) {
     unsigned char *in;
     int rc;
 
-    in = C->in;
-    insi = C->insi;
     rc = 0;
-    while (insi == WS) {       // eat all leading whitespace
-        insi = char2state[*++in];
+    while (C->insi == WS) {       // eat all leading whitespace
+        C->insi = char2state[*++(C->in)];
     }
-    while (insi == NLL) {      // end_of_buffer, or EOF, during whitespace
-	if ( !(in = more_in(C)) ) {
-	    rc = 1;            // EOF
-	    break;
+    while (C->insi == NLL) {      // end_of_buffer, or EOF, during whitespace
+	if ((rc = more_in(C))) {
+	    break;                // EOF
         }
-        insi = char2state[*in];
-        while (insi == WS) {      // eat all remaining leading whitespace
-            insi = char2state[*++in];
+        while (C->insi == WS) {   // eat all remaining leading whitespace
+            C->insi = char2state[*++(C->in)];
         }
     }
-    C->insi = insi;
-    C->in = in;
     return rc;
 }
 
@@ -54,40 +48,37 @@ static int parse_whitespace(context_t *C) {
 // FIXME - this function is the place to deal with quoting and escaping
 static int parse_string(context_t *C, elem_t *fraglist) {
     int rc, slen, len;
-    unsigned char *frag, *in;
-    state_t insi;
+    unsigned char *frag;
     elem_t *elem;
 
-    in = C->in;
-    insi = C->insi;
     slen = 0;
     while (1) {
-        if (insi != ABC && insi != UTF) {
-            if (insi == AST) {
+        if (C->insi != ABC && C->insi != UTF) {
+            if (C->insi == AST) {
                 // FIXME - flag a pattern;
             }
             else {
                 break;
             }
         }
-        frag = in;
+        frag = C->in;
         len = 1;
-        insi = char2state[*++in];
+        C->insi = char2state[*++(C->in)];
         while (1) {
-            if (insi == ABC) {
+            if (C->insi == ABC) {
                 len++;
-                while ( (insi = char2state[*++in]) == ABC) {len++;}
+                while ( (C->insi = char2state[*++(C->in)]) == ABC) {len++;}
                 continue;
             }
-            if (insi == UTF) {
+            if (C->insi == UTF) {
                 len++;
-                while ( (insi = char2state[*++in]) == UTF) {len++;}
+                while ( (C->insi = char2state[*++(C->in)]) == UTF) {len++;}
                 continue;
             }
-            if (insi == AST) {
+            if (C->insi == AST) {
                 len++;
                 // FIXME - flag a pattern;
-                while ( (insi = char2state[*++in]) == AST) {len++;}
+                while ( (C->insi = char2state[*++(C->in)]) == AST) {len++;}
                 continue;
             }
             break;
@@ -97,13 +88,13 @@ static int parse_string(context_t *C, elem_t *fraglist) {
         append_list(fraglist, elem);
         slen += len;
 
-        if (insi != NLL) {
+        if (C->insi != NLL) {
             break;
         }
         // end_of_buffer during, or end_of_file terminating, string
-        if ( ! (in = more_in(C)) ) break;   // EOF
-        // else continue with next buffer
-        insi = char2state[*in];
+        if ( ! more_in(C) ) { 
+	    break;   // EOF
+        }
     }
     if (slen > 0) {
         emit_string(C,fraglist);
@@ -112,8 +103,6 @@ static int parse_string(context_t *C, elem_t *fraglist) {
     else {
         rc = 1;
     }
-    C->insi = insi;
-    C->in = in;
     return rc;
 }
 
@@ -148,22 +137,16 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
     nest++;
     assert (nest >= 0);        // catch overflows
 
-    if (insp == NULL) {        // state_machine just started
+    if (! C->inbuf) {          // state_machine just started
         bi = WS;               // pretend preceeded by WS
 			       // to satisfy toplevel SREP or REP
 			       // (Note, first REP of a REP sequence *can* be preceeded by WS,
 			       //      just not the rest of the REPs. )
-	if (!(C->in)) {
-	    if ( !(C->in = more_in(C)) ) goto done;  // EOF
+	if ((rc = more_in(C))) {
+	    goto done;         // EOF
         }
-        C->insi = char2state[*C->in]; // get first input state
     }
     else {                     // else continuing state sequence
-        if (!(C->in)) {        // if we already hit EOF
-            rc = 1;            // then there is nothing to be done
-            goto done;
-        }
-	C->insi = (state_t)(insp - state_machine);
         if (prop & REP) {      // if the sequence is a non-space REPetition
             if (bi == WS) {    // whitespace not accepted between REP
 	        rc = 1;        // so the REP is terminated
@@ -387,10 +370,7 @@ int parse(context_t *C) {
     };
 
     emit_start_file(C);
-    C->size = -1;      // tell more_in() that it is a new stream
-
     rc = parse_r(C, &root, state_machine, SREP, 0, 0);
-
     emit_end_file(C);
     return rc;
 }
