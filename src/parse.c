@@ -12,22 +12,6 @@ static unsigned char unterm;
 static char *insp;
 static state_t subj, bi, ei;
 static elem_t *sameend_elem;
-static elem_t sameend_legs = {
-	.next = NULL,
-	.u.list.first = NULL,
-	.u.list.last = NULL,
-	.v.list.refs = 0,
-	.type = LISTELEM,
-	.state = 0
-};
-static elem_t new_sameend_legs = {
-	.next = NULL,
-	.u.list.first = NULL,
-	.u.list.last = NULL,
-	.v.list.refs = 0,
-	.type = LISTELEM,
-	.state = 0
-};
 
 static int more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
     if (! (prop & (REP|SREP))) return 0;
@@ -319,12 +303,12 @@ done:
 
             // update samends
             //    -- free old samends
-	    free_list(&sameend_legs);
+	    free_list(&(C->sameend_legs));
             //    -- replace with new ones
-            elem = move_list(si, &new_sameend_legs);
-	    append_list(&sameend_legs, elem);
+            elem = move_list(si, &(C->sameend_legs_new));
+	    append_list(&(C->sameend_legs), elem);
             // iniale iterator io point to first samend
-	    sameend_elem = sameend_legs.u.list.first;
+	    sameend_elem = C->sameend_legs.u.list.first;
 	    break;
         case LEG:
 //putc ('\n', stdout);
@@ -332,7 +316,7 @@ done:
 //putc ('\n', stdout);
 //	        free_list(&sameend_legs);      // free old sameend list
 //		elem = ref_list(si, root->u.list.last);  // replace with new list, fully substituted.
-                append_list(&new_sameend_legs, elem);
+                append_list(&(C->sameend_legs_new), elem);
 // putc ('\n', stdout);
 // print_list(stdout, &new_sameend_legs, 0, ' ');
 // putc ('\n', stdout);

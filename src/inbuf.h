@@ -55,6 +55,8 @@ typedef struct {
     state_t insi;          // state represented by last character read
     elem_t subject;        // header of subject stack for containment
 			   //  (Current subject is first in list.  Parents follow.)
+    elem_t sameend_legs;   // header of list of LEGS from previous ACT.
+    elem_t sameend_legs_new; // header of accumulating list of LEGS in current ACT.
 } context_t;
 
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
