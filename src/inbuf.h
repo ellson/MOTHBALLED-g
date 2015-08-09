@@ -1,24 +1,16 @@
 typedef struct inbuf_s inbuf_t;
 
 // sizeof(inbuf_t) = 1<<7  (128 bytes)
-// the size of .buf is that less the other bits  (~115 bytes, I think)
+// the size of .buf is sizeof(inbuf_t) less the other bits  (~115 bytes, I think)
 #define INBUFSIZE ((1<<7) - sizeof(inbuf_t*) - sizeof(int) - sizeof(char))
+#define INBUFALLOCNUM 128
 
 struct inbuf_s {
     inbuf_t *next;
     int refs;
     unsigned char buf[INBUFSIZE];
-    unsigned char end_of_buf;
+    unsigned char end_of_buf;      // maintain a '\0' here 
 };
-
-typedef struct {
-    char *filename;
-    FILE *file;
-    inbuf_t *inbuf;
-    int size;
-    unsigned char *in;
-    state_t insi;
-} context_t;
 
 typedef struct elem_s elem_t;
 
@@ -31,8 +23,8 @@ struct elem_s {
     elem_t *next;
     union {
         struct {
-	    elem_t *first; // for prepend and fforward walk
-            elem_t *last;  // fpr append
+	    elem_t *first; // for push, pop, and forward walk
+            elem_t *last;  // for append
         } list;
         struct {
     	    inbuf_t *inbuf; // inbuf containing frag
@@ -40,7 +32,7 @@ struct elem_s {
         } frag;
     } u;
     // FIXME -- There must be a better way ?
-    //          If these ints are included in the above union{}, then
+    //          If these "ref" or "len" ints are included in the above union{}, then
     //          the size of elem_t increases from 32 to 40 bytes.
     union {
         struct {
@@ -54,9 +46,18 @@ struct elem_s {
     char state;            // state_machine state that generated this list
 };
 
-#define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
+typedef struct {
+    char *filename;        // name of file currently being processed, or "-" for stdin
+    FILE *file;            // open file handle for file currently being processed
+    inbuf_t *inbuf;        // the active input buffer
+    int size;              // number of characters in the input buffer currently
+    unsigned char *in;     // next charater to be processed
+    state_t insi;          // state represented by last character read
+    elem_t subject;        // header of subject stack for containment
+			   //  (Current subject is first in list.  Parents follow.)
+} context_t;
 
-#define INBUFALLOCNUM 128
+#define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
 unsigned char * more_in(context_t *C);

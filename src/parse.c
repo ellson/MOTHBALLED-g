@@ -218,7 +218,7 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
     insp = state_machine + (char)(C->insi);
 
 
-    // else non terminal state -- some state entry processing
+    // else non terminal state -- state entry processing
  
     switch (si) {
     case ACT:                     // starting a new ACT
@@ -271,15 +271,51 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 			          // or next sequence item
     }
 
-    // some state exit processing
-
+    // Any subtree rewrites before adding branch to root in the state exit processing
     if (rc == 0) {
         switch (si) {
+	case LEG :
+	    if (bi == EQL) {
+                if (! sameend_elem) {
+	            emit_error(C, "No prior LEG found for sameend substitution");
+	            rc = 1;
+	        }
+		elem = ref_list(si, elem);
+
+//              elem = ref_list(si, sameend_elem);
+// FIXME can be multiple ENDPOINTS in a LEG, need a while here
+                append_list(&branch, sameend_elem->u.list.first);
+            }
+            if (sameend_elem) {
+	        sameend_elem = sameend_elem -> next;
+            }
+	    break;
+        default:
+	    break;
+	}
+    }
+
+    // State exit processing
+
+done:
+    if (rc == 0) {
+        elem = move_list(si, &branch);
+        append_list(root, elem);
+        switch (si) {
+	case ACTIVITY:
+            emit_tree(C, elem);
+	    free_list(elem);
+	    break;
         case ACT:
+            pop_list(&(C->subject));     // done with the subject of this act
+ 
             stat_actcount++;
 	    break;
         case SUBJECT:
             subj = savesubj;      // pop subj     // FIXME
+
+            elem = ref_list(si, elem);
+            push_list(&(C->subject), elem);  // save the subject of this act at this level of containment
 
             // update samends
             //    -- free old samends
@@ -290,20 +326,16 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
             // iniale iterator io point to first samend
 	    sameend_elem = sameend_legs.u.list.first;
 	    break;
-	case LEG :
-	    if (bi == EQL) {
-                if (! sameend_elem) {
-	            emit_error(C, "No prior LEG found for sameend substitution");
-	            rc = 1;
-	        }
-//              elem = ref_list(si, sameend_elem);
-// FIXME can be multiple ENDPOINTS in a LEG, need a while here
-                append_list(&branch, sameend_elem->u.list.first);
-            }
-            if (sameend_elem) {
-	        sameend_elem = sameend_elem -> next;
-            }
-	    break;
+        case LEG:
+//putc ('\n', stdout);
+//print_list(stdout, elem, 0, ' ');
+//putc ('\n', stdout);
+//	        free_list(&sameend_legs);      // free old sameend list
+//		elem = ref_list(si, root->u.list.last);  // replace with new list, fully substituted.
+                append_list(&new_sameend_legs, elem);
+// putc ('\n', stdout);
+// print_list(stdout, &new_sameend_legs, 0, ' ');
+// putc ('\n', stdout);
 	case EDGE :
 	    if (subj == 0) {
 	        subj = EDGE;
@@ -345,37 +377,8 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	}
     }
 
-    
-done:
     nest--;
     assert (nest >= 0);
-
-    if (rc == 0) {
-        if (branch.u.list.first) { // ignore empty lists
-            elem = move_list(si, &branch);
-            append_list(root, elem);
-// FIXME - do containers in a separate context
-            if (nest == 0 && si == ACTIVITY) {
-                emit_tree(C, elem);
-	        free_list(elem);
-            }
-            if (si == LEG) {
-// FIXME -- good to here,  but the '=' has already been emitted.
-//putc ('\n', stdout);
-//print_list(stdout, elem, 0, ' ');
-//putc ('\n', stdout);
-//	        free_list(&sameend_legs);      // free old sameend list
-//		elem = ref_list(si, root->u.list.last);  // replace with new list, fully substituted.
-                append_list(&new_sameend_legs, elem);
-                
-
-// putc ('\n', stdout);
-// print_list(stdout, &new_sameend_legs, 0, ' ');
-// putc ('\n', stdout);
-            }
-	}
-    }
-
     emit_end_state(C, si, rc, nest, repc);
 
     if (!(C->in)) {                      // if at EOF

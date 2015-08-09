@@ -207,20 +207,22 @@ void pop_list(elem_t *list) {
     assert(list->type == LISTELEM);
 
     elem = list->u.list.first;
-    list->u.list.first = elem->next;
-    if (elem->type == LISTELEM) {
-        assert(elem->v.list.refs > 0);
-        if(--(elem->v.list.refs) == 0) {
-	    free_list(elem);  // recursively free lists that have no references
+    if (elem) {  // silently ignore if nothing to pop
+        list->u.list.first = elem->next;
+        if (elem->type == LISTELEM) {
+            assert(elem->v.list.refs > 0);
+            if(--(elem->v.list.refs) == 0) {
+	        free_list(elem);  // recursively free lists that have no references
+            }
         }
+        // and elem is discarded
+     
+        // insert elem at beginning of freelist
+        elem->next = free_elem_list;
+        free_elem_list = elem;
+    
+        stat_elemnow--;         // maintain stats
     }
-    // and elem is discarded
- 
-    // insert elem at beginning of freelist
-    elem->next = free_elem_list;
-    free_elem_list = elem;
-
-    stat_elemnow--;         // maintain stats
 }
 
 // free the list contents, but not the list header.
