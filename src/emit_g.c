@@ -48,16 +48,20 @@ static void api1_token(context_t *C, char token) {
     fprintf(OUT,"\n%c ", token);
 }
 
+static void api1_term(context_t *C) {
+    putc('\n', OUT);
+}
+
 static emit_t api1 = {
     /* api_start_file */          NULL,
-    /* api_sep */                 api_sep,
+    /* api_sep */                 NULL,
     /* api_start_state */         NULL,
     /* api_tree */                NULL,
     /* api_string */              api1_string,
     /* api_frag */                NULL,
     /* api_token */               api1_token,
     /* api_end_state */           NULL,
-    /* api_term */                NULL,
+    /* api_term */                api1_term,
     /* api_end_file */            api_end_file,
     /* api_error */               api_error
 };

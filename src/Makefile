@@ -1,5 +1,5 @@
-#CFLAGS = -g -O0 -Wall
-CFLAGS = -DNDEBUG
+CFLAGS = -g -O0 -Wall
+#CFLAGS = -DNDEBUG
 OBJS = grammar.o parse.o stats.o inbuf.o dumpg.o emit.o emit_t.o emit_g.o g.o
 HDRS = grammar.h parse.h stats.h inbuf.h dumpg.h emit.h
 

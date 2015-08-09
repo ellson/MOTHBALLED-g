@@ -25,8 +25,6 @@ static int more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
 // consume all whitespace up to next token, or EOF
 // FIXME - this function is the place to deal with comments
 static int parse_whitespace(context_t *C) {
-    state_t insi;
-    unsigned char *in;
     int rc;
 
     rc = 0;
@@ -54,6 +52,12 @@ static int parse_string(context_t *C, elem_t *fraglist) {
     slen = 0;
     while (1) {
         if (C->insi != ABC) {
+            if (C->insi == NLL) {
+	        if (more_in(C) ) {
+		    break;              // EOF
+                }
+                continue;               // EOB during string
+	    }
             if (C->insi == AST) {
                 // FIXME - flag a pattern;
             }
@@ -82,14 +86,6 @@ static int parse_string(context_t *C, elem_t *fraglist) {
         elem = new_frag(ABC,frag,len,C->inbuf);
         append_list(fraglist, elem);
         slen += len;
-
-        if (C->insi != NLL) {
-            break;
-        }
-        // end_of_buffer during, or end_of_file terminating, string
-        if ( ! more_in(C) ) { 
-	    break;   // EOF
-        }
     }
     if (slen > 0) {
         emit_string(C,fraglist);
@@ -156,7 +152,7 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 
     // deal with terminal states: whitespace, string, token
     
-    ei = C->insi;                 // the char class that ended the last token
+    ei = C->insi;              // the char class that ended the last token
     if ( (rc = parse_whitespace(C)) ) {
 	goto done;             // EOF during whitespace
     }
@@ -245,11 +241,11 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	            emit_error(C, "No prior LEG found for sameend substitution");
 	            rc = 1;
 	        }
-		elem = ref_list(si, elem);
+//		elem = ref_list(si, elem);
 
 //              elem = ref_list(si, sameend_elem);
 // FIXME can be multiple ENDPOINTS in a LEG, need a while here
-                append_list(&branch, sameend_elem->u.list.first);
+//                append_list(&branch, sameend_elem->u.list.first);
             }
             if (sameend_elem) {
 	        sameend_elem = sameend_elem -> next;
@@ -263,24 +259,26 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
     // State exit processing
 
 done:
-    if (rc == 0) {
+    if (rc == 0 && branch.u.list.first) { // ignore fais and empty lists
         elem = move_list(si, &branch);
         append_list(root, elem);
         switch (si) {
-	case ACTIVITY:
-            emit_tree(C, elem);
-	    free_list(elem);
-	    break;
+//	case ACTIVITY:
+//            emit_tree(C, elem);
+//	    free_list(elem);
+//	    break;
         case ACT:
-            pop_list(&(C->subject));     // done with the subject of this act
+//            emit_tree(C, root);
+//            free_list(root);
+//            pop_list(&(C->subject));     // done with the subject of this act
  
             stat_actcount++;
 	    break;
         case SUBJECT:
             subj = savesubj;      // pop subj     // FIXME
 
-            elem = ref_list(si, elem);
-            push_list(&(C->subject), elem);  // save the subject of this act at this level of containment
+//            elem = ref_list(si, root);
+//            push_list(&(C->subject), elem);  // save the subject of this act at this level of containment
 
             // update samends
             //    -- free old samends
@@ -297,7 +295,9 @@ done:
 //putc ('\n', stdout);
 //	        free_list(&sameend_legs);      // free old sameend list
 //		elem = ref_list(si, root->u.list.last);  // replace with new list, fully substituted.
-                append_list(&(C->sameend_legs_new), elem);
+
+//                append_list(&(C->sameend_legs_new), elem);
+
 // putc ('\n', stdout);
 // print_list(stdout, &new_sameend_legs, 0, ' ');
 // putc ('\n', stdout);
