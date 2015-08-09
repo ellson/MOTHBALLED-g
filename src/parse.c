@@ -279,28 +279,18 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
             stat_actcount++;
 	    break;
         case SUBJECT:
-            subj = savesubj;      // pop subj
+            subj = savesubj;      // pop subj     // FIXME
+
+            // update samends
+            //    -- free old samends
 	    free_list(&sameend_legs);
-            sameend_legs = new_sameend_legs;
-
-// FIXME - more concise method of clearing
-new_sameend_legs.next = NULL;
-new_sameend_legs.u.list.first = NULL;
-new_sameend_legs.u.list.last = NULL;
-new_sameend_legs.v.list.refs = 0;
-new_sameend_legs.type = LISTELEM;
-new_sameend_legs.state = 0;
-
-//putc ('\n', stdout);
-//print_list(stdout, &sameend_legs, 0, ' ');
-//putc ('\n', stdout);
+            //    -- replace with new ones
+            elem = move_list(si, &new_sameend_legs);
+	    append_list(&sameend_legs, elem);
+            // iniale iterator io point to first samend
 	    sameend_elem = sameend_legs.u.list.first;
-//putc ('\n', stdout);
-//print_list(stdout, sameend_elem, 0, ' ');
-//putc ('\n', stdout);
 	    break;
 	case LEG :
-//fprintf(stdout,"\nei=%d bi=%d",ei, bi);
 	    if (bi == EQL) {
                 if (! sameend_elem) {
 	            emit_error(C, "No prior LEG found for sameend substitution");

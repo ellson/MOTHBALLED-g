@@ -158,21 +158,20 @@ elem_t *move_list(char state, elem_t *list) {
 // ref_list - reference a list from a new elem
 //     implement as a clone_list with a ref count adjustment
 //     if there is a first elem and if it is a LISTELEM, then
-//           increment its ref count.
+//           increment the first elems ref count.  (NB, not this new elem)
 elem_t *ref_list(char state, elem_t *list) {
     elem_t *elem;
 
     elem = clone_list(state, list);
 
-    if (list->u.list.first
-     && list->u.list.first->type == LISTELEM) {
+    if (list->u.list.first && list->u.list.first->type == LISTELEM) {
         list->u.list.first->v.list.refs++;   // increment ref count
     }
     return elem;
 }
 
+// append elem to the end of the list so that the elem becomes the new u.list.last
 void append_list(elem_t *list, elem_t *elem) {
-
     assert(list->type == LISTELEM);
 
     if (list->u.list.first) {
@@ -184,10 +183,48 @@ void append_list(elem_t *list, elem_t *elem) {
     list->u.list.last = elem;
     if (elem->type == LISTELEM) {
         elem->v.list.refs++;   // increment ref count in appended elem
+        assert(elem->v.list.refs > 0);
     }
 }
 
+// prepend elem to the beginning of the list so that elem becomes the new u.list.first
+void push_list(elem_t *list, elem_t *elem) {
+    assert(list->type == LISTELEM);
+
+    elem->next = list->u.list.first;
+    list->u.list.first = elem;
+    if (elem->type == LISTELEM) {
+        elem->v.list.refs++;   // increment ref count in prepended elem
+        assert(elem->v.list.refs > 0);
+    }
+}
+
+// remove elem from the beginning of the list so that the next elem becomes the new u.list.first
+// the popped elem is discarded, freeing any refs that it held
+void pop_list(elem_t *list) {
+    elem_t *elem;
+
+    assert(list->type == LISTELEM);
+
+    elem = list->u.list.first;
+    list->u.list.first = elem->next;
+    if (elem->type == LISTELEM) {
+        assert(elem->v.list.refs > 0);
+        if(--(elem->v.list.refs) == 0) {
+	    free_list(elem);  // recursively free lists that have no references
+        }
+    }
+    // and elem is discarded
+ 
+    // insert elem at beginning of freelist
+    elem->next = free_elem_list;
+    free_elem_list = elem;
+
+    stat_elemnow--;         // maintain stats
+}
+
 // free the list contents, but not the list header.
+// ( this function can be used on statically or stack allocated list headers )
 void free_list(elem_t *list) {
     elem_t *elem, *next;
 

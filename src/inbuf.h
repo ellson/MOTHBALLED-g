@@ -65,6 +65,8 @@ elem_t* new_frag(char state, unsigned char *frag, int len, inbuf_t *inbuf);
 elem_t *move_list(char state, elem_t *list);
 elem_t *ref_list(char state, elem_t *list);
 void append_list(elem_t *list, elem_t *elem);
+void push_list(elem_t *list, elem_t *elem);
+void pop_list(elem_t *list);
 void free_list(elem_t *list);
 
 void print_frag(FILE* chan, unsigned char len, unsigned char *frag);
