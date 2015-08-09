@@ -22,12 +22,12 @@ long stat_elemmax;
 long stat_elemnow;
 
 void print_stats(FILE *chan, struct timespec *starttime) {
-    int rc;
+    success_t rc;
     struct timespec nowtime;
     long runtime;
 
     rc = clock_gettime(CLOCK_MONOTONIC_RAW, &nowtime);
-    assert(rc == 0);
+    assert(rc == SUCCESS);
 
     runtime = (nowtime.tv_sec * TEN9 + nowtime.tv_nsec)
                 - (starttime->tv_sec * TEN9 + starttime->tv_nsec);

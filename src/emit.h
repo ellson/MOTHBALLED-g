@@ -12,7 +12,7 @@ typedef struct {
     void (*string) (context_t *C, elem_t *branch);
     void (*frag) (context_t *C, unsigned char len, unsigned char *frag);
     void (*token) (context_t *C, char token);
-    void (*end_state) (context_t *C, char class, int rc, int nest, int repc);
+    void (*end_state) (context_t *C, char class, success_t rc, int nest, int repc);
     void (*term) (context_t *C);
     void (*end_file) (context_t *C);
     void (*error) (context_t *C, char *message);

@@ -15,9 +15,10 @@ struct inbuf_s {
 typedef struct elem_s elem_t;
 
 // LISTELEM must = 0 for static or calloc allocation of list headers
-// FIXME - Should use enum, but don't need an int to store a boolean
-#define LISTELEM 0
-#define FRAGELEM 1
+typedef enum {
+    LISTELEM=0,
+    FRAGELEM=1
+} elemtype_t;
 
 struct elem_s {
     elem_t *next;
@@ -42,6 +43,7 @@ struct elem_s {
             int len;       // length of frag
         } frag;
     } v;
+    // FIXME -- can't store type as elemtype_t or it would assume int.
     char type;             // LISTELEM or FRAGELEM
     char state;            // state_machine state that generated this list
 };
@@ -61,7 +63,7 @@ typedef struct {
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
-int more_in(context_t *C);
+success_t more_in(context_t *C);
 
 elem_t* new_frag(char state, unsigned char *frag, int len, inbuf_t *inbuf);
 elem_t *move_list(char state, elem_t *list);

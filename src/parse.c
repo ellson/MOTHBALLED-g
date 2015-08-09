@@ -13,26 +13,26 @@ static char *insp;
 static state_t subj, bi, ei;
 static elem_t *sameend_elem;
 
-static int more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
-    if (! (prop & (REP|SREP))) return 0;
-    if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) return 0; // no more
+static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
+    if (! (prop & (REP|SREP))) return FAIL;
+    if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) return FAIL; // no more
     if (bi == RPN || bi == RAN || bi == RBR || bi == RBE ||
-        ei == LPN || ei == LAN || ei == LBR || ei == LBE) return 1; // more, but no sep needed
+        ei == LPN || ei == LAN || ei == LBR || ei == LBE) return SUCCESS; // more, but no sep needed
     if (prop & SREP) emit_sep(C); // sep needed for SREP sequences
-    return 1;
+    return SUCCESS;
 }
 
 // consume all whitespace up to next token, or EOF
 // FIXME - this function is the place to deal with comments
-static int parse_whitespace(context_t *C) {
-    int rc;
+static success_t parse_whitespace(context_t *C) {
+    success_t rc;
 
-    rc = 0;
+    rc = SUCCESS;
     while (C->insi == WS) {       // eat all leading whitespace
         C->insi = char2state[*++(C->in)];
     }
     while (C->insi == NLL) {      // end_of_buffer, or EOF, during whitespace
-	if ((rc = more_in(C))) {
+	if ((rc = more_in(C) == FAIL)) {
 	    break;                // EOF
         }
         while (C->insi == WS) {   // eat all remaining leading whitespace
@@ -44,8 +44,9 @@ static int parse_whitespace(context_t *C) {
 
 // collect fragments to form a STRING token
 // FIXME - this function is the place to deal with quoting and escaping
-static int parse_string(context_t *C, elem_t *fraglist) {
-    int rc, slen, len;
+static success_t parse_string(context_t *C, elem_t *fraglist) {
+    success_t rc;
+    int slen, len;
     unsigned char *frag;
     elem_t *elem;
 
@@ -53,7 +54,7 @@ static int parse_string(context_t *C, elem_t *fraglist) {
     while (1) {
         if (C->insi != ABC) {
             if (C->insi == NLL) {
-	        if (more_in(C) ) {
+	        if (more_in(C) == FAIL) {
 		    break;              // EOF
                 }
                 continue;               // EOB during string
@@ -89,30 +90,30 @@ static int parse_string(context_t *C, elem_t *fraglist) {
     }
     if (slen > 0) {
         emit_string(C,fraglist);
-        rc = 0;
+        rc = SUCCESS;
     }
     else {
-        rc = 1;
+        rc = FAIL;
     }
     return rc;
 }
 
 // process single character tokens
-static int parse_token(context_t *C) {
+static success_t parse_token(context_t *C) {
     char token;
 
     token = state_token[C->insi];
     emit_token(C, token);
     C->insi = char2state[*++(C->in)];
-    return 0;
+    return SUCCESS;
 }
 
-static int parse_r(context_t *C, elem_t *root, char *sp,
+static success_t parse_r(context_t *C, elem_t *root, char *sp,
 		       unsigned char prop, int nest, int repc) {
     unsigned char nprop;
     char *np;
     state_t si, ni, savesubj;
-    int rc;
+    success_t rc;
     elem_t *elem;
     elem_t branch = {
 	.next = NULL,
@@ -123,7 +124,7 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	.state = 0
     };
 
-    rc = 0;
+    rc = SUCCESS;
     si = (state_t)(sp - state_machine);
     emit_start_state(C, si, prop, nest, repc);
     branch.state = si;
@@ -136,19 +137,17 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 			       // to satisfy toplevel SREP or REP
 			       // (Note, first REP of a REP sequence *can* be preceeded by WS,
 			       //      just not the rest of the REPs. )
-	if ((rc = more_in(C))) {
-	    goto done;         // EOF
-        }
+	more_in(C);
     }
     else {                     // else continuing state sequence
         if (prop & REP) {      // if the sequence is a non-space REPetition
             if (bi == WS) {    // whitespace not accepted between REP
-	        rc = 1;        // so the REP is terminated
+// FIXME - Error message here ?
+	        rc = FAIL;     // so the REP is terminated
 	        goto done;
 	    }
         }
     }
-
 
     // deal with terminal states: whitespace, string, token
     
@@ -199,12 +198,12 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 
     // parse next state
  
-    rc = 1;                       // init rc to "fail" in case no next state is found
+    rc = FAIL;                       // init rc to "fail" in case no next state is found
     while (( ni = (state_t)(*sp) )) {        // iterate over ALTs or sequences
         nprop = *PROPP(sp);
         np = sp + (char)ni;
 	if (nprop & ALT) {        // look for ALT
-	    if (( rc = parse_r(C, &branch, np,nprop,nest,0)) == 0) {
+	    if (( rc = parse_r(C, &branch, np,nprop,nest,0)) == SUCCESS) {
                 break;            // ALT satisfied
 	    }
 	                          // we failed an ALT so continue iteration to try next ALT
@@ -212,19 +211,25 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 	else {                    // else it is a sequence
 	    repc = 0;
 	    if (nprop & OPT) {    // optional
-	        if (( parse_r(C, &branch, np,nprop,nest,repc++)) == 0) {
-	            while (more_rep(C, nprop, ei, bi)) {
-                        if (parse_r(C, &branch, np,nprop,nest,repc++) != 0) break;
+	        if (( parse_r(C, &branch, np,nprop,nest,repc++)) == SUCCESS) {
+	            while (more_rep(C, nprop, ei, bi) == SUCCESS) {
+                        if (parse_r(C, &branch, np,nprop,nest,repc++) == FAIL) {
+			    break;
+			}
 		    }
 	        }
-                rc = 0;           // optional can't fail
+                rc = SUCCESS;           // optional can't fail
 	    }
 	    else {                // else not OPTional
-	        if (( rc = parse_r(C, &branch, np,nprop,nest,repc++)) != 0) break; 
-                                  // rc is the rc of the first term,
-                                  // which at this point is success
-	        while (more_rep(C, nprop, ei, bi)) {
-                    if (parse_r(C, &branch, np,nprop,nest,repc++) != 0) break;
+	        if (( rc = parse_r(C, &branch, np,nprop,nest,repc++)) == FAIL) {
+		    break; 
+		}
+                // rc is the rc of the first term,
+                // which at this point is success
+	        while (more_rep(C, nprop, ei, bi) == SUCCESS) {
+                    if (parse_r(C, &branch, np,nprop,nest,repc++) == FAIL) {
+			break;
+		    }
 		}
 	    }
 	}
@@ -232,14 +237,18 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
 			          // or next sequence item
     }
 
-    // Any subtree rewrites before adding branch to root in the state exit processing
-    if (rc == 0) {
+    // Any subtree rewrites or emit before adding branch to root in the state exit processing
+    if (rc == SUCCESS) {
         switch (si) {
+	case ACT:
+            emit_tree(C, &branch);
+            free_list(&branch);
+            break;
 	case LEG :
 	    if (bi == EQL) {
                 if (! sameend_elem) {
 	            emit_error(C, "No prior LEG found for sameend substitution");
-	            rc = 1;
+	            rc = FAIL;
 	        }
 //		elem = ref_list(si, elem);
 
@@ -259,19 +268,17 @@ static int parse_r(context_t *C, elem_t *root, char *sp,
     // State exit processing
 
 done:
-    if (rc == 0 && branch.u.list.first) { // ignore fais and empty lists
+    if (rc == SUCCESS && branch.u.list.first != NULL) { // ignore fails and empty lists
         elem = move_list(si, &branch);
         append_list(root, elem);
         switch (si) {
-//	case ACTIVITY:
-//            emit_tree(C, elem);
-//	    free_list(elem);
-//	    break;
         case ACT:
-//            emit_tree(C, root);
-//            free_list(root);
 //            pop_list(&(C->subject));     // done with the subject of this act
  
+            if (unterm) {
+ 	        emit_term(C);
+	    }
+	    unterm = 0;
             stat_actcount++;
 	    break;
         case SUBJECT:
@@ -308,7 +315,7 @@ done:
 	    else {
                 if (subj == NODE) {
 	            emit_error(C, "NODE found in EDGE SUBJECT");
-	            rc = 1;
+	            rc = FAIL;
 		}
 	    }
             break;
@@ -319,9 +326,8 @@ done:
 	    else {
                 if (subj == EDGE) {
 	            emit_error(C, "EDGE found in NODE SUBJECT");
-	            rc = 1;
+	            rc = FAIL;
 		}
-	        rc = 1;
 	    }
             break;
         case TERM :   
@@ -346,18 +352,11 @@ done:
     assert (nest >= 0);
     emit_end_state(C, si, rc, nest, repc);
 
-    if (!(C->in)) {                      // if at EOF
-        if (unterm) {
- 	    emit_term(C);           // EOF is an implicit terminator
-	}
-        // this does not change previously set rc
-    }
-
     return rc;
 }
 
-int parse(context_t *C) {
-    int rc;
+success_t parse(context_t *C) {
+    success_t rc;
     elem_t root = {
         .next = NULL,
         .u.list.first = NULL,
@@ -369,6 +368,12 @@ int parse(context_t *C) {
 
     emit_start_file(C);
     rc = parse_r(C, &root, state_machine, SREP, 0, 0);
+    if (! C->in) {             // if at EOF
+        if (unterm) {
+ 	    emit_term(C);      // EOF is an implicit terminator
+	}
+        unterm = 0;
+    }
     emit_end_file(C);
     return rc;
 }

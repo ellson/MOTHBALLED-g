@@ -15,7 +15,8 @@
 static context_t context;
 
 int main (int argc, char *argv[]) {
-    int i, rc, opt, optnum, needstdin, needstats;
+    success_t rc;
+    int i, opt, optnum, needstdin, needstats;
     FILE *f;
     context_t *C;
     struct timespec starttime;
@@ -25,7 +26,7 @@ int main (int argc, char *argv[]) {
     needstats = 0;           // stats default to no stats
 
     rc = clock_gettime(CLOCK_MONOTONIC_RAW, &starttime);
-    assert(rc == 0);
+    assert(rc == SUCCESS);
 
     while ((opt = getopt(argc, argv, "d::g::t::s")) != -1) {
 	if (optarg) optnum = atoi(optarg);
@@ -116,5 +117,5 @@ int main (int argc, char *argv[]) {
 
     // any errors in parse() will be handled by emit_error().  If we get here
     // then exit with success
-    exit(0);
+    exit(SUCCESS);
 }

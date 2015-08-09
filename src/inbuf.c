@@ -54,9 +54,12 @@ static void free_inbuf(inbuf_t *inbuf) {
     stat_inbufnow--;             // stats
 }
 
-int more_in(context_t *C) {
+success_t more_in(context_t *C) {
     int size;
 
+    if (C->in == NULL && feof(C->file)) {
+	return FAIL;
+    }
     if (! C->inbuf || C->in == &(C->inbuf->end_of_buf)) {
         C->inbuf = new_inbuf();        // grab a buffer
         assert(C->inbuf);
@@ -67,14 +70,15 @@ int more_in(context_t *C) {
     C->insi = char2state[*C->in];
 
     if (size == 0 && feof(C->file)) {
-	return 1;
+        C->in = NULL;
+	return FAIL;
     }
     
     stat_inchars += size;
-    return 0;
+    return SUCCESS;
 }
 
-static elem_t* new_elem_sub(char type) {
+static elem_t* new_elem_sub(elemtype_t type) {
     elem_t *elem, *next;
     int i;
  
@@ -97,7 +101,7 @@ static elem_t* new_elem_sub(char type) {
     elem = free_elem_list;   // use first elem from free_elem_list
     free_elem_list = elem->next;  // update list to point to next available
 
-    elem->type = type;  // init the new elem
+    elem->type = (char)type;  // init the new elem
     elem->next = NULL;
 
     stat_elemnow++;   // stats
@@ -243,7 +247,7 @@ void free_list(elem_t *list) {
     elem = list->u.list.first;
     while (elem) {
 	next = elem->next;
-        switch (elem->type) {
+        switch ((elemtype_t)(elem->type)) {
         case FRAGELEM :
 	    assert(elem->u.frag.inbuf->refs > 0);
 	    if (--(elem->u.frag.inbuf->refs) == 0) {
@@ -289,14 +293,14 @@ int print_len_frag(FILE *chan, unsigned char *len_frag) {
         
 void print_list(FILE *chan, elem_t *list, int indent, char sep) {
     elem_t *elem;
-    char type;
+    elemtype_t type;
     unsigned char *cp;
     int ind, cnt, len, width;
 
     assert(list->type == LISTELEM);
     elem = list->u.list.first;
     if (!elem) return;
-    type = elem->type;
+    type = (elemtype_t)(elem->type);
     switch (type) {
     case FRAGELEM :
         if (sep) putc(sep, chan);

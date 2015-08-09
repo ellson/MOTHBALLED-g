@@ -406,6 +406,11 @@ unsigned char *NAMEP(char *sp) {
 EOF
 
 cat >>$ofh  <<EOF
+typedef enum {
+	SUCCESS,
+	FAIL
+} success_t;
+
 #define sizeof_state_machine $((++indx))
 #define PROPP(p) (state_props + (p - state_machine))
 

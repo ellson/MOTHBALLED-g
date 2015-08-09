@@ -32,7 +32,7 @@ static void api_token(context_t *C, char token) {
     fprintf(OUT,"\t\t'%c'", token);
 }
 
-static void api_end_state(context_t *C, char class, int rc, int nest, int repc) {
+static void api_end_state(context_t *C, char class, success_t rc, int nest, int repc) {
     fprintf(OUT,"\n   %d%4d%4d%4d   ", rc, class, nest, repc);
     print_len_frag(OUT, NAMEP(class+state_machine));
 }
@@ -64,7 +64,7 @@ static void api1_tree(context_t *C, elem_t *tree) {
     print_list(OUT, tree, 0, ' ');
 }
 
-static void api1_end_file(context_t *C) {
+static void api1_term(context_t *C) {
     putc('\n', OUT);
 }
 
@@ -77,8 +77,8 @@ static emit_t api1 = {
     /* api_frag */                NULL,
     /* api_token */               NULL,
     /* api_end_state */           NULL,
-    /* api_term */                NULL,
-    /* api_end_file */            api1_end_file,
+    /* api_term */                api1_term,
+    /* api_end_file */            NULL,
     /* api_error */               api_error
 };
 
