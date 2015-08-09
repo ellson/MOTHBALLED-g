@@ -224,6 +224,7 @@ extern unsigned char state_names[];
 extern unsigned char char2state[];
 extern char state_machine[];
 extern unsigned char state_props[];
+extern char state_token[];
 
 EOF
 ##############################################
@@ -348,10 +349,20 @@ EOF
 ####
 ( printf "char state_machine[] = {\n"        )  >${ofc}.states
 ( printf "unsigned char state_props[] = {\n" )  >${ofc}.props
+( printf "char state_token[] = {\n"       )  >${ofc}.emit
 for s in ${statelist[@]}; do
     indx=${POS[$s]}
+    class="${CONTENT[$s]}"
+    tokchar=""
+    for tokchar in $class; do break; done
+    if test "$tokchar" = ""; then
+	tokchar=0
+    else
+	tokchar=0x$tokchar
+    fi
     ( printf "    /* %3d %12s */  " $indx $s ) >>${ofc}.states
     ( printf "    /* %3d %12s */  " $indx $s ) >>${ofc}.props
+    ( printf "    /* %3d %12s */  " $indx $s ) >>${ofc}.emit
     while true; do
         next=${nextlist[$indx]}
         prop=${proplist[$indx]}
@@ -371,17 +382,20 @@ for s in ${statelist[@]}; do
     
         ( printf " %4d," $((nxtindx-indx))   ) >>${ofc}.states
         ( printf " 0x%02x," $nprops          ) >>${ofc}.props
+        ( printf " %4d," 0                   ) >>${ofc}.emit
         ((indx++))
     done
     spos=${SPOS[$s]}
     ( printf " %4d,\n" 0                     ) >>${ofc}.states
     ( printf " %4d,\n" $((spos/2))           ) >>${ofc}.props
+    ( printf " %4s,\n" $tokchar              ) >>${ofc}.emit
 done
 ( printf "};\n\n"                            ) >>${ofc}.states
 ( printf "};\n\n"                            ) >>${ofc}.props
+( printf "};\n\n"                            ) >>${ofc}.emit
 
-cat ${ofc}.states ${ofc}.props >>$ofc
-rm -f ${ofc}.states ${ofc}.props
+cat ${ofc}.states ${ofc}.props ${ofc}.emit >>$ofc
+rm -f ${ofc}.states ${ofc}.props ${ofc}.emit
 
 cat >>$ofc  <<EOF
 unsigned char *NAMEP(char *sp) {

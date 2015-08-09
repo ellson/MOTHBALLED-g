@@ -53,7 +53,7 @@ static int parse_string(context_t *C, elem_t *fraglist) {
 
     slen = 0;
     while (1) {
-        if (C->insi != ABC && C->insi != UTF) {
+        if (C->insi != ABC) {
             if (C->insi == AST) {
                 // FIXME - flag a pattern;
             }
@@ -68,11 +68,6 @@ static int parse_string(context_t *C, elem_t *fraglist) {
             if (C->insi == ABC) {
                 len++;
                 while ( (C->insi = char2state[*++(C->in)]) == ABC) {len++;}
-                continue;
-            }
-            if (C->insi == UTF) {
-                len++;
-                while ( (C->insi = char2state[*++(C->in)]) == UTF) {len++;}
                 continue;
             }
             if (C->insi == AST) {
@@ -108,7 +103,10 @@ static int parse_string(context_t *C, elem_t *fraglist) {
 
 // process single character tokens
 static int parse_token(context_t *C) {
-    emit_tok(C, C->insi, 1, C->in);
+    char token;
+
+    token = state_token[C->insi];
+    emit_token(C, token);
     C->insi = char2state[*++(C->in)];
     return 0;
 }

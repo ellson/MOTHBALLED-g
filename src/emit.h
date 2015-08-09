@@ -11,7 +11,7 @@ typedef struct {
     void (*tree) (context_t *C, elem_t *root);
     void (*string) (context_t *C, elem_t *branch);
     void (*frag) (context_t *C, unsigned char len, unsigned char *frag);
-    void (*tok) (context_t *C, char class, unsigned char len, unsigned char *frag);
+    void (*token) (context_t *C, char token);
     void (*end_state) (context_t *C, char class, int rc, int nest, int repc);
     void (*term) (context_t *C);
     void (*end_file) (context_t *C);
@@ -31,8 +31,8 @@ typedef struct {
     if (emit->string) {emit->string(C, branch);}
 #define emit_frag(C, len, frag) \
     if (emit->frag) {emit->frag(C, len, frag);}
-#define emit_tok(C, class, len, frag) \
-    if (emit->tok) {emit->tok(C, class, len, frag);}
+#define emit_token(C, token) \
+    if (emit->token) {emit->token(C, token);}
 #define emit_end_state(C, class, rc, nest, repc) \
     if (emit->end_state) {emit->end_state(C, class, rc, nest, repc);}
 #define emit_term(C) \
