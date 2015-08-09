@@ -22,73 +22,86 @@ static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t 
     return SUCCESS;
 }
 
+static success_t parse_whitespace_fragment(context_t *C) {
+    while (C->insi == WS) {       // eat all leading whitespace
+        C->insi = char2state[*++(C->in)];
+    }
+    return SUCCESS;
+}
+
 // consume all whitespace up to next token, or EOF
 // FIXME - this function is the place to deal with comments
 static success_t parse_whitespace(context_t *C) {
     success_t rc;
 
     rc = SUCCESS;
-    while (C->insi == WS) {       // eat all leading whitespace
-        C->insi = char2state[*++(C->in)];
-    }
+    parse_whitespace_fragment(C); // eat all leading whitespace
     while (C->insi == NLL) {      // end_of_buffer, or EOF, during whitespace
 	if ((rc = more_in(C) == FAIL)) {
 	    break;                // EOF
         }
-        while (C->insi == WS) {   // eat all remaining leading whitespace
-            C->insi = char2state[*++(C->in)];
-        }
+	parse_whitespace_fragment(C); // eat all remaining leading whitespace
     }
     return rc;
+}
+
+static int parse_string_fragment(context_t *C, elem_t *fraglist) {
+    unsigned char *frag;
+    int len;
+    elem_t *elem;
+
+    while (1) { // characters in a single fragment
+        if (C->insi != ABC) {
+            if (C->insi == AST) {
+            // FIXME - flag a pattern;
+            }
+        }
+        else {
+            return 0;;
+        }
+    }
+    frag = C->in;
+    len = 1;
+    C->insi = char2state[*++(C->in)];
+    while (1) {
+        if (C->insi == ABC) {
+            len++;
+            while ( (C->insi = char2state[*++(C->in)]) == ABC) {len++;}
+            continue;
+        }
+        if (C->insi == AST) {
+            len++;
+            // FIXME - flag a pattern;
+            while ( (C->insi = char2state[*++(C->in)]) == AST) {len++;}
+            continue;
+        }
+        break;
+    }
+    stat_fragcount++;
+    emit_frag(C,len,frag);
+    elem = new_frag(ABC,frag,len,C->inbuf);
+    append_list(fraglist, elem);
+    return len;
 }
 
 // collect fragments to form a STRING token
 // FIXME - this function is the place to deal with quoting and escaping
 static success_t parse_string(context_t *C, elem_t *fraglist) {
     success_t rc;
-    int slen, len;
-    unsigned char *frag;
-    elem_t *elem;
+    int len, slen;
 
-    slen = 0;
-    while (1) {
-        if (C->insi != ABC) {
-            if (C->insi == NLL) {
-	        if (more_in(C) == FAIL) {
-		    break;              // EOF
-                }
-                continue;               // EOB during string
-	    }
-            if (C->insi == AST) {
-                // FIXME - flag a pattern;
-            }
-            else {
-                break;
-            }
+    slen = parse_string_fragment(C, fraglist); // leading string
+    while (C->insi == NLL) {      // end_of_buffer, or EOF, during whitespace
+	if ((rc = more_in(C) == FAIL)) {
+	    break;                // EOF
         }
-        frag = C->in;
-        len = 1;
-        C->insi = char2state[*++(C->in)];
-        while (1) {
-            if (C->insi == ABC) {
-                len++;
-                while ( (C->insi = char2state[*++(C->in)]) == ABC) {len++;}
-                continue;
-            }
-            if (C->insi == AST) {
-                len++;
-                // FIXME - flag a pattern;
-                while ( (C->insi = char2state[*++(C->in)]) == AST) {len++;}
-                continue;
-            }
-            break;
+	if ((len = parse_string_fragment(C, fraglist)) == 0) {
+	   break;
         }
-        emit_frag(C,len,frag);
-        elem = new_frag(ABC,frag,len,C->inbuf);
-        append_list(fraglist, elem);
-        slen += len;
+	slen += len;
     }
     if (slen > 0) {
+	stat_stringcount++;
         emit_string(C,fraglist);
         rc = SUCCESS;
     }
@@ -241,6 +254,7 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp,
     if (rc == SUCCESS) {
         switch (si) {
 	case ACT:
+            stat_actcount++;
             emit_tree(C, &branch);
             free_list(&branch);
             break;
@@ -272,15 +286,6 @@ done:
         elem = move_list(si, &branch);
         append_list(root, elem);
         switch (si) {
-        case ACT:
-//            pop_list(&(C->subject));     // done with the subject of this act
- 
-            if (unterm) {
- 	        emit_term(C);
-	    }
-	    unterm = 0;
-            stat_actcount++;
-	    break;
         case SUBJECT:
             subj = savesubj;      // pop subj     // FIXME
 

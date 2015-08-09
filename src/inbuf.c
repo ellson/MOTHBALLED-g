@@ -120,7 +120,6 @@ elem_t* new_frag(char state, unsigned char *frag, int len, inbuf_t *inbuf) {
     assert (inbuf->refs >= 0);
     assert (frag);
     assert (len > 0);
-
 				// complete frag elem initialization
     elem->u.frag.inbuf = inbuf; // record inbuf for ref counting
     elem->u.frag.frag = frag;   // pointer to begging of frag
