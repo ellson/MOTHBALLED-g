@@ -72,8 +72,8 @@
 
        ACTION ::= TLD
 
-# The SUBJECT of an ACTION is either a single OBJECT, or an OBJECT_LIST
-# (containing OBJECTS all of the same type:  NODE or EDGE)
+# The SUBJECT of an ACTION is either a single OBJECT,
+# or an OBJECT_LIST (containing OBJECTS all of the same type:  NODE or EDGE)
 
       SUBJECT ::= OBJECT
                 | OBJECT_LIST
@@ -129,13 +129,14 @@
          EDGE ::= LAN _LEG+ RAN DISAMBIG?
 
 # LEG can be a simple ENDPOINT (basically a reference to a NODE)
-# or it can be a set of ENDPOINTS:
-# This is to permit the shorthand:
+#               <a b>
+
+# Or a LEG can be a ENDPOINTSET, permitting the shorthand:
 # 		<(a b) (c d)>
 # to represent the equivalent:
 # 		(<a c> <a d> <b c> <b d>)
 
-# Another shorthand is the use of EQL '=' to indicate a "sameend"
+# Or a LEG can be EQL (i.e. '=') to indicate a "sameend"
 # as the corresponding LEG in an immediately preceeding ACT.
 # So: 
 # 		<longname a>[x=y]
@@ -143,10 +144,11 @@
 # 		<longname c>[p=q]
 # can be written as:
 # 		<longname a>[x=y] <= b>[m=n] <= c>[p=q]
+# which is still 3 ACTs, where the edge in each ACT can have separate arributes
 
-          LEG ::= EQL
+          LEG ::= ENDPOINT
                 | ENDPOINTSET
-                | ENDPOINT
+                | EQL
 
   ENDPOINTSET ::= LPN ENDPOINT _ENDPOINT+ RPN
 
