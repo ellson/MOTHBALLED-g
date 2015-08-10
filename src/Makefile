@@ -3,7 +3,9 @@ CFLAGS = -g -O0 -Wall
 OBJS = grammar.o parse.o tokens.o stats.o inbuf.o dumpg.o list.o emit.o emit_t.o emit_g.o g.o
 HDRS = grammar.h parse.h tokens.h stats.h inbuf.h dumpg.h list.h emit.h context.h
 
-all: g test_grammar.g grammar.svg test
+all: g grammar.svg test
+
+# test_grammar.g
 
 g: ${OBJS}
 

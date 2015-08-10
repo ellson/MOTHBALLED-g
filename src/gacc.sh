@@ -94,26 +94,24 @@ sm_delete() {
 }
 
 sm_term() {
+    nprop=""
+    if test "$prop" != ""; then
+        cnt=0
+        for p in $prop; do
+	    PROPS[$p]=""
+	    if test $cnt -ne 0;then
+	        nprop+=" $p"
+	    else
+	        nprop+="$p"
+	    fi
+	    ((cnt++))
+        done
+    fi
     if test "$next" != ""; then
         nextlist=("${nextlist[@]}" "$next")
         next=""
-
-        nprop=""
-        if test "$prop" != ""; then
-            cnt=0
-            for p in $prop; do
-	        PROPS[$p]=""
-	        if test $cnt -ne 0;then
-	            nprop+=" $p"
-	        else
-	            nprop+="$p"
-	        fi
-	        ((cnt++))
-            done
-        fi
         proplist=("${proplist[@]}" "$nprop")
         prop=""
-
         ((indx++))
     fi
 }
@@ -196,25 +194,13 @@ EOF
 ( printf "typedef enum {\n"                      )  >${ifn}.enum
 ( printf "char state_machine[] = {\n"            )  >${ifn}.states
 ( printf "unsigned char state_props[] = {\n"     )  >${ifn}.props
-( printf "char state_token[] = {\n"              )  >${ifn}.emit
+( printf "char state_token[] = {\n"              )  >${ifn}.token
+( printf "char state_agaws[] = {\n"              )  >${ifn}.agaws
 
 cnt=0
 for s in ${statelist[@]}; do
     ((cnt++))
     indx=${POS[$s]}
-    class="${CONTENT[$s]}"
-    tokchar=""
-    for tokchar in $class; do break; done
-    if test "$tokchar" = ""; then
-	tokchar=0
-    else
-	tokchar=0x$tokchar
-    fi
-    if test "$s" = "BIN" -o "$s" = "NLL" -o "$s" = "WS"; then
-        printable=0
-    else
-        printable=1
-    fi
     if test $cnt -ne ${#statelist[@]}; then
         comma=","
     else
@@ -225,7 +211,8 @@ for s in ${statelist[@]}; do
     ( printf "%13s = %s%s" $s $indx $comma       ) >>${ifn}.enum
     ( printf "    /* %3d %12s */  " $indx $s     ) >>${ifn}.states
     ( printf "    /* %3d %12s */  " $indx $s     ) >>${ifn}.props
-    ( printf "    /* %3d %12s */  " $indx $s     ) >>${ifn}.emit
+    ( printf "    /* %3d %12s */  " $indx $s     ) >>${ifn}.token
+    ( printf "    /* %3d %12s */  " $indx $s     ) >>${ifn}.agaws
     while true; do
         next=${nextlist[$indx]}
         prop=${proplist[$indx]}
@@ -234,6 +221,7 @@ for s in ${statelist[@]}; do
 
         ord=0
         ws=""
+        agaws=0
         nprops=0
         for p in $prop; do
             case $p in
@@ -242,7 +230,7 @@ for s in ${statelist[@]}; do
                   fi
                   (( alts++))
                   ;;
-            OPT ) ((ord|=1));;
+            OPT)  ((ord|=1));;
             REP)  ((ord|=2));;
             SREP) ((ord|=2)); ws='_';;
             *) ;;
@@ -266,9 +254,25 @@ for s in ${statelist[@]}; do
         ( printf "    \"%s\" -> \"%s\" [label=\"%s%s\"]\n" "$s" "$next" "$ws" "$ordc" ) >>${ifn}.gv
         ( printf " %4d," $((nxtindx-indx))       ) >>${ifn}.states
         ( printf " 0x%02x," $nprops              ) >>${ifn}.props
-        ( printf " %4d," 0                       ) >>${ifn}.emit
+        ( printf " %4d," 0                       ) >>${ifn}.token
+        ( printf " %4d," 0                       ) >>${ifn}.agaws
         ((indx++))
     done
+
+    class="${CONTENT[$s]}"
+    tokchar=""
+    for tokchar in $class; do break; done
+    if test "$tokchar" = ""; then
+	tokchar=0
+    else
+	tokchar=0x$tokchar
+    fi
+    if test "$s" = "BIN" -o "$s" = "NLL" -o "$s" = "WS"; then
+        printable=0
+    else
+        printable=1
+    fi
+#    ( printf "prop=$prop"                        ) >>${ifn}.agaws
     if test "$class" != ""; then
         altc=0
         ( printf " "                             ) >>${ifn}.ebnf
@@ -294,14 +298,16 @@ for s in ${statelist[@]}; do
     ( printf "\n"                                ) >>${ifn}.enum
     ( printf " %4d,\n" 0                         ) >>${ifn}.states
     ( printf " %4d,\n" $((spos/2))               ) >>${ifn}.props
-    ( printf " %4s,\n" $tokchar                  ) >>${ifn}.emit
+    ( printf " %4s,\n" $tokchar                  ) >>${ifn}.token
+    ( printf " %4s,\n" $agaws                    ) >>${ifn}.agaws
 done
 ( printf "\n\n"                                  ) >>${ifn}.ebnf
 ( printf "}\n\n"                                 ) >>${ifn}.gv
 ( printf "} state_t;\n\n"                        ) >>${ifn}.enum
 ( printf "};\n\n"                                ) >>${ifn}.states
 ( printf "};\n\n"                                ) >>${ifn}.props
-( printf "};\n\n"                                ) >>${ifn}.emit
+( printf "};\n\n"                                ) >>${ifn}.token
+( printf "};\n\n"                                ) >>${ifn}.agaws
 
 ##############################################
 # assemble output files
@@ -321,7 +327,7 @@ EOF
         if test $cnt -ne 0; then 
             printf ",\n"
         fi
-        printf "    $p = 1<<$cnt"
+        printf "%13s = %s" "$p" "1<<$cnt"
         ((cnt++))
     done
     printf "\n} props_t;\n\n"
@@ -396,7 +402,8 @@ EOF
 
 cat ${ifn}.states >>$ofc
 cat ${ifn}.props  >>$ofc
-cat ${ifn}.emit   >>$ofc
+cat ${ifn}.token  >>$ofc
+cat ${ifn}.agaws >>$ofc
 
 cat >>$ofc  <<EOF
 unsigned char *NAMEP(int si) {
@@ -422,5 +429,5 @@ cat ${ifn}.gv     >$ofgv
 #############################################
 # clean up temporary files
 
-rm -f ${ifn}.ebnf ${ifn}.gv ${ifn}.enum ${ifn}.states ${ifn}.props ${ifn}.emit
+rm -f ${ifn}.ebnf ${ifn}.gv ${ifn}.enum ${ifn}.states ${ifn}.props ${ifn}.token ${ifn}.agaws
 
