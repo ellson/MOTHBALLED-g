@@ -31,7 +31,7 @@ static unsigned char SAME[]={1,'='};
 static void print_next( char *leg1, char *leg2 ) {
     if (leg1 != oleg1) {
 	oleg1 = leg1;
-        sleg1 = NAMEP(leg1);
+        sleg1 = NAMEP(leg1-state_machine);
 
         oleg2 = NULL;
     }
@@ -40,7 +40,7 @@ static void print_next( char *leg1, char *leg2 ) {
     }
     if (leg2 != oleg1) {
 	oleg2 = leg2;
-        sleg2 = NAMEP(leg2);
+        sleg2 = NAMEP(leg2-state_machine);
     }
     else {
 	sleg2 = SAME;
@@ -59,11 +59,9 @@ static void print_attr ( char attr, char *attrid, int *inlist ) {
     }
 }
 
-static void print_prop(char *p) {
-    unsigned char prop;
+static void print_prop(unsigned char prop) {
     int inlist;
 
-    prop = *PROPP(p);
     if (prop & (ALT|OPT|SREP|REP)) {
         inlist=0;
         fprintf(OUT,"%s", styleLBR);
@@ -85,7 +83,7 @@ static void printg_r(char *sp, int indent) {
         np = p+ni;
         for (i = indent; i--; ) putc (' ', OUT);
         print_next(sp, np);
-        print_prop(p);
+        print_prop(state_props[p-state_machine]);
         fprintf(OUT,"%s\n", styleLBE);
 	if (np != state_machine) { // stop recursion
             printg_r(np, indent+2);
@@ -134,12 +132,12 @@ void dumpg (void) {
             sp = p;
             while (( ni = (state_t)(*p) )) {
                 print_next(sp, p + (char)ni);
-                print_prop(p);
+                print_prop(state_props[p-state_machine]);
 		p++;
 	    }
 	}
 	else { // else terminal
-	    print_len_frag(OUT, NAMEP(p));
+	    print_len_frag(OUT, NAMEP(p-state_machine));
             print_chars(p);
 	}
         p++;

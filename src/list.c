@@ -261,7 +261,7 @@ void print_list(FILE *chan, elem_t *list, int indent, char sep) {
             else {
 		putc (' ', chan);
             }
-            width = print_len_frag(chan, NAMEP(state_machine+(elem->state)));
+            width = print_len_frag(chan, NAMEP(elem->state));
             ind = indent + width + 1;;
 	    print_list(chan, elem, ind, sep);  // recurse
             elem = elem->next;

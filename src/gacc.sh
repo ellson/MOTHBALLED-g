@@ -398,9 +398,9 @@ cat ${ofc}.states ${ofc}.props ${ofc}.emit >>$ofc
 rm -f ${ofc}.states ${ofc}.props ${ofc}.emit
 
 cat >>$ofc  <<EOF
-unsigned char *NAMEP(char *sp) {
-    while (*sp) sp++;
-    return state_names + (*PROPP(sp) * 2);
+unsigned char *NAMEP(int si) {
+    while (state_machine[si]) si++;
+    return state_names + 2*state_props[si];
 }
 
 EOF
@@ -412,8 +412,7 @@ typedef enum {
 } success_t;
 
 #define sizeof_state_machine $((++indx))
-#define PROPP(p) (state_props + (p - state_machine))
 
-extern unsigned char *NAMEP(char *p);
+extern unsigned char *NAMEP(int si);
 
 EOF

@@ -21,7 +21,7 @@ static void api_start_state(context_t *C, char class, unsigned char prop, int ne
     fprintf(OUT, "\n   ");
     putc(char_prop(prop,'.'), OUT);
     fprintf(OUT,"%4d%4d%4d   ", class, nest, repc);
-    print_len_frag(OUT, NAMEP(class+state_machine));
+    print_len_frag(OUT, NAMEP(class));
 }
 
 static void api_string(context_t *C, elem_t *branch) {
@@ -36,7 +36,7 @@ static void api_token(context_t *C, char token) {
 
 static void api_end_state(context_t *C, char class, success_t rc, int nest, int repc) {
     fprintf(OUT,"\n   %d%4d%4d%4d   ", rc, class, nest, repc);
-    print_len_frag(OUT, NAMEP(class+state_machine));
+    print_len_frag(OUT, NAMEP(class));
 }
 
 static void api_end_file(context_t *C) {
