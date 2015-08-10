@@ -5,12 +5,13 @@
 
 #include "grammar.h"
 #include "inbuf.h"
+#include "context.h"
 #include "stats.h"
 
 static inbuf_t *free_inbuf_list;
 static elem_t *free_elem_list;
 
-static inbuf_t* new_inbuf(void) {
+inbuf_t* new_inbuf(void) {
     inbuf_t *inbuf, *next;
     int i;
 
@@ -52,30 +53,6 @@ static void free_inbuf(inbuf_t *inbuf) {
     free_inbuf_list = inbuf;
 
     stat_inbufnow--;             // stats
-}
-
-success_t more_in(context_t *C) {
-    int size;
-
-    if (C->in == NULL && feof(C->file)) {
-	return FAIL;
-    }
-    if (! C->inbuf || C->in == &(C->inbuf->end_of_buf)) {
-        C->inbuf = new_inbuf();        // grab a buffer
-        assert(C->inbuf);
-        C->in = C->inbuf->buf;
-    }
-    size = fread(C->in, 1, &(C->inbuf->end_of_buf) - C->in, C->file); // slurp in data from file stream
-    C->in[size] = '\0';  // ensure terminated (we have an extra character in inbuf_t so this is safe)
-    C->insi = char2state[*C->in];
-
-    if (size == 0 && feof(C->file)) {
-        C->in = NULL;
-	return FAIL;
-    }
-    
-    stat_inchars += size;
-    return SUCCESS;
 }
 
 static elem_t* new_elem_sub(elemtype_t type) {

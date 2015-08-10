@@ -7,6 +7,7 @@
 
 #include "grammar.h"
 #include "inbuf.h"
+#include "context.h"
 #include "stats.h"
 #include "emit.h"
 #include "parse.h"

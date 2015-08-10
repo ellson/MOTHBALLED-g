@@ -3,6 +3,7 @@
 
 #include "grammar.h"
 #include "inbuf.h"
+#include "context.h"
 #include "emit.h"
 
 static void api_sep(context_t *C) {

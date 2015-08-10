@@ -3,6 +3,7 @@
 
 #include "grammar.h"
 #include "inbuf.h"
+#include "context.h"
 #include "emit.h"
 
 emit_t *emit;

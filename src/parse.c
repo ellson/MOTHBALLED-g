@@ -4,6 +4,7 @@
 
 #include "grammar.h"
 #include "inbuf.h"
+#include "context.h"
 #include "stats.h"
 #include "emit.h"
 #include "parse.h"
@@ -12,6 +13,30 @@ static unsigned char unterm;
 static char *insp;
 static state_t subj, bi, ei;
 static elem_t *sameend_elem;
+
+static success_t more_in(context_t *C) {
+    int size;
+
+    if (C->in == NULL && feof(C->file)) {
+        return FAIL;
+    }
+    if (! C->inbuf || C->in == &(C->inbuf->end_of_buf)) {
+        C->inbuf = new_inbuf();        // grab a buffer
+        assert(C->inbuf);
+        C->in = C->inbuf->buf;
+    }
+    size = fread(C->in, 1, &(C->inbuf->end_of_buf) - C->in, C->file); // slurp in data from file stream
+    C->in[size] = '\0';  // ensure terminated (we have an extra character in inbuf_t so this is safe)
+    C->insi = char2state[*C->in];
+
+    if (size == 0 && feof(C->file)) {
+        C->in = NULL;
+        return FAIL;
+    }
+
+    stat_inchars += size;
+    return SUCCESS;
+}
 
 static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
     if (! (prop & (REP|SREP))) return FAIL;
