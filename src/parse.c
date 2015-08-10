@@ -12,7 +12,6 @@
 #include "tokens.h"
 
 static unsigned char unterm;
-static char *insp;
 static state_t subj, bi, ei;
 static elem_t *sameend_elem;
 
@@ -25,8 +24,7 @@ static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t 
     return SUCCESS;
 }
 
-static success_t parse_r(context_t *C, elem_t *root, char *sp,
-		       unsigned char prop, int nest, int repc) {
+static success_t parse_r(context_t *C, elem_t *root, char *sp, unsigned char prop, int nest, int repc) {
     unsigned char nprop;
     char *np;
     state_t si, ni, savesubj;
@@ -78,7 +76,6 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp,
         rc = parse_string(C, &branch);
         bi = C->insi;             // the char class that terminates the string
 
-        insp = state_machine + (char)(C->insi);
         goto done;
     }
     if (si == C->insi) {          // single character terminals matching state_machine expectation
@@ -87,25 +84,22 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp,
         rc = parse_token(C);
 	ei = C->insi;
 
-        insp = state_machine + (char)(C->insi);
-
 // FIXME - set flags for '~' and '='
         goto done;
     }
-    insp = state_machine + (char)(C->insi);
-
 
     // else non terminal state -- state entry processing
  
     switch (si) {
     case ACT:
+// FIXME - unterm needs to be stacked
         if (unterm) {             // implicitly terminates preceeding ACT
  	    emit_term(C);
 	}
 	unterm = 1;               // indicate that this new ACT is unterminated
 	break;
     case SUBJECT:
-        // FIXME - don't stack ... use context for this
+// FIXME - savesubj needs to be ... use context for this
         savesubj = subj;          // push parent's subject
         subj = 0;                 // clear this subject type until known
 	break;
@@ -288,13 +282,13 @@ success_t parse(context_t *C) {
     };
 
     emit_start_file(C);
+
     rc = parse_r(C, &root, state_machine, SREP, 0, 0);
-    if (! (C->in)) {           // if at EOF
-        if (unterm) {
- 	    emit_term(C);      // EOF is an implicit terminator
-	}
-        unterm = 0;
+
+    if (unterm) {
+ 	emit_term(C);      // EOF is an implicit terminator
     }
+    unterm = 0;
     emit_end_file(C);
     return rc;
 }
