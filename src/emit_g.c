@@ -3,6 +3,7 @@
 
 #include "grammar.h"
 #include "inbuf.h"
+#include "list.h"
 #include "context.h"
 #include "emit.h"
 

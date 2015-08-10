@@ -4,6 +4,7 @@
 
 #include "grammar.h"
 #include "inbuf.h"
+#include "list.h"
 #include "context.h"
 #include "stats.h"
 #include "emit.h"

@@ -4,6 +4,7 @@
 
 #include "grammar.h"
 #include "inbuf.h"
+#include "list.h"
 #include "stats.h"
 
 #define STAT_FORMAT "%18s=%ld"
