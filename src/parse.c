@@ -24,10 +24,9 @@ static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t 
     return SUCCESS;
 }
 
-static success_t parse_r(context_t *C, elem_t *root, char *sp, unsigned char prop, int nest, int repc) {
+static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char prop, int nest, int repc) {
     unsigned char nprop;
-    char *np;
-    state_t si, ni, savesubj;
+    state_t ti, ni, savesubj;
     success_t rc;
     elem_t *elem;
     elem_t branch = {
@@ -40,7 +39,6 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp, unsigned char pro
     };
 
     rc = SUCCESS;
-    si = (state_t)(sp - state_machine);
     emit_start_state(C, si, prop, nest, repc);
     branch.state = si;
 
@@ -107,14 +105,16 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp, unsigned char pro
 	break;
     }
 
-    // parse next state
+    // Use state_machine[si] to determine next state
  
     rc = FAIL;                    // init rc to "fail" in case no next state is found
-    while (( ni = (state_t)(*sp) )) {        // iterate over ALTs or sequences
-        nprop = *PROPP(sp);
-        np = sp + (char)ni;
+    ti = si;
+    while (( ni = state_machine[ti] )) { // iterate over ALTs or sequences
+        nprop = state_props[ti];   // get the props for the transition from the current state (OPT, ALT, REP etc)
+	                          // at this point, ni is a signed, non-zero offset to the next state
+        ni += ti;                 // we get to the next state by adding the offset to the current state.
 	if (nprop & ALT) {        // look for ALT
-	    if (( rc = parse_r(C, &branch, np,nprop,nest,0)) == SUCCESS) {
+	    if (( rc = parse_r(C, &branch, ni, nprop, nest, 0)) == SUCCESS) {
                 break;            // ALT satisfied
 	    }
 	                          // we failed an ALT so continue iteration to try next ALT
@@ -122,30 +122,28 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp, unsigned char pro
 	else {                    // else it is a sequence
 	    repc = 0;
 	    if (nprop & OPT) {    // optional
-	        if (( parse_r(C, &branch, np,nprop,nest,repc++)) == SUCCESS) {
+	        if (( parse_r(C, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
 	            while (more_rep(C, nprop, ei, bi) == SUCCESS) {
-                        if (parse_r(C, &branch, np,nprop,nest,repc++) == FAIL) {
+                        if (parse_r(C, &branch, ni, nprop, nest, repc++) == FAIL) {
 			    break;
 			}
 		    }
 	        }
-                rc = SUCCESS;           // optional can't fail
+                rc = SUCCESS;     // optional can't fail
 	    }
 	    else {                // else not OPTional
-	        if (( rc = parse_r(C, &branch, np,nprop,nest,repc++)) == FAIL) {
+	        if (( rc = parse_r(C, &branch, ni, nprop, nest, repc++)) == FAIL) {
 		    break; 
 		}
-                // rc is from the first term in the non-optional sequence,
-                // which at this point is success
+                // A 1-or-more repetition is successful is the first one was a success
 	        while (more_rep(C, nprop, ei, bi) == SUCCESS) {
-                    if (parse_r(C, &branch, np,nprop,nest,repc++) == FAIL) {
+                    if (parse_r(C, &branch, ni, nprop, nest, repc++) == FAIL) {
 			break;
 		    }
 		}
 	    }
 	}
-	sp++;                     // next ALT (if not yet satisfied) 
-			          // or next sequence item
+	ti++;                     // next ALT (if not yet satisfied), or next sequence item
     }
 
     // Any subtree rewrites or emit before adding branch to root in the state exit processing
@@ -283,7 +281,7 @@ success_t parse(context_t *C) {
 
     emit_start_file(C);
 
-    rc = parse_r(C, &root, state_machine, SREP, 0, 0);
+    rc = parse_r(C, &root, ACTIVITY, SREP, 0, 0);
 
     if (unterm) {
  	emit_term(C);      // EOF is an implicit terminator
