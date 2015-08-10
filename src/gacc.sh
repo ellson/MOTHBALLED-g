@@ -94,22 +94,22 @@ sm_delete() {
 }
 
 sm_term() {
-    nprop=""
-    if test "$prop" != ""; then
-        cnt=0
-        for p in $prop; do
-	    PROPS[$p]=""
-	    if test $cnt -ne 0;then
-	        nprop+=" $p"
-	    else
-	        nprop+="$p"
-	    fi
-	    ((cnt++))
-        done
-    fi
     if test "$next" != ""; then
         nextlist=("${nextlist[@]}" "$next")
         next=""
+        nprop=""
+        if test "$prop" != ""; then
+            cnt=0
+            for p in $prop; do
+	        PROPS[$p]=""
+	        if test $cnt -ne 0;then
+	            nprop+=" $p"
+	        else
+	            nprop+="$p"
+	        fi
+	        ((cnt++))
+            done
+        fi
         proplist=("${proplist[@]}" "$nprop")
         prop=""
         ((indx++))
