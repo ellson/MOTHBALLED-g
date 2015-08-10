@@ -1,4 +1,4 @@
-CFLAGS = -g -O0 -Wall
+CFLAGS = -g -O0 -Wall -W -Wextra -pedantic -Wno-unused-parameter
 #CFLAGS = -DNDEBUG
 OBJS = grammar.o parse.o tokens.o stats.o inbuf.o dumpg.o list.o emit.o emit_t.o emit_g.o g.o
 HDRS = grammar.h parse.h tokens.h stats.h inbuf.h dumpg.h list.h emit.h context.h

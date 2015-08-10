@@ -77,36 +77,25 @@ static int parse_string_fragment(context_t *C, elem_t *fraglist) {
     int len;
     elem_t *elem;
 
-    if (C->insi != ABC) {
-        if (C->insi == AST) {
+    if (C->insi == ABC) {
+	frag = C->in;
+    	len = 1;
+  	while ( (C->insi = char2state[*++(C->in)]) == ABC) {len++;}
+        elem = new_frag(ABC,len,frag,C->inbuf);
+    }
+    else if (C->insi == AST) {
         // FIXME - flag a pattern;
-        }
-        else {
-            return 0;;
-	}
+	frag = C->in;
+    	len = 1;
+  	while ( (C->insi = char2state[*++(C->in)]) == AST) {}
+        elem = new_frag(AST,len,frag,C->inbuf);
     }
-    frag = C->in;
-    len = 1;
-    C->insi = char2state[*++(C->in)];
-    while (1) {
-        if (C->insi == ABC) {
-            len++;
-            while ( (C->insi = char2state[*++(C->in)]) == ABC) {len++;}
-            continue;
-        }
-        if (C->insi == AST) {
-            len++;
-            // FIXME - flag a pattern;
-            while ( (C->insi = char2state[*++(C->in)]) == AST) {len++;}
-            continue;
-        }
-        break;
+    else {
+	return 0;
     }
-    stat_fragcount++;
-    emit_frag(C,len,frag);
-    
-    elem = new_frag(ABC,len,frag,C->inbuf);
     append_list(fraglist, elem);
+    emit_frag(C,len,frag);
+    stat_fragcount++;
     return len;
 }
 

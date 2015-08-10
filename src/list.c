@@ -237,7 +237,7 @@ void print_list(FILE *chan, elem_t *list, int indent, char sep) {
     case FRAGELEM :
         if (sep) putc(sep, chan);
         while (elem) {
-            assert(elem->type == type);  // check all the same type
+            assert(elem->type == (char)type);  // check all the same type
             cp = elem->u.frag.frag;
             len = elem->v.frag.len;
 	    assert(len > 0);
@@ -249,7 +249,7 @@ void print_list(FILE *chan, elem_t *list, int indent, char sep) {
         cnt = 0;
         width = 0;
         while (elem) {
-            assert(elem->type == type);  // check all the same type
+            assert(elem->type == (char)type);  // check all the same type
 	    if (cnt++) {
 		putc ('\n', chan);
 		putc (' ', chan);
