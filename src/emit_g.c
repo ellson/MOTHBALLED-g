@@ -56,7 +56,7 @@ static void api1_term(context_t *C) {
 
 static emit_t api1 = {
     /* api_start_file */          NULL,
-    /* api_sep */                 NULL,
+    /* api_sep */                 api_sep,
     /* api_start_state */         NULL,
     /* api_tree */                NULL,
     /* api_string */              api1_string,

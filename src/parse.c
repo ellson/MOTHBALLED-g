@@ -20,7 +20,9 @@ static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t 
     if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) return FAIL; // no more
     if (bi == RPN || bi == RAN || bi == RBR || bi == RBE ||
         ei == LPN || ei == LAN || ei == LBR || ei == LBE) return SUCCESS; // more, but no sep needed
-    if (prop & SREP) emit_sep(C); // sep needed for SREP sequences
+    if (prop & SREP) {
+	emit_sep(C); // sep needed for SREP sequences
+    }
     return SUCCESS;
 }
 
