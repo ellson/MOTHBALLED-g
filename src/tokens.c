@@ -74,29 +74,34 @@ success_t parse_whitespace(context_t *C) {
 // load string fragments
 static int parse_string_fragment(context_t *C, elem_t *fraglist) {
     unsigned char *frag;
-    int len;
+    int slen, len;
     elem_t *elem;
 
-    if (C->insi == ABC) {
-	frag = C->in;
-    	len = 1;
-  	while ( (C->insi = char2state[*++(C->in)]) == ABC) {len++;}
-        elem = new_frag(ABC,len,frag,C->inbuf);
+    slen = 0;
+    while (1) {
+        if (C->insi == ABC) {
+	    frag = C->in;
+    	    len = 1;
+  	    while ( (C->insi = char2state[*++(C->in)]) == ABC) {len++;}
+            elem = new_frag(ABC,len,frag,C->inbuf);
+	    slen += len;
+        }
+        else if (C->insi == AST) {
+            // FIXME - flag a pattern;
+	    frag = C->in;
+    	    len = 1;
+  	    while ( (C->insi = char2state[*++(C->in)]) == AST) {}
+            elem = new_frag(AST,len,frag,C->inbuf);
+	    slen += len;
+        }
+        else {
+	    break;
+        }
+        append_list(fraglist, elem);
+        emit_frag(C,len,frag);
+        stat_fragcount++;
     }
-    else if (C->insi == AST) {
-        // FIXME - flag a pattern;
-	frag = C->in;
-    	len = 1;
-  	while ( (C->insi = char2state[*++(C->in)]) == AST) {}
-        elem = new_frag(AST,len,frag,C->inbuf);
-    }
-    else {
-	return 0;
-    }
-    append_list(fraglist, elem);
-    emit_frag(C,len,frag);
-    stat_fragcount++;
-    return len;
+    return slen;
 }
 
 // collect fragments to form a STRING token
