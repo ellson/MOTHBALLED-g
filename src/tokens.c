@@ -19,7 +19,9 @@ static success_t more_in(context_t *C) {
     }
     if (C->inbuf) {                  // if there is an existing active-inbuf
 	if (C->in == &(C->inbuf->end_of_buf)) {  // if it is full
-	    C->inbuf->refs--;        // remove active-inbuf reference
+	    if (( --(C->inbuf->refs)) == 0 ) { // dereference active-inbuf
+		free_inbuf(C->inbuf); // free if no refs left
+	    }
 	    C->inbuf = new_inbuf();  // get new
 	    assert(C->inbuf);
 	    C->inbuf->refs = 1;      // add active-inbuf reference
