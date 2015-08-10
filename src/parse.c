@@ -193,7 +193,7 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp,
     // else non terminal state -- state entry processing
  
     switch (si) {
-    case ACT:                     // starting a new ACT
+    case ACT:
         if (unterm) {             // implicitly terminates preceeding ACT
  	    emit_term(C);
 	}
@@ -210,7 +210,7 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp,
 
     // parse next state
  
-    rc = FAIL;                       // init rc to "fail" in case no next state is found
+    rc = FAIL;                    // init rc to "fail" in case no next state is found
     while (( ni = (state_t)(*sp) )) {        // iterate over ALTs or sequences
         nprop = *PROPP(sp);
         np = sp + (char)ni;
@@ -236,7 +236,7 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp,
 	        if (( rc = parse_r(C, &branch, np,nprop,nest,repc++)) == FAIL) {
 		    break; 
 		}
-                // rc is the rc of the first term,
+                // rc is from the first term in the non-optional sequence,
                 // which at this point is success
 	        while (more_rep(C, nprop, ei, bi) == SUCCESS) {
                     if (parse_r(C, &branch, np,nprop,nest,repc++) == FAIL) {
@@ -253,7 +253,7 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp,
     if (rc == SUCCESS) {
         switch (si) {
         case LEG:
-#if 0
+#if 1
 	    if (bi == EQL) {
                 if (! sameend_elem) {
 	            emit_error(C, "No prior LEG found for sameend substitution");
@@ -261,7 +261,7 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp,
 	        }
 //		elem = ref_list(si, elem);
 
-//              elem = ref_list(si, sameend_elem);
+                elem = ref_list(si, sameend_elem);
 // FIXME can be multiple ENDPOINTS in a LEG, need a while here
 //                append_list(&branch, sameend_elem->u.list.first);
             }
@@ -276,12 +276,12 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp,
             elem = ref_list(si, &branch);
             push_list(&(C->subject), elem);  // save the subject of this act at this level of containment
 
-#if 1
+#if 0
 putc ('\n', stdout);
 print_list(stdout, &(C->subject), 0, ' ');
 putc ('\n', stdout);
 #endif
-#if 0
+#if 1
             // update samends
             //    -- free old samends
 	    free_list(&(C->sameend_legs));
@@ -295,7 +295,7 @@ putc ('\n', stdout);
 	case ACT:
             stat_actcount++;
             pop_list(&(C->subject));  // discard the subject of this act at this level of containment
-#if 0
+#if 1
             emit_tree(C, &branch);
 // FIXME - at the moment this is freeing an active input_buffer
 //            free_list(&branch);
@@ -384,7 +384,7 @@ success_t parse(context_t *C) {
 
     emit_start_file(C);
     rc = parse_r(C, &root, state_machine, SREP, 0, 0);
-    if (! C->in) {             // if at EOF
+    if (! (C->in)) {           // if at EOF
         if (unterm) {
  	    emit_term(C);      // EOF is an implicit terminator
 	}
