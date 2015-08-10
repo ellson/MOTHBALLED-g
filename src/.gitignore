@@ -3,4 +3,6 @@ g
 grammar.c
 grammar.h
 grammar.ebnf
+grammar.gv
+test_grammar.g
 grammar.svg

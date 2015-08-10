@@ -14,7 +14,8 @@ fi
 of=${ifn%.g}
 ofh=${of}.h
 ofc=${of}.c
-ofe=${of}.ebnf
+ofgv=${of}.gv
+ofebnf=${of}.ebnf
 
 typeset -A POS NAME SPOS PROPS CHARMAP CONTENT
 
@@ -178,18 +179,140 @@ done <${ifn}.s
 
 rm -f ${ifn}.s
 
-##############################################
-#
-# emit sm output: grammar.h
+#############################################
+# iterate over statelist and generate temporary files for inclusion in output files
 
-cat >$ofh <<EOF
-/*
-* This is a generated file.  Do not edit.
-*/
+cat >${ifn}.ebnf <<EOF
+
+Meta grammar:	'|' separates alternates, otherwise the tokens are sequential
+		'_' imdicates that a non-ABC character must separate elements (e.g. WS)
+		'?' indicates that the token is optional
+		'+' indicates that the token is to be repeated 1 or more times
+		'*' indicates that the token is to be repeated 0 or more times
 
 EOF
 
-####
+( printf "strict digraph { ordering=out\n"       )  >${ifn}.gv
+( printf "typedef enum {\n"                      )  >${ifn}.enum
+( printf "char state_machine[] = {\n"            )  >${ifn}.states
+( printf "unsigned char state_props[] = {\n"     )  >${ifn}.props
+( printf "char state_token[] = {\n"              )  >${ifn}.emit
+
+cnt=0
+for s in ${statelist[@]}; do
+    ((cnt++))
+    indx=${POS[$s]}
+    class="${CONTENT[$s]}"
+    tokchar=""
+    for tokchar in $class; do break; done
+    if test "$tokchar" = ""; then
+	tokchar=0
+    else
+	tokchar=0x$tokchar
+    fi
+    if test "$s" = "BIN" -o "$s" = "NLL" -o "$s" = "WS"; then
+        printable=0
+    else
+        printable=1
+    fi
+    if test $cnt -ne ${#statelist[@]}; then
+        comma=","
+    else
+        comma=""
+    fi
+    alts=0
+    ( printf "%13s ::=" "$s"                     ) >>${ifn}.ebnf
+    ( printf "%13s = %s%s" $s $indx $comma       ) >>${ifn}.enum
+    ( printf "    /* %3d %12s */  " $indx $s     ) >>${ifn}.states
+    ( printf "    /* %3d %12s */  " $indx $s     ) >>${ifn}.props
+    ( printf "    /* %3d %12s */  " $indx $s     ) >>${ifn}.emit
+    while true; do
+        next=${nextlist[$indx]}
+        prop=${proplist[$indx]}
+        if test "$next" = ""; then break; fi
+        nxtindx=${POS[$next]}
+
+        ord=0
+        ws=""
+        nprops=0
+        for p in $prop; do
+            case $p in
+            ALT ) if test $alts -ne 0; then
+                      ( printf "\n%17s" "|"      ) >>${ifn}.ebnf
+                  fi
+                  (( alts++))
+                  ;;
+            OPT ) ((ord|=1));;
+            REP)  ((ord|=2));;
+            SREP) ((ord|=2)); ws='_';;
+            *) ;;
+            esac
+
+            pcnt=0
+            for q in ${!PROPS[@]}; do
+	        if test "$p" = "$q"; then
+	            ((nprops += (1 << pcnt) ))
+	        fi
+	        ((pcnt++))
+            done
+        done
+        case $ord in
+        0 ) ordc="";; 
+        1 ) ordc="?";; 
+        2 ) ordc="+";; 
+        3 ) ordc="*";; 
+        esac
+        ( printf " %s%s%s" "$ws" "$next" "$ordc" ) >>${ifn}.ebnf
+        ( printf "    \"%s\" -> \"%s\" [label=\"%s%s\"]\n" "$s" "$next" "$ws" "$ordc" ) >>${ifn}.gv
+        ( printf " %4d," $((nxtindx-indx))       ) >>${ifn}.states
+        ( printf " 0x%02x," $nprops              ) >>${ifn}.props
+        ( printf " %4d," 0                       ) >>${ifn}.emit
+        ((indx++))
+    done
+    if test "$class" != ""; then
+        altc=0
+        ( printf " "                             ) >>${ifn}.ebnf
+        for c in $class; do
+	    cc=$(( 0x$c ))
+            if test $altc -gt 0; then
+                if test $(( altc % 8 )) -eq 0; then
+                    ( printf "\n%18s" "| "       ) >>${ifn}.ebnf
+                else
+                    ( printf "|"                 ) >>${ifn}.ebnf
+                fi
+            fi
+            ((altc++))
+            if test $printable -eq 1 -a $cc -lt 128 ; then
+                ( printf "'\x$c'"                ) >>${ifn}.ebnf
+            else
+                ( printf "'0x$c'"                ) >>${ifn}.ebnf
+            fi
+        done
+    fi
+    spos=${SPOS[$s]}
+    ( printf "\n"                                ) >>${ifn}.ebnf
+    ( printf "\n"                                ) >>${ifn}.enum
+    ( printf " %4d,\n" 0                         ) >>${ifn}.states
+    ( printf " %4d,\n" $((spos/2))               ) >>${ifn}.props
+    ( printf " %4s,\n" $tokchar                  ) >>${ifn}.emit
+done
+( printf "\n\n"                                  ) >>${ifn}.ebnf
+( printf "}\n\n"                                 ) >>${ifn}.gv
+( printf "} state_t;\n\n"                        ) >>${ifn}.enum
+( printf "};\n\n"                                ) >>${ifn}.states
+( printf "};\n\n"                                ) >>${ifn}.props
+( printf "};\n\n"                                ) >>${ifn}.emit
+
+##############################################
+# assemble output files
+#     grammar.h
+
+cat >$ofh <<EOF
+/*
+ * This is a generated file.  Do not edit.
+ */
+
+EOF
 
 (
     cnt=0
@@ -204,44 +327,49 @@ EOF
     printf "\n} props_t;\n\n"
 ) >>$ofh
 
-####
-(
-    cnt=0
-    printf "typedef enum {\n"
-    for s in ${statelist[@]}; do
-        if test $cnt -ne 0; then 
-            printf ",\n"
-        fi
-        printf "    $s = ${POS[$s]}"
-        ((cnt++))
-    done
-    printf "\n} state_t;\n\n"
-) >>$ofh
+cat ${ifn}.enum >>$ofh
 
-cat >>$ofh <<EOF
-
+cat >>$ofh  <<EOF
 extern unsigned char state_names[];
 extern unsigned char char2state[];
 extern char state_machine[];
 extern unsigned char state_props[];
 extern char state_token[];
 
-EOF
-##############################################
-#
-# emit sm output: grammar.c
+typedef enum {
+	SUCCESS,
+	FAIL
+} success_t;
 
+#define sizeof_state_machine $((++indx))
+
+extern unsigned char *NAMEP(int si);
+
+EOF
+
+##############################################
+# assemble output files
+#     grammar.c
 
 cat >$ofc <<EOF
 /*
-* This is a generated file.  Do not edit.
-*/
+ * This is a generated file.  Do not edit.
+ *
+ *
+ ******************** eBNF - start ***********************
+
+EOF
+
+cat ${ifn}.ebnf >>$ofc
+
+cat >>$ofc <<EOF
+
+ ******************** eBNF - end ************************/
 
 #include "$ofh"
 
 EOF
 
-####
 (
     printf "unsigned char state_names[] = {\n"
     for n in ${namelist[@]}; do
@@ -251,7 +379,6 @@ EOF
     printf "};\n\n"
 ) >>$ofc
 
-####
 (
     printf "unsigned char char2state[] = {"
     for msb in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
@@ -267,135 +394,9 @@ EOF
     printf "\n};\n\n"
 ) >>$ofc
 
-####
-
-ebnf() {
-    for s in ${statelist[@]}; do
-    indx=${POS[$s]}
-    class="${CONTENT[$s]}"
-    if test "$s" = "BIN" -o "$s" = "UTF" -o "$s" = "NLL" -o "$s" = "WS"; then
-        printable=0
-    else
-        printable=1
-    fi
-    printf "%13s ::=" "$s"
-    alts=0
-    while true; do
-        next=${nextlist[$indx]}
-        prop=${proplist[$indx]}
-        ((indx++))
-        if test "$next" = ""; then break; fi
-        ord=0
-        ws=""
-        for p in $prop; do
-	    case $p in
-	    ALT ) if test $alts -ne 0; then
-		      printf "\n%17s" "|"
-	          fi
-	          (( alts++))
-	          ;;
-	    OPT ) ((ord|=1));;
-	    REP)  ((ord|=2));;
-	    SREP) ((ord|=2)); ws='_';;
-	    *) ;;
-	    esac
-        done
-        case $ord in
-        0 ) ordc="";; 
-        1 ) ordc="?";; 
-        2 ) ordc="+";; 
-        3 ) ordc="*";; 
-        esac
-        printf " %s%s%s" "$ws" "$next" "$ordc"
-    done
-    if test "$class" != ""; then
-        altc=0
-        printf " "
-        for c in $class; do
-	    if test $altc -gt 0; then
-	        if test $(( altc % 8 )) -eq 0; then
-		    printf "\n%18s" "| "
-	        else
-		    printf "|"	
-	        fi
-	    fi
-	    ((altc++))
-	    if test $printable -eq 1; then
-	        printf "'\x$c'"	
-	    else
-	        printf "'0x$c'"	
-	    fi
-        done
-    fi
-    printf "\n"
-    done
-}
-
-cat >>$ofc <<EOF
-
-/******************** eBNF - start ***********************
-
-EOF
-
-( ebnf ) >>$ofc
-( ebnf ) >$ofe
-
-cat >>$ofc <<EOF
-
-"******************** eBNF - end ************************/
-
-EOF
-
-####
-( printf "char state_machine[] = {\n"        )  >${ofc}.states
-( printf "unsigned char state_props[] = {\n" )  >${ofc}.props
-( printf "char state_token[] = {\n"       )  >${ofc}.emit
-for s in ${statelist[@]}; do
-    indx=${POS[$s]}
-    class="${CONTENT[$s]}"
-    tokchar=""
-    for tokchar in $class; do break; done
-    if test "$tokchar" = ""; then
-	tokchar=0
-    else
-	tokchar=0x$tokchar
-    fi
-    ( printf "    /* %3d %12s */  " $indx $s ) >>${ofc}.states
-    ( printf "    /* %3d %12s */  " $indx $s ) >>${ofc}.props
-    ( printf "    /* %3d %12s */  " $indx $s ) >>${ofc}.emit
-    while true; do
-        next=${nextlist[$indx]}
-        prop=${proplist[$indx]}
-        if test "$next" = ""; then break; fi
-        nxtindx=${POS[$next]}
-    
-        nprops=0
-        for p in $prop; do
-            cnt=0
-            for q in ${!PROPS[@]}; do
-	        if test "$p" = "$q"; then
-	            ((nprops += (1<<cnt) ))
-	        fi
-	        ((cnt++))
-            done
-        done
-    
-        ( printf " %4d," $((nxtindx-indx))   ) >>${ofc}.states
-        ( printf " 0x%02x," $nprops          ) >>${ofc}.props
-        ( printf " %4d," 0                   ) >>${ofc}.emit
-        ((indx++))
-    done
-    spos=${SPOS[$s]}
-    ( printf " %4d,\n" 0                     ) >>${ofc}.states
-    ( printf " %4d,\n" $((spos/2))           ) >>${ofc}.props
-    ( printf " %4s,\n" $tokchar              ) >>${ofc}.emit
-done
-( printf "};\n\n"                            ) >>${ofc}.states
-( printf "};\n\n"                            ) >>${ofc}.props
-( printf "};\n\n"                            ) >>${ofc}.emit
-
-cat ${ofc}.states ${ofc}.props ${ofc}.emit >>$ofc
-rm -f ${ofc}.states ${ofc}.props ${ofc}.emit
+cat ${ifn}.states >>$ofc
+cat ${ifn}.props  >>$ofc
+cat ${ifn}.emit   >>$ofc
 
 cat >>$ofc  <<EOF
 unsigned char *NAMEP(int si) {
@@ -405,14 +406,21 @@ unsigned char *NAMEP(int si) {
 
 EOF
 
-cat >>$ofh  <<EOF
-typedef enum {
-	SUCCESS,
-	FAIL
-} success_t;
+##############################################
+# assemble output files
+#     grammar.ebnf
 
-#define sizeof_state_machine $((++indx))
+cat ${ifn}.ebnf   >$ofebnf
 
-extern unsigned char *NAMEP(int si);
 
-EOF
+##############################################
+# assemble output files
+#     grammar.gv
+
+cat ${ifn}.gv     >$ofgv
+
+#############################################
+# clean up temporary files
+
+rm -f ${ifn}.ebnf ${ifn}.gv ${ifn}.enum ${ifn}.states ${ifn}.props ${ifn}.emit
+
