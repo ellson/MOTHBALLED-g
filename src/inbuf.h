@@ -65,7 +65,7 @@ typedef struct {
 
 success_t more_in(context_t *C);
 
-elem_t* new_frag(char state, unsigned char *frag, int len, inbuf_t *inbuf);
+elem_t* new_frag(char state, int len, unsigned char *frag, inbuf_t *inbuf);
 elem_t *move_list(char state, elem_t *list);
 elem_t *ref_list(char state, elem_t *list);
 void append_list(elem_t *list, elem_t *elem);

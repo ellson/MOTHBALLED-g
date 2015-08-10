@@ -111,7 +111,7 @@ static elem_t* new_elem_sub(elemtype_t type) {
     return elem;
 }
 
-elem_t* new_frag(char state, unsigned char *frag, int len, inbuf_t *inbuf) {
+elem_t* new_frag(char state, int len, unsigned char *frag, inbuf_t *inbuf) {
     elem_t* elem;
     
     elem = new_elem_sub(FRAGELEM);
@@ -136,7 +136,7 @@ elem_t* new_frag(char state, unsigned char *frag, int len, inbuf_t *inbuf) {
 static elem_t *clone_list(char state, elem_t *list) {
     elem_t *elem;
 
-    assert(list->type == LISTELEM);
+    assert(list->type == (char)LISTELEM);
 
     elem = new_elem_sub(LISTELEM);
 
@@ -180,7 +180,7 @@ elem_t *ref_list(char state, elem_t *list) {
 
 // append elem to the end of the list so that the elem becomes the new u.list.last
 void append_list(elem_t *list, elem_t *elem) {
-    assert(list->type == LISTELEM);
+    assert(list->type == (char)LISTELEM);
 
     if (list->u.list.first) {
 	list->u.list.last->next = elem;
@@ -189,7 +189,7 @@ void append_list(elem_t *list, elem_t *elem) {
 	list->u.list.first = elem;
     }
     list->u.list.last = elem;
-    if (elem->type == LISTELEM) {
+    if (elem->type == (char)LISTELEM) {
         elem->v.list.refs++;   // increment ref count in appended elem
         assert(elem->v.list.refs > 0);
     }
@@ -197,11 +197,11 @@ void append_list(elem_t *list, elem_t *elem) {
 
 // prepend elem to the beginning of the list so that elem becomes the new u.list.first
 void push_list(elem_t *list, elem_t *elem) {
-    assert(list->type == LISTELEM);
+    assert(list->type == (char)LISTELEM);
 
     elem->next = list->u.list.first;
     list->u.list.first = elem;
-    if (elem->type == LISTELEM) {
+    if (elem->type == (char)LISTELEM) {
         elem->v.list.refs++;   // increment ref count in prepended elem
         assert(elem->v.list.refs > 0);
     }
@@ -212,12 +212,12 @@ void push_list(elem_t *list, elem_t *elem) {
 void pop_list(elem_t *list) {
     elem_t *elem;
 
-    assert(list->type == LISTELEM);
+    assert(list->type == (char)LISTELEM);
 
     elem = list->u.list.first;
     if (elem) {  // silently ignore if nothing to pop
         list->u.list.first = elem->next;
-        if (elem->type == LISTELEM) {
+        if (elem->type == (char)LISTELEM) {
             assert(elem->v.list.refs > 0);
             if(--(elem->v.list.refs) == 0) {
 	        free_list(elem);  // recursively free lists that have no references
@@ -239,7 +239,7 @@ void free_list(elem_t *list) {
     elem_t *elem, *next;
 
     assert(list);
-    assert(list->type == LISTELEM );
+    assert(list->type == (char)LISTELEM );
 
     // free list of elem, but really just put them back
     // on the elem_freelist (declared at the top of this file)`
@@ -296,7 +296,7 @@ void print_list(FILE *chan, elem_t *list, int indent, char sep) {
     unsigned char *cp;
     int ind, cnt, len, width;
 
-    assert(list->type == LISTELEM);
+    assert(list->type == (char)LISTELEM);
     elem = list->u.list.first;
     if (!elem) return;
     type = (elemtype_t)(elem->type);

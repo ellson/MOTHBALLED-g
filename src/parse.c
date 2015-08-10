@@ -50,15 +50,13 @@ static int parse_string_fragment(context_t *C, elem_t *fraglist) {
     int len;
     elem_t *elem;
 
-    while (1) { // characters in a single fragment
-        if (C->insi != ABC) {
-            if (C->insi == AST) {
-            // FIXME - flag a pattern;
-            }
+    if (C->insi != ABC) {
+        if (C->insi == AST) {
+        // FIXME - flag a pattern;
         }
         else {
             return 0;;
-        }
+	}
     }
     frag = C->in;
     len = 1;
@@ -79,7 +77,8 @@ static int parse_string_fragment(context_t *C, elem_t *fraglist) {
     }
     stat_fragcount++;
     emit_frag(C,len,frag);
-    elem = new_frag(ABC,frag,len,C->inbuf);
+    
+    elem = new_frag(ABC,len,frag,C->inbuf);
     append_list(fraglist, elem);
     return len;
 }
@@ -253,12 +252,8 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp,
     // Any subtree rewrites or emit before adding branch to root in the state exit processing
     if (rc == SUCCESS) {
         switch (si) {
-	case ACT:
-            stat_actcount++;
-            emit_tree(C, &branch);
-            free_list(&branch);
-            break;
-	case LEG :
+        case LEG:
+#if 0
 	    if (bi == EQL) {
                 if (! sameend_elem) {
 	            emit_error(C, "No prior LEG found for sameend substitution");
@@ -273,7 +268,39 @@ static success_t parse_r(context_t *C, elem_t *root, char *sp,
             if (sameend_elem) {
 	        sameend_elem = sameend_elem -> next;
             }
+#endif
 	    break;
+        case SUBJECT:
+            subj = savesubj;      // pop subj     // FIXME
+
+            elem = ref_list(si, &branch);
+            push_list(&(C->subject), elem);  // save the subject of this act at this level of containment
+
+#if 1
+putc ('\n', stdout);
+print_list(stdout, &(C->subject), 0, ' ');
+putc ('\n', stdout);
+#endif
+#if 0
+            // update samends
+            //    -- free old samends
+	    free_list(&(C->sameend_legs));
+            //    -- replace with new ones
+            elem = move_list(si, &(C->sameend_legs_new));
+	    append_list(&(C->sameend_legs), elem);
+            // initial iterator io point to first samend
+	    sameend_elem = C->sameend_legs.u.list.first;
+#endif
+	    break;
+	case ACT:
+            stat_actcount++;
+            pop_list(&(C->subject));  // discard the subject of this act at this level of containment
+#if 0
+            emit_tree(C, &branch);
+// FIXME - at the moment this is freeing an active input_buffer
+//            free_list(&branch);
+#endif
+            break;
         default:
 	    break;
 	}
@@ -286,22 +313,6 @@ done:
         elem = move_list(si, &branch);
         append_list(root, elem);
         switch (si) {
-        case SUBJECT:
-            subj = savesubj;      // pop subj     // FIXME
-
-//            elem = ref_list(si, root);
-//            push_list(&(C->subject), elem);  // save the subject of this act at this level of containment
-
-            // update samends
-            //    -- free old samends
-	    free_list(&(C->sameend_legs));
-            //    -- replace with new ones
-            elem = move_list(si, &(C->sameend_legs_new));
-	    append_list(&(C->sameend_legs), elem);
-            // iniale iterator io point to first samend
-	    sameend_elem = C->sameend_legs.u.list.first;
-	    break;
-        case LEG:
 //putc ('\n', stdout);
 //print_list(stdout, elem, 0, ' ');
 //putc ('\n', stdout);

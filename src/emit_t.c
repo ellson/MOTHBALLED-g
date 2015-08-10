@@ -65,7 +65,11 @@ static void api1_tree(context_t *C, elem_t *tree) {
 }
 
 static void api1_term(context_t *C) {
-    putc('\n', OUT);
+//    fprintf(OUT,"\n(term)\n");
+}
+
+static void api1_end_file(context_t *C) {
+    fprintf(OUT,"\n(eof)\n");
 }
 
 static emit_t api1 = {
@@ -78,7 +82,7 @@ static emit_t api1 = {
     /* api_token */               NULL,
     /* api_end_state */           NULL,
     /* api_term */                api1_term,
-    /* api_end_file */            NULL,
+    /* api_end_file */            api1_end_file,
     /* api_error */               api_error
 };
 
