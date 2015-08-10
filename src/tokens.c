@@ -14,19 +14,29 @@
 static success_t more_in(context_t *C) {
     int size;
 
-    if (C->in == NULL && feof(C->file)) {
+    if (C->in == NULL && feof(C->file)) {  // check if already at EOF
         return FAIL;
     }
-    if (! C->inbuf || C->in == &(C->inbuf->end_of_buf)) {
-        C->inbuf = new_inbuf();        // grab a buffer
-        assert(C->inbuf);
-        C->in = C->inbuf->buf;
+    if (C->inbuf) {                  // if there is an existing active-inbuf
+	if (C->in == &(C->inbuf->end_of_buf)) {  // if it is full
+	    C->inbuf->refs--;        // remove active-inbuf reference
+	    C->inbuf = new_inbuf();  // get new
+	    assert(C->inbuf);
+	    C->inbuf->refs = 1;      // add active-inbuf reference
+	    C->in = C->inbuf->buf;   // point to beginning of buffer
+	}
+    }
+    else {                           // no inbuf, implies just starting
+	C->inbuf = new_inbuf();      // get new
+	assert(C->inbuf);
+	C->inbuf->refs = 1;          // add active-inbuf reference
+	C->in = C->inbuf->buf;
     }
     size = fread(C->in, 1, &(C->inbuf->end_of_buf) - C->in, C->file); // slurp in data from file stream
-    C->in[size] = '\0';  // ensure terminated (we have an extra character in inbuf_t so this is safe)
+    C->in[size] = '\0';              // ensure terminated (we have an extra character in inbuf_t so this is safe)
     C->insi = char2state[*C->in];
 
-    if (size == 0 && feof(C->file)) {
+    if (size == 0 && feof(C->file)) {  // check for EOF
         C->in = NULL;
         return FAIL;
     }
