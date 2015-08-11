@@ -44,7 +44,8 @@ static void api_end_file(context_t *C) {
 }
 
 static void api_error(context_t *C, char *message) {
-    fprintf(OUT, "\nError: %s\n", message);
+    fprintf(OUT, "\nError: %s: ", message);
+    fprintf(OUT, "%s\n", C->in);
     exit(1);
 }
 

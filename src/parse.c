@@ -17,13 +17,17 @@ static elem_t *sameend_elem;
 
 static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
     if (! (prop & (REP|SREP))) return FAIL;
-    if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) return FAIL; // no more
-    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE ||
-        ei == LPN || ei == LAN || ei == LBR || ei == LBE) return SUCCESS; // more, but no sep needed
-    if (prop & SREP) {
-	emit_sep(C); // sep needed for SREP sequences
+    if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) {
+	return FAIL;                                      // no more repetitions
     }
-    return SUCCESS;
+    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE ||
+        ei == LPN || ei == LAN || ei == LBR || ei == LBE) {
+	return SUCCESS;                                   // more repetitions, but additional WS sep is optional
+    }
+    if (prop & SREP) { 
+	emit_sep(C);                                      // sep is non-optional, emit the minimal sep
+    }
+    return SUCCESS;                                       // more repetitions
 }
 
 static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char prop, int nest, int repc) {
@@ -57,9 +61,7 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
     else {                     // else continuing state sequence
         if (prop & REP) {      // if the sequence is a non-space REPetition
             if (bi == WS) {    // whitespace not accepted between REP
-// FIXME - Error message here ?
-	        rc = FAIL;     // so the REP is terminated
-	        goto done;
+//FIXME                emit_error(C, "Whitespace separator is not needed before");
 	    }
         }
     }
@@ -87,9 +89,12 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
 // FIXME - set flags for '~' and '='
         goto done;
     }
+    // else the si is non-terminal and the C->insi is for some other state
 
+
+
+#if 1   // FIXME - I don't think any of this entry processing should be required...
     // else non terminal state -- state entry processing
- 
     switch (si) {
     case ACT:
 // FIXME - unterm needs to be stacked
@@ -106,10 +111,12 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
     default:
 	break;
     }
+#endif
+
 
     // Use state_machine[si] to determine next state
  
-    rc = FAIL;                    // init rc to "fail" in case no next state is found
+    rc = FAIL;                    // init rc to FAIL in case no ALT is satisfied
     ti = si;
     while (( ni = state_machine[ti] )) { // iterate over ALTs or sequences
         nprop = state_props[ti];   // get the props for the transition from the current state (OPT, ALT, REP etc)
@@ -131,7 +138,9 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
 			}
 		    }
 	        }
-                rc = SUCCESS;     // optional can't fail
+ti++;
+continue;
+//              rc = SUCCESS;     // optional can't fail
 	    }
 	    else {                // else not OPTional
 	        if (( rc = parse_r(C, &branch, ni, nprop, nest, repc++)) == FAIL) {
@@ -139,7 +148,7 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
 		}
                 // A 1-or-more repetition is successful is the first one was a success
 	        while (more_rep(C, nprop, ei, bi) == SUCCESS) {
-                    if (parse_r(C, &branch, ni, nprop, nest, repc++) == FAIL) {
+                    if (( rc = parse_r(C, &branch, ni, nprop, nest, repc++)) == FAIL) {
 			break;
 		    }
 		}
@@ -156,7 +165,6 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
 	    if (bi == EQL) {
                 if (! sameend_elem) {
 	            emit_error(C, "No prior LEG found for sameend substitution");
-	            rc = FAIL;
 	        }
 //		elem = ref_list(si, elem);
 
@@ -208,59 +216,59 @@ putc ('\n', stdout);
     // State exit processing
 
 done:
-    if (rc == SUCCESS && branch.u.list.first != NULL) { // ignore fails and empty lists
-        elem = move_list(si, &branch);
-        append_list(root, elem);
-        switch (si) {
-//putc ('\n', stdout);
-//print_list(stdout, elem, 0, ' ');
-//putc ('\n', stdout);
-//	        free_list(&sameend_legs);      // free old sameend list
-//		elem = ref_list(si, root->u.list.last);  // replace with new list, fully substituted.
-
-//                append_list(&(C->sameend_legs_new), elem);
-
-// putc ('\n', stdout);
-// print_list(stdout, &new_sameend_legs, 0, ' ');
-// putc ('\n', stdout);
-	case EDGE :
-	    if (subj == 0) {
-	        subj = EDGE;
-	    }
-	    else {
-                if (subj == NODE) {
-	            emit_error(C, "NODE found in EDGE SUBJECT");
-	            rc = FAIL;
-		}
-	    }
-            break;
-	case NODE :
-	    if (subj == 0) {
-	        subj = NODE;
-	    }
-	    else {
-                if (subj == EDGE) {
-	            emit_error(C, "EDGE found in NODE SUBJECT");
-	            rc = FAIL;
-		}
-	    }
-            break;
-        case TERM :   
-            if (unterm) {
- 	        emit_term(C);
-	    }
-	    unterm = 0;
-	    break;
-        case CONTAINER :
-	    stat_containercount++;
-            if (unterm) {
- 	        emit_term(C);
-	    }
-	    unterm = 0;
-	    break;
-        default:
-	    break;
-	}
+    if (rc == SUCCESS) {             
+        if (branch.u.list.first != NULL) { // ignore empty lists
+            elem = move_list(si, &branch);
+            append_list(root, elem);
+            switch (si) {
+    //putc ('\n', stdout);
+    //print_list(stdout, elem, 0, ' ');
+    //putc ('\n', stdout);
+    //    free_list(&sameend_legs);      // free old sameend list
+    //    elem = ref_list(si, root->u.list.last);  // replace with new list, fully substituted.
+    
+    //    append_list(&(C->sameend_legs_new), elem);
+    
+    // putc ('\n', stdout);
+    // print_list(stdout, &new_sameend_legs, 0, ' ');
+    // putc ('\n', stdout);
+            case EDGE :
+                if (subj == 0) {
+                    subj = EDGE;
+                }
+                else {
+                    if (subj == NODE) {
+                        emit_error(C, "NODE found in EDGE SUBJECT");
+                    }
+                }
+                break;
+            case NODE :
+                if (subj == 0) {
+                    subj = NODE;
+                }
+                else {
+                    if (subj == EDGE) {
+                        emit_error(C, "EDGE found in NODE SUBJECT");
+                    }
+                }
+                break;
+            case TERM :   
+                if (unterm) {
+                     emit_term(C);
+                }
+                unterm = 0;
+                break;
+            case CONTAINER :
+                stat_containercount++;
+                if (unterm) {
+                    emit_term(C);
+                }
+                unterm = 0;
+                break;
+            default:
+                break;
+            }
+        }
     }
 
     nest--;
@@ -283,7 +291,16 @@ success_t parse(context_t *C) {
 
     emit_start_file(C);
 
-    rc = parse_r(C, &root, ACTIVITY, SREP, 0, 0);
+    if ((rc = parse_r(C, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+        if (C->insi == NLL) { // EOF is OK
+            rc = SUCCESS;
+        }
+        else {
+// FIXME - Show details: filename, line#, char#, badchar 
+// FIXME - Keep track of: line#, char#
+            emit_error(C, "Parse error");
+        }
+    }
 
     if (unterm) {
  	emit_term(C);      // EOF is an implicit terminator

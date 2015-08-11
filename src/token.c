@@ -36,7 +36,7 @@ static success_t more_in(context_t *C) {
     }
     size = fread(C->in, 1, &(C->inbuf->end_of_buf) - C->in, C->file); // slurp in data from file stream
     C->in[size] = '\0';              // ensure terminated (we have an extra character in inbuf_t so this is safe)
-    C->insi = char2state[*C->in];
+    C->insi = char2state[*C->in];    // state map the first character  (NLL if EOF or EOB)
 
     if (size == 0 && feof(C->file)) {  // check for EOF
         C->in = NULL;
