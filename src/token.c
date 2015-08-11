@@ -5,10 +5,10 @@
 #include "grammar.h"
 #include "inbuf.h"
 #include "list.h"
-#include "context.h"
 #include "stats.h"
+#include "context.h"
 #include "emit.h"
-#include "parse.h"
+#include "token.h"
 
 // fill buffers from input files
 static success_t more_in(context_t *C) {

@@ -9,7 +9,7 @@
 #include "stats.h"
 #include "emit.h"
 #include "parse.h"
-#include "tokens.h"
+#include "token.h"
 
 static unsigned char unterm;
 static state_t subj, bi, ei;
