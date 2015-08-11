@@ -62,7 +62,7 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
     // deal with terminal states: whitespace, string, token
     
     ei = C->insi;              // the char class that ended the last token
-    if ( (rc = parse_whitespace(C)) ) {
+    if ( (rc = parse_whitespace(C)) == FAIL ) {
 	goto done;             // EOF during whitespace
     }
  
@@ -282,7 +282,7 @@ success_t parse(context_t *C) {
     emit_start_file(C);
 
     if ((rc = parse_r(C, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
-#if 0
+#if 1
         if (C->insi == NLL) { // EOF is OK
 // FIXME - EOF is only OK after completed ACTs
             rc = SUCCESS;

@@ -17,28 +17,30 @@ static success_t more_in(context_t *C) {
     if (C->in == NULL && feof(C->file)) {  // check if already at EOF
         return FAIL;
     }
-    if (C->inbuf) {                  // if there is an existing active-inbuf
+    if (C->inbuf) {                   // if there is an existing active-inbuf
 	if (C->in == &(C->inbuf->end_of_buf)) {  // if it is full
 	    if (( --(C->inbuf->refs)) == 0 ) { // dereference active-inbuf
 		free_inbuf(C->inbuf); // free if no refs left
 	    }
-	    C->inbuf = new_inbuf();  // get new
+	    C->inbuf = new_inbuf();   // get new
 	    assert(C->inbuf);
-	    C->inbuf->refs = 1;      // add active-inbuf reference
-	    C->in = C->inbuf->buf;   // point to beginning of buffer
+	    C->inbuf->refs = 1;       // add active-inbuf reference
+	    C->in = C->inbuf->buf;    // point to beginning of buffer
 	}
     }
-    else {                           // no inbuf, implies just starting
-	C->inbuf = new_inbuf();      // get new
+    else {                            // no inbuf, implies just starting
+	C->inbuf = new_inbuf();       // get new
 	assert(C->inbuf);
-	C->inbuf->refs = 1;          // add active-inbuf reference
+	C->inbuf->refs = 1;           // add active-inbuf reference
 	C->in = C->inbuf->buf;
     }
-    size = fread(C->in, 1, &(C->inbuf->end_of_buf) - C->in, C->file); // slurp in data from file stream
-    C->in[size] = '\0';              // ensure terminated (we have an extra character in inbuf_t so this is safe)
-    C->insi = char2state[*C->in];    // state map the first character  (NLL if EOF or EOB)
+                                      // slurp in data from file stream
+    size = fread(C->in, 1, &(C->inbuf->end_of_buf) - C->in, C->file);
+    C->in[size] = '\0';               // ensure terminated (we have an extras
+                                      //    character in inbuf_t for this )
+    C->insi = char2state[*C->in];
 
-    if (size == 0 && feof(C->file)) {  // check for EOF
+    if (size == 0 && feof(C->file)) { // check for EOF
         C->in = NULL;
         return FAIL;
     }
@@ -47,21 +49,36 @@ static success_t more_in(context_t *C) {
     return SUCCESS;
 }
 
+// consume all comment up to next token, or EOF
+static success_t parse_comment(context_t *C) {
+    success_t rc;
+
+    rc = SUCCESS;
+    while (C->insi == NLL) {      // end_of_buffer, or EOF, during whitespace
+	if ((rc = more_in(C) == FAIL)) {
+            break;                // EOF
+        }
+        while (*C->in != '\n' && *C->in != '\r' && *C->in != '\0' ) {
+            C->in++;
+        }
+        C->insi = char2state[*(C->in)];
+    }
+    return rc;
+}
+
 // consume whitespace fagments
-static success_t parse_whitespace_fragment(context_t *C) {
+static void parse_whitespace_fragment(context_t *C) {
     while (C->insi == WS) {       // eat all leading whitespace
         C->insi = char2state[*++(C->in)];
     }
-    return SUCCESS;
 }
 
 // consume all whitespace up to next token, or EOF
-// FIXME - this function is the place to deal with comments
 success_t parse_whitespace(context_t *C) {
     success_t rc;
 
     rc = SUCCESS;
-    parse_whitespace_fragment(C); // eat all leading whitespace
+    parse_whitespace_fragment(C); // eat whitespace
     while (C->insi == NLL) {      // end_of_buffer, or EOF, during whitespace
 	if ((rc = more_in(C) == FAIL)) {
 	    break;                // EOF

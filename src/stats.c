@@ -7,7 +7,7 @@
 #include "list.h"
 #include "stats.h"
 
-#define STAT_FORMAT "%18s=%ld"
+#define STAT_FORMAT "%18s = %ld"
 
 #define TEN9 1000000000
 
