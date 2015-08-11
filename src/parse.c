@@ -18,16 +18,15 @@ static elem_t *sameend_elem;
 static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
     if (! (prop & (REP|SREP))) return FAIL;
     if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) {
-	return FAIL;                                      // no more repetitions
+        return FAIL;           // no more repetitions
     }
-    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE ||
-        ei == LPN || ei == LAN || ei == LBR || ei == LBE) {
-	return SUCCESS;                                   // more repetitions, but additional WS sep is optional
+    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE || ei != ABC) {
+        return SUCCESS;        // more repetitions, but additional WS sep is optional
     }
-    if (prop & SREP) { 
-	emit_sep(C);                                      // sep is non-optional, emit the minimal sep
+    if (prop & SREP) {
+        emit_sep(C);           // sep is non-optional, emit the minimal sep
     }
-    return SUCCESS;                                       // more repetitions
+    return SUCCESS;            // more repetitions
 }
 
 static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char prop, int nest, int repc) {
