@@ -23,21 +23,6 @@ static void api_end_file(context_t *C) {
     putc('\n', OUT);
 }
 
-static void api_error(context_t *C, state_t si, char *message) {
-    unsigned char *p, c;
-
-    fprintf(OUT, "\nError: %s ", message);
-    print_len_frag(OUT, NAMEP(si));
-    fprintf(OUT, " =>\"");
-    p = C->in;
-    while ((c = *p++)) {
-        if (c == '\n' || c == '\r') break;
-        putc(c, OUT);
-    }
-    fprintf(OUT, "\"\n");
-    exit(1);
-}
-
 static emit_t api = {
     /* api_start_file */          NULL,
     /* api_sep */                 api_sep,
@@ -49,7 +34,7 @@ static emit_t api = {
     /* api_end_state */           NULL,
     /* api_term */                NULL,
     /* api_end_file */            api_end_file,
-    /* api_error */               api_error
+    /* api_error */               print_error
 };
 
 static void api1_string(context_t *C, elem_t *branch) {
@@ -75,7 +60,7 @@ static emit_t api1 = {
     /* api_end_state */           NULL,
     /* api_term */                api1_term,
     /* api_end_file */            api_end_file,
-    /* api_error */               api_error
+    /* api_error */               print_error
 };
 
 emit_t *emit_g_api = &api;

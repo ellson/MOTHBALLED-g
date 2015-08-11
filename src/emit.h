@@ -3,6 +3,7 @@
 
 char *get_name(char *p);
 char char_prop(unsigned char prop, char noprop);
+void print_error(context_t *C, state_t si, char *message);
 
 typedef struct {
     void (*start_file) (context_t *C);

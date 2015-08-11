@@ -42,6 +42,7 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
 	.type = LISTELEM,
 	.state = 0
     };
+    static unsigned char nullstring[] = {'\0'};
 
     rc = SUCCESS;
     emit_start_state(C, si, prop, nest, repc);
@@ -54,7 +55,8 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
         bi = WS;               // pretend preceeded by WS
 			       // to satisfy toplevel SREP or REP
 			       // (Note, first REP of a REP sequence *can* be preceeded by WS,
-			       //      just not the rest of the REPs. )
+		               //      just not the rest of the REPs. )
+        C->in = nullstring;    // fake it;
         C->insi = NLL;;        // pretend last input was a terminating NLL
     }
 

@@ -51,10 +51,15 @@ static success_t more_in(context_t *C) {
 
 // consume comment fagmentxs
 static void parse_comment_fragment(context_t *C) {
-    while (*C->in != '\n' && *C->in != '\r' && *C->in != '\0' ) {
-        C->in++;
+    unsigned char *in, c;
+
+    in = C->in;
+    c = *in;
+    while (c != '\0' && c != '\n' && c != '\r') {
+        c = *++in;
     }
-    C->insi = char2state[*(C->in)];
+    C->insi = char2state[c];
+    C->in = in;
 }
 
 // consume all comment up to next token, or EOF
@@ -74,8 +79,24 @@ static success_t parse_comment(context_t *C) {
 
 // consume whitespace fagments
 static void parse_whitespace_fragment(context_t *C) {
-    while (C->insi == WS) {       // eat all leading whitespace
-        C->insi = char2state[*++(C->in)];
+    unsigned char *in, c;
+    state_t insi;
+
+    if ((in = C->in)) {
+        c = *in;
+        insi = C->insi;
+        while (insi == WS) {       // eat all leading whitespace
+            if (c == '\n') {
+                stat_lfcount++;
+            }
+            if (c == '\r') {
+                stat_crcount++;
+            }
+	    c = *++in;
+            insi = char2state[c];
+        }
+        C->insi = insi;
+        C->in = in;
     }
 }
 

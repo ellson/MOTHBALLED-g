@@ -12,6 +12,8 @@
 #define TEN9 1000000000
 
 long stat_filecount;
+long stat_lfcount;
+long stat_crcount;
 long stat_inchars;
 long stat_actcount;
 long stat_containercount;
@@ -39,6 +41,7 @@ void print_stats(FILE *chan, struct timespec *starttime) {
     fprintf(chan,"stats [\n");
     fprintf(chan,STAT_FORMAT".%09ld\n", "runtime",     runtime / TEN9, runtime % TEN9);
     fprintf(chan,STAT_FORMAT"\n", "files",             stat_filecount);
+    fprintf(chan,STAT_FORMAT"\n", "lines",             1+(stat_lfcount?stat_lfcount:stat_crcount));
     fprintf(chan,"\n");
     fprintf(chan,STAT_FORMAT"\n", "acts",              stat_actcount);
     fprintf(chan,STAT_FORMAT"\n", "acts_per_second",   stat_actcount * TEN9 / runtime);

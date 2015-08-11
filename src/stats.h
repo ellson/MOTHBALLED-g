@@ -1,4 +1,6 @@
 extern long stat_filecount;
+extern long stat_lfcount;
+extern long stat_crcount;
 extern long stat_inchars;
 extern long stat_actcount;
 extern long stat_containercount;
