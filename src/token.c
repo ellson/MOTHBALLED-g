@@ -49,19 +49,25 @@ static success_t more_in(context_t *C) {
     return SUCCESS;
 }
 
+// consume comment fagmentxs
+static void parse_comment_fragment(context_t *C) {
+    while (*C->in != '\n' && *C->in != '\r' && *C->in != '\0' ) {
+        C->in++;
+    }
+    C->insi = char2state[*(C->in)];
+}
+
 // consume all comment up to next token, or EOF
 static success_t parse_comment(context_t *C) {
     success_t rc;
 
     rc = SUCCESS;
-    while (C->insi == NLL) {      // end_of_buffer, or EOF, during whitespace
+    parse_comment_fragment(C);    // eat comment
+    while (C->insi == NLL) {      // end_of_buffer, or EOF, during comment
 	if ((rc = more_in(C) == FAIL)) {
             break;                // EOF
         }
-        while (*C->in != '\n' && *C->in != '\r' && *C->in != '\0' ) {
-            C->in++;
-        }
-        C->insi = char2state[*(C->in)];
+        parse_comment_fragment(C); // eat comment
     }
     return rc;
 }
@@ -73,8 +79,8 @@ static void parse_whitespace_fragment(context_t *C) {
     }
 }
 
-// consume all whitespace up to next token, or EOF
-success_t parse_whitespace(context_t *C) {
+// consume all non-comment whitespace up to next token, or EOF
+static success_t parse_non_comment(context_t *C) {
     success_t rc;
 
     rc = SUCCESS;
@@ -84,6 +90,27 @@ success_t parse_whitespace(context_t *C) {
 	    break;                // EOF
         }
 	parse_whitespace_fragment(C); // eat all remaining leading whitespace
+    }
+    return rc;
+}
+
+// consume all whitespace or comments up to next token, or EOF
+success_t parse_whitespace(context_t *C) {
+    success_t rc;
+
+    rc = SUCCESS;
+    while (1) {
+	if ((rc = parse_non_comment(C)) == FAIL) {
+	    break;
+        }
+        if (C->insi != OCT) {
+            break;
+        }
+        while  (C->insi == OCT) {
+	    if ((rc = parse_comment(C)) == FAIL) {
+	        break;
+            }
+        }
     }
     return rc;
 }
