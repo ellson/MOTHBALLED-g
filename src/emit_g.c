@@ -23,9 +23,10 @@ static void api_end_file(context_t *C) {
     putc('\n', OUT);
 }
 
-static void api_error(context_t *C, char *message) {
-    fprintf(OUT, "\nError: %s: ", message);
-    fprintf(OUT, "%s\n", C->in);
+static void api_error(context_t *C, state_t si, char *message) {
+    fprintf(OUT, "\nError: %s ", message);
+    print_len_frag(OUT, NAMEP(si));
+    fprintf(OUT, ": %s\n", C->in);
     exit(1);
 }
 

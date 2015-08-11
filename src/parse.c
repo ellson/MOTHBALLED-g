@@ -58,13 +58,6 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
 			       //      just not the rest of the REPs. )
         C->insi = NLL;;        // pretend last input was a terminating NLL
     }
-    else {                     // else continuing state sequence
-        if (prop & REP) {      // if the sequence is a non-space REPetition
-            if (bi == WS) {    // whitespace not accepted between REP
-//FIXME                emit_error(C, "Whitespace separator is not needed before");
-	    }
-        }
-    }
 
     // deal with terminal states: whitespace, string, token
     
@@ -138,9 +131,6 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
 			}
 		    }
 	        }
-ti++;
-continue;
-//              rc = SUCCESS;     // optional can't fail
 	    }
 	    else {                // else not OPTional
 	        if (( rc = parse_r(C, &branch, ni, nprop, nest, repc++)) == FAIL) {
@@ -164,7 +154,7 @@ continue;
 #if 1
 	    if (bi == EQL) {
                 if (! sameend_elem) {
-	            emit_error(C, "No prior LEG found for sameend substitution");
+	            emit_error(C, si, "No prior LEG found for sameend substitution in");
 	        }
 //		elem = ref_list(si, elem);
 
@@ -238,7 +228,7 @@ done:
                 }
                 else {
                     if (subj == NODE) {
-                        emit_error(C, "NODE found in EDGE SUBJECT");
+                        emit_error(C, si, "NODE subject includes");
                     }
                 }
                 break;
@@ -248,7 +238,7 @@ done:
                 }
                 else {
                     if (subj == EDGE) {
-                        emit_error(C, "EDGE found in NODE SUBJECT");
+                        emit_error(C, si, "EDGE subject includes");
                     }
                 }
                 break;
@@ -292,14 +282,17 @@ success_t parse(context_t *C) {
     emit_start_file(C);
 
     if ((rc = parse_r(C, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+#if 0
         if (C->insi == NLL) { // EOF is OK
+// FIXME - EOF is only OK after completed ACTs
             rc = SUCCESS;
         }
         else {
 // FIXME - Show details: filename, line#, char#, badchar 
 // FIXME - Keep track of: line#, char#
-            emit_error(C, "Parse error");
+            emit_error(C, ACTIVITY, "Parse error");
         }
+#endif
     }
 
     if (unterm) {

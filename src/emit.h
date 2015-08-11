@@ -15,7 +15,7 @@ typedef struct {
     void (*end_state) (context_t *C, char class, success_t rc, int nest, int repc);
     void (*term) (context_t *C);
     void (*end_file) (context_t *C);
-    void (*error) (context_t *C, char *message);
+    void (*error) (context_t *C, state_t si, char *message);
 } emit_t;
 
 
@@ -39,8 +39,8 @@ typedef struct {
     if (emit->term) {emit->term(C);}
 #define emit_end_file(C) \
     if (emit->end_file) {emit->end_file(C);}
-#define emit_error(C, message) \
-    if (emit->error) {emit->error(C, message);}
+#define emit_error(C, si, message) \
+    if (emit->error) {emit->error(C, si, message);}
 
 extern emit_t *emit,
     *emit_t_api,
