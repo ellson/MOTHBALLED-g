@@ -122,24 +122,26 @@ static void print_chars ( state_t si ) {
 
 // just dump the grammar linearly,  should result in same logical graph as printg()
 void dumpg (void) {
-    char *p, *sp;
-    state_t ni;
+    char so;
+    state_t si, ni, ti;
 
-    p = state_machine;
-    while (p < (state_machine + sizeof_state_machine)) {
-        if (*p) { // non-terminal
-            sp = p;
-            while (( ni = (state_t)(*p) )) {
-                print_next(sp-state_machine, p-state_machine + (char)ni);
-                print_prop(state_props[p-state_machine]);
-		p++;
+    si = ACTIVITY;
+    while (si < sizeof_state_machine) {
+        if (state_machine[si]) { // non-terminal
+            ti = si;
+            while (( so = state_machine[ti] )) {
+                ni = ti + so;
+                print_next(si, ni);
+                print_prop(state_props[ti]);
+		ti++;
 	    }
+            si = ti;
 	}
 	else { // else terminal
-	    print_len_frag(OUT, NAMEP(p-state_machine));
-            print_chars(p-state_machine);
+	    print_len_frag(OUT, NAMEP(si));
+            print_chars(si);
 	}
-        p++;
         putc('\n',OUT);
+        si++;
     }
 }

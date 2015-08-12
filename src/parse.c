@@ -31,6 +31,7 @@ static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t 
 
 static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char prop, int nest, int repc) {
     unsigned char nprop;
+    char so;                  // offset to next state, signed
     state_t ti, ni, savesubj;
     success_t rc;
     elem_t *elem;
@@ -112,10 +113,10 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
  
     rc = FAIL;                    // init rc to FAIL in case no ALT is satisfied
     ti = si;
-    while (( ni = state_machine[ti] )) { // iterate over ALTs or sequences
+    while (( so = state_machine[ti] )) { // iterate over ALTs or sequences
         nprop = state_props[ti];   // get the props for the transition from the current state (OPT, ALT, REP etc)
 	                          // at this point, ni is a signed, non-zero offset to the next state
-        ni += ti;                 // we get to the next state by adding the offset to the current state.
+        ni = ti + so;             // we get to the next state by adding the offset to the current state.
 	if (nprop & ALT) {        // look for ALT
 	    if (( rc = parse_r(C, &branch, ni, nprop, nest, 0)) == SUCCESS) {
                 break;            // ALT satisfied
