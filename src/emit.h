@@ -7,6 +7,7 @@ void print_error(context_t *C, state_t si, char *message);
 
 typedef struct {
     void (*start_file) (context_t *C);
+    void (*start_activity) (context_t *C);
     void (*sep) (context_t *C);
     void (*start_state) (context_t *C, char class, unsigned char prop, int nest, int repc);
     void (*tree) (context_t *C, elem_t *root);
@@ -15,6 +16,7 @@ typedef struct {
     void (*token) (context_t *C, char token);
     void (*end_state) (context_t *C, char class, success_t rc, int nest, int repc);
     void (*term) (context_t *C);
+    void (*end_activity) (context_t *C);
     void (*end_file) (context_t *C);
     void (*error) (context_t *C, state_t si, char *message);
 } emit_t;
@@ -22,6 +24,8 @@ typedef struct {
 
 #define emit_start_file(C) \
     if (emit->start_file) {emit->start_file(C);}
+#define emit_start_activity(C) \
+    if (emit->start_activity) {emit->start_activity(C);}
 #define emit_sep(C) \
     if (emit->sep) {emit->sep(C);}
 #define emit_start_state(C, class, prop, nest, repc) \
@@ -38,6 +42,8 @@ typedef struct {
     if (emit->end_state) {emit->end_state(C, class, rc, nest, repc);}
 #define emit_term(C) \
     if (emit->term) {emit->term(C);}
+#define emit_end_activity(C) \
+    if (emit->end_activity) {emit->end_activity(C);}
 #define emit_end_file(C) \
     if (emit->end_file) {emit->end_file(C);}
 #define emit_error(C, si, message) \

@@ -25,6 +25,7 @@ static void api_end_file(context_t *C) {
 
 static emit_t api = {
     /* api_start_file */          NULL,
+    /* api_start_activity */      NULL,
     /* api_sep */                 api_sep,
     /* api_start_state */         NULL,
     /* api_tree */                NULL,
@@ -33,6 +34,7 @@ static emit_t api = {
     /* api_token */               api_token,
     /* api_end_state */           NULL,
     /* api_term */                NULL,
+    /* api_end_activity */        NULL,
     /* api_end_file */            api_end_file,
     /* api_error */               print_error
 };
@@ -51,6 +53,7 @@ static void api1_term(context_t *C) {
 
 static emit_t api1 = {
     /* api_start_file */          NULL,
+    /* api_start_activity */      NULL,
     /* api_sep */                 api_sep,
     /* api_start_state */         NULL,
     /* api_tree */                NULL,
@@ -59,6 +62,7 @@ static emit_t api1 = {
     /* api_token */               api1_token,
     /* api_end_state */           NULL,
     /* api_term */                api1_term,
+    /* api_end_activity */        NULL,
     /* api_end_file */            api_end_file,
     /* api_error */               print_error
 };

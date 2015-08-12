@@ -282,7 +282,7 @@ success_t parse(context_t *C) {
         .state = 0
     };
 
-    emit_start_file(C);
+    emit_start_activity(C);
 
     if ((rc = parse_r(C, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
 #if 1
@@ -302,17 +302,16 @@ success_t parse(context_t *C) {
  	emit_term(C);      // EOF is an implicit terminator
     }
     unterm = 0;
-    emit_end_file(C);
+    emit_end_activity(C);
     return rc;
 }
 
 success_t parse_files(int argc, char *argv[]) {
-    int i;
     char *fn;
     FILE *f;
 
-    for (i=0; i<argc; i++) {
-	fn = argv[i];
+    while (argc) {
+	fn = argv[0];
 	if (strcmp(fn,"-") == 0) {
 	    f = stdin;
 	}
@@ -328,6 +327,9 @@ success_t parse_files(int argc, char *argv[]) {
 	fprintf(OUT, "%s\n", fn);
 //        emit_end_file(C);
 	fclose(f);
+
+        argc--;
+        argv = &argv[1];
     }
     return SUCCESS;
 }
