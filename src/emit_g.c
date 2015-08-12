@@ -19,7 +19,7 @@ static void api_token(context_t *C, char token) {
     putc(token, OUT);
 }
 
-static void api_end_file(context_t *C) {
+static void api_end_activity(context_t *C) {
     putc('\n', OUT);
 }
 
@@ -34,8 +34,8 @@ static emit_t api = {
     /* api_token */               api_token,
     /* api_end_state */           NULL,
     /* api_term */                NULL,
-    /* api_end_activity */        NULL,
-    /* api_end_file */            api_end_file,
+    /* api_end_activity */        api_end_activity,
+    /* api_end_file */            NULL,
     /* api_error */               print_error
 };
 
@@ -62,8 +62,8 @@ static emit_t api1 = {
     /* api_token */               api1_token,
     /* api_end_state */           NULL,
     /* api_term */                api1_term,
-    /* api_end_activity */        NULL,
-    /* api_end_file */            api_end_file,
+    /* api_end_activity */        api_end_activity,
+    /* api_end_file */            NULL,
     /* api_error */               print_error
 };
 
