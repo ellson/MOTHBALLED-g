@@ -34,6 +34,10 @@ static success_t more_in(context_t *C) {
 	C->inbuf->refs = 1;           // add active-inbuf reference
 	C->in = C->inbuf->buf;
     }
+
+
+// FIXME - if no active file, open next, return FAIL if none
+
                                       // slurp in data from file stream
     size = fread(C->in, 1, &(C->inbuf->end_of_buf) - C->in, C->file);
     C->in[size] = '\0';               // ensure terminated (we have an extras
@@ -42,6 +46,8 @@ static success_t more_in(context_t *C) {
 
     if (size == 0 && feof(C->file)) { // check for EOF
         C->in = NULL;
+
+// FIXME - close active file
         return FAIL;
     }
 

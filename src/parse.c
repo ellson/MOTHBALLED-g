@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "grammar.h"
@@ -303,4 +304,30 @@ success_t parse(context_t *C) {
     unterm = 0;
     emit_end_file(C);
     return rc;
+}
+
+success_t parse_files(int argc, char *argv[]) {
+    int i;
+    char *fn;
+    FILE *f;
+
+    for (i=0; i<argc; i++) {
+	fn = argv[i];
+	if (strcmp(fn,"-") == 0) {
+	    f = stdin;
+	}
+	else {
+	    f = fopen(fn,"rb");
+	    if (!f) {
+		fprintf(ERR, "fopen error");
+		exit(FAIL);
+	    }
+	}
+	stat_filecount++;
+//        emit_start_file(C);
+	fprintf(OUT, "%s\n", fn);
+//        emit_end_file(C);
+	fclose(f);
+    }
+    return SUCCESS;
 }

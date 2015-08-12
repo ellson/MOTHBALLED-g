@@ -83,6 +83,26 @@ int main (int argc, char *argv[]) {
         }
     }
 
+#if 0
+    argv = &argv[optind];
+    argc -= optind;
+
+    if (argc == 0) {      // No file args,  default to stdin
+	argv[0] = "-";
+        argc++;
+    }
+
+    rc = parse_files(argc, argv);
+
+    if (needstats) {
+        print_stats(stderr, &starttime);
+    }
+
+    // any errors in parse() will be handled by emit_error().  If we get here
+    // then exit with success
+    exit(SUCCESS);
+
+#else
     needstdin = 1;           // with no args, read stdin
     for (i=optind; i<argc; i++) {
         if (strcmp(argv[i], "-") == 0) {
@@ -120,4 +140,5 @@ int main (int argc, char *argv[]) {
     // any errors in parse() will be handled by emit_error().  If we get here
     // then exit with success
     exit(SUCCESS);
+#endif
 }
