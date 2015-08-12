@@ -1,4 +1,6 @@
 typedef struct {
+    int *pargc;            // remaining filenames from command line
+    char **argv;
     char *filename;        // name of file currently being processed, or "-" for stdin
     FILE *file;            // open file handle for file currently being processed
     inbuf_t *inbuf;        // the active input buffer

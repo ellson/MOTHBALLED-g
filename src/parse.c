@@ -21,7 +21,7 @@ static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t 
     if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) {
         return FAIL;           // no more repetitions
     }
-    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE || ei != ABC) {
+    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE || (ei != ABC && ei != AST)) {
         return SUCCESS;        // more repetitions, but additional WS sep is optional
     }
     if (prop & SREP) {
@@ -271,23 +271,14 @@ done:
     return rc;
 }
 
-success_t parse(context_t *C) {
+static success_t parse_activity(context_t *C, elem_t *root) {
     success_t rc;
-    elem_t root = {
-        .next = NULL,
-        .u.list.first = NULL,
-        .u.list.last = NULL,
-        .v.list.refs = 0,
-        .type = LISTELEM,
-        .state = 0
-    };
 
     emit_start_activity(C);
 
-    if ((rc = parse_r(C, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+    if ((rc = parse_r(C, root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
 #if 1
         if (C->insi == NLL) { // EOF is OK
-// FIXME - EOF is only OK after completed ACTs
             rc = SUCCESS;
         }
         else {
@@ -306,30 +297,27 @@ success_t parse(context_t *C) {
     return rc;
 }
 
-success_t parse_files(int argc, char *argv[]) {
-    char *fn;
-    FILE *f;
+success_t parse(int *pargc, char *argv[]) {
+    success_t rc;
+    context_t context = {   // the input context (stacked with each CONTAINER recursion)
+	.pargc = pargc,
+	.argv = argv,
+	.filename=NULL,
+	.file = NULL,
+	.inbuf = NULL,
+	.in = NULL,
+	.insi = CONTAINER,
+    };
+    elem_t root = {         // the output parse tree (FIXME - one tree?  or stacked? )
+        .next = NULL,
+        .u.list.first = NULL,
+        .u.list.last = NULL,
+        .v.list.refs = 0,
+        .type = LISTELEM,
+        .state = 0
+    };
 
-    while (argc) {
-	fn = argv[0];
-	if (strcmp(fn,"-") == 0) {
-	    f = stdin;
-	}
-	else {
-	    f = fopen(fn,"rb");
-	    if (!f) {
-		fprintf(ERR, "fopen error");
-		exit(FAIL);
-	    }
-	}
-	stat_filecount++;
-//        emit_start_file(C);
-	fprintf(OUT, "%s\n", fn);
-//        emit_end_file(C);
-	fclose(f);
+    rc = parse_activity(&context, &root);
 
-        argc--;
-        argv = &argv[1];
-    }
-    return SUCCESS;
+    return rc;
 }

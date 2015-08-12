@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "grammar.h"
@@ -14,9 +15,6 @@
 static success_t more_in(context_t *C) {
     int size;
 
-    if (C->in == NULL && feof(C->file)) {  // check if already at EOF
-        return FAIL;
-    }
     if (C->inbuf) {                   // if there is an existing active-inbuf
 	if (C->in == &(C->inbuf->end_of_buf)) {  // if it is full
 	    if (( --(C->inbuf->refs)) == 0 ) { // dereference active-inbuf
@@ -35,21 +33,43 @@ static success_t more_in(context_t *C) {
 	C->in = C->inbuf->buf;
     }
 
-
-// FIXME - if no active file, open next, return FAIL if none
-
+    if (C->file) {                    // if there is an existing active input file
+        if (C->insi == NLL && feof(C->file)) {  //    if it is at EOF
+// FIXME don't close stdin
+// FIXME - stall more more input 
+	    fclose(C->file);          // then close it and indicate no active input file
+	    C->file = NULL;
+            emit_end_file(C);
+	}
+    }
+    if (! C->file) {                  // if there is no active input file
+        if (*(C->pargc)) {            //   then try to open the next file
+	    C->filename = C->argv[0];
+	    *(C->pargc)--;
+	    C->argv = &(C->argv[1]);
+	    if (strcmp(C->filename,"-") == 0) {
+                C->file = stdin;
+		*(C->pargc) = 0;      // No files after stdin
+            }
+            else {
+                C->file = fopen(C->filename,"rb");
+                if (!C->file) {
+                    emit_error(C, ACTIVITY, "fopen fail");
+                }
+            }
+	    stat_filecount++;
+            emit_start_file(C);
+	}
+        else {
+	    return FAIL;              // no more input available
+        }
+        assert(C->file);
+    }
                                       // slurp in data from file stream
     size = fread(C->in, 1, &(C->inbuf->end_of_buf) - C->in, C->file);
     C->in[size] = '\0';               // ensure terminated (we have an extras
                                       //    character in inbuf_t for this )
     C->insi = char2state[*C->in];
-
-    if (size == 0 && feof(C->file)) { // check for EOF
-        C->in = NULL;
-
-// FIXME - close active file
-        return FAIL;
-    }
 
     stat_inchars += size;
     return SUCCESS;
