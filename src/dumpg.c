@@ -23,24 +23,24 @@ void set_sstyle (void) {
     sstyle=1;
 }
 
-static char *oleg1, *oleg2;
+static state_t oleg1=sizeof_state_machine, oleg2=sizeof_state_machine;
 static unsigned char *sleg1, *sleg2;
 
 static unsigned char SAME[]={1,'='};
 
-static void print_next( char *leg1, char *leg2 ) {
+static void print_next( state_t leg1, state_t leg2 ) {
     if (leg1 != oleg1) {
 	oleg1 = leg1;
-        sleg1 = NAMEP(leg1-state_machine);
+        sleg1 = NAMEP(leg1);
 
-        oleg2 = NULL;
+        oleg2 = sizeof_state_machine;
     }
     else {
 	sleg1 = SAME;
     }
     if (leg2 != oleg1) {
 	oleg2 = leg2;
-        sleg2 = NAMEP(leg2-state_machine);
+        sleg2 = NAMEP(leg2);
     }
     else {
 	sleg2 = SAME;
@@ -82,7 +82,7 @@ static void printg_r(char *sp, int indent) {
     while (( ni = *p )) {
         np = p+ni;
         for (i = indent; i--; ) putc (' ', OUT);
-        print_next(sp, np);
+        print_next(sp-state_machine, np-state_machine);
         print_prop(state_props[p-state_machine]);
         fprintf(OUT,"%s\n", styleLBE);
 	if (np != state_machine) { // stop recursion
@@ -130,7 +130,7 @@ void dumpg (void) {
         if (*p) { // non-terminal
             sp = p;
             while (( ni = (state_t)(*p) )) {
-                print_next(sp, p + (char)ni);
+                print_next(sp-state_machine, p-state_machine + (char)ni);
                 print_prop(state_props[p-state_machine]);
 		p++;
 	    }
