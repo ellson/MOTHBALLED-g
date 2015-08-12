@@ -74,8 +74,7 @@ static void print_prop(unsigned char prop) {
 }
 
 static void printg_r(char *sp, int indent) {
-    char *p, *np;
-    state_t ni;
+    char *p, *np, ni;
     int i;
 
     p = sp;
