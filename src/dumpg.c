@@ -100,10 +100,9 @@ void printg (void) {
     printg_r(state_machine, 0);
 }
 
-static void print_chars ( char *p ) {
-    int i, cnt, si;
+static void print_chars ( state_t si ) {
+    int i, cnt;
 
-    si = (p - state_machine);
     cnt=0;
     for (i=0; i<0x100; i++) {
         if (si == char2state[i]) {
@@ -138,7 +137,7 @@ void dumpg (void) {
 	}
 	else { // else terminal
 	    print_len_frag(OUT, NAMEP(p-state_machine));
-            print_chars(p);
+            print_chars(p-state_machine);
 	}
         p++;
         putc('\n',OUT);
