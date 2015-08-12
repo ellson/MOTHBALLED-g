@@ -73,30 +73,31 @@ static void print_prop(unsigned char prop) {
     }
 }
 
-static void printg_r(char *sp, int indent) {
-    char *p, *np, ni;
+static void printg_r(state_t si, int indent) {
+    char so;            // state offset, signed
+    state_t ti, ni;
     int i;
 
-    p = sp;
-    while (( ni = *p )) {
-        np = p+ni;
+    ti = si;            // index within alts or sequrnce
+    while (( so = state_machine[ti] )) {
+        ni = ti + so;
         for (i = indent; i--; ) putc (' ', OUT);
-        print_next(sp-state_machine, np-state_machine);
-        print_prop(state_props[p-state_machine]);
+        print_next(si, ni);
+        print_prop(state_props[ti]);
         fprintf(OUT,"%s\n", styleLBE);
-	if (np != state_machine) { // stop recursion
-            printg_r(np, indent+2);
+	if (ni != ACTIVITY) { // stop recursion
+            printg_r(ni, indent+2);
         }
         for (i = indent; i--; ) putc (' ', OUT);
         fprintf(OUT,"%s\n", styleRBE);
 
-        p++;
+        ti++;
     }
 }
 
 // recursively walk the grammar - tests all possible transitions
 void printg (void) {
-    printg_r(state_machine, 0);
+    printg_r(ACTIVITY, 0);
 }
 
 static void print_chars ( state_t si ) {
