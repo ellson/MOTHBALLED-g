@@ -62,11 +62,13 @@ static void api1_tree(context_t *C, elem_t *tree) {
 }
 
 static void api1_term(context_t *C) {
-    fprintf(OUT,"\n(term)\n");
+//    fprintf(OUT,"\n(term)\n");
+    putc('\n', OUT);
 }
 
 static void api1_end_file(context_t *C) {
-    fprintf(OUT,"\n(eof)\n");
+//    fprintf(OUT,"\n(eof)\n");
+    putc('\n', OUT);
 }
 
 static emit_t api1 = {
