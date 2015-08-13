@@ -29,18 +29,18 @@ char char_prop(unsigned char prop, char noprop) {
 
 void print_error(context_t *C, state_t si, char *message) {
     unsigned char *p, c;
-
-    fprintf(OUT, "\nError: %s ", message);
-    print_len_frag(OUT, NAMEP(si));
-    fprintf(OUT, "\n      in \"%s\" line: %ld just before: \"",
+    
+    fprintf(C->err, "\nError: %s ", message);
+    print_len_frag(C->err, NAMEP(si));
+    fprintf(C->err, "\n      in \"%s\" line: %ld just before: \"",
 	C->filename,
 	(stat_lfcount?stat_lfcount:stat_crcount) - C->linecount_at_start + 1
     );
     p = C->in;
     while ((c = *p++)) {
         if (c == '\n' || c == '\r') break;
-        putc(c, OUT);
+        putc(c, C->err);
     }
-    fprintf(OUT, "\"\n");
+    fprintf(C->err, "\"\n");
     exit(1);
 }
