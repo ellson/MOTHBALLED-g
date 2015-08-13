@@ -321,14 +321,14 @@ static success_t parse_activity(context_t *C) {
     return rc;
 }
 
-success_t parse(int *pargc, char *argv[]) {
+success_t parse(int *pargc, char *argv[], FILE *out, FILE *err) {
     success_t rc;
     context_t context = {0};   // the input context
 
     context.pargc = pargc;
     context.argv = argv;
-    context.out = stdout;
-    context.err = stderr;
+    context.out = out;
+    context.err = err;
 
     emit_start_parse(&context);
     rc = parse_activity(&context);

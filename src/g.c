@@ -20,9 +20,13 @@ int main (int argc, char *argv[]) {
     struct timespec starttime;
     emit = emit_g_api;       // default emitter
     needstats = 0;           // stats default to no stats
+    FILE *out, *err;
 
     rc = clock_gettime(CLOCK_MONOTONIC_RAW, &starttime);
     assert(rc == SUCCESS);
+
+    out = stdout;
+    err = stderr;
 
     while ((opt = getopt(argc, argv, "d::g::t::s")) != -1) {
 	if (optarg) optnum = atoi(optarg);
@@ -85,10 +89,10 @@ int main (int argc, char *argv[]) {
         argc++;
     }
 
-    rc = parse(&argc, argv);
+    rc = parse(&argc, argv, out, err);
 
     if (needstats) {
-        print_stats(stderr, &starttime);
+        print_stats(err, &starttime);
     }
 
     // any errors in parse() will be handled by emit_error().  If we get here
