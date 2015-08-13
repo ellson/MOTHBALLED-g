@@ -79,7 +79,9 @@ static emit_t api = {
     /* api_act */                 NULL,
     /* api_subject */             NULL,
     /* api_attributes */          NULL,
+#ifdef EMIT_TERM
     /* api_term */                NULL,
+#endif
 
     /* api_sep */                 NULL,
     /* api_token */               api_token,
@@ -95,7 +97,7 @@ static void api1_subject(context_t *C, elem_t *tree) {
     print_list(C->out, tree, 4, ' ');
 }
 
-static void api1_term(context_t *C) {
+static void api1_end_subject(context_t *C) {
     putc('\n', C->out);
 }
 
@@ -113,7 +115,7 @@ static emit_t api1 = {
     /* api_end_act */             NULL,
 
     /* api_start_subject */       NULL,
-    /* api_end_subject */         NULL,
+    /* api_end_subject */         api1_end_subject,
 
     /* api_start_attributes */    NULL,
     /* api_end_attributes */      NULL,
@@ -127,7 +129,9 @@ static emit_t api1 = {
     /* api_act */                 NULL,
     /* api_subject */             api1_subject,
     /* api_attributes */          NULL,
-    /* api_term */                api1_term,
+#ifdef EMIT_TERM
+    /* api_term */                NULL,
+#endif
 
     /* api_sep */                 NULL,
     /* api_token */               NULL,

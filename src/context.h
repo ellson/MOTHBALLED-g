@@ -24,8 +24,11 @@ struct container_context_s { // container_context (also output context)
     state_t subj;          // used to verify homogenous SUBJECT
     state_t ei;            // ei, bi are used to determine whitespace needs around STRINGs
     state_t bi;          
+
+#ifdef EMIT_TERM
     char unterm;           // used to emit TERM events even when no explicit ';' was in the input
 			   //    (rarely used, since it has virtally zero value in outputs either)
+#endif
     char delete_action;    // A '~' was fount signifying a delete ACTION
 
 

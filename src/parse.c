@@ -80,10 +80,12 @@ static success_t parse_r(context_t *C, elem_t *root,
         }
 	break;
     case ACT:
+#ifdef EMIT_TERM
         if (CC->unterm) {             // implicitly terminates preceeding ACT
  	    emit_term(C);
 	}
 	CC->unterm = 1;               // indicate that this new ACT is unterminated
+#endif
         emit_start_act(C);
 	break;
     case STRING:
@@ -240,17 +242,21 @@ done:
             case CONTAINER :
                 stat_containercount++;
                 emit_start_container(C);
+#ifdef EMIT_TERM
                 if (CC->unterm) {
                     emit_term(C);
                 }
                 CC->unterm = 0;
+#endif
                 break;
+#ifdef EMIT_TERM
             case TERM :   
                 if (CC->unterm) {
                      emit_term(C);
                 }
                 CC->unterm = 0;
                 break;
+#endif
             case EDGE :  // SUBJECTS that start with an EDGE must have only EDGEs
                 if (CC->subj == 0) {
                     CC->subj = EDGE;
@@ -306,10 +312,12 @@ static success_t parse_activity(context_t *C) {
         }
     }
 
+#ifdef EMIT_TERM
     if (container_context.unterm) {
  	emit_term(C);      // end_of_activity (EOF or end_of_container) is an implicit terminator
     }
     // no nead to update .unterm as we're leaving this context now.
+#endif
 
     free_list(&container_context.prev_subject);
     free_list(&container_context.pattern_acts);
