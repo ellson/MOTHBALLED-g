@@ -10,7 +10,8 @@ typedef struct {
     void (*start_activity) (context_t *C);
     void (*sep) (context_t *C);
     void (*start_state) (context_t *C, char class, unsigned char prop, int nest, int repc);
-    void (*tree) (context_t *C, elem_t *root);
+    void (*act) (context_t *C, elem_t *root);
+    void (*subject) (context_t *C, elem_t *root);
     void (*string) (context_t *C, elem_t *branch);
     void (*frag) (context_t *C, unsigned char len, unsigned char *frag);
     void (*token) (context_t *C, char token);
@@ -30,8 +31,10 @@ typedef struct {
     if (emit->sep) {emit->sep(C);}
 #define emit_start_state(C, class, prop, nest, repc) \
     if (emit->start_state) {emit->start_state(C, class, prop, nest, repc);}
-#define emit_tree(C, root) \
-    if (emit->tree) {emit->tree(C, root);}
+#define emit_act(C, root) \
+    if (emit->act) {emit->act(C, root);}
+#define emit_subject(C, root) \
+    if (emit->subject) {emit->subject(C, root);}
 #define emit_string(C, branch) \
     if (emit->string) {emit->string(C, branch);}
 #define emit_frag(C, len, frag) \

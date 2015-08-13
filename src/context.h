@@ -6,6 +6,7 @@ typedef struct {
     inbuf_t *inbuf;        // the active input buffer
     unsigned char *in;     // next charater to be processed
     state_t insi;          // state represented by last character read
+    int containment;       // depth of containment
     elem_t subject;        // header of subject stack for containment
 			   //  (Current subject is first in list.  Parents follow.)
     elem_t sameend_legs;   // header of list of LEGS from previous ACT.

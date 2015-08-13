@@ -7,14 +7,16 @@
 #include "context.h"
 #include "emit.h"
 
-static void api_start_file(context_t *C) {
-    fprintf(OUT, "// |-- on entry, '|' alt, '.' one, '?' zero or one, '*' zero or more, '+' one or more\n");
-    fprintf(OUT, "// |-- on exit, '0' success, '1' fail\n");
-    fprintf(OUT, "//     |-- state number\n");
-    fprintf(OUT, "//         |-- nesting\n");
-    fprintf(OUT, "//             |-- iteration\n");
-    fprintf(OUT, "//                 |-- state name\n");
-    fprintf(OUT, "//                              |-- string (if present)\n");
+static void api_start_activity(context_t *C) {
+    if (C->containment == 0) {
+        fprintf(OUT, "// |-- on entry, '|' alt, '.' one, '?' zero or one, '*' zero or more, '+' one or more\n");
+        fprintf(OUT, "// |-- on exit, '0' success, '1' fail\n");
+        fprintf(OUT, "//     |-- state number\n");
+        fprintf(OUT, "//         |-- nesting\n");
+        fprintf(OUT, "//             |-- iteration\n");
+        fprintf(OUT, "//                 |-- state name\n");
+        fprintf(OUT, "//                              |-- string (if present)\n");
+    }
 }
 
 static void api_start_state(context_t *C, char class, unsigned char prop, int nest, int repc) {
@@ -39,28 +41,32 @@ static void api_end_state(context_t *C, char class, success_t rc, int nest, int 
     print_len_frag(OUT, NAMEP(class));
 }
 
-static void api_end_file(context_t *C) {
-    fprintf(OUT, "\n\n");
+static void api_end_activity(context_t *C) {
+    if (C->containment == 0) {
+        fprintf(OUT, "\n");
+    }
 }
 
 static emit_t api = {
-    /* api_start_file */          api_start_file,
-    /* api_start_activity */     NULL,
+    /* api_start_file */          NULL,
+    /* api_start_activity */      api_start_activity,
     /* api_sep */                 NULL,
     /* api_start_state */         api_start_state,
-    /* api_tree */                NULL,
+    /* api_act */                 NULL,
+    /* api_subject */             NULL,
     /* api_string */              api_string,
     /* api_frag */                NULL,
     /* api_token */               api_token,
     /* api_end_state */           api_end_state,
     /* api_term */                NULL,
-    /* api_end_activity */        NULL,
-    /* api_end_file */            api_end_file,
+    /* api_end_activity */        api_end_activity,
+    /* api_end_file */            NULL,
     /* api_error */               print_error
 };
 
-static void api1_tree(context_t *C, elem_t *tree) {
-    print_list(OUT, tree, 0, ' ');
+static void api1_subject(context_t *C, elem_t *tree) {
+    fprintf(OUT,"%3d ",C->containment);
+    print_list(OUT, tree, 4, ' ');
 }
 
 static void api1_term(context_t *C) {
@@ -68,24 +74,20 @@ static void api1_term(context_t *C) {
     putc('\n', OUT);
 }
 
-static void api1_end_file(context_t *C) {
-//    fprintf(OUT,"\n(eof)\n");
-    putc('\n', OUT);
-}
-
 static emit_t api1 = {
     /* api_start_file */          NULL,
-    /* api_start_activity */     NULL,
+    /* api_start_activity */      NULL,
     /* api_sep */                 NULL,
     /* api_start_state */         NULL,
-    /* api_tree */                api1_tree,
+    /* api_act */                 NULL,
+    /* api_subject */             api1_subject,
     /* api_string */              NULL,
     /* api_frag */                NULL,
     /* api_token */               NULL,
     /* api_end_state */           NULL,
     /* api_term */                api1_term,
-    /* api_end_activity */        NULL,
-    /* api_end_file */            api1_end_file,
+    /* api_end_activity */        api_end_activity,
+    /* api_end_file */            NULL,
     /* api_error */               print_error
 };
 

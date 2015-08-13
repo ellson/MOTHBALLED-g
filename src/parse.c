@@ -30,6 +30,8 @@ static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t 
     return SUCCESS;            // more repetitions
 }
 
+static success_t parse_activity(context_t *C); // forward declaration for recursion
+
 static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char prop, int nest, int repc) {
     unsigned char nprop;
     char so;                  // offset to next state, signed
@@ -59,7 +61,7 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
 			       // (Note, first REP of a REP sequence *can* be preceeded by WS,
 		               //      just not the rest of the REPs. )
         C->in = nullstring;    // fake it;
-        C->insi = NLL;;        // pretend last input was a terminating NLL
+        C->insi = NLL;         // pretend last input was a terminating NLL
     }
 
     // deal with terminal states: whitespace, string, token
@@ -68,30 +70,30 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
     if ( (rc = parse_whitespace(C)) == FAIL ) {
 	goto done;             // EOF during whitespace
     }
- 
-    if (si == STRING) {        // string terminals 
-
-        rc = parse_string(C, &branch);
-        bi = C->insi;             // the char class that terminates the string
-
-        goto done;
-    }
-    if (si == C->insi) {          // single character terminals matching state_machine expectation
-
+    if (si == C->insi) {       // single character terminals matching state_machine expectation
 	bi = C->insi;
         rc = parse_token(C);
 	ei = C->insi;
-
-// FIXME - set flags for '~' and '='
+// FIXME - set flag for '~'
         goto done;
     }
-    // else the si is non-terminal and the C->insi is for some other state
-
-
-
-#if 1   // FIXME - I don't think any of this entry processing should be required...
-    // else non terminal state -- state entry processing
     switch (si) {
+    case ACTIVITY:
+	if (bi == LBE) { // if not top-level of containment
+//fprintf(OUT,"\nactivity ei=%d bi=%d si=%d insi=%d in=%s\n", ei, bi, si, C->insi, C->in);
+#if 1
+            bi = NLL;
+            rc = parse_activity(C);// recursively process contained ACTIVITY in to its own root
+            bi = C->insi;          // the char class that terminates the ACTIVITY
+        goto done;
+#endif
+}
+	break;
+    case STRING:
+        rc = parse_string(C, &branch);
+        bi = C->insi;          // the char class that terminates the STRING
+        goto done;
+	break;
     case ACT:
 // FIXME - unterm needs to be stacked
         if (unterm) {             // implicitly terminates preceeding ACT
@@ -104,11 +106,12 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
         savesubj = subj;          // push parent's subject
         subj = 0;                 // clear this subject type until known
 	break;
+    case CONTAINER:
+        C->containment++;
+	break;
     default:
 	break;
     }
-#endif
-
 
     // Use state_machine[si] to determine next state
  
@@ -170,7 +173,12 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
             }
 #endif
 	    break;
+        case CONTAINER:
+            C->containment--;
+	    break;
         case SUBJECT:
+            emit_subject(C, &branch);
+
             subj = savesubj;      // pop subj     // FIXME
 
             elem = ref_list(si, &branch);
@@ -194,11 +202,12 @@ putc ('\n', stdout);
 	    break;
 	case ACT:
             stat_actcount++;
+            emit_act(C, &branch);
+
             pop_list(&(C->subject));  // discard the subject of this act at this level of containment
-#if 1
-            emit_tree(C, &branch);
+#if 0
 // FIXME - at the moment this is freeing an active input_buffer
-//            free_list(&branch);
+            free_list(&branch);
 #endif
             break;
         default:
@@ -271,12 +280,20 @@ done:
     return rc;
 }
 
-static success_t parse_activity(context_t *C, elem_t *root) {
+static success_t parse_activity(context_t *C) {
     success_t rc;
+    elem_t root = {         // the output parse tree
+        .next = NULL,
+        .u.list.first = NULL,
+        .u.list.last = NULL,
+        .v.list.refs = 0,
+        .type = LISTELEM,
+        .state = 0
+    };
 
     emit_start_activity(C);
 
-    if ((rc = parse_r(C, root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+    if ((rc = parse_r(C, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
 #if 1
         if (C->insi == NLL) { // EOF is OK
             rc = SUCCESS;
@@ -293,6 +310,7 @@ static success_t parse_activity(context_t *C, elem_t *root) {
  	emit_term(C);      // EOF is an implicit terminator
     }
     unterm = 0;
+
     emit_end_activity(C);
     return rc;
 }
@@ -308,16 +326,8 @@ success_t parse(int *pargc, char *argv[]) {
 	.in = NULL,
 	.insi = CONTAINER,
     };
-    elem_t root = {         // the output parse tree (FIXME - one tree?  or stacked? )
-        .next = NULL,
-        .u.list.first = NULL,
-        .u.list.last = NULL,
-        .v.list.refs = 0,
-        .type = LISTELEM,
-        .state = 0
-    };
 
-    rc = parse_activity(&context, &root);
+    rc = parse_activity(&context);
 
     return rc;
 }

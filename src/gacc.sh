@@ -195,7 +195,7 @@ EOF
 ( printf "char state_machine[] = {\n"            )  >${ifn}.states
 ( printf "unsigned char state_props[] = {\n"     )  >${ifn}.props
 ( printf "char state_token[] = {\n"              )  >${ifn}.token
-( printf "char state_agaws[] = {\n"              )  >${ifn}.agaws
+#( printf "char state_agaws[] = {\n"              )  >${ifn}.agaws
 
 cnt=0
 for s in ${statelist[@]}; do
@@ -212,7 +212,7 @@ for s in ${statelist[@]}; do
     ( printf "    /* %3d %12s */  " $indx $s     ) >>${ifn}.states
     ( printf "    /* %3d %12s */  " $indx $s     ) >>${ifn}.props
     ( printf "    /* %3d %12s */  " $indx $s     ) >>${ifn}.token
-    ( printf "    /* %3d %12s */  " $indx $s     ) >>${ifn}.agaws
+#    ( printf "    /* %3d %12s */  " $indx $s     ) >>${ifn}.agaws
     while true; do
         next=${nextlist[$indx]}
         prop=${proplist[$indx]}
@@ -255,7 +255,7 @@ for s in ${statelist[@]}; do
         ( printf " %4d," $((nxtindx-indx))       ) >>${ifn}.states
         ( printf " 0x%02x," $nprops              ) >>${ifn}.props
         ( printf " %4d," 0                       ) >>${ifn}.token
-        ( printf " %4d," 0                       ) >>${ifn}.agaws
+#        ( printf " %4d," 0                       ) >>${ifn}.agaws
         ((indx++))
     done
 
@@ -299,7 +299,7 @@ for s in ${statelist[@]}; do
     ( printf " %4d,\n" 0                         ) >>${ifn}.states
     ( printf " %4d,\n" $((spos/2))               ) >>${ifn}.props
     ( printf " %4s,\n" $tokchar                  ) >>${ifn}.token
-    ( printf " %4s,\n" $agaws                    ) >>${ifn}.agaws
+#    ( printf " %4s,\n" $agaws                    ) >>${ifn}.agaws
 done
 ( printf "\n\n"                                  ) >>${ifn}.ebnf
 ( printf "}\n\n"                                 ) >>${ifn}.gv
@@ -307,7 +307,7 @@ done
 ( printf "};\n\n"                                ) >>${ifn}.states
 ( printf "};\n\n"                                ) >>${ifn}.props
 ( printf "};\n\n"                                ) >>${ifn}.token
-( printf "};\n\n"                                ) >>${ifn}.agaws
+#( printf "};\n\n"                                ) >>${ifn}.agaws
 
 ##############################################
 # assemble output files
@@ -403,7 +403,7 @@ EOF
 cat ${ifn}.states >>$ofc
 cat ${ifn}.props  >>$ofc
 cat ${ifn}.token  >>$ofc
-cat ${ifn}.agaws >>$ofc
+#cat ${ifn}.agaws >>$ofc
 
 cat >>$ofc  <<EOF
 unsigned char *NAMEP(int si) {
