@@ -13,8 +13,7 @@
 #include "token.h"
 
 static unsigned char unterm;
-static state_t subj, bi, ei;
-static elem_t *sameend_elem;
+static state_t bi, ei;
 
 static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
     if (! (prop & (REP|SREP))) return FAIL;
@@ -32,25 +31,21 @@ static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t 
 
 static success_t parse_activity(context_t *C); // forward declaration for recursion
 
-static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char prop, int nest, int repc) {
+static success_t parse_r(context_t *C, elem_t *root, 
+		 state_t si, unsigned char prop, int nest, int repc) {
     unsigned char nprop;
     char so;                  // offset to next state, signed
-    state_t ti, ni, savesubj;
+    state_t ti, ni;
     success_t rc;
     elem_t *elem;
-    elem_t branch = {
-	.next = NULL,
-	.u.list.first = NULL,
-	.u.list.last = NULL,
-	.v.list.refs = 0,
-	.type = LISTELEM,
-	.state = 0
-    };
+    elem_t branch = {0};
+    container_context_t *CC;
     static unsigned char nullstring[] = {'\0'};
 
     rc = SUCCESS;
     emit_start_state(C, si, prop, nest, repc);
     branch.state = si;
+    CC = C->container_context;
 
     nest++;
     assert (nest >= 0);        // catch overflows
@@ -102,9 +97,7 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
 	unterm = 1;               // indicate that this new ACT is unterminated
 	break;
     case SUBJECT:
-// FIXME - savesubj needs to be ... use context for this
-        savesubj = subj;          // push parent's subject
-        subj = 0;                 // clear this subject type until known
+	CC->subj = 0;
 	break;
     case CONTAINER:
         C->containment++;
@@ -118,7 +111,7 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
     rc = FAIL;                    // init rc to FAIL in case no ALT is satisfied
     ti = si;
     while (( so = state_machine[ti] )) { // iterate over ALTs or sequences
-        nprop = state_props[ti];   // get the props for the transition from the current state (OPT, ALT, REP etc)
+        nprop = state_props[ti];  // get the props for the transition from the current state (OPT, ALT, REP etc)
 	                          // at this point, ni is a signed, non-zero offset to the next state
         ni = ti + so;             // we get to the next state by adding the offset to the current state.
 	if (nprop & ALT) {        // look for ALT
@@ -142,7 +135,7 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
 	        if (( rc = parse_r(C, &branch, ni, nprop, nest, repc++)) == FAIL) {
 		    break; 
 		}
-                // A 1-or-more repetition is successful is the first one was a success
+                // A 1-or-more repetition is successful if the first one was a success
 	        while (more_rep(C, nprop, ei, bi) == SUCCESS) {
                     if (( rc = parse_r(C, &branch, ni, nprop, nest, repc++)) == FAIL) {
 			break;
@@ -157,7 +150,7 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
     if (rc == SUCCESS) {
         switch (si) {
         case LEG:
-#if 1
+#if 0
 	    if (bi == EQL) {
                 if (! sameend_elem) {
 	            emit_error(C, si, "No prior LEG found for sameend substitution in");
@@ -178,18 +171,18 @@ static success_t parse_r(context_t *C, elem_t *root, state_t si, unsigned char p
 	    break;
         case SUBJECT:
             emit_subject(C, &branch);
-
-            subj = savesubj;      // pop subj     // FIXME
-
+            
+#if 0
             elem = ref_list(si, &branch);
             push_list(&(C->subject), elem);  // save the subject of this act at this level of containment
+#endif
 
 #if 0
 putc ('\n', stdout);
 print_list(stdout, &(C->subject), 0, ' ');
 putc ('\n', stdout);
 #endif
-#if 1
+#if 0
             // update samends
             //    -- free old samends
 	    free_list(&(C->sameend_legs));
@@ -204,9 +197,8 @@ putc ('\n', stdout);
             stat_actcount++;
             emit_act(C, &branch);
 
-            pop_list(&(C->subject));  // discard the subject of this act at this level of containment
 #if 0
-// FIXME - at the moment this is freeing an active input_buffer
+            pop_list(&(C->subject));  // discard the subject of this act at this level of containment
             free_list(&branch);
 #endif
             break;
@@ -234,22 +226,22 @@ done:
     // putc ('\n', stdout);
     // print_list(stdout, &new_sameend_legs, 0, ' ');
     // putc ('\n', stdout);
-            case EDGE :
-                if (subj == 0) {
-                    subj = EDGE;
+            case EDGE :  // SUBJECTS that start with an EDGE must have only EDGEs
+                if (CC->subj == 0) {
+                    CC->subj = EDGE;
                 }
                 else {
-                    if (subj == NODE) {
+                    if (CC->subj == NODE) {
                         emit_error(C, si, "NODE subject includes");
                     }
                 }
                 break;
-            case NODE :
-                if (subj == 0) {
-                    subj = NODE;
+            case NODE : // SUBJECTS that start with a NODE must have only NODEs
+                if (CC->subj == 0) {
+                    CC->subj = NODE;
                 }
                 else {
-                    if (subj == EDGE) {
+                    if (CC->subj == EDGE) {
                         emit_error(C, si, "EDGE subject includes");
                     }
                 }
@@ -282,34 +274,33 @@ done:
 
 static success_t parse_activity(context_t *C) {
     success_t rc;
-    elem_t root = {         // the output parse tree
-        .next = NULL,
-        .u.list.first = NULL,
-        .u.list.last = NULL,
-        .v.list.refs = 0,
-        .type = LISTELEM,
-        .state = 0
-    };
+    elem_t root = {0};         // the output parse tree
+    container_context_t container_context = {0};
+
+    container_context.context = C;
+    container_context.out = stdout;
+    container_context.err = stderr;
+
+    C->container_context = &container_context;
 
     emit_start_activity(C);
 
     if ((rc = parse_r(C, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
-#if 1
         if (C->insi == NLL) { // EOF is OK
             rc = SUCCESS;
         }
         else {
-// FIXME - Show details: filename, line#, char#, badchar 
-// FIXME - Keep track of: line#, char#
             emit_error(C, ACTIVITY, "Parse error");
         }
-#endif
     }
 
     if (unterm) {
- 	emit_term(C);      // EOF is an implicit terminator
+ 	emit_term(C);      // end_of_activity (EOF or end_of_container) is an implicit terminator
     }
     unterm = 0;
+
+    free_list(&container_context.prev_subject);
+    free_list(&container_context.pattern_acts);
 
     emit_end_activity(C);
     return rc;
@@ -317,15 +308,12 @@ static success_t parse_activity(context_t *C) {
 
 success_t parse(int *pargc, char *argv[]) {
     success_t rc;
-    context_t context = {   // the input context (stacked with each CONTAINER recursion)
-	.pargc = pargc,
-	.argv = argv,
-	.filename=NULL,
-	.file = NULL,
-	.inbuf = NULL,
-	.in = NULL,
-	.insi = CONTAINER,
-    };
+    context_t context = {0};   // the input context
+
+    context.pargc = pargc;
+    context.argv = argv;
+    context.out = stdout;
+    context.err = stderr;
 
     rc = parse_activity(&context);
 

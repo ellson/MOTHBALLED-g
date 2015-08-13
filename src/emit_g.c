@@ -8,19 +8,19 @@
 #include "emit.h"
 
 static void api_sep(context_t *C) {
-    putc (' ', OUT);
+    putc (' ', C->out);
 }
 
 static void api_string(context_t *C, elem_t *branch) {
-    print_list(OUT, branch, -1, 0);
+    print_list(C->out, branch, -1, 0);
 }
 
 static void api_token(context_t *C, char token) {
-    putc(token, OUT);
+    putc(token, C->out);
 }
 
 static void api_end_activity(context_t *C) {
-    putc('\n', OUT);
+    putc('\n', C->out);
 }
 
 static emit_t api = {
@@ -41,15 +41,15 @@ static emit_t api = {
 };
 
 static void api1_string(context_t *C, elem_t *branch) {
-    print_list(OUT, branch, -1, 0);
+    print_list(C->out, branch, -1, 0);
 }
 
 static void api1_token(context_t *C, char token) {
-    fprintf(OUT,"\n%c ", token);
+    fprintf(C->out,"\n%c ", token);
 }
 
 static void api1_term(context_t *C) {
-    putc('\n', OUT);
+    putc('\n', C->out);
 }
 
 static emit_t api1 = {

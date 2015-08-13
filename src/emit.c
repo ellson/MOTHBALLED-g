@@ -29,15 +29,18 @@ char char_prop(unsigned char prop, char noprop) {
 
 void print_error(context_t *C, state_t si, char *message) {
     unsigned char *p, c;
+    long lineno;
+    
+    lineno = stat_lfcount?stat_lfcount:stat_crcount;
 
-    fprintf(OUT, "\nError: %s ", message);
-    print_len_frag(OUT, NAMEP(si));
-    fprintf(OUT, " on line: %ld just before: \"", 1+(stat_lfcount?stat_lfcount:stat_crcount));
+    fprintf(C->err, "\nError: %s ", message);
+    print_len_frag(C->err, NAMEP(si));
+    fprintf(C->err, " on line: %ld just before: \"", lineno);
     p = C->in;
     while ((c = *p++)) {
         if (c == '\n' || c == '\r') break;
-        putc(c, OUT);
+        putc(c, C->err);
     }
-    fprintf(OUT, "\"\n");
+    fprintf(C->err, "\"\n");
     exit(1);
 }
