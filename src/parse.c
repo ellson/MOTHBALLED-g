@@ -12,7 +12,6 @@
 #include "parse.h"
 #include "token.h"
 
-static unsigned char unterm;
 static state_t bi, ei;
 
 static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
@@ -69,33 +68,28 @@ static success_t parse_r(context_t *C, elem_t *root,
 	bi = C->insi;
         rc = parse_token(C);
 	ei = C->insi;
-// FIXME - set flag for '~'
         goto done;
     }
     switch (si) {
     case ACTIVITY:
 	if (bi == LBE) { // if not top-level of containment
-//fprintf(OUT,"\nactivity ei=%d bi=%d si=%d insi=%d in=%s\n", ei, bi, si, C->insi, C->in);
-#if 1
             bi = NLL;
             rc = parse_activity(C);// recursively process contained ACTIVITY in to its own root
             bi = C->insi;          // the char class that terminates the ACTIVITY
-        goto done;
-#endif
-}
+            goto done;
+        }
+	break;
+    case ACT:
+        if (CC->unterm) {             // implicitly terminates preceeding ACT
+ 	    emit_term(C);
+	}
+	CC->unterm = 1;               // indicate that this new ACT is unterminated
+        emit_start_act(C);
 	break;
     case STRING:
         rc = parse_string(C, &branch);
         bi = C->insi;          // the char class that terminates the STRING
         goto done;
-	break;
-    case ACT:
-// FIXME - unterm needs to be stacked
-        if (unterm) {             // implicitly terminates preceeding ACT
- 	    emit_term(C);
-	}
-	unterm = 1;               // indicate that this new ACT is unterminated
-        emit_start_act(C);
 	break;
     case SUBJECT:
 	CC->subj = 0;
@@ -159,6 +153,9 @@ static success_t parse_r(context_t *C, elem_t *root,
             pop_list(&(C->subject));  // discard the subject of this act at this level of containment
             free_list(&branch);
 #endif
+            break;
+        case ACTION:
+	    CC->delete_action = 1;
             break;
         case SUBJECT:
             emit_subject(C, &branch);
@@ -243,16 +240,16 @@ done:
             case CONTAINER :
                 stat_containercount++;
                 emit_start_container(C);
-                if (unterm) {
+                if (CC->unterm) {
                     emit_term(C);
                 }
-                unterm = 0;
+                CC->unterm = 0;
                 break;
             case TERM :   
-                if (unterm) {
+                if (CC->unterm) {
                      emit_term(C);
                 }
-                unterm = 0;
+                CC->unterm = 0;
                 break;
             case EDGE :  // SUBJECTS that start with an EDGE must have only EDGEs
                 if (CC->subj == 0) {
@@ -309,10 +306,10 @@ static success_t parse_activity(context_t *C) {
         }
     }
 
-    if (unterm) {
+    if (container_context.unterm) {
  	emit_term(C);      // end_of_activity (EOF or end_of_container) is an implicit terminator
     }
-    unterm = 0;
+    // no nead to update .unterm as we're leaving this context now.
 
     free_list(&container_context.prev_subject);
     free_list(&container_context.pattern_acts);
