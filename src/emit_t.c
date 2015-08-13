@@ -92,12 +92,11 @@ static emit_t api = {
     /* api_error */               print_error
 };
 
-static void api1_subject(context_t *C, elem_t *tree) {
-    fprintf(C->out,"%3d ",C->containment);
-    print_list(C->out, tree, 4, ' ');
+static void api1_act(context_t *C, elem_t *tree) {
+    print_list(C->out, tree, 0, ' ');
 }
 
-static void api1_end_subject(context_t *C) {
+static void api1_end_act(context_t *C) {
     putc('\n', C->out);
 }
 
@@ -112,10 +111,10 @@ static emit_t api1 = {
     /* api_end_activity */        api_end_activity,
 
     /* api_start_act */           NULL,
-    /* api_end_act */             NULL,
+    /* api_end_act */             api1_end_act,
 
     /* api_start_subject */       NULL,
-    /* api_end_subject */         api1_end_subject,
+    /* api_end_subject */         NULL,
 
     /* api_start_attributes */    NULL,
     /* api_end_attributes */      NULL,
@@ -126,8 +125,8 @@ static emit_t api1 = {
     /* api_start_state */         NULL,
     /* api_end_state */           NULL,
 
-    /* api_act */                 NULL,
-    /* api_subject */             api1_subject,
+    /* api_act */                 api1_act,
+    /* api_subject */             NULL,
     /* api_attributes */          NULL,
 #ifdef EMIT_TERM
     /* api_term */                NULL,

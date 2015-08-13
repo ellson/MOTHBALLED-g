@@ -249,7 +249,7 @@ done:
     // putc ('\n', stdout);
             switch (si) {
             case ACT:
-                free_list(root); // should be done with entire ACT at this point. (emits happened earlier)
+                free_list(root); // should be finished with entire ACT at this point. (emits happened earlier)
 			         //    the only things left should be patterns and the previous_subject (for sameends)
                 break;
             case SUBJECT:
