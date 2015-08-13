@@ -47,20 +47,46 @@ static void api_end_activity(context_t *C) {
     }
 }
 
+static void api_end_parse(context_t *C) {
+    putc('\n', C->out);
+}
+
 static emit_t api = {
+    /* api_start_parse */         NULL,
+    /* api_end_parse */           api_end_parse,
+
     /* api_start_file */          NULL,
+    /* api_end_file */            NULL,
+
     /* api_start_activity */      api_start_activity,
-    /* api_sep */                 NULL,
+    /* api_end_activity */        api_end_activity,
+
+    /* api_start_act */           NULL,
+    /* api_end_act */             NULL,
+
+    /* api_start_subject */       NULL,
+    /* api_end_subject */         NULL,
+
+    /* api_start_attributes */    NULL,
+    /* api_end_attributes */      NULL,
+
+    /* api_start_container */     NULL, 
+    /* api_end_container */       NULL, 
+
     /* api_start_state */         api_start_state,
+    /* api_end_state */           api_end_state,
+
     /* api_act */                 NULL,
     /* api_subject */             NULL,
-    /* api_string */              api_string,
-    /* api_frag */                NULL,
-    /* api_token */               api_token,
-    /* api_end_state */           api_end_state,
+    /* api_attributes */          NULL,
     /* api_term */                NULL,
-    /* api_end_activity */        api_end_activity,
-    /* api_end_file */            NULL,
+
+    /* api_sep */                 NULL,
+    /* api_token */               api_token,
+    /* api_string */              api_string,
+
+    /* api_frag */                NULL,
+
     /* api_error */               print_error
 };
 
@@ -70,24 +96,45 @@ static void api1_subject(context_t *C, elem_t *tree) {
 }
 
 static void api1_term(context_t *C) {
-//    fprintf(C->out,"\n(term)\n");
     putc('\n', C->out);
 }
 
 static emit_t api1 = {
+    /* api_start_parse */         NULL,
+    /* api_end_parse */           NULL,
+
     /* api_start_file */          NULL,
+    /* api_end_file */            NULL,
+
     /* api_start_activity */      NULL,
-    /* api_sep */                 NULL,
+    /* api_end_activity */        api_end_activity,
+
+    /* api_start_act */           NULL,
+    /* api_end_act */             NULL,
+
+    /* api_start_subject */       NULL,
+    /* api_end_subject */         NULL,
+
+    /* api_start_attributes */    NULL,
+    /* api_end_attributes */      NULL,
+
+    /* api_start_container */     NULL, 
+    /* api_end_container */       NULL, 
+
     /* api_start_state */         NULL,
+    /* api_end_state */           NULL,
+
     /* api_act */                 NULL,
     /* api_subject */             api1_subject,
-    /* api_string */              NULL,
-    /* api_frag */                NULL,
-    /* api_token */               NULL,
-    /* api_end_state */           NULL,
+    /* api_attributes */          NULL,
     /* api_term */                api1_term,
-    /* api_end_activity */        api_end_activity,
-    /* api_end_file */            NULL,
+
+    /* api_sep */                 NULL,
+    /* api_token */               NULL,
+    /* api_string */              NULL,
+
+    /* api_frag */                NULL,
+
     /* api_error */               print_error
 };
 

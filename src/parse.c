@@ -95,6 +95,7 @@ static success_t parse_r(context_t *C, elem_t *root,
  	    emit_term(C);
 	}
 	unterm = 1;               // indicate that this new ACT is unterminated
+        emit_start_act(C);
 	break;
     case SUBJECT:
 	CC->subj = 0;
@@ -149,28 +150,19 @@ static success_t parse_r(context_t *C, elem_t *root,
     // Any subtree rewrites or emit before adding branch to root in the state exit processing
     if (rc == SUCCESS) {
         switch (si) {
-        case LEG:
-#if 0
-	    if (bi == EQL) {
-                if (! sameend_elem) {
-	            emit_error(C, si, "No prior LEG found for sameend substitution in");
-	        }
-//		elem = ref_list(si, elem);
+	case ACT:
+            stat_actcount++;
+            emit_act(C, &branch);
+            emit_end_act(C);
 
-                elem = ref_list(si, sameend_elem);
-// FIXME can be multiple ENDPOINTS in a LEG, need a while here
-//                append_list(&branch, sameend_elem->u.list.first);
-            }
-            if (sameend_elem) {
-	        sameend_elem = sameend_elem -> next;
-            }
+#if 0
+            pop_list(&(C->subject));  // discard the subject of this act at this level of containment
+            free_list(&branch);
 #endif
-	    break;
-        case CONTAINER:
-            C->containment--;
-	    break;
+            break;
         case SUBJECT:
             emit_subject(C, &branch);
+            emit_end_subject(C);
             
 #if 0
             elem = ref_list(si, &branch);
@@ -193,15 +185,31 @@ putc ('\n', stdout);
 	    sameend_elem = C->sameend_legs.u.list.first;
 #endif
 	    break;
-	case ACT:
-            stat_actcount++;
-            emit_act(C, &branch);
-
-#if 0
-            pop_list(&(C->subject));  // discard the subject of this act at this level of containment
-            free_list(&branch);
-#endif
+        case ATTRIBUTES :
+            emit_attributes(C, &branch);
+            emit_end_attributes(C);
             break;
+        case CONTAINER:
+            C->containment--;
+            emit_end_container(C);
+	    break;
+        case LEG:
+#if 0
+	    if (bi == EQL) {
+                if (! sameend_elem) {
+	            emit_error(C, si, "No prior LEG found for sameend substitution in");
+	        }
+//		elem = ref_list(si, elem);
+
+                elem = ref_list(si, sameend_elem);
+// FIXME can be multiple ENDPOINTS in a LEG, need a while here
+//                append_list(&branch, sameend_elem->u.list.first);
+            }
+            if (sameend_elem) {
+	        sameend_elem = sameend_elem -> next;
+            }
+#endif
+	    break;
         default:
 	    break;
 	}
@@ -214,7 +222,6 @@ done:
         if (branch.u.list.first != NULL) { // ignore empty lists
             elem = move_list(si, &branch);
             append_list(root, elem);
-            switch (si) {
     //putc ('\n', stdout);
     //print_list(stdout, elem, 0, ' ');
     //putc ('\n', stdout);
@@ -226,6 +233,27 @@ done:
     // putc ('\n', stdout);
     // print_list(stdout, &new_sameend_legs, 0, ' ');
     // putc ('\n', stdout);
+            switch (si) {
+            case SUBJECT :
+                emit_start_subject(C);
+                break;
+            case ATTRIBUTES :
+                emit_start_attributes(C);
+                break;
+            case CONTAINER :
+                stat_containercount++;
+                emit_start_container(C);
+                if (unterm) {
+                    emit_term(C);
+                }
+                unterm = 0;
+                break;
+            case TERM :   
+                if (unterm) {
+                     emit_term(C);
+                }
+                unterm = 0;
+                break;
             case EDGE :  // SUBJECTS that start with an EDGE must have only EDGEs
                 if (CC->subj == 0) {
                     CC->subj = EDGE;
@@ -245,19 +273,6 @@ done:
                         emit_error(C, si, "EDGE subject includes");
                     }
                 }
-                break;
-            case TERM :   
-                if (unterm) {
-                     emit_term(C);
-                }
-                unterm = 0;
-                break;
-            case CONTAINER :
-                stat_containercount++;
-                if (unterm) {
-                    emit_term(C);
-                }
-                unterm = 0;
                 break;
             default:
                 break;
@@ -315,7 +330,9 @@ success_t parse(int *pargc, char *argv[]) {
     context.out = stdout;
     context.err = stderr;
 
+    emit_start_parse(&context);
     rc = parse_activity(&context);
+    emit_end_parse(&context);
 
     return rc;
 }
