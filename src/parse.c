@@ -12,6 +12,23 @@
 #include "parse.h"
 #include "token.h"
 
+
+// This parser recurses at two levels:
+//
+//     parse() ----> parse_activity(C) ----> parse_r(CC) -| -|  
+//                   ^                       ^            |  |
+//                   |                       |            |  |
+//                   |                       ------<-------  |
+//                   |                                       |
+//                   -----------------<-----------------------
+//
+// The inner recursions is through the grammar state_machine at a single
+// level of containment - maintained in container_context (CC)
+//
+// The outer recursion is through nested containment.
+// The top-level context (C) is available to both and maintains the input state.
+
+
 static success_t more_rep(context_t *C, unsigned char prop) {
     state_t ei, bi;
 
@@ -152,39 +169,28 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
 	ti++;                     // next ALT (if not yet satisfied), or next sequence item
     }
 
-    // Any subtree rewrites or emit before adding branch to root in the state exit processing
+    // Any subtree rewrites or emiast before adding branch to root in the state exit processing
     if (rc == SUCCESS) {
         switch (si) {
 	case ACT:
             stat_actcount++;
             emit_act(C, &branch);
             emit_end_act(C);
-#if 0
-            pop_list(&(C->subject));  // discard the subject of this act at this level of containment
-            free_list(&branch);
-#endif
             break;
         case SUBJECT:
-            // update samends
-            //    -- free old samends
-	    free_list(&(CC->prev_subject));
-//            elem = ref_list(si, &branch);
-//    append_list(&(CC->prev_subject), elem);
+	    free_list(&(CC->prev_subject));   // update prev_subject for same_end substitution
+            elem = ref_list(si, &branch);
+            append_list(&(CC->prev_subject), elem);
 
             emit_subject(C, &branch);
             emit_end_subject(C);
-#if 0
-putc ('\n', stdout);
-print_list(stdout, &(C->subject), 0, ' ');
-putc ('\n', stdout);
-#endif
 	    break;
         case ATTRIBUTES :
             emit_attributes(C, &branch);
             emit_end_attributes(C);
             break;
         case CONTAINER:
-            C->containment--;
+            C->containment--;   // FIXME   - needs to be part of output stream name generation
             emit_end_container(C);
 	    break;
         case LEG:
@@ -229,9 +235,6 @@ done:
     // putc ('\n', stdout);
             switch (si) {
             case SUBJECT :
-            // update samends
-            //    -- free old samends
-//	    free_list(&(CC->prev_subject));
                 emit_end_subject(C);
                 break;
             case ATTRIBUTES :
@@ -296,8 +299,6 @@ static success_t parse_activity(context_t *C) {
     container_context.context = C;
     container_context.out = stdout;
     container_context.err = stderr;
-
-    C->container_context = &container_context;
 
     emit_start_activity(C);
 
