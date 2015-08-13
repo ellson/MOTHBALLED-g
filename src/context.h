@@ -9,6 +9,8 @@ typedef struct {           // input_context
     inbuf_t *inbuf;        // the active input buffer
     unsigned char *in;     // next charater to be processed
     state_t insi;          // state represented by last character read
+    state_t ei;            // ei, bi are used to determine whitespace needs around STRINGs
+    state_t bi;          
     int containment;       // depth of containment
     FILE *out;             // the output file 
     FILE *err;             // the output file for errors
@@ -22,15 +24,11 @@ struct container_context_s { // container_context (also output context)
     FILE *out;             // the output file for this container
     FILE *err;             // the output file for errors for this container
     state_t subj;          // used to verify homogenous SUBJECT
-    state_t ei;            // ei, bi are used to determine whitespace needs around STRINGs
-    state_t bi;          
 
 #ifdef EMIT_TERM
     char unterm;           // used to emit TERM events even when no explicit ';' was in the input
 			   //    (rarely used, since it has virtally zero value in outputs either)
 #endif
-    char delete_action;    // A '~' was fount signifying a delete ACTION
-
 
     // FIXME  - place for fork header for layout process...
     

@@ -12,13 +12,16 @@
 #include "parse.h"
 #include "token.h"
 
-static state_t bi, ei;
+static success_t more_rep(context_t *C, unsigned char prop) {
+    state_t ei, bi;
 
-static success_t more_rep(context_t *C, unsigned char prop, state_t ei, state_t bi) {
     if (! (prop & (REP|SREP))) return FAIL;
+  
+    ei = C->ei;
     if (ei == RPN || ei == RAN || ei == RBR || ei == RBE ) {
         return FAIL;           // no more repetitions
     }
+    bi = C->bi;
     if (bi == RPN || bi == RAN || bi == RBR || bi == RBE || (ei != ABC && ei != AST)) {
         return SUCCESS;        // more repetitions, but additional WS sep is optional
     }
@@ -50,7 +53,7 @@ static success_t parse_r(context_t *C, elem_t *root,
     assert (nest >= 0);        // catch overflows
 
     if (! C->inbuf) {          // state_machine just started
-        bi = WS;               // pretend preceeded by WS
+        C->bi = WS;           // pretend preceeded by WS
 			       // to satisfy toplevel SREP or REP
 			       // (Note, first REP of a REP sequence *can* be preceeded by WS,
 		               //      just not the rest of the REPs. )
@@ -60,22 +63,22 @@ static success_t parse_r(context_t *C, elem_t *root,
 
     // deal with terminal states: whitespace, string, token
     
-    ei = C->insi;              // the char class that ended the last token
+    C->ei = C->insi;          // the char class that ended the last token
     if ( (rc = parse_whitespace(C)) == FAIL ) {
 	goto done;             // EOF during whitespace
     }
     if (si == C->insi) {       // single character terminals matching state_machine expectation
-	bi = C->insi;
+	C->bi = C->insi;
         rc = parse_token(C);
-	ei = C->insi;
+	C->ei = C->insi;
         goto done;
     }
     switch (si) {
     case ACTIVITY:
-	if (bi == LBE) { // if not top-level of containment
-            bi = NLL;
+	if (C->bi == LBE) {   // if not top-level of containment
+            C->bi = NLL;
             rc = parse_activity(C);// recursively process contained ACTIVITY in to its own root
-            bi = C->insi;          // the char class that terminates the ACTIVITY
+            C->bi = C->insi;  // the char class that terminates the ACTIVITY
             goto done;
         }
 	break;
@@ -90,7 +93,7 @@ static success_t parse_r(context_t *C, elem_t *root,
 	break;
     case STRING:
         rc = parse_string(C, &branch);
-        bi = C->insi;          // the char class that terminates the STRING
+        C->bi = C->insi;          // the char class that terminates the STRING
         goto done;
 	break;
     case SUBJECT:
@@ -121,7 +124,7 @@ static success_t parse_r(context_t *C, elem_t *root,
 	    repc = 0;
 	    if (nprop & OPT) {    // optional
 	        if (( parse_r(C, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
-	            while (more_rep(C, nprop, ei, bi) == SUCCESS) {
+	            while (more_rep(C, nprop) == SUCCESS) {
                         if (parse_r(C, &branch, ni, nprop, nest, repc++) == FAIL) {
 			    break;
 			}
@@ -133,7 +136,7 @@ static success_t parse_r(context_t *C, elem_t *root,
 		    break; 
 		}
                 // A 1-or-more repetition is successful if the first one was a success
-	        while (more_rep(C, nprop, ei, bi) == SUCCESS) {
+	        while (more_rep(C, nprop) == SUCCESS) {
                     if (( rc = parse_r(C, &branch, ni, nprop, nest, repc++)) == FAIL) {
 			break;
 		    }
@@ -155,9 +158,6 @@ static success_t parse_r(context_t *C, elem_t *root,
             pop_list(&(C->subject));  // discard the subject of this act at this level of containment
             free_list(&branch);
 #endif
-            break;
-        case ACTION:
-	    CC->delete_action = 1;
             break;
         case SUBJECT:
             emit_subject(C, &branch);
