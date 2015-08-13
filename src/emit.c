@@ -32,7 +32,10 @@ void print_error(context_t *C, state_t si, char *message) {
 
     fprintf(OUT, "\nError: %s ", message);
     print_len_frag(OUT, NAMEP(si));
-    fprintf(OUT, " on line: %ld just before: \"", 1+(stat_lfcount?stat_lfcount:stat_crcount));
+    fprintf(OUT, "\n      in \"%s\" line: %ld just before: \"",
+	C->filename,
+	(stat_lfcount?stat_lfcount:stat_crcount) - C->linecount_at_start + 1
+    );
     p = C->in;
     while ((c = *p++)) {
         if (c == '\n' || c == '\r') break;

@@ -3,6 +3,7 @@ typedef struct {
     char **argv;
     char *filename;        // name of file currently being processed, or "-" for stdin
     FILE *file;            // open file handle for file currently being processed
+    long linecount_at_start; // activity line count when this file was opened.
     inbuf_t *inbuf;        // the active input buffer
     unsigned char *in;     // next charater to be processed
     state_t insi;          // state represented by last character read

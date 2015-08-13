@@ -57,6 +57,7 @@ static success_t more_in(context_t *C) {
                     emit_error(C, ACTIVITY, "fopen fail");
                 }
             }
+	    C->linecount_at_start = stat_lfcount?stat_lfcount:stat_crcount;
 	    stat_filecount++;
             emit_start_file(C);
 	}
