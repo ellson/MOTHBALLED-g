@@ -248,13 +248,17 @@ done:
     // print_list(stdout, &new_sameend_legs, 0, ' ');
     // putc ('\n', stdout);
             switch (si) {
-            case SUBJECT :
+            case ACT:
+                free_list(root); // should be done with entire ACT at this point. (emits happened earlier)
+			         //    the only things left should be patterns and the previous_subject (for sameends)
+                break;
+            case SUBJECT:
                 emit_end_subject(C);
                 break;
-            case ATTRIBUTES :
+            case ATTRIBUTES:
                 emit_end_attributes(C);
                 break;
-            case CONTAINER :
+            case CONTAINER:
                 stat_containercount++;
                 emit_end_container(C);
 #ifdef EMIT_TERM
