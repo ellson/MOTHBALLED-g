@@ -61,7 +61,7 @@ static success_t parse_r(context_t *C, elem_t *root,
         C->insi = NLL;         // pretend last input was a terminating NLL
     }
 
-    // deal with terminal states: whitespace, string, token
+    // deal with "terminal" states: whitespace, string, token, and contained activity
     
     C->ei = C->insi;          // the char class that ended the last token
     if ( (rc = parse_whitespace(C)) == FAIL ) {
@@ -97,9 +97,14 @@ static success_t parse_r(context_t *C, elem_t *root,
         goto done;
 	break;
     case SUBJECT:
+        emit_start_subject(C);
 	CC->subj = 0;
 	break;
+    case ATTRIBUTES:
+        emit_start_attributes(C);
+	break;
     case CONTAINER:
+        emit_start_container(C);
         C->containment++;
 	break;
     default:
@@ -160,28 +165,18 @@ static success_t parse_r(context_t *C, elem_t *root,
 #endif
             break;
         case SUBJECT:
+            // update samends
+            //    -- free old samends
+//	    free_list(&(CC->prev_subject));
+//            elem = ref_list(si, &branch);
+//    append_list(&(CC->prev_subject), elem);
+
             emit_subject(C, &branch);
             emit_end_subject(C);
-            
-#if 0
-            elem = ref_list(si, &branch);
-            push_list(&(C->subject), elem);  // save the subject of this act at this level of containment
-#endif
-
 #if 0
 putc ('\n', stdout);
 print_list(stdout, &(C->subject), 0, ' ');
 putc ('\n', stdout);
-#endif
-#if 0
-            // update samends
-            //    -- free old samends
-	    free_list(&(C->sameend_legs));
-            //    -- replace with new ones
-            elem = move_list(si, &(C->sameend_legs_new));
-	    append_list(&(C->sameend_legs), elem);
-            // initial iterator io point to first samend
-	    sameend_elem = C->sameend_legs.u.list.first;
 #endif
 	    break;
         case ATTRIBUTES :
@@ -234,14 +229,17 @@ done:
     // putc ('\n', stdout);
             switch (si) {
             case SUBJECT :
-                emit_start_subject(C);
+            // update samends
+            //    -- free old samends
+//	    free_list(&(CC->prev_subject));
+                emit_end_subject(C);
                 break;
             case ATTRIBUTES :
-                emit_start_attributes(C);
+                emit_end_attributes(C);
                 break;
             case CONTAINER :
                 stat_containercount++;
-                emit_start_container(C);
+                emit_end_container(C);
 #ifdef EMIT_TERM
                 if (CC->unterm) {
                     emit_term(C);
@@ -292,7 +290,7 @@ done:
 
 static success_t parse_activity(context_t *C) {
     success_t rc;
-    elem_t root = {0};         // the output parse tree
+    elem_t root = {0};   // the output parse tree
     container_context_t container_context = {0};
 
     container_context.context = C;
