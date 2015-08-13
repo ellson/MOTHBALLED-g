@@ -33,7 +33,7 @@ static success_t more_rep(context_t *C, unsigned char prop) {
 
 static success_t parse_activity(context_t *C); // forward declaration for recursion
 
-static success_t parse_r(context_t *C, elem_t *root, 
+static success_t parse_r(container_context_t *CC, elem_t *root, 
 		 state_t si, unsigned char prop, int nest, int repc) {
     unsigned char nprop;
     char so;                  // offset to next state, signed
@@ -41,13 +41,14 @@ static success_t parse_r(context_t *C, elem_t *root,
     success_t rc;
     elem_t *elem;
     elem_t branch = {0};
-    container_context_t *CC;
+    context_t *C;
     static unsigned char nullstring[] = {'\0'};
+
+    C = CC->context;
 
     rc = SUCCESS;
     emit_start_state(C, si, prop, nest, repc);
     branch.state = si;
-    CC = C->container_context;
 
     nest++;
     assert (nest >= 0);        // catch overflows
@@ -120,7 +121,7 @@ static success_t parse_r(context_t *C, elem_t *root,
 	                          // at this point, ni is a signed, non-zero offset to the next state
         ni = ti + so;             // we get to the next state by adding the offset to the current state.
 	if (nprop & ALT) {        // look for ALT
-	    if (( rc = parse_r(C, &branch, ni, nprop, nest, 0)) == SUCCESS) {
+	    if (( rc = parse_r(CC, &branch, ni, nprop, nest, 0)) == SUCCESS) {
                 break;            // ALT satisfied
 	    }
 	                          // we failed an ALT so continue iteration to try next ALT
@@ -128,21 +129,21 @@ static success_t parse_r(context_t *C, elem_t *root,
 	else {                    // else it is a sequence
 	    repc = 0;
 	    if (nprop & OPT) {    // optional
-	        if (( parse_r(C, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
+	        if (( parse_r(CC, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
 	            while (more_rep(C, nprop) == SUCCESS) {
-                        if (parse_r(C, &branch, ni, nprop, nest, repc++) == FAIL) {
+                        if (parse_r(CC, &branch, ni, nprop, nest, repc++) == FAIL) {
 			    break;
 			}
 		    }
 	        }
 	    }
 	    else {                // else not OPTional
-	        if (( rc = parse_r(C, &branch, ni, nprop, nest, repc++)) == FAIL) {
+	        if (( rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 		    break; 
 		}
                 // A 1-or-more repetition is successful if the first one was a success
 	        while (more_rep(C, nprop) == SUCCESS) {
-                    if (( rc = parse_r(C, &branch, ni, nprop, nest, repc++)) == FAIL) {
+                    if (( rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 			break;
 		    }
 		}
@@ -158,7 +159,6 @@ static success_t parse_r(context_t *C, elem_t *root,
             stat_actcount++;
             emit_act(C, &branch);
             emit_end_act(C);
-
 #if 0
             pop_list(&(C->subject));  // discard the subject of this act at this level of containment
             free_list(&branch);
@@ -167,7 +167,7 @@ static success_t parse_r(context_t *C, elem_t *root,
         case SUBJECT:
             // update samends
             //    -- free old samends
-//	    free_list(&(CC->prev_subject));
+	    free_list(&(CC->prev_subject));
 //            elem = ref_list(si, &branch);
 //    append_list(&(CC->prev_subject), elem);
 
@@ -301,7 +301,7 @@ static success_t parse_activity(context_t *C) {
 
     emit_start_activity(C);
 
-    if ((rc = parse_r(C, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+    if ((rc = parse_r(&container_context, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
         if (C->insi == NLL) { // EOF is OK
             rc = SUCCESS;
         }

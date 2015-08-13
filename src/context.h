@@ -14,7 +14,6 @@ typedef struct {           // input_context
     int containment;       // depth of containment
     FILE *out;             // the output file 
     FILE *err;             // the output file for errors
-    container_context_t *container_context;
 } context_t;
 
 struct container_context_s { // container_context (also output context)
