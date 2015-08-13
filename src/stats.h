@@ -3,6 +3,7 @@ extern long stat_lfcount;
 extern long stat_crcount;
 extern long stat_inchars;
 extern long stat_actcount;
+extern long stat_patterncount;
 extern long stat_containercount;
 extern long stat_stringcount;
 extern long stat_fragcount;

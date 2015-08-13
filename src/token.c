@@ -179,7 +179,7 @@ static int parse_string_fragment(context_t *C, elem_t *fraglist) {
 	    slen += len;
         }
         else if (C->insi == AST) {
-            // FIXME - flag a pattern;
+            C->ast_seen = 1;
 	    frag = C->in;
     	    len = 1;
   	    while ( (C->insi = char2state[*++(C->in)]) == AST) {}

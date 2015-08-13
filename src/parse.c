@@ -116,7 +116,9 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
 	break;
     case SUBJECT:
         emit_start_subject(C);
-	CC->subj = 0;
+	C->subj_type = 0;
+	C->ast_seen = 0;
+	C->is_pattern = 0;
 	break;
     case ATTRIBUTES:
         emit_start_attributes(C);
@@ -169,18 +171,30 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
 	ti++;                     // next ALT (if not yet satisfied), or next sequence item
     }
 
-    // Any subtree rewrites or emiast before adding branch to root in the state exit processing
+    // Any subtree rewrites or emits before adding branch to root in the state exit processing
     if (rc == SUCCESS) {
         switch (si) {
 	case ACT:
-            stat_actcount++;
+            if (C->is_pattern) {
+                stat_patterncount++;
+                elem = move_list(si, &branch);
+                append_list(&(CC->pattern_acts), elem);
+	    }
+            else {
+                stat_actcount++;
+	    }
             emit_act(C, &branch);
             emit_end_act(C);
             break;
         case SUBJECT:
-	    free_list(&(CC->prev_subject));   // update prev_subject for same_end substitution
-            elem = ref_list(si, &branch);
-            append_list(&(CC->prev_subject), elem);
+            if (C->ast_seen) {
+		C->is_pattern = 1;
+            }
+            else {
+	        free_list(&(CC->prev_subject));   // update prev_subject for same_end substitution
+                elem = ref_list(si, &branch);
+                append_list(&(CC->prev_subject), elem);
+	    }
 
             emit_subject(C, &branch);
             emit_end_subject(C);
@@ -190,7 +204,7 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
             emit_end_attributes(C);
             break;
         case CONTAINER:
-            C->containment--;   // FIXME   - needs to be part of output stream name generation
+            stat_containercount++;
             emit_end_container(C);
 	    break;
         case LEG:
@@ -259,21 +273,21 @@ done:
                 break;
 #endif
             case EDGE :  // SUBJECTS that start with an EDGE must have only EDGEs
-                if (CC->subj == 0) {
-                    CC->subj = EDGE;
+                if (C->subj_type == 0) {
+                    C->subj_type = EDGE;
                 }
                 else {
-                    if (CC->subj == NODE) {
+                    if (C->subj_type == NODE) {
                         emit_error(C, si, "NODE subject includes");
                     }
                 }
                 break;
             case NODE : // SUBJECTS that start with a NODE must have only NODEs
-                if (CC->subj == 0) {
-                    CC->subj = NODE;
+                if (C->subj_type == 0) {
+                    C->subj_type = NODE;
                 }
                 else {
-                    if (CC->subj == EDGE) {
+                    if (C->subj_type == EDGE) {
                         emit_error(C, si, "EDGE subject includes");
                     }
                 }

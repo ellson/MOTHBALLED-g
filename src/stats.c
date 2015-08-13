@@ -16,6 +16,7 @@ long stat_lfcount;
 long stat_crcount;
 long stat_inchars;
 long stat_actcount;
+long stat_patterncount;
 long stat_containercount;
 long stat_stringcount;
 long stat_fragcount;
@@ -45,6 +46,7 @@ void print_stats(FILE *chan, struct timespec *starttime) {
     fprintf(chan,"\n");
     fprintf(chan,STAT_FORMAT"\n", "acts",              stat_actcount);
     fprintf(chan,STAT_FORMAT"\n", "acts_per_second",   stat_actcount * TEN9 / runtime);
+    fprintf(chan,STAT_FORMAT"\n", "patterns",          stat_patterncount);
     fprintf(chan,STAT_FORMAT"\n", "containers",        stat_containercount);
     fprintf(chan,STAT_FORMAT"\n", "strings",           stat_stringcount);
     fprintf(chan,STAT_FORMAT"\n", "fragments",         stat_fragcount);
