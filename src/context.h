@@ -14,6 +14,7 @@ typedef struct {           // input_context
     state_t subj_type;     // used to verify homogenous SUBJECT
     char ast_seen;         // flag set if an '*' is found in a STRING
     char is_pattern;       // flag set if the '*' occurred in SUBJECT
+    char in_quote;         // flag set if between "..."
     int containment;       // depth of containment
     FILE *out;             // the output file 
     FILE *err;             // the output file for errors

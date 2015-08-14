@@ -171,7 +171,38 @@ static int parse_string_fragment(context_t *C, elem_t *fraglist) {
 
     slen = 0;
     while (1) {
-        if (C->insi == ABC) {
+        if (C->in_quote) {
+            if (C->in_quote == 2) {
+                C->in_quote = 1;
+                frag = C->in;
+		C->insi = char2state[*++(C->in)];
+                elem = new_frag(BSL,1,frag,C->inbuf);
+	        slen++;
+            }
+            else if (C->insi == DQT) {
+                C->in_quote = 0;
+		C->insi = char2state[*++(C->in)];
+                continue;
+            }
+	    else if (C->insi == BSL) {
+		C->in_quote = 2;
+		C->insi = char2state[*++(C->in)];
+		continue;
+            }
+            else {
+                frag = C->in;
+    	        len = 1;
+  	        while ( (C->insi = char2state[*++(C->in)]) ) {
+		    if (C->insi == DQT || C->insi == BSL) {
+		        break;
+                    }
+		    len++;
+		}
+                elem = new_frag(DQT,len,frag,C->inbuf);
+	        slen += len;
+            }
+        }
+        else if (C->insi == ABC) {
 	    frag = C->in;
     	    len = 1;
   	    while ( (C->insi = char2state[*++(C->in)]) == ABC) {len++;}
@@ -181,10 +212,14 @@ static int parse_string_fragment(context_t *C, elem_t *fraglist) {
         else if (C->insi == AST) {
             C->ast_seen = 1;
 	    frag = C->in;
-    	    len = 1;
-  	    while ( (C->insi = char2state[*++(C->in)]) == AST) {}
-            elem = new_frag(AST,len,frag,C->inbuf);
-	    slen += len;
+  	    while ( (C->insi = char2state[*++(C->in)]) == AST) {} // extra '*' ignored
+            elem = new_frag(AST,1,frag,C->inbuf);
+	    slen++;
+        }
+        else if (C->insi == DQT) {
+            C->in_quote = 1;
+	    C->insi = char2state[*++(C->in)];
+            continue;
         }
         else {
 	    break;
@@ -197,7 +232,6 @@ static int parse_string_fragment(context_t *C, elem_t *fraglist) {
 }
 
 // collect fragments to form a STRING token
-// FIXME - this function is the place to deal with quoting and escaping
 success_t parse_string(context_t *C, elem_t *fraglist) {
     success_t rc;
     int len, slen;
@@ -208,7 +242,7 @@ success_t parse_string(context_t *C, elem_t *fraglist) {
 	    break;                // EOF
         }
 	if ((len = parse_string_fragment(C, fraglist)) == 0) {
-	   break;
+	    break;
         }
 	slen += len;
     }
