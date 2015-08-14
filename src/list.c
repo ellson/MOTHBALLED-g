@@ -227,7 +227,7 @@ void print_list(FILE *chan, elem_t *list, int indent, char sep) {
     elem_t *elem;
     elemtype_t type;
     unsigned char *cp;
-    int ind, cnt, len, width;
+    int ind, cnt, len, width, inquote;
 
     assert(list->type == (char)LISTELEM);
     elem = list->u.list.first;
@@ -236,13 +236,24 @@ void print_list(FILE *chan, elem_t *list, int indent, char sep) {
     switch (type) {
     case FRAGELEM :
         if (sep) putc(sep, chan);
+        inquote = 0;
         while (elem) {
             assert(elem->type == (char)type);  // check all the same type
             cp = elem->u.frag.frag;
             len = elem->v.frag.len;
 	    assert(len > 0);
+            if (elem->state == BSL) {
+		putc ('\\', chan);
+            }
+	    else if (elem->state == DQT && ! inquote) {		
+                inquote = 1;
+		putc ('"', chan);
+            }
             while (len--) putc (*cp++, chan);
             elem = elem->next;
+        }
+	if (inquote) {		
+	    putc ('"', chan);
         }
         break;
     case LISTELEM :
