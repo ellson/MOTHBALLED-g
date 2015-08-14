@@ -51,9 +51,6 @@ static emit_t api = {
     /* api_act */                 NULL,
     /* api_subject */             NULL,
     /* api_attributes */          NULL,
-#ifdef EMIT_TERM
-    /* api_term */                NULL,
-#endif
 
     /* api_sep */                 api_sep,
     /* api_token */               api_token,
@@ -103,9 +100,6 @@ static emit_t api1 = {
     /* api_act */                 NULL,
     /* api_subject */             NULL,
     /* api_attributes */          NULL,
-#ifdef EMIT_TERM
-    /* api_term */                NULL,
-#endif
 
     /* api_sep */                 api_sep,
     /* api_token */               api1_token,

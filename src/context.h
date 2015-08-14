@@ -26,11 +26,6 @@ struct container_context_s { // container_context (also output context)
     FILE *out;             // the output file for this container
     FILE *err;             // the output file for errors for this container
 
-#ifdef EMIT_TERM
-    char unterm;           // used to emit TERM events even when no explicit ';' was in the input
-			   //    (rarely used, since it has virtally zero value in outputs either)
-#endif
-
     // FIXME  - place for fork header for layout process...
     
 };

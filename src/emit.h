@@ -30,9 +30,6 @@ typedef struct {
     void (*act) (context_t *C, elem_t *root);
     void (*subject) (context_t *C, elem_t *root);
     void (*attributes) (context_t *C, elem_t *root);
-#ifdef EMIT_TERM
-    void (*term) (context_t *C);
-#endif
 
     void (*sep) (context_t *C);
     void (*token) (context_t *C, char token);
@@ -90,11 +87,6 @@ typedef struct {
     if (emit->subject) {emit->subject(C, root);}
 #define emit_attributes(C, root) \
     if (emit->attributes) {emit->attributes(C, root);}
-
-#ifdef EMIT_TERM
-#define emit_term(C) \
-    if (emit->term) {emit->term(C);}
-#endif
 
 #define emit_sep(C) \
     if (emit->sep) {emit->sep(C);}

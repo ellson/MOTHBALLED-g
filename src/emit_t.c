@@ -43,7 +43,7 @@ static void api_end_state(context_t *C, char class, success_t rc, int nest, int 
 
 static void api_end_activity(context_t *C) {
     if (C->containment == 0) {
-        fprintf(C->out, "\n");
+        putc('\n', C->out);
     }
 }
 
@@ -79,9 +79,6 @@ static emit_t api = {
     /* api_act */                 NULL,
     /* api_subject */             NULL,
     /* api_attributes */          NULL,
-#ifdef EMIT_TERM
-    /* api_term */                NULL,
-#endif
 
     /* api_sep */                 NULL,
     /* api_token */               api_token,
@@ -93,7 +90,8 @@ static emit_t api = {
 };
 
 static void api1_act(context_t *C, elem_t *tree) {
-    print_list(C->out, tree, 0, ' ');
+    fprintf(C->out, "%3d ACT", C->containment);
+    print_list(C->out, tree, 7, ' ');
 }
 
 static void api1_end_act(context_t *C) {
@@ -128,9 +126,6 @@ static emit_t api1 = {
     /* api_act */                 api1_act,
     /* api_subject */             NULL,
     /* api_attributes */          NULL,
-#ifdef EMIT_TERM
-    /* api_term */                NULL,
-#endif
 
     /* api_sep */                 NULL,
     /* api_token */               NULL,
