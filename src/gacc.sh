@@ -313,18 +313,28 @@ cat >>${ifn}.ebnf <<EOF
 
 Extra grammar:  Comments in the form of "# ... EOL" are skipped over by the parser.
 
-	        Strings can be concatenations of quoted and unquoted character squences.
+		Whitespace (WS) has no significance in the grammar except in quoted
+		srings and as a separator of last resort between string tokens.
+
+	        Strings can be concatenations of quoted and unquoted character sequences.
 		for example:       abc"d e f"ghi"j\\\\k"
 		is equivalent to:  "abcd e fghij\\k"
 
-		-  Unquoted characters are any listed in the ABC terminal above.
+		-  Unquoted characters are any listed in the ABC terminal above, and also
+		   AST (see "Patterns" below).
 
-		-  Quoted character sequences are between DQT (i.e. '"') and may include
-		   any characters, except that NLL, DQT, and BSL need to be escaped
-		   with a BSL (i.e. '\\')
+		-  Quoted character sequences are bounded by DQT characters (i.e. '"')
+		   and may include any characters, except that NLL, DQT, and BSL need
+		   to be escaped with a BSL (i.e. '\\')
 
                 NB. The single-quote character ''' is not special, and has no
 		quoting behavior in this grammar
+
+	        Patterns: if there is an unquoted AST (i.e. '*') in any string
+		in a SUBJECT, then the entire SUBJECT is considered a pattern, and
+		its ACT a pattern_act.   Patterns are used to add ATTRIBUTES and CONTAINER
+		to any future ACT whose SUBJECT matches the pattern. The AST matches any
+		character sequence (non-greedy).
 
 EOF
 ##############################################
