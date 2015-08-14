@@ -314,7 +314,7 @@ cat >>${ifn}.ebnf <<EOF
 Extra grammar:  Comments in the form of "# ... EOL" are skipped over by the parser.
 
 		Whitespace (WS) has no significance in the grammar except in quoted
-		srings and as a separator of last resort between string tokens.
+		strings and as a separator of last resort between string tokens.
 
 	        Strings can be concatenations of quoted and unquoted character sequences.
 		for example:       abc"d e f"ghi"j\\\\k"
@@ -334,7 +334,7 @@ Extra grammar:  Comments in the form of "# ... EOL" are skipped over by the pars
 		in a SUBJECT, then the entire SUBJECT is considered a pattern, and
 		its ACT a pattern_act.   Patterns are used to add ATTRIBUTES and CONTAINER
 		to any future ACT whose SUBJECT matches the pattern. The AST matches any
-		character sequence (non-greedy).
+		character sequence.
 
 EOF
 ##############################################
