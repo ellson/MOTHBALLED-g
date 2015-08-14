@@ -79,12 +79,17 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
         C->insi = NLL;         // pretend last input was a terminating NLL
     }
 
-    // deal with "terminal" states: whitespace, string, token, and contained activity
+
+    // Entering state
+
+    // deal with "terminal" states: Whitespace, Tokens, and Contained activity, Strings
     
     C->ei = C->insi;          // the char class that ended the last token
+    // Whitespace
     if ( (rc = parse_whitespace(C)) == FAIL ) {
 	goto done;             // EOF during whitespace
     }
+    // Special character tokens
     if (si == C->insi) {       // single character terminals matching state_machine expectation
 	C->bi = C->insi;
         rc = parse_token(C);
@@ -92,6 +97,7 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
         goto done;
     }
     switch (si) {
+    // Recursion into Contained activity
     case ACTIVITY:
 	if (C->bi == LBE) {   // if not top-level of containment
             C->bi = NLL;
@@ -100,13 +106,17 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
             goto done;
         }
 	break;
-    case ACT:
-        emit_start_act(C);
-	break;
+    // Strings
     case STRING:
         rc = parse_string(C, &branch);
         C->bi = C->insi;          // the char class that terminates the STRING
         goto done;
+	break;
+    
+     // the remainder of the switch() is just state initialization and emit hooks;
+
+    case ACT:
+        emit_start_act(C);
 	break;
     case SUBJECT:
         emit_start_subject(C);
