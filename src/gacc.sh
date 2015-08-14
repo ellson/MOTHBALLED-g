@@ -183,7 +183,7 @@ rm -f ${ifn}.s
 cat >${ifn}.ebnf <<EOF
 
 Meta grammar:	'|' separates alternates, otherwise the tokens are sequential
-		'_' imdicates that a non-ABC character must separate elements (e.g. WS)
+		'_' indicates that a non-ABC character must separate elements (e.g. WS)
 		'?' indicates that the token is optional
 		'+' indicates that the token is to be repeated 1 or more times
 		'*' indicates that the token is to be repeated 0 or more times
@@ -279,7 +279,7 @@ for s in ${statelist[@]}; do
         for c in $class; do
 	    cc=$(( 0x$c ))
             if test $altc -gt 0; then
-                if test $(( altc % 8 )) -eq 0; then
+                if test $(( altc % 10 )) -eq 0; then
                     ( printf "\n%18s" "| "       ) >>${ifn}.ebnf
                 else
                     ( printf "|"                 ) >>${ifn}.ebnf
@@ -301,7 +301,7 @@ for s in ${statelist[@]}; do
     ( printf " %4s,\n" $tokchar                  ) >>${ifn}.token
 #    ( printf " %4s,\n" $agaws                    ) >>${ifn}.agaws
 done
-( printf "\n\n"                                  ) >>${ifn}.ebnf
+#( printf "\n\n"                                  ) >>${ifn}.ebnf
 ( printf "}\n\n"                                 ) >>${ifn}.gv
 ( printf "} state_t;\n\n"                        ) >>${ifn}.enum
 ( printf "};\n\n"                                ) >>${ifn}.states
@@ -309,6 +309,24 @@ done
 ( printf "};\n\n"                                ) >>${ifn}.token
 #( printf "};\n\n"                                ) >>${ifn}.agaws
 
+cat >>${ifn}.ebnf <<EOF
+
+Extra grammar:  Comments in the form of "# ... EOL" are skipped over by the parser.
+
+	        Strings can be concatenations of quoted and unquoted character squences.
+		for example:       abc"d e f"ghi"j\\\\k"
+		is equivalent to:  "abcd e fghij\\k"
+
+		-  Unquoted characters are any listed in the ABC terminal above.
+
+		-  Quoted character sequences are between DQT (i.e. '"') and may include
+		   any characters, except that NLL, DQT, and BSL need to be escaped
+		   with a BSL (i.e. '\\')
+
+                NB. The single-quote character ''' is not special, and has no
+		quoting behavior in this grammar
+
+EOF
 ##############################################
 # assemble output files
 #     grammar.h
