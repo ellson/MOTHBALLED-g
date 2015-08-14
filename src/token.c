@@ -210,7 +210,7 @@ static int parse_string_fragment(context_t *C, elem_t *fraglist) {
 	    slen += len;
         }
         else if (C->insi == AST) {
-            C->ast_seen = 1;
+            C->has_ast = 1;
 	    frag = C->in;
   	    while ( (C->insi = char2state[*++(C->in)]) == AST) {} // extra '*' ignored
             elem = new_frag(AST,1,frag,C->inbuf);
@@ -218,6 +218,7 @@ static int parse_string_fragment(context_t *C, elem_t *fraglist) {
         }
         else if (C->insi == DQT) {
             C->in_quote = 1;
+            C->has_quote = 1;
 	    C->insi = char2state[*++(C->in)];
             continue;
         }
@@ -236,6 +237,7 @@ success_t parse_string(context_t *C, elem_t *fraglist) {
     success_t rc;
     int len, slen;
 
+    C->has_quote = 0;
     slen = parse_string_fragment(C, fraglist); // leading string
     while (C->insi == NLL) {      // end_of_buffer, or EOF, during whitespace
 	if ((rc = more_in(C) == FAIL)) {
@@ -248,6 +250,12 @@ success_t parse_string(context_t *C, elem_t *fraglist) {
     }
     if (slen > 0) {
 	stat_stringcount++;
+        if (C->has_quote) {
+	    fraglist->state = DQT;
+        }
+        else {
+	    fraglist->state = ABC;
+	}
         emit_string(C,fraglist);
         rc = SUCCESS;
     }

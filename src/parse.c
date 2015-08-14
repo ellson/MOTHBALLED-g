@@ -111,7 +111,7 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
     case SUBJECT:
         emit_start_subject(C);
 	C->subj_type = 0;
-	C->ast_seen = 0;
+	C->has_ast = 0;
 	C->is_pattern = 0;
 	break;
     case ATTRIBUTES:
@@ -180,7 +180,7 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
             emit_end_act(C);
             break;
         case SUBJECT:
-            if (C->ast_seen) {
+            if (C->has_ast) {
 		C->is_pattern = 1;
             }
             else {
