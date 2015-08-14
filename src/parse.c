@@ -39,7 +39,7 @@ static success_t more_rep(context_t *C, unsigned char prop) {
         return FAIL;           // no more repetitions
     }
     bi = C->bi;
-    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE || (ei != ABC && ei != AST)) {
+    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE || (ei != ABC && ei != AST && ei != DQT)) {
         return SUCCESS;        // more repetitions, but additional WS sep is optional
     }
     if (prop & SREP) {
