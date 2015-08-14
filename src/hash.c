@@ -7,27 +7,15 @@
 
 void hashfrag (unsigned long *phash, int len, unsigned char *frag) {
     unsigned long hash;
+    unsigned char *cp;
 
     assert(phash);
     assert(len > 0);
 
+    cp = frag;
     hash = *phash;
     while (len--) {
-	hash = ((hash ^ *frag++) << 1) ^ (hash >> MSB_LONG);
+	hash = ((hash ^ *cp++) << 1) ^ (hash >> MSB_LONG);
     }
     *phash = hash;
-}
-
-
-int main (int argc, char *argv[]) {
-
-    unsigned long hash = 0; // probably want to seed the hash in real use
-    int len = 2;
-    char frag[] = {'a', 'b', '\0'};
-
-    hashfrag(&hash, len, frag);
-
-    fprintf(stdout,"hash of \"%s\" is %lx\n", frag, hash);
-
-    return 0;
 }
