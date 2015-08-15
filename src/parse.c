@@ -194,12 +194,13 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
 		C->is_pattern = 1;
             }
             else {
-		// Perform "same as in subject of previous ACT"  EQL substitutions
+		// Perform EQL "same as in subject of previous ACT" substitutions
 		if ((rc = sameas(CC, &branch)) == FAIL) {
 		    break;
 		}
 	    }
-            emit_subject(C, &branch);
+            emit_subject(C, &branch);   // FIXME - do we want the flattened version?
+					//     what about pattern subjects?   
             emit_end_subject(C);
 	    break;
         case ATTRIBUTES :
@@ -209,24 +210,6 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
         case CONTAINER:
             stat_containercount++;
             emit_end_container(C);
-	    break;
-        case LEG:
-#if 0
-	    if (bi == EQL) {
-                if (! sameend_elem) {
-	            emit_error(C, si, "No prior LEG found for sameend substitution in");
-	        }
-//		elem = ref_list(si, elem);
-
-                elem = ref_list(si, sameend_elem);
-// FIXME can be multiple ENDPOINTS in a LEG, need a while here
-//                append_list(&branch, sameend_elem->u.list.first);
-            }
-            if (sameend_elem) {
-	        sameend_elem = sameend_elem -> next;
-            }
-#endif
-	    break;
         default:
 	    break;
 	}
