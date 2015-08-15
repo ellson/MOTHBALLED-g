@@ -1,6 +1,6 @@
 GOODTESTS = pattern.g nodes.g edges.g comments.g escape.g quote.g sameas.g
 
-BADTESTS = edge_in_node_subj.badg node_in_edge_subj.badg
+BADTESTS = edge_in_node_subj.badg node_in_edge_subj.badg eof_inquote.badg
 
 all: good bad
 

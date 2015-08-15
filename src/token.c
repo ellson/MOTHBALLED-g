@@ -35,6 +35,14 @@ static success_t more_in(context_t *C) {
 
     if (C->file) {                    // if there is an existing active input file
         if (C->insi == NLL && feof(C->file)) {  //    if it is at EOF
+// FIXME  -- although the grammar doesn't care, it would
+//   probably be user-friendly to check we are no it a quote string
+//   and that we are at ACTIVITY state whenever EOF occurs
+
+            if (C->in_quote) {
+		emit_error(C, NLL, "EOF in the middle of a quote string");
+	    }
+
 // FIXME don't close stdin
 // FIXME - stall more more input 
 	    fclose(C->file);          // then close it and indicate no active input file
@@ -166,13 +174,14 @@ success_t parse_whitespace(context_t *C) {
 // load string fragments
 static int parse_string_fragment(context_t *C, elem_t *fraglist) {
     unsigned char *frag;
+    state_t insi;
     int slen, len;
     elem_t *elem;
 
     slen = 0;
     while (1) {
         if (C->in_quote) {
-            if (C->in_quote == 2) {
+            if (C->in_quote == 2) {  // character after BSL
                 C->in_quote = 1;
                 frag = C->in;
 		C->insi = char2state[*++(C->in)];
@@ -189,15 +198,20 @@ static int parse_string_fragment(context_t *C, elem_t *fraglist) {
 		C->insi = char2state[*++(C->in)];
 		continue;
             }
+	    else if (C->insi == NLL) {
+		break;
+            }
             else {
                 frag = C->in;
     	        len = 1;
-  	        while ( (C->insi = char2state[*++(C->in)]) ) {
-		    if (C->insi == DQT || C->insi == BSL) {
+  	        while (1) {
+                    insi = char2state[*++(C->in)];
+		    if (insi == DQT || insi == BSL || insi == NLL) {
 		        break;
                     }
 		    len++;
 		}
+                C->insi = insi;
                 elem = new_frag(DQT,len,frag,C->inbuf);
 	        slen += len;
             }
@@ -205,7 +219,8 @@ static int parse_string_fragment(context_t *C, elem_t *fraglist) {
         else if (C->insi == ABC) {
 	    frag = C->in;
     	    len = 1;
-  	    while ( (C->insi = char2state[*++(C->in)]) == ABC) {len++;}
+  	    while ( (insi = char2state[*++(C->in)]) == ABC) {len++;}
+            C->insi = insi;
             elem = new_frag(ABC,len,frag,C->inbuf);
 	    slen += len;
         }

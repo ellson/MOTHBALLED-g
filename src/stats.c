@@ -54,17 +54,22 @@ void print_stats(FILE *chan, struct timespec *starttime) {
     fprintf(chan,STAT_FORMAT"\n", "chars_per_second",  stat_inchars * TEN9 / runtime);
     fprintf(chan,"\n");
     fprintf(chan,STAT_FORMAT"\n", "inbufsize",         sizeof(inbuf_t));
-    fprintf(chan,STAT_FORMAT"\n", "inbufmalloc",       stat_inbufmalloc);
-    fprintf(chan,STAT_FORMAT"\n", "inbufmallocsize",   INBUFALLOCNUM*sizeof(inbuf_t));
-    fprintf(chan,STAT_FORMAT"\n", "inbufmalloctotal",  stat_inbufmalloc*INBUFALLOCNUM*sizeof(inbuf_t));
     fprintf(chan,STAT_FORMAT"\n", "inbufmax",          stat_inbufmax);
     fprintf(chan,STAT_FORMAT"\n", "inbufnow",          stat_inbufnow);
     fprintf(chan,"\n");
     fprintf(chan,STAT_FORMAT"\n", "elemsize",          size_elem_t);
-    fprintf(chan,STAT_FORMAT"\n", "elemmalloc",        stat_elemmalloc);
-    fprintf(chan,STAT_FORMAT"\n", "elemmallocsize",    LISTALLOCNUM*size_elem_t);
-    fprintf(chan,STAT_FORMAT"\n", "elemmalloctotal",   stat_elemmalloc*LISTALLOCNUM*size_elem_t);
     fprintf(chan,STAT_FORMAT"\n", "elemmax",           stat_elemmax);
     fprintf(chan,STAT_FORMAT"\n", "elemnow",           stat_elemnow);
+    fprintf(chan,"\n");
+    fprintf(chan,STAT_FORMAT"\n", "inbufmallocsize",   INBUFALLOCNUM*sizeof(inbuf_t));
+    fprintf(chan,STAT_FORMAT"\n", "inbufmalloccount",  stat_inbufmalloc);
+    fprintf(chan,STAT_FORMAT"\n", "inbufmalloctotal",  stat_inbufmalloc*INBUFALLOCNUM*sizeof(inbuf_t));
+    fprintf(chan,"\n");
+    fprintf(chan,STAT_FORMAT"\n", "elemmallocsize",    LISTALLOCNUM*size_elem_t);
+    fprintf(chan,STAT_FORMAT"\n", "elemmalloccount",   stat_elemmalloc);
+    fprintf(chan,STAT_FORMAT"\n", "elemmalloctotal",   stat_elemmalloc*LISTALLOCNUM*size_elem_t);
+    fprintf(chan,"\n");
+    fprintf(chan,STAT_FORMAT"\n", "malloctotal",       stat_elemmalloc*LISTALLOCNUM*size_elem_t
+						     + stat_inbufmalloc*INBUFALLOCNUM*sizeof(inbuf_t));
     fprintf(chan,"]\n");
 }
