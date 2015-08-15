@@ -37,7 +37,7 @@ static void sameas_r(container_context_t *CC, elem_t *list, elem_t **nextold, el
 	    }
 	    if (*nextold) {                 // doesn't matter if old is shorter
 	        nextoldelem = (*nextold)->u.list.first;  // in the recursion, iterate over the members of the NODE or EDGE SUBJECT
-	        *nextold = (*nextold)->next;  // at this level, contune over the NODES or EDGES
+	        *nextold = (*nextold)->next;  // at this level, continue over the NODES or EDGES
             }
 	    sameas_r(CC, elem, &nextoldelem, &object);   // recurse, adding result to a sublist
             new = move_list(si,&object);
@@ -64,10 +64,10 @@ static void sameas_r(container_context_t *CC, elem_t *list, elem_t **nextold, el
             }
 	    break;
         case ENDPOINTSET:
-fprintf(stdout,"\nenpointset\n");
-	   // FIXME - enpoint sets need expanding
-	   sameas_r(CC, elem, nextold, newlist);   // recurse
-	   break;
+	    sameas_r(CC, elem, &nextoldelem, &object);   // recurse, adding result to a sublist
+            new = move_list(si,&object);
+            append_list(newlist, new);
+	    break;
         default:
 	    sameas_r(CC, elem, nextold, newlist);   // recurse
 	    break;

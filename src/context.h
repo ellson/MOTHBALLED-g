@@ -11,6 +11,7 @@ typedef struct {           // input_context
     state_t insi;          // state represented by last character read
     state_t ei;            // ei, bi are used to determine whitespace needs around STRINGs
     state_t bi;          
+    state_t state;         // last state entered
     char has_ast;          // flag set if an '*' is found in a STRING
     char is_pattern;       // flag set if the '*' occurred in SUBJECT
     char in_quote;         // flag set if between "..."

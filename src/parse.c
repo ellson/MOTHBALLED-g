@@ -80,6 +80,7 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
 
 
     // Entering state
+    C->state = si;             // record of last state entered, for error messages.
 
     // deal with "terminal" states: Whitespace, Tokens, and Contained activity, Strings
     
@@ -270,8 +271,7 @@ static success_t parse_activity(context_t *C) {
             rc = SUCCESS;
         }
         else {
-            // FIXME - parse errors should be reported for the state that encountered the problem
-            emit_error(C, ACTIVITY, "Parse error");
+            emit_error(C, C->state, "Parse error");
         }
     }
 
