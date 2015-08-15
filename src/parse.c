@@ -119,7 +119,6 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
 	break;
     case SUBJECT:
         emit_start_subject(C);
-	C->subj_type = 0;
 	C->has_ast = 0;
 	C->is_pattern = 0;
 	break;
@@ -241,26 +240,6 @@ done:
                 stat_containercount++;
                 emit_end_container(C);
                 break;
-            case EDGE :  // SUBJECTS that start with an EDGE must have only EDGEs
-                if (C->subj_type == 0) {
-                    C->subj_type = EDGE;
-                }
-                else {
-                    if (C->subj_type == NODE) {
-                        emit_error(C, si, "NODE subject includes");
-                    }
-                }
-                break;
-            case NODE : // SUBJECTS that start with a NODE must have only NODEs
-                if (C->subj_type == 0) {
-                    C->subj_type = NODE;
-                }
-                else {
-                    if (C->subj_type == EDGE) {
-                        emit_error(C, si, "EDGE subject includes");
-                    }
-                }
-                break;
             default:
                 break;
             }
@@ -291,6 +270,7 @@ static success_t parse_activity(context_t *C) {
             rc = SUCCESS;
         }
         else {
+            // FIXME - parse errors should be reported for the state that encountered the problem
             emit_error(C, ACTIVITY, "Parse error");
         }
     }
