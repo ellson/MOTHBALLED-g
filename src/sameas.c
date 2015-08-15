@@ -19,9 +19,14 @@ static void sameas_r(container_context_t *CC, elem_t *list, elem_t **nextold, el
     while(elem) {
         si = (state_t)elem->state;
 	switch (si) {
+        case ENDPOINTSET:
+	   // FIXME - enpoint sets need expanding
+	   sameas_r(CC, elem, nextold, newlist);   // recurse
+	   elem = elem->next;
+	   continue;
+	   break;
         case NODEID:
         case ENDPOINT:
-        case ENDPOINTSET:
 	    new = ref_list(elem->state, elem);
 	    append_list(newlist, new); 
 	    elem = elem->next;
