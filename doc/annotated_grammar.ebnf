@@ -160,13 +160,9 @@
 # or in a cousin's container (where a "cousin" is any descendent of a common
 # ancestor.  So "cousin" includes uncles and cousins and cousin's children.
 
-# Or a ENDPOINT can be EQL (i.e. '=') to indicate a "same as"
-# the corresponding ENDPOINT  in an immediately preceeding ACT.
-
      ENDPOINT ::= COUSIN
                 | SIBLING
                 | PORT
-                | EQL
 
        COUSIN ::= PARENT+ CHILD+ PORT?
 
