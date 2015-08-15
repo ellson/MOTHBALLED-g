@@ -36,11 +36,8 @@ static void sameas_r(container_context_t *CC, elem_t *list, elem_t **nextold, el
 		}
 	    }
 	    if (*nextold) {                 // doesn't matter if old is shorter
-fprintf (stdout, "\n nextold:\n");
-print_list(stdout, *nextold, 0, ' ');
-putc ('\n', stdout);
-					    // ... as long as no forther substitutions are needed
-	        nextoldelem = (*nextold)->u.list.first;
+	        nextoldelem = (*nextold)->u.list.first;  // in the recursion, iterate over the members of the NODE or EDGE SUBJECT
+	        *nextold = (*nextold)->next;  // at this level, contune over the NODES or EDGES
             }
 	    sameas_r(CC, elem, &nextoldelem, &object);   // recurse, adding result to a sublist
             new = move_list(si,&object);
@@ -67,6 +64,7 @@ putc ('\n', stdout);
             }
 	    break;
         case ENDPOINTSET:
+fprintf(stdout,"\nenpointset\n");
 	   // FIXME - enpoint sets need expanding
 	   sameas_r(CC, elem, nextold, newlist);   // recurse
 	   break;
@@ -95,15 +93,11 @@ success_t sameas(container_context_t *CC, elem_t *list) {
     // flatten list into new list with any EQL elements substituted from oldlist
     sameas_r(CC, list, &nextold, newlist);
 
-fprintf (stdout, "\n oldlist:\n");
-print_list(stdout, oldlist, 0, ' ');
-putc ('\n', stdout);
-
     free_list(list);        // free original tree ( although refs are retained in other lists )
     free_list(oldlist);     // update prev_subject for same_end substitution
     *oldlist = *newlist;    // transfers all refs ... newlist will be out of scope shortly
 
-fprintf (stdout, "\n newlist:\n");
+putc ('\n', stdout);
 print_list(stdout, newlist, 0, ' ');
 putc ('\n', stdout);
 
