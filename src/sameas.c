@@ -36,6 +36,9 @@ static void sameas_r(container_context_t *CC, elem_t *list, elem_t **nextold, el
 		}
 	    }
 	    if (*nextold) {                 // doesn't matter if old is shorter
+fprintf (stdout, "\n nextold:\n");
+print_list(stdout, *nextold, 0, ' ');
+putc ('\n', stdout);
 					    // ... as long as no forther substitutions are needed
 	        nextoldelem = (*nextold)->u.list.first;
             }
@@ -56,6 +59,7 @@ static void sameas_r(container_context_t *CC, elem_t *list, elem_t **nextold, el
 	    if (*nextold) {
 	        new = ref_list((*nextold)->state, *nextold);
 	        append_list(newlist, new); 
+
 	        *nextold = (*nextold)->next;
             }
 	    else {
