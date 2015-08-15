@@ -11,7 +11,7 @@
 #include "emit.h"
 #include "parse.h"
 #include "token.h"
-
+#include "sameas.h"
 
 // This parser recurses at two levels:
 //
@@ -27,7 +27,6 @@
 //
 // The outer recursion is through nested containment.
 // The top-level context (C) is available to both and maintains the input state.
-
 
 static success_t more_rep(context_t *C, unsigned char prop) {
     state_t ei, bi;
@@ -71,12 +70,12 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
     assert (nest >= 0);        // catch overflows
 
     if (! C->inbuf) {          // state_machine just started
-        C->bi = WS;           // pretend preceeded by WS
+        C->bi = WS;            // pretend preceeded by WS
 			       // to satisfy toplevel SREP or REP
 			       // (Note, first REP of a REP sequence *can* be preceeded by WS,
 		               //      just not the rest of the REPs. )
         C->in = nullstring;    // fake it;
-        C->insi = NLL;         // pretend last input was a terminating NLL
+        C->insi = NLL;         // pretend last input was the EOF of a prior file.
     }
 
 
@@ -134,7 +133,8 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
 	break;
     }
 
-    // Use state_machine[si] to determine next state
+    // If it wasn't a terminal state, then using the state_machine,  
+    // iterate through alts or sequences, and then recursively process next the state
  
     rc = FAIL;                    // init rc to FAIL in case no ALT is satisfied
     ti = si;
@@ -178,9 +178,9 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
     if (rc == SUCCESS) {
         switch (si) {
 	case ACT:
-            if (C->is_pattern) {
+            if (C->is_pattern) { // flag was set by SUBJECT.  save SUBJECT ATTRIBUTES and CONTAINER in a list of pattern_acts
                 stat_patterncount++;
-                elem = move_list(si, &branch);
+                elem = move_list(si, &branch);    // moved completely, so no regular ACT remains
                 append_list(&(CC->pattern_acts), elem);
 	    }
             else {
@@ -194,11 +194,11 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
 		C->is_pattern = 1;
             }
             else {
-	        free_list(&(CC->prev_subject));   // update prev_subject for same_end substitution
-                elem = ref_list(si, &branch);
-                append_list(&(CC->prev_subject), elem);
+		// Perform "same as in subject of previous ACT"  EQL substitutions
+		if ((rc = sameas(CC, &branch)) == FAIL) {
+		    break;
+		}
 	    }
-
             emit_subject(C, &branch);
             emit_end_subject(C);
 	    break;
@@ -252,8 +252,11 @@ done:
     // putc ('\n', stdout);
             switch (si) {
             case ACT:
-                free_list(root); // should be finished with entire ACT at this point. (emits happened earlier)
-			         //    the only things left should be patterns and the previous_subject (for sameends)
+                free_list(root); // the parser is finished with entire ACT at this point. (emits happened earlier)
+                                 // subtrees of the output may be retained by ref_counted "copies" for:
+			         //    patterns 
+			         //    previous_subject (for sameends)
+			         //    nodes and edges - for rendering
                 break;
             case SUBJECT:
                 emit_end_subject(C);
