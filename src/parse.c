@@ -201,6 +201,7 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
 	    }
             emit_subject(C, &branch);   // FIXME - do we want the flattened version?
 					//     what about pattern subjects?   
+					//     maybe eliminate emit_subject()
             emit_end_subject(C);
 	    break;
         case ATTRIBUTES :
@@ -219,20 +220,9 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
 
 done:
     if (rc == SUCCESS) {             
-        if (branch.u.list.first != NULL) { // ignore empty lists
+        if (branch.u.list.first != NULL || si == EQL) { // mostly ignore empty lists
             elem = move_list(si, &branch);
             append_list(root, elem);
-    //putc ('\n', stdout);
-    //print_list(stdout, elem, 0, ' ');
-    //putc ('\n', stdout);
-    //    free_list(&sameend_legs);      // free old sameend list
-    //    elem = ref_list(si, root->u.list.last);  // replace with new list, fully substituted.
-    
-    //    append_list(&(C->sameend_legs_new), elem);
-    
-    // putc ('\n', stdout);
-    // print_list(stdout, &new_sameend_legs, 0, ' ');
-    // putc ('\n', stdout);
             switch (si) {
             case ACT:
                 free_list(root); // the parser is finished with entire ACT at this point. (emits happened earlier)
