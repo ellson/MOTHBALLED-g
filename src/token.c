@@ -40,7 +40,7 @@ static success_t more_in(context_t *C) {
 //   and that we are at ACTIVITY state whenever EOF occurs
 
             if (C->in_quote) {
-		emit_error(C, NLL, "File ending in the middle of a quote string");
+		emit_error(C, NLL, "EOF in the middle of a quote string");
 	    }
 
 // FIXME don't close stdin
@@ -174,6 +174,7 @@ success_t parse_whitespace(context_t *C) {
 // load string fragments
 static int parse_string_fragment(context_t *C, elem_t *fraglist) {
     unsigned char *frag;
+    state_t insi;
     int slen, len;
     elem_t *elem;
 
@@ -197,15 +198,20 @@ static int parse_string_fragment(context_t *C, elem_t *fraglist) {
 		C->insi = char2state[*++(C->in)];
 		continue;
             }
+	    else if (C->insi == NLL) {
+		break;
+            }
             else {
                 frag = C->in;
     	        len = 1;
-  	        while ( (C->insi = char2state[*++(C->in)]) != NLL) {
-		    if (C->insi == DQT || C->insi == BSL) {
+  	        while (1) {
+                    insi = char2state[*++(C->in)];
+		    if (insi == DQT || insi == BSL || insi == NLL) {
 		        break;
                     }
 		    len++;
 		}
+                C->insi = insi;
                 elem = new_frag(DQT,len,frag,C->inbuf);
 	        slen += len;
             }
@@ -213,7 +219,8 @@ static int parse_string_fragment(context_t *C, elem_t *fraglist) {
         else if (C->insi == ABC) {
 	    frag = C->in;
     	    len = 1;
-  	    while ( (C->insi = char2state[*++(C->in)]) == ABC) {len++;}
+  	    while ( (insi = char2state[*++(C->in)]) == ABC) {len++;}
+            C->insi = insi;
             elem = new_frag(ABC,len,frag,C->inbuf);
 	    slen += len;
         }
