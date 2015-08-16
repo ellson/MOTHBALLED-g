@@ -35,7 +35,8 @@ static void sameas_r(container_context_t *CC, elem_t *list, elem_t **nextold, el
 		    }
 		}
 	    }
-	    if (*nextold) {                 // doesn't matter if old is shorter
+	    if (*nextold) {                   // doesn't matter if old is shorter
+					      // ... as long as no forther substitutions are needed
 	        nextoldelem = (*nextold)->u.list.first;  // in the recursion, iterate over the members of the NODE or EDGE SUBJECT
 	        *nextold = (*nextold)->next;  // at this level, continue over the NODES or EDGES
             }
@@ -44,11 +45,10 @@ static void sameas_r(container_context_t *CC, elem_t *list, elem_t **nextold, el
             append_list(newlist, new);
             break;
         case NODEID:
-        case ENDPOINT:
 	    new = ref_list(elem->state, elem);
 	    append_list(newlist, new); 
-	    if (*nextold) {                 // doesn't matter if old is shorter
-					    // ... as long as no forther substitutions are needed
+	    if (*nextold) {                   // doesn't matter if old is shorter
+					      // ... as long as no forther substitutions are needed
 	        *nextold = (*nextold)->next;
             }
 	    break;
@@ -63,7 +63,13 @@ static void sameas_r(container_context_t *CC, elem_t *list, elem_t **nextold, el
 		emit_error(CC->context, si, "No corresponding object found for same-as substitution");
             }
 	    break;
+        case ENDPOINT:
         case ENDPOINTSET:
+	    if (*nextold) {                   // doesn't matter if old is shorter
+					      // ... as long as no forther substitutions are needed
+	        nextoldelem = (*nextold)->u.list.first;  // in the recursion, iterate over the members of the NODE or EDGE SUBJECT
+	        *nextold = (*nextold)->next;  // at this level, continue over the NODES or EDGES
+            }
 	    sameas_r(CC, elem, &nextoldelem, &object);   // recurse, adding result to a sublist
             new = move_list(si,&object);
             append_list(newlist, new);

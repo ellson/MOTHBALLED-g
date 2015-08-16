@@ -271,7 +271,7 @@ static success_t parse_activity(context_t *C) {
             rc = SUCCESS;
         }
         else {
-            emit_error(C, C->state, "Parse error");
+            emit_error(C, C->state, "Parse error. Last good state was:");
         }
     }
 
