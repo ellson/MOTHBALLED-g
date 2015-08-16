@@ -111,4 +111,5 @@ extern emit_t *emit,
     *emit_t_api,
     *emit_t_api1,
     *emit_g_api,
-    *emit_g_api1;
+    *emit_g_api1,
+    *emit_g_api2;

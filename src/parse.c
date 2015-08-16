@@ -198,8 +198,9 @@ static success_t parse_r(container_context_t *CC, elem_t *root,
 		if ((rc = sameas(CC, &branch)) == FAIL) {
 		    break;
 		}
+                free_list(&branch);
 	    }
-            emit_subject(C, &branch);   // FIXME - do we want the flattened version?
+//            emit_subject(C, &branch);   // FIXME - do we want the flattened version?
 					//     what about pattern subjects?   
 					//     maybe eliminate emit_subject()
             emit_end_subject(C);

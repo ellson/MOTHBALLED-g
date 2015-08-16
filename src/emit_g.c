@@ -6,6 +6,7 @@
 #include "list.h"
 #include "context.h"
 #include "emit.h"
+#include "sameas.h"
 
 static void api_sep(context_t *C) {
     putc (' ', C->out);
@@ -110,5 +111,44 @@ static emit_t api1 = {
     /* api_error */               print_error
 };
 
+static emit_t api2 = {
+    /* api_start_parse */         NULL,
+    /* api_end_parse */           api_end_parse,
+
+    /* api_start_file */          NULL,
+    /* api_end_file */            NULL,
+
+    /* api_start_activity */      NULL,
+    /* api_end_activity */        NULL,
+
+    /* api_start_act */           NULL,
+    /* api_end_act */             NULL,
+
+    /* api_start_subject */       NULL,
+    /* api_end_subject */         NULL,
+
+    /* api_start_attributes */    NULL,
+    /* api_end_attributes */      NULL,
+
+    /* api_start_container */     NULL,
+    /* api_end_container */       NULL,
+
+    /* api_start_state */         NULL,
+    /* api_end_state */           NULL,
+
+    /* api_act */                 NULL,
+    /* api_subject */             print_subject,
+    /* api_attributes */          NULL,
+
+    /* api_sep */                 NULL,
+    /* api_token */               NULL,
+    /* api_string */              NULL,
+
+    /* api_frag */                NULL,
+
+    /* api_error */               print_error
+};
+
 emit_t *emit_g_api = &api;
 emit_t *emit_g_api1 = &api1;
+emit_t *emit_g_api2 = &api2;

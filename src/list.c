@@ -234,7 +234,7 @@ void print_list(FILE *chan, elem_t *list, int indent, char sep) {
     if (!elem) return;
     type = (elemtype_t)(elem->type);
     switch (type) {
-    case FRAGELEM :
+    case FRAGELEM:
         if (sep) {
 	    putc(sep, chan);
 	}
@@ -256,7 +256,7 @@ void print_list(FILE *chan, elem_t *list, int indent, char sep) {
 	    putc ('"', chan);
 	}
         break;
-    case LISTELEM :
+    case LISTELEM:
         cnt = 0;
         width = 0;
         while (elem) {

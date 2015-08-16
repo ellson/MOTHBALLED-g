@@ -7,6 +7,91 @@
 #include "context.h"
 #include "emit.h"
 
+static void print_subject_r(FILE *chan, elem_t *list) {
+    elem_t *elem;
+    elemtype_t type;
+    unsigned char *cp;
+    int len;
+
+    assert(list);
+    elem = list->u.list.first;
+    assert(elem);
+
+    len = 0;
+    type = (elemtype_t)elem->type;
+    switch (type) {
+    case FRAGELEM:
+        if (list->state == DQT) {
+            putc ('"', chan);
+        }
+        while (elem) {
+            cp = elem->u.frag.frag;
+            len = elem->v.frag.len;
+            assert(len > 0);
+            if (elem->state == BSL) {
+                putc ('\\', chan);
+            }
+            while (len--) putc (*cp++, chan);
+            elem = elem->next;
+        }
+        if (list->state == DQT) {
+            putc ('"', chan);
+        }
+        break;
+    case LISTELEM:
+        if ((state_t)list->state == ENDPOINTSET) {
+            putc('(', chan);
+        }
+        while (elem) {
+            if (len++) {
+		putc(' ', chan);
+            }
+            print_subject_r(chan, elem);  // recurse
+            elem = elem->next;
+        }
+        if ((state_t)list->state == ENDPOINTSET) {
+            putc(')', chan);
+        }
+        break;
+    }    
+}
+
+void print_subject(context_t *C, elem_t *list) {
+    FILE *chan;
+    elem_t *elem;
+
+    assert(C);
+    chan = C->out;
+
+    assert(list);
+
+    elem = list->u.list.first;
+    assert(elem);
+
+    if (list->u.list.first->next) {
+	putc('(', chan);
+    }
+   
+    while (elem) {
+	if ((state_t)list->state == EDGE) {
+	    putc('<', chan);
+	}
+ 
+        print_subject_r(chan, elem);
+
+	if ((state_t)list->state == EDGE) {
+	    putc('>', chan);
+	}
+        else {
+	    putc(' ', chan);
+	}
+	elem = elem->next;
+    }
+    
+    if (list->u.list.first->next) {
+	putc(')', chan);
+    }
+}
 
 // flatten list into new list with any EQL elements substituted from oldlist
 static void sameas_r(container_context_t *CC, elem_t *list, elem_t **nextold, elem_t *newlist) {
@@ -103,9 +188,11 @@ success_t sameas(container_context_t *CC, elem_t *list) {
     free_list(oldlist);     // update prev_subject for same_end substitution
     *oldlist = *newlist;    // transfers all refs ... newlist will be out of scope shortly
 
-putc ('\n', stdout);
-print_list(stdout, newlist, 0, ' ');
-putc ('\n', stdout);
+//putc ('\n', stdout);
+//print_list(stdout, newlist, 0, ' ');
+//putc ('\n', stdout);
+
+    emit_subject(CC->context, newlist);
 
     rc = SUCCESS;
     return rc;

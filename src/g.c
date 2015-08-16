@@ -49,6 +49,7 @@ int main (int argc, char *argv[]) {
             switch (optnum) {
 	    case 0: emit = emit_g_api; break;
 	    case 1: emit = emit_g_api1; break;
+	    case 2: emit = emit_g_api2; break;
 	    default:
 		fprintf(stderr, "%s\n",
 		    "-g0 = minimal space, -g1 = shell-friendly spacing"
