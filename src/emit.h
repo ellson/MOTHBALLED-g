@@ -1,43 +1,46 @@
-char *get_name(char *p);
-char char_prop(unsigned char prop, char noprop);
-void print_error(context_t *C, state_t si, char *message);
+char *get_name (char *p);
+char char_prop (unsigned char prop, char noprop);
+void print_error (context_t * C, state_t si, char *message);
 
-typedef struct {
-    void (*start_parse) (context_t *C);
-    void (*end_parse) (context_t *C);
+typedef struct
+{
+  void (*start_parse) (context_t * C);
+  void (*end_parse) (context_t * C);
 
-    void (*start_file) (context_t *C);
-    void (*end_file) (context_t *C);
+  void (*start_file) (context_t * C);
+  void (*end_file) (context_t * C);
 
-    void (*start_activity) (context_t *C);
-    void (*end_activity) (context_t *C);
+  void (*start_activity) (context_t * C);
+  void (*end_activity) (context_t * C);
 
-    void (*start_act) (context_t *C);
-    void (*end_act) (context_t *C);
+  void (*start_act) (context_t * C);
+  void (*end_act) (context_t * C);
 
-    void (*start_subject) (context_t *C);
-    void (*end_subject) (context_t *C);
+  void (*start_subject) (context_t * C);
+  void (*end_subject) (context_t * C);
 
-    void (*start_attributes) (context_t *C);
-    void (*end_attributes) (context_t *C);
+  void (*start_attributes) (context_t * C);
+  void (*end_attributes) (context_t * C);
 
-    void (*start_container) (context_t *C);
-    void (*end_container) (context_t *C);
+  void (*start_container) (context_t * C);
+  void (*end_container) (context_t * C);
 
-    void (*start_state) (context_t *C, char class, unsigned char prop, int nest, int repc);
-    void (*end_state) (context_t *C, char class, success_t rc, int nest, int repc);
+  void (*start_state) (context_t * C, char class, unsigned char prop,
+		       int nest, int repc);
+  void (*end_state) (context_t * C, char class, success_t rc, int nest,
+		     int repc);
 
-    void (*act) (context_t *C, elem_t *root);
-    void (*subject) (context_t *C, elem_t *root);
-    void (*attributes) (context_t *C, elem_t *root);
+  void (*act) (context_t * C, elem_t * root);
+  void (*subject) (context_t * C, elem_t * root);
+  void (*attributes) (context_t * C, elem_t * root);
 
-    void (*sep) (context_t *C);
-    void (*token) (context_t *C, char token);
-    void (*string) (context_t *C, elem_t *branch);
+  void (*sep) (context_t * C);
+  void (*token) (context_t * C, char token);
+  void (*string) (context_t * C, elem_t * branch);
 
-    void (*frag) (context_t *C, unsigned char len, unsigned char *frag);
+  void (*frag) (context_t * C, unsigned char len, unsigned char *frag);
 
-    void (*error) (context_t *C, state_t si, char *message);
+  void (*error) (context_t * C, state_t si, char *message);
 } emit_t;
 
 
@@ -108,8 +111,4 @@ typedef struct {
 //
 
 extern emit_t *emit,
-    *emit_t_api,
-    *emit_t_api1,
-    *emit_g_api,
-    *emit_g_api1,
-    *emit_g_api2;
+  *emit_t_api, *emit_t_api1, *emit_g_api, *emit_g_api1, *emit_g_api2;
