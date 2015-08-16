@@ -140,19 +140,8 @@
 # to represent the equivalent:
 # 		(<a c> <a d> <b c> <b d>)
 
-# Or a LEG can be EQL (i.e. '=') to indicate a "same as"
-# the corresponding LEG in an immediately preceeding ACT.
-# So: 
-# 		<longname a>[x=y]
-# 		<longname b>[m=n]
-# 		<longname c>[p=q]
-# can be written as:
-# 		<longname a>[x=y] <= b>[m=n] <= c>[p=q]
-# which is still 3 ACTs, where the edge in each ACT can have separate arributes
-
           LEG ::= ENDPOINT
                 | ENDPOINTSET
-                | EQL
 
   ENDPOINTSET ::= LPN ENDPOINT _ENDPOINT+ RPN
 
@@ -160,9 +149,28 @@
 # or in a cousin's container (where a "cousin" is any descendent of a common
 # ancestor.  So "cousin" includes uncles and cousins and cousin's children.
 
+# Or an ENDPOINT can be EQL (i.e. '=') to indicate a "same as"
+# the corresponding ENDPOINT in an immediately preceeding ACT.
+# So: 
+# 		<longname a>[x=y]
+# 		<longname b>[m=n]
+# 		<longname c>[p=q]
+# can be written as:
+# 		<longname a>[x=y]
+# 		<= b>[m=n]
+# 		<= c>[p=q]
+
+# Notice that an ENDPOINTSET, such as the similar:
+#               <longname (a b c)> [x=y] 
+# can take only one set of attributes.   It is equivalent to:
+#               <longname a>[x=y]
+#               <longname b>[x=y]
+#               <longname c>[x=y]
+
      ENDPOINT ::= COUSIN
                 | SIBLING
                 | PORT
+                | EQL
 
        COUSIN ::= PARENT+ CHILD+ PORT?
 

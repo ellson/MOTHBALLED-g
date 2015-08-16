@@ -17,7 +17,6 @@ static void print_subject_r(FILE *chan, elem_t *list) {
     elem = list->u.list.first;
     assert(elem);
 
-    len = 0;
     type = (elemtype_t)elem->type;
     switch (type) {
     case FRAGELEM:
@@ -39,12 +38,20 @@ static void print_subject_r(FILE *chan, elem_t *list) {
         }
         break;
     case LISTELEM:
-        if ((state_t)list->state == ENDPOINTSET) {
-            putc('(', chan);
-        }
+        len = 0;
         while (elem) {
-            if (len++) {
-		putc(' ', chan);
+            if ((state_t)list->state == ENDPOINTSET) {
+                if (len++) {
+                    putc(' ', chan);
+                }
+                else {
+                    putc('(', chan);
+                }
+            }
+            else if ((state_t)list->state == EDGE) {
+                if (len++) {
+                    putc(' ', chan);
+                }
             }
             print_subject_r(chan, elem);  // recurse
             elem = elem->next;
@@ -59,6 +66,7 @@ static void print_subject_r(FILE *chan, elem_t *list) {
 void print_subject(context_t *C, elem_t *list) {
     FILE *chan;
     elem_t *elem;
+    int len;
 
     assert(C);
     chan = C->out;
@@ -72,18 +80,19 @@ void print_subject(context_t *C, elem_t *list) {
 	putc('(', chan);
     }
    
+    len = 0;
     while (elem) {
 	if ((state_t)list->state == EDGE) {
 	    putc('<', chan);
 	}
- 
+        else {
+            if (len++) {
+	        putc(' ', chan);
+	    }
+        }
         print_subject_r(chan, elem);
-
 	if ((state_t)list->state == EDGE) {
 	    putc('>', chan);
-	}
-        else {
-	    putc(' ', chan);
 	}
 	elem = elem->next;
     }
@@ -91,6 +100,7 @@ void print_subject(context_t *C, elem_t *list) {
     if (list->u.list.first->next) {
 	putc(')', chan);
     }
+    putc(' ', chan);
 }
 
 // flatten list into new list with any EQL elements substituted from oldlist
