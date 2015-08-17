@@ -86,12 +86,6 @@ static emit_t api = {
   /* api_start_subject */ NULL,
   /* api_end_subject */ NULL,
 
-  /* api_start_attributes */ NULL,
-  /* api_end_attributes */ NULL,
-
-  /* api_start_container */ NULL,
-  /* api_end_container */ NULL,
-
   /* api_start_state */ api_start_state,
   /* api_end_state */ api_end_state,
 
@@ -136,12 +130,6 @@ static emit_t api1 = {
 
   /* api_start_subject */ NULL,
   /* api_end_subject */ NULL,
-
-  /* api_start_attributes */ NULL,
-  /* api_end_attributes */ NULL,
-
-  /* api_start_container */ NULL,
-  /* api_end_container */ NULL,
 
   /* api_start_state */ NULL,
   /* api_end_state */ NULL,

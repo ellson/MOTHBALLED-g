@@ -21,12 +21,6 @@ typedef struct
   void (*start_subject) (context_t * C);
   void (*end_subject) (context_t * C);
 
-  void (*start_attributes) (context_t * C);
-  void (*end_attributes) (context_t * C);
-
-  void (*start_container) (context_t * C);
-  void (*end_container) (context_t * C);
-
   void (*start_state) (context_t * C, char class, unsigned char prop,
 		       int nest, int repc);
   void (*end_state) (context_t * C, char class, success_t rc, int nest,
@@ -70,16 +64,6 @@ typedef struct
     if (emit->start_subject) {emit->start_subject(C);}
 #define emit_end_subject(C) \
     if (emit->end_subject) {emit->end_subject(C);}
-
-#define emit_start_attributes(C) \
-    if (emit->start_attributes) {emit->start_attributes(C);}
-#define emit_end_attributes(C) \
-    if (emit->end_attributes) {emit->end_attributes(C);}
-
-#define emit_start_container(C) \
-    if (emit->start_container) {emit->start_container(C);}
-#define emit_end_container(C) \
-    if (emit->end_container) {emit->end_container(C);}
 
 #define emit_start_state(C, class, prop, nest, repc) \
     if (emit->start_state) {emit->start_state(C, class, prop, nest, repc);}

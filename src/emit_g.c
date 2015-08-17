@@ -47,12 +47,6 @@ static emit_t api = {
   /* api_start_subject */ NULL,
   /* api_end_subject */ NULL,
 
-  /* api_start_attributes */ NULL,
-  /* api_end_attributes */ NULL,
-
-  /* api_start_container */ NULL,
-  /* api_end_container */ NULL,
-
   /* api_start_state */ NULL,
   /* api_end_state */ NULL,
 
@@ -79,7 +73,7 @@ api1_token (context_t * C, char token)
 }
 
 static void
-api1_end_container (context_t * C)
+api1_end_activity (context_t * C)
 {
   putc ('\n', C->out);
 }
@@ -92,19 +86,13 @@ static emit_t api1 = {
   /* api_end_file */ NULL,
 
   /* api_start_activity */ NULL,
-  /* api_end_activity */ NULL,
+  /* api_end_activity */ api1_end_activity,
 
   /* api_start_act */ NULL,
   /* api_end_act */ NULL,
 
   /* api_start_subject */ NULL,
   /* api_end_subject */ NULL,
-
-  /* api_start_attributes */ NULL,
-  /* api_end_attributes */ NULL,
-
-  /* api_start_container */ NULL,
-  /* api_end_container */ api1_end_container,
 
   /* api_start_state */ NULL,
   /* api_end_state */ NULL,
@@ -129,15 +117,21 @@ api2_end_act (context_t * C)
 }
 
 static void
-api2_start_container (context_t * C)
+api2_start_activity (context_t * C)
 {
-  putc ('{', C->out);
+  if (C->containment)
+    {
+      putc ('{', C->out);
+    }
 }
 
 static void
-api2_end_container (context_t * C)
+api2_end_activity (context_t * C)
 {
-  putc ('}', C->out);
+  if (C->containment)
+    {
+      putc ('}', C->out);
+    }
 }
 
 static emit_t api2 = {
@@ -147,20 +141,14 @@ static emit_t api2 = {
   /* api_start_file */ NULL,
   /* api_end_file */ NULL,
 
-  /* api_start_activity */ NULL,
-  /* api_end_activity */ NULL,
+  /* api_start_activity */ api2_start_activity,
+  /* api_end_activity */ api2_end_activity,
 
   /* api_start_act */ NULL,
   /* api_end_act */ api2_end_act,
 
   /* api_start_subject */ NULL,
   /* api_end_subject */ NULL,
-
-  /* api_start_attributes */ NULL,
-  /* api_end_attributes */ NULL,
-
-  /* api_start_container */ api2_start_container,
-  /* api_end_container */ api2_end_container,
 
   /* api_start_state */ NULL,
   /* api_end_state */ NULL,

@@ -285,13 +285,9 @@ parse_activity (context_t * C)
   container_context.out = stdout;
   container_context.err = stderr;
 
-  if(C->containment)
-    {
-      emit_start_container (C);
-    }
-  C->containment++;
-  stat_containercount++;
   emit_start_activity (C);
+  stat_containercount++;
+  C->containment++;
 
   if ((rc =
        parse_r (&container_context, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS)
@@ -309,12 +305,8 @@ parse_activity (context_t * C)
   free_list (&container_context.prev_subject);
   free_list (&container_context.pattern_acts);
 
+  C->containment--;
   emit_end_activity (C);
-  C->containment++;
-  if(C->containment)
-    {
-      emit_end_container (C);
-    }
   return rc;
 }
 
