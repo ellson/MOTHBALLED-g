@@ -30,11 +30,10 @@
 // ENDPOINTSETs are not expanded in patterns, or in SUBJECTss
 // before pattern matching.
 
-#if 0
 static void
-pattern_r (container_context_t * CC, elem_t * list, elem_t ** nextold,
-	  elem_t * newlist)
+pattern_r (container_context_t * CC, elem_t * subject, elem_t * pattern_subject)
 {
+#if 0
   elem_t *elem, *new, *nextoldelem = NULL;
   elem_t object = { 0 };
   state_t si;
@@ -123,8 +122,8 @@ pattern_r (container_context_t * CC, elem_t * list, elem_t ** nextold,
 	}
       elem = elem->next;
     }
-}
 #endif
+}
 
 //     rewrite subject into a newsubject
 //     compare subject with oldsubject
@@ -134,25 +133,28 @@ success_t
 pattern (container_context_t * CC, elem_t * subject)
 {
   success_t rc;
-#if 0
-  elem_t *newsubject, *oldsubject, *nextold;
-  elem_t subject_rewrite = { 0 };
+  elem_t *pattern_acts, *nextpattern_act;
 
-  newsubject = &subject_rewrite;
-  oldsubject = &(CC->prev_subject);
-  nextold = oldsubject->u.list.first;
+putc('\n',stdout);
+putc('s',stdout);
+putc(' ',stdout);
+print_list(stdout,subject, 2, ' ');
+putc('\n',stdout);
+  pattern_acts = &(CC->pattern_acts);
+  nextpattern_act = pattern_acts->u.list.first;
+  while (nextpattern_act)
+    {
+      pattern_r (CC, subject, nextpattern_act->u.list.first);
 
-  // rewrite subject into newsubject with any EQL elements substituted from oldsubject
-  pattern_r (CC, subject, &nextold, newsubject);
+putc('\n',stdout);
+putc('p',stdout);
+putc(' ',stdout);
+print_list(stdout,subject, 2, ' ');
+putc('\n',stdout);
 
-  free_list (subject);                     // free original subject
-                                           //    ( although refs are retained in other lists )
-  free_list (oldsubject);	           // free the previos oldsubject
-  *oldsubject = *newsubject;               // save the newsubject as oldsubject
-  assert(newsubject->u.list.first);
-  newsubject->u.list.first->v.list.refs++; // and increase its reference count
-  *subject = *newsubject;                  //    to also save as the rewritten current subject
-#endif
+      nextpattern_act = nextpattern_act->next;
+    }
+
   rc = SUCCESS;
   return rc;
 }
