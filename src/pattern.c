@@ -31,104 +31,67 @@
 // before pattern matching.
 
 static void
-pattern_r (container_context_t * CC, elem_t * subject, elem_t * pattern_subject)
+pattern_r (container_context_t * CC, elem_t * subject, elem_t * pattern)
 {
-#if 0
-  elem_t *elem, *new, *nextoldelem = NULL;
-  elem_t object = { 0 };
-  state_t si;
+  elem_t *s_elem, *p_elem;
+  unsigned char *s_cp, *p_cp;
+  int s_len, p_len;
 
-  assert (list->type == (char) LISTELEM);
-
-  elem = list->u.list.first;
-  while (elem)
+  s_elem = subject->u.list.first;
+  p_elem = pattern->u.list.first;
+  while (s_elem && p_elem)
     {
-      si = (state_t) elem->state;
-      switch (si)
-	{
-	case NODE:
-	case EDGE:
-	  if (newlist->state == 0)
-	    {
-	      newlist->state = si;
-	    }
-	  else
-	    {
-	      if (si != (state_t) newlist->state)
-		{
-		  if (si == NODE)
-		    {
-		      emit_error (CC->context, si, "EDGE subject includes");
-		    }
-		  else
-		    {
-		      emit_error (CC->context, si, "NODE subject includes");
-		    }
-		}
-	    }
-	  if (*nextold)
-	    {
-              if (si == (state_t)(*nextold)->state)  // old subject matches NODE or EDGE type
-                {
-	          // doesn't matter if old is shorter
-	          // ... as long as no forther substitutions are needed
-	          nextoldelem = (*nextold)->u.list.first;	// in the recursion, iterate over the members of the NODE or EDGE SUBJECT
-	          *nextold = (*nextold)->next;	// at this level, continue over the NODES or EDGES
-                }
-              else  // else we have no old, just ignore it
-		{
-		  nextoldelem = NULL;
-                  *nextold = NULL;
-                }
-	    }
-	  pattern_r (CC, elem, &nextoldelem, &object);	// recurse, adding result to a sublist
-	  new = move_list (si, &object);
-	  append_list (newlist, new);
-	  break;
-	case NODEID:
-	  new = ref_list (elem->state, elem);
-	  append_list (newlist, new);
-	  if (*nextold)
-	    {			// doesn't matter if old is shorter
-	      // ... as long as no forther substitutions are needed
-	      *nextold = (*nextold)->next;
-	    }
-	  break;
-	case EQL:
-	  if (*nextold)
-	    {
-	      new = ref_list ((*nextold)->state, *nextold);
-	      append_list (newlist, new);
-
-	      *nextold = (*nextold)->next;
-	    }
-	  else
-	    {
-	      emit_error (CC->context, si,
-			  "No corresponding object found for same-as substitution");
-	    }
-	  break;
-	default:
-	  if (*nextold)
-	    {			// doesn't matter if old is shorter
-	      // ... as long as no forther substitutions are needed
-	      nextoldelem = (*nextold)->u.list.first;	// in the recursion, iterate over the members of the NODE or EDGE SUBJECT
-	      *nextold = (*nextold)->next;	// at this level, continue over the NODES or EDGES
-	    }
-	  pattern_r (CC, elem, &nextoldelem, &object);	// recurse, adding result to a sublist
-	  new = move_list (si, &object);
-	  append_list (newlist, new);
+      if (s_elem->type != p_elem->type)
+        {
 	  break;
 	}
-      elem = elem->next;
+      if ((elemtype_t)(s_elem->type) == LISTELEM) 
+        {
+          if (s_elem->state != p_elem->state)
+            {
+	      break;
+	    }
+        }
+      else  // FRAGELEM
+        {
+          s_len = 0;
+          p_len = 0;
+          while (1)  // the fragmentation is not necessarily the same
+            {
+	      if (s_len == 0)
+		{
+		  s_cp = s_elem->u.frag.frag;
+		  s_len = s_elem->v.frag.len;
+		  s_elem = s_elem->next;
+		}
+	      if (p_len == 0)
+		{
+		  p_cp = p_elem->u.frag.frag;
+		  p_len = p_elem->v.frag.len;
+		  p_elem = p_elem->next;
+		}
+	      if (s_len == 0 && p_len == 0)
+                { // match
+fprintf(stdout,"\npattern match\n");
+		  break;	
+		}
+	      if (s_len == 0 || p_len == 0)
+	        {
+		  break;
+		}
+	      if (*s_cp++ != *p_cp++)
+	        {
+		  break;
+		}
+            }
+        }
     }
-#endif
 }
 
-//     rewrite subject into a newsubject
-//     compare subject with oldsubject
-//     substitue EQL in newsubject from corresponding member of oldsubject (or error if old not available)
-//     replace subject and oldsubject with newsubject
+// Look for pattern match(es) to the current subject (segresgtated into NODE and EDGE patterns).
+// For each match, insert a (refcounted copy) of the current subject, followed by (refcounted) copies
+// of the ATTRIBUTES and CONTAINER from the pattern.  Finally insert the current subject again with 
+// its own ATTRIBUTES and CONTENTS.
 success_t
 pattern (container_context_t * CC, elem_t * subject)
 {
