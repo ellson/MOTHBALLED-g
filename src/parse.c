@@ -12,6 +12,7 @@
 #include "parse.h"
 #include "token.h"
 #include "sameas.h"
+#include "pattern.h"
 
 // This parser recurses at two levels:
 //
@@ -229,11 +230,16 @@ parse_r (container_context_t * CC, elem_t * root,
 		{
 		  break;
 		}
+	      // Perform pattern matching and insertion if matched
+	      if ((rc = pattern (CC, &branch)) == FAIL)
+		{
+		  break;
+		}
 	    }
             emit_subject(C, &branch); // emit rewritten subject
 	  break;
 	case ATTRIBUTES:
-	  emit_attributes (C, &branch);
+	    emit_attributes (C, &branch);
 	  break;
 	default:
 	  break;

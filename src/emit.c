@@ -58,6 +58,13 @@ print_list_r (FILE * chan, elem_t * list)
 
   assert (list);
   elem = list->u.list.first;
+
+#if 1   // FIXME  - fails after patterns if I don't do this
+  if (!elem)
+    {
+      return;
+    }
+#endif
   assert (elem);
 
   type = (elemtype_t) elem->type;
