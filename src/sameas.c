@@ -102,34 +102,31 @@ sameas_r (container_context_t * CC, elem_t * list, elem_t ** nextold,
     }
 }
 
-//     rewrite SUBJECT into a list of ENDPOINT or NODEID
-//     compare new rewritten list with old (prev subject, already rewritten)
-//     substitue EQL in new from corresponding member of old (or error if old not available)
-//     free prev_subject
-//     save new (fully rewritten and EQL substituted) list as prev_subject
+//     rewrite subject into a newsubject
+//     compare subject with oldsubject
+//     substitue EQL in newsubject from corresponding member of oldsubject (or error if old not available)
+//     replace subject and oldsubject with newsubject
 success_t
-sameas (container_context_t * CC, elem_t * list)
+sameas (container_context_t * CC, elem_t * subject)
 {
   success_t rc;
-  elem_t *newlist, *oldlist, *nextold;
-  elem_t rewritten_subject = { 0 };
+  elem_t *newsubject, *oldsubject, *nextold;
+  elem_t subject_rewrite = { 0 };
 
-  newlist = &rewritten_subject;
-  oldlist = &(CC->prev_subject);
-  nextold = oldlist->u.list.first;
+  newsubject = &subject_rewrite;
+  oldsubject = &(CC->prev_subject);
+  nextold = oldsubject->u.list.first;
 
-  // rewrite list into new list with any EQL elements substituted from oldlist
-  sameas_r (CC, list, &nextold, newlist);
+  // rewrite subject into newsubject with any EQL elements substituted from oldsubject
+  sameas_r (CC, subject, &nextold, newsubject);
 
-  free_list (list);		// free original tree ( although refs are retained in other lists )
-  free_list (oldlist);		// update prev_subject for same_end substitution
-  *oldlist = *newlist;		// transfers all refs ... newlist will be out of scope shortly
-
-putc ('\n', stdout);
-print_list(stdout, newlist, 0, ' ');
-putc ('\n', stdout);
-
-//  emit_subject (CC->context, newlist);
+  free_list (subject);                     // free original subject
+                                           //    ( although refs are retained in other lists )
+  free_list (oldsubject);	           // free the previos oldsubject
+  *oldsubject = *newsubject;               // save the newsubject as oldsubject
+  assert(newsubject->u.list.first);
+  newsubject->u.list.first->v.list.refs++; // and increase its reference count
+  *subject = *newsubject;                  //    to also save as the rewritten current subject
 
   rc = SUCCESS;
   return rc;

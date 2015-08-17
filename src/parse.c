@@ -211,7 +211,8 @@ parse_r (container_context_t * CC, elem_t * root,
 	{
 	case ACT:
 	  if (C->is_pattern)
-	    {			// flag was set by SUBJECT.  save SUBJECT ATTRIBUTES and CONTAINER in a list of pattern_acts
+	    {	// flag was set by SUBJECT.  save SUBJECT ATTRIBUTES and CONTAINER
+		//     in a list of pattern_acts
 	      stat_patterncount++;
 	      elem = move_list (si, &branch);	// moved completely, so no regular ACT remains
 	      append_list (&(CC->pattern_acts), elem);
@@ -235,14 +236,9 @@ parse_r (container_context_t * CC, elem_t * root,
 		{
 		  break;
 		}
-//	      free_list (&branch);
 	    }
-//            emit_subject(C, &branch); 
-
-// FIXME
-          emit_subject(C, &(CC->prev_subject));
+            emit_subject(C, &branch); // emit rewritten subject
 	  //     what about pattern subjects?   
-	  //     maybe eliminate emit_subject()
 	  emit_end_subject (C);
 	  break;
 	case ATTRIBUTES:
