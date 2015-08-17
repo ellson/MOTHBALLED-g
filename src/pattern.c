@@ -73,6 +73,7 @@ pattern_r (container_context_t * CC, elem_t * subject, elem_t * pattern)
 	      if (s_len == 0 && p_len == 0)
                 { // match
 fprintf(stdout,"\npattern match\n");
+		  return;
 		  break;	
 		}
 	      if (s_len == 0 || p_len == 0)
@@ -86,6 +87,7 @@ fprintf(stdout,"\npattern match\n");
             }
         }
     }
+fprintf(stdout,"\nno match\n");
 }
 
 // Look for pattern match(es) to the current subject (segresgtated into NODE and EDGE patterns).
