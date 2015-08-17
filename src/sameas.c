@@ -29,6 +29,7 @@ sameas_r (container_context_t * CC, elem_t * list, elem_t ** nextold,
 	  if (newlist->state == 0)
 	    {
 	      newlist->state = si;
+              CC->act_type = si;     // record if the ACT has a NODE or EDGE SUBJECT
 	    }
 	  else
 	    {

@@ -140,7 +140,15 @@ putc('s',stdout);
 putc(' ',stdout);
 print_list(stdout,subject, 2, ' ');
 putc('\n',stdout);
-  pattern_acts = &(CC->pattern_acts);
+
+  if (CC->act_type == NODE)
+    {
+      pattern_acts = &(CC->node_pattern_acts);
+    }
+  else
+    {
+      pattern_acts = &(CC->edge_pattern_acts);
+    }
   nextpattern_act = pattern_acts->u.list.first;
   while (nextpattern_act)
     {
@@ -149,7 +157,7 @@ putc('\n',stdout);
 putc('\n',stdout);
 putc('p',stdout);
 putc(' ',stdout);
-print_list(stdout,subject, 2, ' ');
+print_list(stdout,nextpattern_act->u.list.first, 2, ' ');
 putc('\n',stdout);
 
       nextpattern_act = nextpattern_act->next;

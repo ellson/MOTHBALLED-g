@@ -136,7 +136,7 @@ parse_r (container_context_t * CC, elem_t * root,
     case SUBJECT:
       emit_start_subject (C);
       C->has_ast = 0;
-      C->is_pattern = 0;
+      CC->is_pattern = 0;
       break;
     default:
       break;
@@ -205,12 +205,19 @@ parse_r (container_context_t * CC, elem_t * root,
       switch (si)
 	{
 	case ACT:
-	  if (C->is_pattern)
+	  if (CC->is_pattern)
 	    {	// flag was set by SUBJECT.  save SUBJECT ATTRIBUTES and CONTAINER
 		//     in a list of pattern_acts
 	      stat_patterncount++;
 	      elem = move_list (si, &branch);	// moved completely, so no regular ACT remains
-	      append_list (&(CC->pattern_acts), elem);
+	      if (CC->act_type == NODE)
+                {
+	          append_list (&(CC->node_pattern_acts), elem);
+                }
+	      else
+                {
+	          append_list (&(CC->edge_pattern_acts), elem);
+                }
 	    }
 	  else
 	    {
@@ -221,7 +228,7 @@ parse_r (container_context_t * CC, elem_t * root,
 	case SUBJECT:
 	  if (C->has_ast)
 	    {
-	      C->is_pattern = 1;
+	      CC->is_pattern = 1;
 	    }
 	  else
 	    {
@@ -309,7 +316,8 @@ parse_activity (context_t * C)
     }
 
   free_list (&container_context.prev_subject);
-  free_list (&container_context.pattern_acts);
+  free_list (&container_context.node_pattern_acts);
+  free_list (&container_context.edge_pattern_acts);
 
   C->containment--;
   emit_end_activity (C);
