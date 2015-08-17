@@ -122,6 +122,18 @@ static emit_t api1 = {
   /* api_error */ print_error
 };
 
+static void
+api2_start_container (context_t * C)
+{
+  putc ('{', C->out);
+}
+
+static void
+api2_end_container (context_t * C)
+{
+  putc ('}', C->out);
+}
+
 static emit_t api2 = {
   /* api_start_parse */ NULL,
   /* api_end_parse */ api_end_parse,
@@ -141,16 +153,15 @@ static emit_t api2 = {
   /* api_start_attributes */ NULL,
   /* api_end_attributes */ NULL,
 
-  /* api_start_container */ NULL,
-  /* api_end_container */ NULL,
+  /* api_start_container */ api2_start_container,
+  /* api_end_container */ api2_end_container,
 
   /* api_start_state */ NULL,
   /* api_end_state */ NULL,
 
   /* api_act */ NULL,
   /* api_subject */ print_subject,
-  /* api_attributes */ NULL,
-                     // FIXME  -- need this, and container too
+  /* api_attributes */ print_attributes,
 
   /* api_sep */ NULL,
   /* api_token */ NULL,

@@ -49,7 +49,7 @@ char_prop (unsigned char prop, char noprop)
 }
 
 static void
-print_subject_r (FILE * chan, elem_t * list)
+print_list_r (FILE * chan, elem_t * list)
 {
   elem_t *elem;
   elemtype_t type;
@@ -90,31 +90,52 @@ print_subject_r (FILE * chan, elem_t * list)
       len = 0;
       while (elem)
 	{
-	  if ((state_t) list->state == ENDPOINTSET)
+          if (len++ == 0) 
 	    {
-	      if (len++)
-		{
-		  putc (' ', chan);
-		}
-	      else
-		{
+              switch((state_t) list->state) 
+                {
+                case EDGE:
+	          putc ('<', chan);
+		  break;
+		case OBJECT_LIST:
+		case ENDPOINTSET:
 		  putc ('(', chan);
-		}
-	    }
-	  else if ((state_t) list->state == EDGE)
+		  break;
+		case ATTRIBUTES:
+		  putc ('[', chan);
+		  break;
+		case CONTAINER:
+		  putc ('{', chan);
+		  break;
+		default:
+		  break;
+	        }
+            }
+          else
 	    {
-	      if (len++)
-		{
-		  putc (' ', chan);
-		}
+	      putc (' ', chan);
 	    }
-	  print_subject_r (chan, elem);	// recurse
+	  print_list_r (chan, elem);	// recurse
 	  elem = elem->next;
 	}
-      if ((state_t) list->state == ENDPOINTSET)
-	{
-	  putc (')', chan);
-	}
+        switch((state_t) list->state) 
+          {
+          case EDGE:
+	    putc ('>', chan);
+	    break;
+	  case OBJECT_LIST:
+	  case ENDPOINTSET:
+	    putc (')', chan);
+	    break;
+	  case ATTRIBUTES:
+	    putc (']', chan);
+	    break;
+	  case CONTAINER:
+	    putc ('}', chan);
+	    break;
+	  default:
+	    break;
+          }
       break;
     }
 }
@@ -124,7 +145,6 @@ print_subject (context_t * C, elem_t * list)
 {
   FILE *chan;
   elem_t *elem;
-  int len;
 
   assert (C);
   chan = C->out;
@@ -134,38 +154,27 @@ print_subject (context_t * C, elem_t * list)
   elem = list->u.list.first;
   assert (elem);
 
-  if (list->u.list.first->next)
-    {
-      putc ('(', chan);
-    }
+  print_list_r (chan, elem);
+}
 
-  len = 0;
-  while (elem)
-    {
-      if ((state_t) list->state == EDGE)
-	{
-	  putc ('<', chan);
-	}
-      else
-	{
-	  if (len++)
-	    {
-	      putc (' ', chan);
-	    }
-	}
-      print_subject_r (chan, elem);
-      if ((state_t) list->state == EDGE)
-	{
-	  putc ('>', chan);
-	}
-      elem = elem->next;
-    }
+void
+print_attributes (context_t * C, elem_t * list)
+{
+  FILE *chan;
+  elem_t *elem;
 
-  if (list->u.list.first->next)
+  assert (C);
+  chan = C->out;
+
+  assert (list);
+
+  elem = list->u.list.first;
+  if (elem)
     {
-      putc (')', chan);
+      putc('[',chan);
+      print_list_r (chan, elem);
+      putc(']',chan);
     }
-  putc (' ', chan);
 }
 
 void

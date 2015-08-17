@@ -222,7 +222,6 @@ parse_r (container_context_t * CC, elem_t * root,
 	      stat_actcount++;
 	    }
 	  emit_act (C, &branch);
-	  emit_end_act (C);
 	  break;
 	case SUBJECT:
 	  if (C->has_ast)
@@ -238,16 +237,10 @@ parse_r (container_context_t * CC, elem_t * root,
 		}
 	    }
             emit_subject(C, &branch); // emit rewritten subject
-	  //     what about pattern subjects?   
-	  emit_end_subject (C);
 	  break;
 	case ATTRIBUTES:
 	  emit_attributes (C, &branch);
-	  emit_end_attributes (C);
 	  break;
-	case CONTAINER:
-	  stat_containercount++;
-	  emit_end_container (C);
 	default:
 	  break;
 	}
@@ -270,22 +263,25 @@ done:
 	      //    patterns 
 	      //    previous_subject (for sameends)
 	      //    nodes and edges - for rendering
+	      emit_end_act (C);
 	      break;
 	    case SUBJECT:
 	      emit_end_subject (C);
-	      break;
-	    case ATTRIBUTES:
-	      emit_end_attributes (C);
-	      break;
-	    case CONTAINER:
-	      stat_containercount++;
-	      emit_end_container (C);
 	      break;
 	    default:
 	      break;
 	    }
 	}
     }
+        if (si == CONTAINER)
+	  {
+	    stat_containercount++;
+	    emit_end_container (C);
+	  }
+	else if (si == ATTRIBUTES)
+	  {
+	    emit_end_attributes (C);
+	  }
 
   nest--;
   assert (nest >= 0);

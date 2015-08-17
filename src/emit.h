@@ -1,6 +1,7 @@
 char *get_name (char *p);
 char char_prop (unsigned char prop, char noprop);
 void print_subject (context_t * C, elem_t * list);
+void print_attributes (context_t * C, elem_t * list);
 void print_error (context_t * C, state_t si, char *message);
 
 typedef struct
