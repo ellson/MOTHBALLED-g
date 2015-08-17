@@ -235,9 +235,12 @@ parse_r (container_context_t * CC, elem_t * root,
 		{
 		  break;
 		}
-	      free_list (&branch);
+//	      free_list (&branch);
 	    }
-//            emit_subject(C, &branch);   // FIXME - do we want the flattened version?
+//            emit_subject(C, &branch); 
+
+// FIXME
+          emit_subject(C, &(CC->prev_subject));
 	  //     what about pattern subjects?   
 	  //     maybe eliminate emit_subject()
 	  emit_end_subject (C);

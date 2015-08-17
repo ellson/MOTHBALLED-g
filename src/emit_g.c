@@ -6,7 +6,6 @@
 #include "list.h"
 #include "context.h"
 #include "emit.h"
-#include "sameas.h"
 
 static void
 api_sep (context_t * C)
@@ -150,8 +149,8 @@ static emit_t api2 = {
 
   /* api_act */ NULL,
   /* api_subject */ print_subject,
-				/* api_attributes */ NULL,
-				// FIXME  -- need this, and container too
+  /* api_attributes */ NULL,
+                     // FIXME  -- need this, and container too
 
   /* api_sep */ NULL,
   /* api_token */ NULL,
