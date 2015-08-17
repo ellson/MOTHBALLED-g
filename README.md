@@ -29,7 +29,7 @@ The goals of the "g" language are to:
 
   - g uses string patterns to specify meta-object and class-like objects
 
-4. Support "netlists:.  i.e. edges with more than two ends.  Also dangling edges with only one end.
+4. Support "netlists"  i.e. edges with: one, two, three or more ends.
 
 5. Support "multi-nodes", analogous to "multi-edges" in DOT.  (e.g. a node representing a deck of playing cards.)
 
