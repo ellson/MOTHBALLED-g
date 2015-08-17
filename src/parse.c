@@ -137,12 +137,6 @@ parse_r (container_context_t * CC, elem_t * root,
       C->has_ast = 0;
       C->is_pattern = 0;
       break;
-    case ATTRIBUTES:
-      emit_start_attributes (C);
-      break;
-    case CONTAINER:
-      emit_start_container (C);
-      break;
     default:
       break;
     }
@@ -273,16 +267,6 @@ done:
 	    }
 	}
     }
-        if (si == CONTAINER)
-	  {
-	    stat_containercount++;
-	    emit_end_container (C);
-	  }
-	else if (si == ATTRIBUTES)
-	  {
-	    emit_end_attributes (C);
-	  }
-
   nest--;
   assert (nest >= 0);
   emit_end_state (C, si, rc, nest, repc);
@@ -301,7 +285,12 @@ parse_activity (context_t * C)
   container_context.out = stdout;
   container_context.err = stderr;
 
+  if(C->containment)
+    {
+      emit_start_container (C);
+    }
   C->containment++;
+  stat_containercount++;
   emit_start_activity (C);
 
   if ((rc =
@@ -321,7 +310,11 @@ parse_activity (context_t * C)
   free_list (&container_context.pattern_acts);
 
   emit_end_activity (C);
-  C->containment--;
+  C->containment++;
+  if(C->containment)
+    {
+      emit_end_container (C);
+    }
   return rc;
 }
 

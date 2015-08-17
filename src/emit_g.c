@@ -123,6 +123,12 @@ static emit_t api1 = {
 };
 
 static void
+api2_end_act (context_t * C)
+{
+  putc (' ', C->out);
+}
+
+static void
 api2_start_container (context_t * C)
 {
   putc ('{', C->out);
@@ -145,7 +151,7 @@ static emit_t api2 = {
   /* api_end_activity */ NULL,
 
   /* api_start_act */ NULL,
-  /* api_end_act */ NULL,
+  /* api_end_act */ api2_end_act,
 
   /* api_start_subject */ NULL,
   /* api_end_subject */ NULL,
