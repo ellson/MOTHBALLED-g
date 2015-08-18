@@ -134,11 +134,17 @@ parse_r (container_context_t * CC, elem_t * root,
       // the remainder of the switch() is just state initialization and emit hooks;
 
     case ACT:
+
+putc('\n',stdout);
+print_list(stdout,root, 0, ' ');
+putc('\n',stdout);
       if (CC->is_pattern)
-	{	// flag was set by SUBJECT in previous ACT
+	{
+		// flag was set by SUBJECT in previous ACT
 		//  save entire previous ACT in a list of pattern_acts
 	  stat_patterncount++;
-	  elem = move_list (si, &branch);
+	  elem = ref_list (si, root);
+
 	  if ((state_t)CC->act_type == NODE)
             {
 	      append_list (&(CC->node_pattern_acts), elem);
@@ -152,6 +158,9 @@ parse_r (container_context_t * CC, elem_t * root,
 	{
 	  stat_actcount++;
 	}
+      free_list(root);
+      
+      // now we can really start on the new ACT
       emit_start_act (C);
       break;
     case SUBJECT:
@@ -269,11 +278,6 @@ done:
 	  switch (si)
 	    {
 	    case ACT:
-	      free_list (root);	// the parser is finished with entire ACT at this point. (emits happened earlier)
-	      // subtrees of the output may be retained by ref_counted "copies" for:
-	      //    patterns 
-	      //    previous_subject (for sameends)
-	      //    nodes and edges - for rendering
 	      emit_end_act (C);
 	      break;
 	    case SUBJECT:
