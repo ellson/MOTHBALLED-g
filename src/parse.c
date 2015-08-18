@@ -134,10 +134,17 @@ parse_r (container_context_t * CC, elem_t * root,
       // the remainder of the switch() is just state initialization and emit hooks;
 
     case ACT:
+       // This is a bit ugly.
+       //
+       // Because the grammar has no mandatory terminal token for ACTs, the 
+       // only time we can be sure that the old ACT is finished is when there
+       // is enough input stream to determine that a new ACT has sarted.
+       //
+       // This is not a problem for patterns, since they are not used until they are
+       // matched to a later SUBJECT anyway.  Patterns in the last ACT of input just aren't
+       // useful.
 
-putc('\n',stdout);
-print_list(stdout,root, 0, ' ');
-putc('\n',stdout);
+
       if (CC->is_pattern)
 	{
 		// flag was set by SUBJECT in previous ACT
@@ -145,23 +152,39 @@ putc('\n',stdout);
 	  stat_patterncount++;
 	  elem = ref_list (si, root);
 
+#define DBUG 1
+#ifdef DBUG
+putc('\n',stdout);
+putc('P',stdout);
+#endif
 	  if ((state_t)CC->act_type == NODE)
             {
+#ifdef DBUG
+putc('N',stdout);
+#endif
 	      append_list (&(CC->node_pattern_acts), elem);
             }
 	  else
             {
+#ifdef DBUG
+putc('N',stdout);
+#endif
 	      append_list (&(CC->edge_pattern_acts), elem);
             }
+#ifdef DBUG
+putc(' ',stdout);
+print_list(stdout,root, 3, ' ');
+putc('\n',stdout);
+#endif
 	}
       else
 	{
 	  stat_actcount++;
 	}
-      free_list(root);
+
+      free_list(root);    // now we're done with the last ACT
       
-      // now we can really start on the new ACT
-      emit_start_act (C);
+      emit_start_act (C); // and we can really start on the new ACT
       break;
     case SUBJECT:
       emit_start_subject (C);

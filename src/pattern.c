@@ -7,8 +7,7 @@
 #include "context.h"
 #include "emit.h"
 
-// rewrite list into new list with any EQL elements substituted from oldlist
-// A pattern is a SUBJECT in which one of more STRINGs contain an AST ('*')
+// A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
 // The AST is a wild-card that matches any substring of zero or more 
 // characters at that position.
 //
@@ -17,9 +16,9 @@
 //
 // The following are valid pattern STRING:
 // 	*
-// 	ab*ef
-//      *cdef
 //      abcd*
+// 	ab*ef   // FIXME - this and the next require tail matching of the STRING - not yet implemented
+//      *cdef
 //
 // and all of these patterns will match
 //      abcdef
@@ -104,37 +103,53 @@ success_t
 pattern (container_context_t * CC, elem_t * subject)
 {
   success_t rc;
-  elem_t *pattern_acts, *nextpattern_act;
+  elem_t *pattern_acts, *nextpattern_act, *elem;
 
-#if 0
+
+#define DBUG
+#ifdef DBUG
 putc('\n',stdout);
 putc('s',stdout);
-putc(' ',stdout);
-print_list(stdout,subject, 2, ' ');
-putc('\n',stdout);
 #endif
-
   if (CC->act_type == NODE)
     {
+#ifdef DBUG
+putc('n',stdout);
+#endif
       pattern_acts = &(CC->node_pattern_acts);
     }
   else
     {
+#ifdef DBUG
+putc('e',stdout);
+#endif
       pattern_acts = &(CC->edge_pattern_acts);
     }
+#ifdef DBUG
+putc(' ',stdout);
+print_list(stdout,subject, 3, ' ');
+putc('\n',stdout);
+#endif
   nextpattern_act = pattern_acts->u.list.first;
   while (nextpattern_act)
     {
 
-#if 0
+      elem = nextpattern_act->u.list.first;
+      assert (elem && (state_t)elem->state == ACT);
+      
+      elem = elem->u.list.first;
+      assert (elem && (state_t)elem->state == SUBJECT);
+      
+#ifdef DBUG
 putc('\n',stdout);
 putc('p',stdout);
 putc(' ',stdout);
-print_list(stdout,nextpattern_act->u.list.first, 2, ' ');
+putc(' ',stdout);
+print_list(stdout,elem->u.list.first, 3, ' ');
 putc('\n',stdout);
 #endif
 
-      pattern_r (CC, subject->u.list.first, nextpattern_act->u.list.first);
+      pattern_r (CC, subject->u.list.first, elem->u.list.first);
 
       nextpattern_act = nextpattern_act->next;
     }
