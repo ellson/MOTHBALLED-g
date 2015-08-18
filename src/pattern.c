@@ -76,6 +76,12 @@ fprintf(stdout,"\npattern match\n");
 		  return;
 		  break;	
 		}
+	      if (*p_cp == '*')
+                { // match
+fprintf(stdout,"\npattern match trailing *\n");
+		  return;
+		  break;	
+		}
 	      if (s_len == 0 || p_len == 0)
 	        {
 		  break;
@@ -100,11 +106,13 @@ pattern (container_context_t * CC, elem_t * subject)
   success_t rc;
   elem_t *pattern_acts, *nextpattern_act;
 
+#if 0
 putc('\n',stdout);
 putc('s',stdout);
 putc(' ',stdout);
 print_list(stdout,subject, 2, ' ');
 putc('\n',stdout);
+#endif
 
   if (CC->act_type == NODE)
     {
@@ -117,13 +125,16 @@ putc('\n',stdout);
   nextpattern_act = pattern_acts->u.list.first;
   while (nextpattern_act)
     {
-      pattern_r (CC, subject, nextpattern_act->u.list.first);
 
+#if 0
 putc('\n',stdout);
 putc('p',stdout);
 putc(' ',stdout);
 print_list(stdout,nextpattern_act->u.list.first, 2, ' ');
 putc('\n',stdout);
+#endif
+
+      pattern_r (CC, subject->u.list.first, nextpattern_act->u.list.first);
 
       nextpattern_act = nextpattern_act->next;
     }

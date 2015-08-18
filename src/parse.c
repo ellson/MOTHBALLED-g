@@ -82,11 +82,13 @@ parse_r (container_context_t * CC, elem_t * root,
   if (!C->inbuf)
     {				// state_machine just started
       C->bi = WS;		// pretend preceeded by WS
-      // to satisfy toplevel SREP or REP
-      // (Note, first REP of a REP sequence *can* be preceeded by WS,
-      //      just not the rest of the REPs. )
+                                // to satisfy toplevel SREP or REP
+                                // (Note, first REP of a sequence *can*
+                                // be preceeded by WS, just not the
+                                // rest of the REPs. )
       C->in = nullstring;	// fake it;
-      C->insi = NLL;		// pretend last input was the EOF of a prior file.
+      C->insi = NLL;		// pretend last input was the EOF of
+				// a prior file.
     }
 
 
@@ -116,8 +118,9 @@ parse_r (container_context_t * CC, elem_t * root,
       if (C->bi == LBE)
 	{			// if not top-level of containment
 	  C->bi = NLL;
-	  rc = parse_activity (C);	// recursively process contained ACTIVITY in to its own root
-	  C->bi = C->insi;	// the char class that terminates the ACTIVITY
+	  rc = parse_activity (C); // recursively process
+				// contained ACTIVITY in to its own root
+	  C->bi = C->insi;	// The char class that terminates the ACTIVITY
 	  goto done;
 	}
       break;
@@ -131,6 +134,24 @@ parse_r (container_context_t * CC, elem_t * root,
       // the remainder of the switch() is just state initialization and emit hooks;
 
     case ACT:
+      if (CC->is_pattern)
+	{	// flag was set by SUBJECT in previous ACT
+		//  save entire previous ACT in a list of pattern_acts
+	  stat_patterncount++;
+	  elem = move_list (si, &branch);
+	  if ((state_t)CC->act_type == NODE)
+            {
+	      append_list (&(CC->node_pattern_acts), elem);
+            }
+	  else
+            {
+	      append_list (&(CC->edge_pattern_acts), elem);
+            }
+	}
+      else
+	{
+	  stat_actcount++;
+	}
       emit_start_act (C);
       break;
     case SUBJECT:
@@ -199,30 +220,13 @@ parse_r (container_context_t * CC, elem_t * root,
       ti++;			// next ALT (if not yet satisfied), or next sequence item
     }
 
-  // Any subtree rewrites or emits before adding branch to root in the state exit processing
+  // Any subtree rewrites or emits before adding branch to root
+  // in the state exit processing
   if (rc == SUCCESS)
     {
       switch (si)
 	{
 	case ACT:
-	  if (CC->is_pattern)
-	    {	// flag was set by SUBJECT.  save SUBJECT ATTRIBUTES and CONTAINER
-		//     in a list of pattern_acts
-	      stat_patterncount++;
-	      elem = move_list (si, &branch);	// moved completely, so no regular ACT remains
-	      if (CC->act_type == NODE)
-                {
-	          append_list (&(CC->node_pattern_acts), elem);
-                }
-	      else
-                {
-	          append_list (&(CC->edge_pattern_acts), elem);
-                }
-	    }
-	  else
-	    {
-	      stat_actcount++;
-	    }
 	  emit_act (C, &branch);
 	  break;
 	case SUBJECT:
