@@ -26,6 +26,7 @@ struct container_context_s {	// container_context (also output context)
 	elem_t edge_pattern_acts;	// complete ACTs from whenever the subject contains an "*"
 	state_t act_type;	// records if the SUBJECT is NODES, or EDGES
 	char is_pattern;	// flag set if '*' occurred in SUBJECT
+	char sep;	// the next separator
 	context_t *context;	// the input context
 	FILE *out;		// the output file for this container
 	FILE *err;		// the output file for errors for this container

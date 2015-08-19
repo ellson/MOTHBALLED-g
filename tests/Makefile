@@ -11,4 +11,4 @@ good: ${GOODTESTS}
 
 .PHONY: bad
 bad: ${BADTESTS} 
-	for i in ${BADTESTS} ; do ../src/g $$i >/dev/null 2>/dev/null ; if test $$? == 0; then fail; break; fi ; done
+	for i in ${BADTESTS} ; do ../src/g $$i >/dev/null 2>/dev/null ; if test $$? == 0; then false; break; fi ; done

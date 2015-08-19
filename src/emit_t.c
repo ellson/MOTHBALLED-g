@@ -10,15 +10,13 @@
 static void api_start_activity(context_t * C)
 {
 	if (C->containment == 0) {
-		fprintf(C->out,
-			"// |-- on entry, '|' alt, '.' one, '?' zero or one, '*' zero or more, '+' one or more\n");
+		fprintf(C->out, "// |-- on entry, '|' alt, '.' one, '?' zero or one, '*' zero or more, '+' one or more\n");
 		fprintf(C->out, "// |-- on exit, '0' success, '1' fail\n");
 		fprintf(C->out, "//     |-- state number\n");
 		fprintf(C->out, "//         |-- nesting\n");
 		fprintf(C->out, "//             |-- iteration\n");
 		fprintf(C->out, "//                 |-- state name\n");
-		fprintf(C->out,
-			"//                              |-- string (if present)\n");
+		fprintf(C->out, "//                              |-- string (if present)\n");
 	}
 }
 
@@ -95,10 +93,10 @@ static emit_t api = {
 	/* api_error */ print_error
 };
 
-static void api1_act(context_t * C, elem_t * tree)
+static void api1_act(container_context_t * CC, elem_t * tree)
 {
-	fprintf(C->out, "%3d ACT", C->containment);
-	print_list(C->out, tree, 7, ' ');
+	fprintf(CC->out, "%3d ACT", CC->context->containment);
+	print_list(CC->out, tree, 7, ' ');
 }
 
 static emit_t api1 = {

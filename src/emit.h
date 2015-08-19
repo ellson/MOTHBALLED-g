@@ -1,8 +1,8 @@
 char *get_name(char *p);
 char char_prop(unsigned char prop, char noprop);
-void print_subject(context_t * C, elem_t * list);
-void print_attributes(context_t * C, elem_t * list);
-void print_error(context_t * C, state_t si, char *message);
+void print_subject(container_context_t * CC, elem_t * list);
+void print_attributes(container_context_t * CC, elem_t * list);
+void print_error(context_t * CC, state_t si, char *message);
 
 typedef struct {
 	void (*start_parse) (context_t * C);
@@ -14,27 +14,25 @@ typedef struct {
 	void (*start_activity) (context_t * C);
 	void (*end_activity) (context_t * C);
 
-	void (*start_act) (context_t * C);
-	void (*end_act) (context_t * C);
+	void (*start_act) (container_context_t * CC);
+	void (*end_act) (container_context_t * CC);
 
-	void (*start_subject) (context_t * C);
-	void (*end_subject) (context_t * C);
+	void (*start_subject) (container_context_t * CC);
+	void (*end_subject) (container_context_t * CC);
 
 	void (*start_state) (context_t * C, char class, unsigned char prop,
 			     int nest, int repc);
 	void (*end_state) (context_t * C, char class, success_t rc, int nest,
 			   int repc);
 
-	void (*act) (context_t * C, elem_t * root);
-	void (*subject) (context_t * C, elem_t * root);
-	void (*attributes) (context_t * C, elem_t * root);
+	void (*act) (container_context_t * CC, elem_t * root);
+	void (*subject) (container_context_t * CC, elem_t * root);
+	void (*attributes) (container_context_t * CC, elem_t * root);
 
 	void (*sep) (context_t * C);
 	void (*token) (context_t * C, char token);
 	void (*string) (context_t * C, elem_t * branch);
-
 	void (*frag) (context_t * C, unsigned char len, unsigned char *frag);
-
 	void (*error) (context_t * C, state_t si, char *message);
 } emit_t;
 
@@ -53,27 +51,26 @@ typedef struct {
 #define emit_end_activity(C) \
     if (emit->end_activity) {emit->end_activity(C);}
 
-#define emit_start_act(C) \
-    if (emit->start_act) {emit->start_act(C);}
-#define emit_end_act(C) \
-    if (emit->end_act) {emit->end_act(C);}
+#define emit_start_act(CC) \
+    if (emit->start_act) {emit->start_act(CC);}
+#define emit_end_act(CC) \
+    if (emit->end_act) {emit->end_act(CC);}
 
-#define emit_start_subject(C) \
-    if (emit->start_subject) {emit->start_subject(C);}
-#define emit_end_subject(C) \
-    if (emit->end_subject) {emit->end_subject(C);}
+#define emit_start_subject(CC) \
+    if (emit->start_subject) {emit->start_subject(CC);}
+#define emit_end_subject(CC) \
+    if (emit->end_subject) {emit->end_subject(CC);}
 
 #define emit_start_state(C, class, prop, nest, repc) \
     if (emit->start_state) {emit->start_state(C, class, prop, nest, repc);}
 #define emit_end_state(C, class, rc, nest, repc) \
     if (emit->end_state) {emit->end_state(C, class, rc, nest, repc);}
-
-#define emit_act(C, root) \
-    if (emit->act) {emit->act(C, root);}
-#define emit_subject(C, root) \
-    if (emit->subject) {emit->subject(C, root);}
-#define emit_attributes(C, root) \
-    if (emit->attributes) {emit->attributes(C, root);}
+#define emit_act(CC, root) \
+    if (emit->act) {emit->act(CC, root);}
+#define emit_subject(CC, root) \
+    if (emit->subject) {emit->subject(CC, root);}
+#define emit_attributes(CC, root) \
+    if (emit->attributes) {emit->attributes(CC, root);}
 
 #define emit_sep(C) \
     if (emit->sep) {emit->sep(C);}
@@ -81,26 +78,24 @@ typedef struct {
     if (emit->token) {emit->token(C, token);}
 #define emit_string(C, branch) \
     if (emit->string) {emit->string(C, branch);}
-
 #define emit_frag(C, len, frag) \
     if (emit->frag) {emit->frag(C, len, frag);}
-
 #define emit_error(C, si, message) \
     if (emit->error) {emit->error(C, si, message);}
 
 // if we're not providing the function in any api,
 //    then we can avoid the runtime cost of testing for it
 #undef emit_start_act
-#define emit_start_act(C, len, frag)
+#define emit_start_act(CC, len, frag)
 
 #undef emit_end_act
-#define emit_end_act(C, len, frag)
+#define emit_end_act(CC, len, frag)
 
 #undef emit_start_subject
-#define emit_start_subject(C, len, frag)
+#define emit_start_subject(CC, len, frag)
 
 #undef emit_end_subject
-#define emit_end_subject(C, len, frag)
+#define emit_end_subject(CC, len, frag)
 
 #undef emit_frag
 #define emit_frag(C, len, frag)

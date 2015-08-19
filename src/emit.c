@@ -35,21 +35,28 @@ char char_prop(unsigned char prop, char noprop)
 	return c;
 }
 
-static void print_list_r(FILE * chan, elem_t * list, char * sep)
+static void print_list_r(container_context_t *CC, elem_t * list)
 {
 	elem_t *elem;
 	elemtype_t type;
 	unsigned char *cp;
 	int len;
 	state_t si;
+    FILE *chan;
+    char *sep;
 
 	assert(list);
 	if (! (elem = list->u.list.first)) {
 		return;
 	}
+    chan = CC->out;
+    sep = &(CC->sep);
 	type = (elemtype_t) elem->type;
 	switch (type) {
 	case FRAGELEM:
+        if (*sep) {
+			putc(*sep, chan);
+        }
 		if ((state_t) list->state == DQT) {
 			putc('"', chan);
 		}
@@ -77,70 +84,70 @@ static void print_list_r(FILE * chan, elem_t * list, char * sep)
 		if ((state_t) list->state == DQT) {
 			putc('"', chan);
 		}
+        *sep = ' ';
 		break;
 	case LISTELEM:
 		si = (state_t) list->state;
 		len = 0;
 		while (elem) {
 			if (len++ == 0) {
-				*sep = 0;
 				switch (si) {
 				case EDGE:
 					putc('<', chan);
+		            *sep = 0;
 					break;
 				case OBJECT_LIST:
 				case ENDPOINTSET:
 					putc('(', chan);
+		            *sep = 0;
 					break;
 				case ATTRIBUTES:
 					putc('[', chan);
+		            *sep = 0;
 					break;
 				case CONTAINER:
 					putc('{', chan);
+		            *sep = 0;
 					break;
 				case VALASSIGN:		  // FIXME - leaves spaces around '='
 					putc('=', chan);
+		            *sep = 0;
+                    break;
 				default:
-					*sep = ' ';
 					break;
 				}
-			} else if (*sep) {
-				putc(*sep, chan);
 			}
-			print_list_r(chan, elem, sep);	// recurse
+			print_list_r(CC, elem);	// recurse
 			elem = elem->next;
 		}
-		*sep = 0;
 		switch (si) {
 		case EDGE:
 			putc('>', chan);
+		    *sep = 0;
 			break;
 		case OBJECT_LIST:
 		case ENDPOINTSET:
 			putc(')', chan);
+		    *sep = 0;
 			break;
 		case ATTRIBUTES:
 			putc(']', chan);
+		    *sep = 0;
 			break;
 		case CONTAINER:
 			putc('}', chan);
+		    *sep = 0;
 			break;
 		default:
-			*sep = ' ';
 			break;
 		}
 		break;
 	}
 }
 
-void print_subject(context_t * C, elem_t * list)
+void print_subject(container_context_t * CC, elem_t * list)
 {
-	FILE *chan;
 	elem_t *elem;
-    char sep = 0;
-
-	assert(C);
-	chan = C->out;
 
 	assert(list);
 
@@ -151,25 +158,20 @@ void print_subject(context_t * C, elem_t * list)
 					// overloaded with a state of NODE or EDGE
 	assert(elem);
 
-	print_list_r(chan, elem, &sep);
+	print_list_r(CC, elem);
 }
 
-void print_attributes(context_t * C, elem_t * list)
+void print_attributes(container_context_t * CC, elem_t * list)
 {
-	FILE *chan;
 	elem_t *elem;
-    char sep = 0;
-
-	assert(C);
-	chan = C->out;
 
 	assert(list);
 
 	elem = list->u.list.first;
 	if (elem) {
-		putc('[', chan);
-		print_list_r(chan, elem, &sep);
-		putc(']', chan);
+		putc('[', CC->out);
+		print_list_r(CC, elem);
+		putc(']', CC->out);
 	}
 }
 

@@ -7,22 +7,22 @@
 #include "context.h"
 #include "emit.h"
 
-static void api_sep(context_t * C)
+static void api_sep(context_t *C)
 {
 	putc(' ', C->out);
 }
 
-static void api_string(context_t * C, elem_t * branch)
+static void api_string(context_t *C, elem_t * branch)
 {
 	print_list(C->out, branch, -1, 0);
 }
 
-static void api_token(context_t * C, char token)
+static void api_token(context_t *C, char token)
 {
 	putc(token, C->out);
 }
 
-static void api_end_parse(context_t * C)
+static void api_end_parse(context_t *C)
 {
 	putc('\n', C->out);
 }
@@ -59,16 +59,16 @@ static emit_t api = {
 	/* api_error */ print_error
 };
 
-static void api1_token(context_t * C, char token)
+static void api1_token(context_t *C, char token)
 {
 	putc('\n', C->out);
 	putc(token, C->out);
 	putc(' ', C->out);
 }
 
-static void api1_end_activity(context_t * C)
+static void api1_end_activity(container_context_t *CC)
 {
-	putc('\n', C->out);
+	putc('\n', CC->context->out);
 }
 
 static emit_t api1 = {
@@ -103,14 +103,14 @@ static emit_t api1 = {
 	/* api_error */ print_error
 };
 
-static void api2_start_activity(context_t * C)
+static void api2_start_activity(context_t *C)
 {
 	if (C->containment) {
 		putc('{', C->out);
 	}
 }
 
-static void api2_end_activity(context_t * C)
+static void api2_end_activity(context_t *C)
 {
 	if (C->containment) {
 		putc('}', C->out);
