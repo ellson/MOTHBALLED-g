@@ -120,6 +120,7 @@ putc('n',stdout);
     }
   else
     {
+      assert(CC->act_type == EDGE);
 #ifdef DBUG
 putc('e',stdout);
 #endif
@@ -136,9 +137,6 @@ putc('\n',stdout);
 
       elem = nextpattern_act->u.list.first;
       assert (elem && (state_t)elem->state == ACT);
-      
-      elem = elem->u.list.first;
-      assert (elem && (state_t)elem->state == SUBJECT);
       
 #ifdef DBUG
 putc('\n',stdout);

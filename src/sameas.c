@@ -51,7 +51,8 @@ sameas_r (container_context_t * CC, elem_t * list, elem_t ** nextold,
                 {
 	          // doesn't matter if old is shorter
 	          // ... as long as no forther substitutions are needed
-	          nextoldelem = (*nextold)->u.list.first;	// in the recursion, iterate over the members of the NODE or EDGE SUBJECT
+	          nextoldelem = (*nextold)->u.list.first;  // in the recursion, iterate over
+					// the parts of the NODE or EDGE 
 	          *nextold = (*nextold)->next;	// at this level, continue over the NODES or EDGES
                 }
               else  // else we have no old, just ignore it

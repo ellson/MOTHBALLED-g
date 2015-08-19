@@ -157,7 +157,7 @@ parse_r (container_context_t * CC, elem_t * root,
 putc('\n',stdout);
 putc('P',stdout);
 #endif
-	  if ((state_t)CC->act_type == NODE)
+	  if (CC->act_type == NODE)
             {
 #ifdef DBUG
 putc('N',stdout);
@@ -166,6 +166,7 @@ putc('N',stdout);
             }
 	  else
             {
+	      assert(CC->act_type == EDGE);
 #ifdef DBUG
 putc('N',stdout);
 #endif
@@ -189,7 +190,6 @@ putc('\n',stdout);
     case SUBJECT:
       emit_start_subject (C);
       C->has_ast = 0;
-      CC->is_pattern = 0;
       break;
     default:
       break;
@@ -262,17 +262,14 @@ putc('\n',stdout);
 	  emit_act (C, &branch);
 	  break;
 	case SUBJECT:
-	  if (C->has_ast)
+          // Perform EQL "same as in subject of previous ACT" substitutions
+          // Also classifies ACT as NODE or EDGE based on SUBJECT
+	  if ((rc = sameas (CC, &branch)) == FAIL)
 	    {
-	      CC->is_pattern = 1;
+	      break;
 	    }
-	  else
+	  if ( ! (CC->is_pattern = C->has_ast))
 	    {
-	      // Perform EQL "same as in subject of previous ACT" substitutions
-	      if ((rc = sameas (CC, &branch)) == FAIL)
-		{
-		  break;
-		}
 	      // Perform pattern matching and insertion if matched
 	      if ((rc = pattern (CC, &branch)) == FAIL)
 		{
