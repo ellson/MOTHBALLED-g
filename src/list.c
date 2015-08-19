@@ -96,7 +96,7 @@ elem_t *move_list(elem_t * list)
 
 	list->u.list.first = NULL;	// reset old header
 	list->u.list.last = NULL;
-        list->state = 0;
+    list->state = 0;
 
 	return elem;
 }

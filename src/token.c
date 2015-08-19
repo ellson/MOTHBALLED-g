@@ -35,13 +35,11 @@ static success_t more_in(context_t * C)
 
 	if (C->file) {		// if there is an existing active input file
 		if (C->insi == NLL && feof(C->file)) {	//    if it is at EOF
-// FIXME  -- although the grammar doesn't care, it would
-//   probably be user-friendly to check we are no it a quote string
-//   and that we are at ACTIVITY state whenever EOF occurs
-
+            //   Although the grammar doesn't care, I decided that it would
+            //   be more user-friendly to check that we are not in a quote string
+            //   whenever EOF occurs.
 			if (C->in_quote) {
-				emit_error(C, NLL,
-					   "EOF in the middle of a quote string");
+				emit_error(C, NLL, "EOF in the middle of a quote string");
 			}
 // FIXME don't close stdin
 // FIXME - stall more more input 

@@ -68,7 +68,7 @@ static void print_list_r(container_context_t *CC, elem_t * list)
 				putc('\\', chan);
 			}
 			if ((state_t) elem->state == AST) {
-				if (list->state == DQT) {
+				if ((state_t) list->state == DQT) {
 					putc('"', chan);
 					putc('*', chan);
 					putc('"', chan);
