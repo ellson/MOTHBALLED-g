@@ -53,11 +53,12 @@ sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 				}
 			}
 			sameas_r(CC, elem, &nextoldelem, &object);	// recurse, adding result to a sublist
-			new = move_list(si, &object);
+			new = move_list(&object);
+                        new->state = si;
 			append_list(newlist, new);
 			break;
 		case NODEID:
-			new = ref_list(elem->state, elem);
+			new = ref_list(elem);
 			append_list(newlist, new);
 			if (*nextold) {	// doesn't matter if old is shorter
 				// ... as long as no forther substitutions are needed
@@ -66,7 +67,7 @@ sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 			break;
 		case EQL:
 			if (*nextold) {
-				new = ref_list((*nextold)->state, *nextold);
+				new = ref_list(*nextold);
 				append_list(newlist, new);
 
 				*nextold = (*nextold)->next;
@@ -82,7 +83,7 @@ sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 				*nextold = (*nextold)->next;	// at this level, continue over the NODES or EDGES
 			}
 			sameas_r(CC, elem, &nextoldelem, &object);	// recurse, adding result to a sublist
-			new = move_list(si, &object);
+			new = move_list(&object);
 			append_list(newlist, new);
 			break;
 		}

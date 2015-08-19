@@ -68,7 +68,7 @@ elem_t *new_frag(char state, int len, unsigned char *frag, inbuf_t * inbuf)
 // clone_list -  clone a list header to a new elem
 //  -- ref count in first elem is not updated
 //     so this function is only for use by move_list() or ref_list()
-static elem_t *clone_list(char state, elem_t * list)
+static elem_t *clone_list(elem_t * list)
 {
 	elem_t *elem;
 
@@ -79,7 +79,7 @@ static elem_t *clone_list(char state, elem_t * list)
 	elem->u.list.first = list->u.list.first;	// copy details
 	elem->u.list.last = list->u.list.last;
 	elem->v.list.refs = 0;
-	elem->state = state;
+	elem->state = list->state;
 	return elem;
 }
 
@@ -88,14 +88,15 @@ static elem_t *clone_list(char state, elem_t * list)
 //         clone_list didn't increase ref count in first elem,
 //         so no need to deref.
 //     clean up the old list header so it no longer references the list elems.
-elem_t *move_list(char state, elem_t * list)
+elem_t *move_list(elem_t * list)
 {
 	elem_t *elem;
 
-	elem = clone_list(state, list);
+	elem = clone_list(list);
 
 	list->u.list.first = NULL;	// reset old header
 	list->u.list.last = NULL;
+        list->state = 0;
 
 	return elem;
 }
@@ -104,11 +105,11 @@ elem_t *move_list(char state, elem_t * list)
 //     implement as a clone_list with a ref count adjustment
 //     if there is a first elem and if it is a LISTELEM, then
 //           increment the first elems ref count.  (NB, not this new elem)
-elem_t *ref_list(char state, elem_t * list)
+elem_t *ref_list(elem_t * list)
 {
 	elem_t *elem;
 
-	elem = clone_list(state, list);
+	elem = clone_list(list);
 
 	if (list->u.list.first && list->u.list.first->type == LISTELEM) {
 		list->u.list.first->v.list.refs++;	// increment ref count

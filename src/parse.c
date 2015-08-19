@@ -138,7 +138,7 @@ parse_r(container_context_t * CC, elem_t * root,
 			// flag was set by SUBJECT in previous ACT
 			//  save entire previous ACT in a list of pattern_acts
 			stat_patterncount++;
-			elem = ref_list(si, root);
+			elem = ref_list(root);
 
 			if (CC->act_type == NODE) {
 				append_list(&(CC->node_pattern_acts), elem);
@@ -244,7 +244,7 @@ parse_r(container_context_t * CC, elem_t * root,
  done:
 	if (rc == SUCCESS) {
 		if (branch.u.list.first != NULL || si == EQL) {	// mostly ignore empty lists
-			elem = move_list(si, &branch);
+			elem = move_list(&branch);
 			append_list(root, elem);
 			switch (si) {
 			case ACT:

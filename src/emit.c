@@ -43,33 +43,28 @@ static void print_list_r(FILE * chan, elem_t * list)
 	int len;
 
 	assert(list);
-	elem = list->u.list.first;
-
-#if 0				// FIXME  - fails after patterns if I don't do this
-	if (!elem) {
-		return;
+	if (! (elem = list->u.list.first)) {
+	    return;
 	}
-#endif
-	assert(elem);
 
 	type = (elemtype_t) elem->type;
 	switch (type) {
 	case FRAGELEM:
-		if (list->state == DQT) {
+		if ((state_t) list->state == DQT) {
 			putc('"', chan);
 		}
 		while (elem) {
 			cp = elem->u.frag.frag;
 			len = elem->v.frag.len;
 			assert(len > 0);
-			if (elem->state == BSL) {
+			if ((state_t) elem->state == BSL) {
 				putc('\\', chan);
 			}
 			while (len--)
 				putc(*cp++, chan);
 			elem = elem->next;
 		}
-		if (list->state == DQT) {
+		if ((state_t) list->state == DQT) {
 			putc('"', chan);
 		}
 		break;
@@ -90,6 +85,9 @@ static void print_list_r(FILE * chan, elem_t * list)
 					break;
 				case CONTAINER:
 					putc('{', chan);
+					break;
+				case VALASSIGN:
+					putc('=', chan);
 					break;
 				default:
 					break;
