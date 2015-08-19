@@ -1,9 +1,8 @@
-GOODTESTS = pattern.g nodes.g edges.g comments.g escape.g quote.g sameas.g
+GOODTESTS = comments.g edges.g escape.g nodes.g pattern.g quote.g sameas.g
 
-BADTESTS = edge_in_node_subj.badg node_in_edge_subj.badg eof_inquote.badg
+BADTESTS = eof_inquote.badg edge_subject_includes_node.badg node_subject_includes_edge.badg
 
 all: good bad
-
 
 
 .PHONY: good

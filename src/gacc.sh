@@ -219,23 +219,21 @@ for s in ${statelist[@]}; do
         if test "$next" = ""; then break; fi
         nxtindx=${POS[$next]}
 
+        if test $alts -ne 0; then
+            ( printf "\n%17s" "|"      ) >>${ifn}.ebnf
+        fi
         ord=0
         ws=""
         agaws=0
         nprops=0
         for p in $prop; do
             case $p in
-            ALT ) if test $alts -ne 0; then
-                      ( printf "\n%17s" "|"      ) >>${ifn}.ebnf
-                  fi
-                  (( alts++))
-                  ;;
+            ALT)  ((alts++));;
             OPT)  ((ord|=1));;
             REP)  ((ord|=2));;
             SREP) ((ord|=2)); ws='_';;
             *) ;;
             esac
-
             pcnt=0
             for q in ${!PROPS[@]}; do
 	        if test "$p" = "$q"; then
