@@ -15,9 +15,10 @@
 // STRING in the SUBJECT may have AST
 //
 // The following are valid pattern STRING:
-//      *
+//      *       // This and the next require only prefix matching
 //      abcd*
-//      ab*ef   // FIXME - this and the next require tail matching of the STRING - not yet implemented
+//
+//      ab*ef   // FIXME - this and the next require suffix matching - not yet implemented
 //      *cdef
 //
 // and all of these patterns will match
@@ -40,52 +41,54 @@ pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 	p_elem = pattern->u.list.first;
 	while (s_elem && p_elem) {
 		if (s_elem->type != p_elem->type) {
-			break;
+			break;  // no match if one has reached FRAGELEMs without the other
 		}
 		if ((elemtype_t) (s_elem->type) == LISTELEM) {
 			if (s_elem->state != p_elem->state) {
-				break;
+				break; // no match if the state structure is different,  e.g. OBJECT vs. OBJECT_LIST
 			}
-		} else		// FRAGELEM
-		{
+		    pattern_r(CC, s_elem, p_elem);   // recurse
+            return;
+		} else {	// FRAGELEM
 			s_len = 0;
 			p_len = 0;
 			while (1)	// the fragmentation is not necessarily the same
 			{
-				if (s_len == 0) {
+				if (s_len == 0) { // if we reached the end of a subject frag, try the next frag
 					s_cp = s_elem->u.frag.frag;
 					s_len = s_elem->v.frag.len;
 					s_elem = s_elem->next;
 				}
-				if (p_len == 0) {
+				if (p_len == 0) { // if we reached the end of a pattern frag, try the next frag
 					p_cp = p_elem->u.frag.frag;
 					p_len = p_elem->v.frag.len;
 					p_elem = p_elem->next;
 				}
-				if (s_len == 0 && p_len == 0) {	// match
-					fprintf(stdout, "\npattern match\n");
-					return;
+				if (s_len == 0 && p_len == 0) {	// reached the end of both strings with no mismatch
+fprintf(stdout, "\npattern match\n");
+					return;  // so its a match   // FIXME - do something with it
 					break;
 				}
-				if (*p_cp == '*') {	// match
-					fprintf(stdout,
-						"\npattern match trailing *\n");
-					return;
+				if (*p_cp == '*') {	// reached an '*' in the pattern
+                                    //    - prefix match completed
+                                    //    FIXME - no support here for suffix matching
+fprintf(stdout, "\npattern match prefix *\n");
+					return;  // so its a match   // FIXME - do something with it
 					break;
 				}
-				if (s_len == 0 || p_len == 0) {
+				if (s_len == 0 || p_len == 0) { // one reached the end without the other, so no match
 					break;
 				}
-				if (*s_cp++ != *p_cp++) {
-					break;
+				if (*s_cp++ != *p_cp++) {  // test is chars match, if the do then move on to test the next chars
+					break;  // else, no match
 				}
 			}
 		}
 	}
-	fprintf(stdout, "\nno match\n");
+fprintf(stdout, "\nno match\n");
 }
 
-// Look for pattern match(es) to the current subject (segresgtated into NODE and EDGE patterns).
+// Look for pattern match(es) to the current subject (segregated into NODE and EDGE patterns).
 // For each match, insert a (refcounted copy) of the current subject, followed by (refcounted) copies
 // of the ATTRIBUTES and CONTAINER from the pattern.  Finally insert the current subject again with 
 // its own ATTRIBUTES and CONTENTS.
@@ -94,42 +97,20 @@ success_t pattern(container_context_t * CC, elem_t * subject)
 	success_t rc;
 	elem_t *pattern_acts, *nextpattern_act, *elem;
 
-#define DBUG
-#ifdef DBUG
-	putc('\n', stdout);
-	putc('s', stdout);
-#endif
 	if (CC->act_type == NODE) {
-#ifdef DBUG
-		putc('n', stdout);
-#endif
 		pattern_acts = &(CC->node_pattern_acts);
 	} else {
 		assert(CC->act_type == EDGE);
-#ifdef DBUG
-		putc('e', stdout);
-#endif
 		pattern_acts = &(CC->edge_pattern_acts);
 	}
-#ifdef DBUG
-	putc(' ', stdout);
-	print_list(stdout, subject, 3, ' ');
-	putc('\n', stdout);
-#endif
 	nextpattern_act = pattern_acts->u.list.first;
 	while (nextpattern_act) {
 
 		elem = nextpattern_act->u.list.first;
 		assert(elem && (state_t) elem->state == ACT);
 
-#ifdef DBUG
-		putc('\n', stdout);
-		putc('p', stdout);
-		putc(' ', stdout);
-		putc(' ', stdout);
-		print_list(stdout, elem->u.list.first, 3, ' ');
-		putc('\n', stdout);
-#endif
+		elem = elem->u.list.first;
+		assert(elem && (state_t) elem->state == SUBJECT);
 
 		pattern_r(CC, subject->u.list.first, elem->u.list.first);
 

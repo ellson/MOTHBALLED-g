@@ -140,28 +140,12 @@ parse_r(container_context_t * CC, elem_t * root,
 			stat_patterncount++;
 			elem = ref_list(si, root);
 
-#define DBUG 1
-#ifdef DBUG
-			putc('\n', stdout);
-			putc('P', stdout);
-#endif
 			if (CC->act_type == NODE) {
-#ifdef DBUG
-				putc('N', stdout);
-#endif
 				append_list(&(CC->node_pattern_acts), elem);
 			} else {
 				assert(CC->act_type == EDGE);
-#ifdef DBUG
-				putc('N', stdout);
-#endif
 				append_list(&(CC->edge_pattern_acts), elem);
 			}
-#ifdef DBUG
-			putc(' ', stdout);
-			print_list(stdout, root, 3, ' ');
-			putc('\n', stdout);
-#endif
 		} else {
 			stat_actcount++;
 		}
