@@ -41,12 +41,12 @@ static void print_list_r(FILE * chan, elem_t * list)
 	elemtype_t type;
 	unsigned char *cp;
 	int len;
+    state_t si;
 
 	assert(list);
 	if (! (elem = list->u.list.first)) {
 	    return;
 	}
-
 	type = (elemtype_t) elem->type;
 	switch (type) {
 	case FRAGELEM:
@@ -60,8 +60,18 @@ static void print_list_r(FILE * chan, elem_t * list)
 			if ((state_t) elem->state == BSL) {
 				putc('\\', chan);
 			}
-			while (len--)
+			if ((state_t) elem->state == AST) {
+                if (list->state == DQT) {
+                    putc('"', chan);
+				    putc('*', chan);
+                    putc('"', chan);
+                } else {
+				    putc('*', chan);
+                }
+			}
+            else while (len--) {
 				putc(*cp++, chan);
+            }
 			elem = elem->next;
 		}
 		if ((state_t) list->state == DQT) {
@@ -69,10 +79,11 @@ static void print_list_r(FILE * chan, elem_t * list)
 		}
 		break;
 	case LISTELEM:
+        si = (state_t) list->state;
 		len = 0;
 		while (elem) {
 			if (len++ == 0) {
-				switch ((state_t) list->state) {
+				switch (si) {
 				case EDGE:
 					putc('<', chan);
 					break;
@@ -86,7 +97,7 @@ static void print_list_r(FILE * chan, elem_t * list)
 				case CONTAINER:
 					putc('{', chan);
 					break;
-				case VALASSIGN:
+				case VALASSIGN:          // FIXME - leaves spaces around '='
 					putc('=', chan);
 					break;
 				default:
@@ -98,7 +109,7 @@ static void print_list_r(FILE * chan, elem_t * list)
 			print_list_r(chan, elem);	// recurse
 			elem = elem->next;
 		}
-		switch ((state_t) list->state) {
+		switch (si) {
 		case EDGE:
 			putc('>', chan);
 			break;
@@ -129,7 +140,10 @@ void print_subject(context_t * C, elem_t * list)
 
 	assert(list);
 
-	elem = list->u.list.first;
+	elem = list->u.list.first;  // skip ACT
+	assert(elem);
+
+	elem = elem->u.list.first;  // skip SUBJECT (which may have been overloaded with a state of NODE or EDGE
 	assert(elem);
 
 	print_list_r(chan, elem);
