@@ -66,9 +66,9 @@ static void api1_token(context_t *C, char token)
 	putc(' ', C->out);
 }
 
-static void api1_end_activity(container_context_t *CC)
+static void api1_end_activity(context_t *C)
 {
-	putc('\n', CC->context->out);
+	putc('\n', C->out);
 }
 
 static emit_t api1 = {

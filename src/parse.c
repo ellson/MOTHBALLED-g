@@ -206,7 +206,7 @@ parse_r(container_context_t * CC, elem_t * root,
 	if (rc == SUCCESS) {
 		switch (si) {
 		case ACT:
-			emit_act(C, &branch);
+			emit_act(CC, &branch);
 			break;
 		case SUBJECT:
 			// Perform EQL "same as in subject of previous ACT" substitutions
@@ -220,10 +220,10 @@ parse_r(container_context_t * CC, elem_t * root,
 					break;
 				}
 			}
-			emit_subject(C, &branch);	// emit rewritten subject
+			emit_subject(CC, &branch);	// emit rewritten subject
 			break;
 		case ATTRIBUTES:
-			emit_attributes(C, &branch);
+			emit_attributes(CC, &branch);
 			break;
 		default:
 			break;
@@ -252,8 +252,8 @@ static success_t parse_activity(context_t * C)
 	container_context_t container_context = { 0 };
 
 	container_context.context = C;
-	container_context.out = stdout;
-	container_context.err = stderr;
+	container_context.out = C->out;
+	container_context.err = C->err;
 
 	emit_start_activity(C);
 	stat_containercount++;

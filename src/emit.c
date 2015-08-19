@@ -49,7 +49,7 @@ static void print_list_r(container_context_t *CC, elem_t * list)
 	if (! (elem = list->u.list.first)) {
 		return;
 	}
-    chan = CC->out;
+    chan = CC->context->out;
     sep = &(CC->sep);
 	type = (elemtype_t) elem->type;
 	switch (type) {
@@ -163,16 +163,9 @@ void print_subject(container_context_t * CC, elem_t * list)
 
 void print_attributes(container_context_t * CC, elem_t * list)
 {
-	elem_t *elem;
-
 	assert(list);
 
-	elem = list->u.list.first;
-	if (elem) {
-		putc('[', CC->out);
-		print_list_r(CC, elem);
-		putc(']', CC->out);
-	}
+	print_list_r(CC, list);
 }
 
 void print_error(context_t * C, state_t si, char *message)
@@ -182,9 +175,7 @@ void print_error(context_t * C, state_t si, char *message)
 	fprintf(C->err, "\nError: %s ", message);
 	print_len_frag(C->err, NAMEP(si));
 	fprintf(C->err, "\n	  in \"%s\" line: %ld just before: \"",
-		C->filename,
-		(stat_lfcount ? stat_lfcount : stat_crcount) -
-		C->linecount_at_start + 1);
+		C->filename, (stat_lfcount ? stat_lfcount : stat_crcount) - C->linecount_at_start + 1);
 	p = C->in;
 	while ((c = *p++)) {
 		if (c == '\n' || c == '\r')
