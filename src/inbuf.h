@@ -5,13 +5,12 @@ typedef struct inbuf_s inbuf_t;
 #define INBUFSIZE ((1<<7) - sizeof(inbuf_t*) - sizeof(int) - sizeof(char))
 #define INBUFALLOCNUM 128
 
-struct inbuf_s
-{
-  inbuf_t *next;
-  int refs;
-  unsigned char buf[INBUFSIZE];
-  unsigned char end_of_buf;	// maintain a '\0' here 
+struct inbuf_s {
+	inbuf_t *next;
+	int refs;
+	unsigned char buf[INBUFSIZE];
+	unsigned char end_of_buf;	// maintain a '\0' here 
 };
 
-inbuf_t *new_inbuf (void);
-void free_inbuf (inbuf_t * inbuf);
+inbuf_t *new_inbuf(void);
+void free_inbuf(inbuf_t * inbuf);

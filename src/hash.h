@@ -1,1 +1,1 @@
-void hashfrag (unsigned long *hash, int len, unsigned char *frag);
+void hashfrag(unsigned long *hash, int len, unsigned char *frag);

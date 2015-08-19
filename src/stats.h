@@ -14,4 +14,4 @@ extern long stat_elemmalloc;
 extern long stat_elemmax;
 extern long stat_elemnow;
 
-void print_stats (FILE * chan, struct timespec *starttime);
+void print_stats(FILE * chan, struct timespec *starttime);
