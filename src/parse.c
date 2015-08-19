@@ -151,12 +151,10 @@ parse_r(container_context_t * CC, elem_t * root,
 		}
 
 		free_list(root);	// now we're done with the last ACT
-
-		emit_start_act(C);	// and we can really start on the new ACT
+		                    // and we can really start on the new ACT
 		break;
 	case SUBJECT:
-		emit_start_subject(C);
-		C->has_ast = 0;
+		C->has_ast = 0;     // maintain a flag for an '*' found anywhere in the subject
 		break;
 	default:
 		break;
@@ -168,41 +166,33 @@ parse_r(container_context_t * CC, elem_t * root,
 	rc = FAIL;		// init rc to FAIL in case no ALT is satisfied
 	ti = si;
 	while ((so = state_machine[ti])) {	// iterate over ALTs or sequences
-		nprop = state_props[ti];	// get the props for the transition from the current state (OPT, ALT, REP etc)
+		nprop = state_props[ti];	// get the props for the transition
+                                    // from the current state (OPT, ALT, REP etc)
 		// at this point, ni is a signed, non-zero offset to the next state
-		ni = ti + so;	// we get to the next state by adding the offset to the current state.
+		ni = ti + so;	// we get to the next state by adding the offset from the current state.
+
 		if (nprop & ALT) {	// look for ALT
-			if ((rc =
-			     parse_r(CC, &branch, ni, nprop, nest,
-				     0)) == SUCCESS) {
+			if ((rc = parse_r(CC, &branch, ni, nprop, nest, 0)) == SUCCESS) {
 				break;	// ALT satisfied
 			}
 			// we failed an ALT so continue iteration to try next ALT
 		} else {	// else it is a sequence
 			repc = 0;
 			if (nprop & OPT) {	// optional
-				if ((parse_r
-				     (CC, &branch, ni, nprop, nest,
-				      repc++)) == SUCCESS) {
+				if ((parse_r(CC, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
 					while (more_rep(C, nprop) == SUCCESS) {
-						if (parse_r
-						    (CC, &branch, ni, nprop,
-						     nest, repc++) == FAIL) {
+						if (parse_r(CC, &branch, ni, nprop, nest, repc++) == FAIL) {
 							break;
 						}
 					}
 				}
 			} else {	// else not OPTional
-				if ((rc =
-				     parse_r(CC, &branch, ni, nprop, nest,
-					     repc++)) == FAIL) {
+				if ((rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 					break;
 				}
 				// A 1-or-more repetition is successful if the first one was a success
 				while (more_rep(C, nprop) == SUCCESS) {
-					if ((rc =
-					     parse_r(CC, &branch, ni, nprop,
-						     nest, repc++)) == FAIL) {
+					if ((rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 						break;
 					}
 				}
@@ -246,16 +236,6 @@ parse_r(container_context_t * CC, elem_t * root,
 		if (branch.u.list.first != NULL || si == EQL) {	// mostly ignore empty lists
 			elem = move_list(&branch);
 			append_list(root, elem);
-			switch (si) {
-			case ACT:
-				emit_end_act(C);
-				break;
-			case SUBJECT:
-				emit_end_subject(C);
-				break;
-			default:
-				break;
-			}
 		}
 	}
 	nest--;

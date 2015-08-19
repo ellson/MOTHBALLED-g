@@ -35,17 +35,17 @@ char char_prop(unsigned char prop, char noprop)
 	return c;
 }
 
-static void print_list_r(FILE * chan, elem_t * list)
+static void print_list_r(FILE * chan, elem_t * list, char * sep)
 {
 	elem_t *elem;
 	elemtype_t type;
 	unsigned char *cp;
 	int len;
-    state_t si;
+	state_t si;
 
 	assert(list);
 	if (! (elem = list->u.list.first)) {
-	    return;
+		return;
 	}
 	type = (elemtype_t) elem->type;
 	switch (type) {
@@ -61,17 +61,17 @@ static void print_list_r(FILE * chan, elem_t * list)
 				putc('\\', chan);
 			}
 			if ((state_t) elem->state == AST) {
-                if (list->state == DQT) {
-                    putc('"', chan);
-				    putc('*', chan);
-                    putc('"', chan);
-                } else {
-				    putc('*', chan);
-                }
+				if (list->state == DQT) {
+					putc('"', chan);
+					putc('*', chan);
+					putc('"', chan);
+				} else {
+					putc('*', chan);
+				}
 			}
-            else while (len--) {
+			else while (len--) {
 				putc(*cp++, chan);
-            }
+			}
 			elem = elem->next;
 		}
 		if ((state_t) list->state == DQT) {
@@ -79,10 +79,11 @@ static void print_list_r(FILE * chan, elem_t * list)
 		}
 		break;
 	case LISTELEM:
-        si = (state_t) list->state;
+		si = (state_t) list->state;
 		len = 0;
 		while (elem) {
 			if (len++ == 0) {
+				*sep = 0;
 				switch (si) {
 				case EDGE:
 					putc('<', chan);
@@ -97,18 +98,19 @@ static void print_list_r(FILE * chan, elem_t * list)
 				case CONTAINER:
 					putc('{', chan);
 					break;
-				case VALASSIGN:          // FIXME - leaves spaces around '='
+				case VALASSIGN:		  // FIXME - leaves spaces around '='
 					putc('=', chan);
-					break;
 				default:
+					*sep = ' ';
 					break;
 				}
-			} else {
-				putc(' ', chan);
+			} else if (*sep) {
+				putc(*sep, chan);
 			}
-			print_list_r(chan, elem);	// recurse
+			print_list_r(chan, elem, sep);	// recurse
 			elem = elem->next;
 		}
+		*sep = 0;
 		switch (si) {
 		case EDGE:
 			putc('>', chan);
@@ -124,6 +126,7 @@ static void print_list_r(FILE * chan, elem_t * list)
 			putc('}', chan);
 			break;
 		default:
+			*sep = ' ';
 			break;
 		}
 		break;
@@ -134,6 +137,7 @@ void print_subject(context_t * C, elem_t * list)
 {
 	FILE *chan;
 	elem_t *elem;
+    char sep = 0;
 
 	assert(C);
 	chan = C->out;
@@ -143,16 +147,18 @@ void print_subject(context_t * C, elem_t * list)
 	elem = list->u.list.first;  // skip ACT
 	assert(elem);
 
-	elem = elem->u.list.first;  // skip SUBJECT (which may have been overloaded with a state of NODE or EDGE
+	elem = elem->u.list.first;  // skip SUBJECT (which may have been
+					// overloaded with a state of NODE or EDGE
 	assert(elem);
 
-	print_list_r(chan, elem);
+	print_list_r(chan, elem, &sep);
 }
 
 void print_attributes(context_t * C, elem_t * list)
 {
 	FILE *chan;
 	elem_t *elem;
+    char sep = 0;
 
 	assert(C);
 	chan = C->out;
@@ -162,7 +168,7 @@ void print_attributes(context_t * C, elem_t * list)
 	elem = list->u.list.first;
 	if (elem) {
 		putc('[', chan);
-		print_list_r(chan, elem);
+		print_list_r(chan, elem, &sep);
 		putc(']', chan);
 	}
 }
@@ -173,7 +179,7 @@ void print_error(context_t * C, state_t si, char *message)
 
 	fprintf(C->err, "\nError: %s ", message);
 	print_len_frag(C->err, NAMEP(si));
-	fprintf(C->err, "\n      in \"%s\" line: %ld just before: \"",
+	fprintf(C->err, "\n	  in \"%s\" line: %ld just before: \"",
 		C->filename,
 		(stat_lfcount ? stat_lfcount : stat_crcount) -
 		C->linecount_at_start + 1);

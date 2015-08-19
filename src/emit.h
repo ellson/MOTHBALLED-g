@@ -90,6 +90,18 @@ typedef struct {
 
 // if we're not providing the function in any api,
 //    then we can avoid the runtime cost of testing for it
+#undef emit_start_act
+#define emit_start_act(C, len, frag)
+
+#undef emit_end_act
+#define emit_end_act(C, len, frag)
+
+#undef emit_start_subject
+#define emit_start_subject(C, len, frag)
+
+#undef emit_end_subject
+#define emit_end_subject(C, len, frag)
+
 #undef emit_frag
 #define emit_frag(C, len, frag)
 //

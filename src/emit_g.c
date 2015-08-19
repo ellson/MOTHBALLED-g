@@ -103,11 +103,6 @@ static emit_t api1 = {
 	/* api_error */ print_error
 };
 
-static void api2_end_act(context_t * C)
-{
-	putc(' ', C->out);
-}
-
 static void api2_start_activity(context_t * C)
 {
 	if (C->containment) {
@@ -133,7 +128,7 @@ static emit_t api2 = {
 	/* api_end_activity */ api2_end_activity,
 
 	/* api_start_act */ NULL,
-	/* api_end_act */ api2_end_act,
+	/* api_end_act */ NULL,
 
 	/* api_start_subject */ NULL,
 	/* api_end_subject */ NULL,

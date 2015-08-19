@@ -101,14 +101,9 @@ static void api1_act(context_t * C, elem_t * tree)
 	print_list(C->out, tree, 7, ' ');
 }
 
-static void api1_end_act(context_t * C)
-{
-	putc('\n', C->out);
-}
-
 static emit_t api1 = {
 	/* api_start_parse */ NULL,
-	/* api_end_parse */ NULL,
+	/* api_end_parse */ api_end_parse,
 
 	/* api_start_file */ NULL,
 	/* api_end_file */ NULL,
@@ -117,7 +112,7 @@ static emit_t api1 = {
 	/* api_end_activity */ api_end_activity,
 
 	/* api_start_act */ NULL,
-	/* api_end_act */ api1_end_act,
+	/* api_end_act */ NULL,
 
 	/* api_start_subject */ NULL,
 	/* api_end_subject */ NULL,
