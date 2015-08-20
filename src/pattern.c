@@ -129,24 +129,24 @@ void pattern(container_context_t * CC, elem_t * subject)
 		assert((state_t) psubj->state == SUBJECT);
 
 		pattr = elem->next;
-                if (! pattr ) 
-			continue;
 
-		if ((state_t)pattr->state != ATTRIBUTES);
+		if ((state_t)pattr->state != ATTRIBUTES) {
 			continue;
+		}
 
 		// FIXME - contents from pattern ??
 
 		if ((pattern_r(CC, subj->u.list.first, psubj->u.list.first)) == SUCCESS) {
+fprintf(stdout,"_MATCHED_");
 			// insert matched attrubutes, contents,
 			// and then the subject again
 			elem = ref_list(pattr);
-			append_list(subject, elem);
+//			append_list(subject, elem);
 
 			// FIXME -- contents
 			
 			elem = ref_list(subj);
-			append_list(subject, elem);
+//			append_list(subject, elem);
 		}
 
 		nextpattern_act = nextpattern_act->next;
