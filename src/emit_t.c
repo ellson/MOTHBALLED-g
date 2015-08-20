@@ -41,7 +41,7 @@ static void api_string(context_t * C, elem_t * branch)
 
 static void api_token(context_t * C, char token)
 {
-	fprintf(C->out, "\t\t'%c'", token);
+	fprintf(C->out, "\t\t%c", token);
 }
 
 static void
