@@ -1,6 +1,9 @@
 * [foo=bar]
-a
-(* b *) [abc=123]
+a [abc=123]
+
+b [xyz=789]
+
+(* b *) [mumble=grumble]
 b
 (a b c)
 (a x c)

@@ -99,18 +99,19 @@ pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 
 // Look for pattern match(es) to the current subject (segregated
 // into NODE and EDGE patterns).
-// For each match, insert a (refcounted copy) of the current
+// For each match, append a (refcounted copy) of the current
 // subject, followed by (refcounted) copies of the ATTRIBUTES
-// and CONTAINER from the pattern.  Finally insert the current
-// subject again with its own ATTRIBUTES and CONTENTS.
-void pattern(container_context_t * CC, elem_t * subject)
+// and CONTAINER from the pattern.  Finally return for the current
+// subject to be appended with its own ATTRIBUTES and CONTENTS.
+void pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 {
 	elem_t *pattern_acts, *nextpattern_act,
-		*elem, *subj, *psubj, *pattr;
+		*elem, *psubj, *pattr;
 
-        subj = ref_list(subject);  // we're going to modify
-			// subject by appending match(es) to it,s
-			//   so keep an unmodified copy
+    assert(root);
+    assert(subject);
+    assert((state_t) subject->state == SUBJECT);
+
 	if (CC->act_type == NODE) {
 		pattern_acts = &(CC->node_pattern_acts);
 	} else {
@@ -124,32 +125,33 @@ void pattern(container_context_t * CC, elem_t * subject)
 		assert(elem);
 		assert((state_t) elem->state == ACT);
 
-		psubj = elem->u.list.first;
+		elem = elem->u.list.first;
+        psubj = elem;
 		assert(psubj);
 		assert((state_t) psubj->state == SUBJECT);
 
-		pattr = elem->next;
-
-		if ((state_t)pattr->state != ATTRIBUTES) {
-			continue;
-		}
+		elem = elem->next;
+		pattr = elem;
 
 		// FIXME - contents from pattern ??
 
-		if ((pattern_r(CC, subj->u.list.first, psubj->u.list.first)) == SUCCESS) {
-fprintf(stdout,"_MATCHED_");
+		if ((pattern_r(CC, subject->u.list.first, psubj->u.list.first)) == SUCCESS) {
 			// insert matched attrubutes, contents,
 			// and then the subject again
-			elem = ref_list(pattr);
-//			append_list(subject, elem);
+			
+			elem = ref_list(subject);
+			append_list(root, elem);
+            emit_subject(CC, subject);
+
+            if (pattr && (state_t)pattr->state == ATTRIBUTES) {
+                elem = ref_list(pattr);
+                append_list(root, elem);
+                emit_attributes(CC, pattr);
+            }
 
 			// FIXME -- contents
-			
-			elem = ref_list(subj);
-//			append_list(subject, elem);
 		}
 
 		nextpattern_act = nextpattern_act->next;
 	}
-	free_list(subj);  // remove temporary copy
 }

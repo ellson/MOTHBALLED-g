@@ -76,14 +76,13 @@ parse_r(container_context_t * CC, elem_t * root,
 	assert(nest >= 0);	// catch overflows
 
 	if (!C->inbuf) {	// state_machine just started
-		C->bi = WS;	// pretend preceeded by WS
-		// to satisfy toplevel SREP or REP
-		// (Note, first REP of a sequence *can*
-		// be preceeded by WS, just not the
-		// rest of the REPs. )
+		C->bi = WS;	    // pretend preceeded by WS // to satisfy toplevel SREP or REP
+		                // (Note, first REP of a sequence *can*
+		                // be preceeded by WS, just not the
+		                // rest of the REPs. )
 		C->in = nullstring;	// fake it;
 		C->insi = NLL;	// pretend last input was the EOF of
-		// a prior file.
+		                // a prior file.
 	}
 
 	// Entering state
@@ -92,10 +91,12 @@ parse_r(container_context_t * CC, elem_t * root,
 	// deal with "terminal" states: Whitespace, Tokens, and Contained activity, Strings
 
 	C->ei = C->insi;	// the char class that ended the last token
+
 	// Whitespace
 	if ((rc = parse_whitespace(C)) == FAIL) {
 		goto done;	// EOF during whitespace
 	}
+
 	// Special character tokens
 	if (si == C->insi) {	// single character terminals matching state_machine expectation
 		C->bi = C->insi;
@@ -104,25 +105,22 @@ parse_r(container_context_t * CC, elem_t * root,
 		goto done;
 	}
 	switch (si) {
-		// Recursion into Contained activity
-	case ACTIVITY:
+	case ACTIVITY:          // Recursion into Contained activity
 		if (C->bi == LBE) {	// if not top-level of containment
 			C->bi = NLL;
-			rc = parse_activity(C);	// recursively process
-			// contained ACTIVITY in to its own root
+			rc = parse_activity(C);	// recursively process contained ACTIVITY in to its own root
 			C->bi = C->insi;	// The char class that terminates the ACTIVITY
 			goto done;
 		}
 		break;
-		// Strings
-	case STRING:
+
+	case STRING:            // Strings
 		rc = parse_string(C, &branch);
 		C->bi = C->insi;	// the char class that terminates the STRING
 		goto done;
 		break;
 
 		// the remainder of the switch() is just state initialization and emit hooks;
-
 	case ACT:
 		// This is a bit ugly.
 		//
@@ -134,9 +132,8 @@ parse_r(container_context_t * CC, elem_t * root,
 		// matched to a later SUBJECT anyway.  Patterns in the last ACT of input just aren't
 		// useful.
 
-		if (CC->is_pattern) {
-			// flag was set by SUBJECT in previous ACT
-			//  save entire previous ACT in a list of pattern_acts
+		if (CC->is_pattern) {   // flag was set by SUBJECT in previous ACT
+			                    //  save entire previous ACT in a list of pattern_acts
 			stat_patterncount++;
 			elem = ref_list(root);
 
@@ -160,25 +157,29 @@ parse_r(container_context_t * CC, elem_t * root,
 		break;
 	}
 
-	// If it wasn't a terminal state, then using the state_machine,  
-	// iterate through alts or sequences, and then recursively process next the state
+	// If it wasn't a terminal state, then use the state_machine to
+	// iterate through ALTs or sequences, and then recursively process next the state
 
 	rc = FAIL;		// init rc to FAIL in case no ALT is satisfied
 	ti = si;
 	while ((so = state_machine[ti])) {	// iterate over ALTs or sequences
-		nprop = state_props[ti];	// get the props for the transition
-                                    // from the current state (OPT, ALT, REP etc)
-		// at this point, ni is a signed, non-zero offset to the next state
-		ni = ti + so;	// we get to the next state by adding the offset from the current state.
+		nprop = state_props[ti];    	// get the props for the transition
+                                        // from the current state (OPT, ALT, REP etc)
 
-		if (nprop & ALT) {	// look for ALT
+		                                // at this point, ni is a signed, non-zero
+                                        // offset to the next state
+		ni = ti + so;               	// we get to the next state by adding the
+                                        // offset from the current state.
+
+		if (nprop & ALT) {              // look for ALT
 			if ((rc = parse_r(CC, &branch, ni, nprop, nest, 0)) == SUCCESS) {
-				break;	// ALT satisfied
+				break;                  // ALT satisfied
 			}
-			// we failed an ALT so continue iteration to try next ALT
-		} else {	// else it is a sequence
+
+			                            // we failed an ALT so continue iteration to try next ALT
+		} else {                    	// else it is a sequence (or the last ALT, same thing)
 			repc = 0;
-			if (nprop & OPT) {	// optional
+			if (nprop & OPT) {          // OPTional
 				if ((parse_r(CC, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
 					while (more_rep(C, nprop) == SUCCESS) {
 						if (parse_r(CC, &branch, ni, nprop, nest, repc++) == FAIL) {
@@ -186,11 +187,10 @@ parse_r(container_context_t * CC, elem_t * root,
 						}
 					}
 				}
-			} else {	// else not OPTional
+			} else {                	// else not OPTional
 				if ((rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 					break;
 				}
-				// A 1-or-more repetition is successful if the first one was a success
 				while (more_rep(C, nprop) == SUCCESS) {
 					if ((rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 						break;
@@ -205,14 +205,30 @@ parse_r(container_context_t * CC, elem_t * root,
 	if (rc == SUCCESS) {
 		switch (si) {
 		case SUBJECT:
+            branch.state = si;
 			// Perform EQL "same as in subject of previous ACT" substitutions
 			// Also classifies ACT as NODE or EDGE based on SUBJECT
+#if 0
+char sep = ' ';
+putc('\n',stdout);
+putc('1',stdout);
+putc(' ',stdout);
+print_list(C->out, &branch, 2, &sep);
+putc('\n',stdout);
+#endif
 			if ((rc = sameas(CC, &branch)) == FAIL) {
 				break;
 			}
+#if 0
+putc('\n',stdout);
+putc('2',stdout);
+putc(' ',stdout);
+print_list(C->out, &branch, 2, &sep);
+putc('\n',stdout);
+#endif
 			// If this subject is not a pattern, then perform pattern matching and insertion if matched
 			if (!(CC->is_pattern = C->has_ast)) {
-				pattern(CC, &branch);
+				pattern(CC, root, &branch);
 			}
 			emit_subject(CC, &branch);	// emit hook for rewritten subject
 			break;

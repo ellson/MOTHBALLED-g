@@ -114,27 +114,20 @@ static void print_list_r(container_context_t *CC, elem_t * list)
 	}
 }
 
-void print_subject(container_context_t * CC, elem_t * list)
+void print_subject(container_context_t * CC, elem_t * subject)
 {
-	elem_t *elem;
+	assert(subject);
+	assert((state_t)subject->state == SUBJECT);
 
-	assert(list);
-
-	elem = list->u.list.first;  // skip ACT
-	assert(elem);
-
-	elem = elem->u.list.first;  // skip SUBJECT (which may have been
-					// overloaded with a state of NODE or EDGE
-	assert(elem);
-
-	print_list_r(CC, elem);
+	print_list_r(CC, subject->u.list.first);
 }
 
-void print_attributes(container_context_t * CC, elem_t * list)
+void print_attributes(container_context_t * CC, elem_t * attributes)
 {
-	assert(list);
-
-	print_list_r(CC, list);
+    if (attributes) {
+	    assert((state_t)attributes->state == ATTRIBUTES);
+	    print_list_r(CC, attributes);
+    }
 }
 
 void print_error(context_t * C, state_t si, char *message)
