@@ -41,57 +41,67 @@ pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 	p_elem = pattern->u.list.first;
 	while (s_elem && p_elem) {
 		if (s_elem->type != p_elem->type) {
-			return FAIL;  // no match if one has reached FRAGELEMs without the other
+			return FAIL;	// no match if one has reached FRAGELEMs without the other
 		}
+		ts_elem = s_elem;
+		tp_elem = p_elem;
 		if ((elemtype_t) (s_elem->type) == LISTELEM) {
-			if (s_elem->state != p_elem->state) {
-				return FAIL; // no match if the state structure is different,  e.g. OBJECT vs. OBJECT_LIST
+			if (ts_elem->state != tp_elem->state) {
+				return FAIL;	// no match if the state structure is different,  e.g. OBJECT vs. OBJECT_LIST
 			}
-            ts_elem = s_elem;
-            tp_elem = p_elem;
-            while (ts_elem || tp_elem) { // quick test before recursing...
-                if (! (ts_elem && tp_elem)) {
-                    return FAIL;   // no match if the number of elems ism't the same
-                }
-                ts_elem = ts_elem->next;
-                tp_elem = tp_elem->next;
-            }
-		    return (pattern_r(CC, s_elem, p_elem));   // recurse
+			while (ts_elem || tp_elem) {	// quick test before recursing...
+				if (!(ts_elem && tp_elem)) {
+					return FAIL;	// no match if the number of elems ism't the same
+				}
+				ts_elem = ts_elem->next;
+				tp_elem = tp_elem->next;
+			}
+			if ((pattern_r(CC, s_elem, p_elem)) == FAIL) {  // recurse
+				return FAIL;
+			}
 		} else {	// FRAGELEM
 			s_len = 0;
 			p_len = 0;
-			while (1)	// the fragmentation is not necessarily the same
-			{
-				if (s_len == 0) { // if we reached the end of a subject frag, try the next frag
-					s_cp = s_elem->u.frag.frag;
-					s_len = s_elem->v.frag.len;
-					s_elem = s_elem->next;
+			while (ts_elem && tp_elem) {
+				// the fragmentation is not necessarily
+				// the same so manage ts_elem and tp_elem
+				// separately
+				if (s_len == 0) {	// if we reached the end
+						// of a subject frag, try the next frag
+					s_cp = ts_elem->u.frag.frag;
+					s_len = ts_elem->v.frag.len;
+					ts_elem = ts_elem->next;
 				}
-				if (p_len == 0) { // if we reached the end of a pattern frag, try the next frag
-					p_cp = p_elem->u.frag.frag;
-					p_len = p_elem->v.frag.len;
-					p_elem = p_elem->next;
+				if (p_len == 0) {	// if we reached the end
+						// of a pattern frag, try the next frag
+					p_cp = tp_elem->u.frag.frag;
+					p_len = tp_elem->v.frag.len;
+					tp_elem = tp_elem->next;
 				}
-                s_len--;
-                p_len--;
+				s_len--;
+				p_len--;
 				if (*p_cp == '*') {	// reached an '*' in the pattern
-                                    //    - prefix match completed
-                                    //    FIXME - no support here for suffix matching
-					break; // so its a match 
+					//    - prefix match completed
+					//    FIXME - no support here for suffix matching
+					break;	// so its a match 
 				}
-				if (*s_cp++ != *p_cp++) {  // test if chars match, if they do then move on to test the next STRING
-					return FAIL;  // else, no match
+				if (*s_cp++ != *p_cp++) {	// test if chars match, if they do then move on to test the next STRING
+					return FAIL;	// else, no match
 				}
 			}
 		}
+		s_elem = s_elem->next;
+		p_elem = p_elem->next;
 	}
-    return SUCCESS;
+	return SUCCESS;
 }
 
-// Look for pattern match(es) to the current subject (segregated into NODE and EDGE patterns).
-// For each match, insert a (refcounted copy) of the current subject, followed by (refcounted) copies
-// of the ATTRIBUTES and CONTAINER from the pattern.  Finally insert the current subject again with 
-// its own ATTRIBUTES and CONTENTS.
+// Look for pattern match(es) to the current subject (segregated
+// into NODE and EDGE patterns).
+// For each match, insert a (refcounted copy) of the current
+// subject, followed by (refcounted) copies of the ATTRIBUTES
+// and CONTAINER from the pattern.  Finally insert the current
+// subject again with its own ATTRIBUTES and CONTENTS.
 void pattern(container_context_t * CC, elem_t * subject)
 {
 	elem_t *pattern_acts, *nextpattern_act, *elem;
@@ -113,10 +123,11 @@ void pattern(container_context_t * CC, elem_t * subject)
 		assert(elem);
 		assert((state_t) elem->state == SUBJECT);
 
-		if ((pattern_r(CC, subject->u.list.first, elem->u.list.first)) == SUCCESS) {
+		if ((pattern_r(CC, subject->u.list.first, elem->u.list.first))
+		    == SUCCESS) {
 // FIXME - do insertion here  -- while we know what pattern was matched
-fprintf(stdout,"..matched..");
-        }
+			fprintf(stdout, "..matched..");
+		}
 
 		nextpattern_act = nextpattern_act->next;
 	}
