@@ -14,27 +14,47 @@
 #include "parse.h"
 #include "dumpg.h"
 
+#if 0
+emit_t *emitters[] = {emit_t_api, emit_t_api1};
+#endif
+
 int main(int argc, char *argv[])
 {
 	success_t rc;
 	int opt, optnum, needstats;
 	struct timespec starttime;
-	emit = emit_g_api;	// default emitter
-	needstats = 0;		// stats default to no stats
 	FILE *out, *err;
+#if 0
+    emit_t *ep;
+#endif
 
 	rc = clock_gettime(CLOCK_MONOTONIC_RAW, &starttime);
 	assert(rc == SUCCESS);
 
 	out = stdout;
 	err = stderr;
+    emit = emit_g_api;      // default emitter
+	needstats = 0;		// stats default to no stats
 
-	while ((opt = getopt(argc, argv, "d::g::t::s")) != -1) {
+	while ((opt = getopt(argc, argv, "T:d::g::t::s")) != -1) {
 		if (optarg)
 			optnum = atoi(optarg);
 		else
 			optnum = 0;
 		switch (opt) {
+        case 'T':
+#if 0
+            for (ep = (emit_t*)emitters; ep < (emit_t*)emitters + sizeof(emitters); ep += sizeof(emit_t*)) {
+fprintf(stdout, "-T%s\b", ep->name);
+                if (strcmp(optarg, ep->name) == 0) {
+                    emit = ep;
+                    break;
+                }
+            }
+			fprintf(stderr, "No back-end found for format: -T%s\n", optarg);
+            exit(1);
+#endif
+            break;
 		case 'd':
 			switch (optnum) {
 			case 0:

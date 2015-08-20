@@ -30,7 +30,7 @@ static void api_end_parse(context_t *C)
 	putc('\n', C->out);
 }
 
-static emit_t api = {
+static emit_t api = { "g",
 	/* api_start_parse */ NULL,
 	/* api_end_parse */ api_end_parse,
 
@@ -74,7 +74,7 @@ static void api1_end_activity(context_t *C)
 	putc('\n', C->out);
 }
 
-static emit_t api1 = {
+static emit_t api1 = { "g1",
 	/* api_start_parse */ NULL,
 	/* api_end_parse */ api_end_parse,
 
@@ -120,7 +120,7 @@ static void api2_end_activity(context_t *C)
 	}
 }
 
-static emit_t api2 = {
+static emit_t api2 = { "g2",
 	/* api_start_parse */ NULL,
 	/* api_end_parse */ api_end_parse,
 
