@@ -214,7 +214,7 @@ parse_r(container_context_t * CC, elem_t * root,
 			if (!(CC->is_pattern = C->has_ast)) {
 				pattern(CC, &branch);
 			}
-			emit_subject(CC, &branch);	// emit rewritten subject
+			emit_subject(CC, &branch);	// emit hook for rewritten subject
 			break;
 		case ATTRIBUTES:
 			emit_attributes(CC, &branch);

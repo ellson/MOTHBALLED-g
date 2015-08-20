@@ -85,10 +85,11 @@ pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 					//    FIXME - no support here for suffix matching
 					break;	// so its a match 
 				}
-				if (*s_cp++ != *p_cp++) {	// test if chars match, if they do then move on to test the next STRING
+				if (*s_cp++ != *p_cp++) {	// test if chars match
 					return FAIL;	// else, no match
 				}
 			}
+			// all matched so far, move on to test the next STRING
 		}
 		s_elem = s_elem->next;
 		p_elem = p_elem->next;
@@ -104,8 +105,12 @@ pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 // subject again with its own ATTRIBUTES and CONTENTS.
 void pattern(container_context_t * CC, elem_t * subject)
 {
-	elem_t *pattern_acts, *nextpattern_act, *elem;
+	elem_t *pattern_acts, *nextpattern_act,
+		*elem, *subj, *psubj, *pattr;
 
+        subj = ref_list(subject);  // we're going to modify
+			// subject by appending match(es) to it,s
+			//   so keep an unmodified copy
 	if (CC->act_type == NODE) {
 		pattern_acts = &(CC->node_pattern_acts);
 	} else {
@@ -119,16 +124,32 @@ void pattern(container_context_t * CC, elem_t * subject)
 		assert(elem);
 		assert((state_t) elem->state == ACT);
 
-		elem = elem->u.list.first;
-		assert(elem);
-		assert((state_t) elem->state == SUBJECT);
+		psubj = elem->u.list.first;
+		assert(psubj);
+		assert((state_t) psubj->state == SUBJECT);
 
-		if ((pattern_r(CC, subject->u.list.first, elem->u.list.first))
-		    == SUCCESS) {
-// FIXME - do insertion here  -- while we know what pattern was matched
-			fprintf(stdout, "..matched..");
+		pattr = elem->next;
+                if (! pattr ) 
+			continue;
+
+		if ((state_t)pattr->state != ATTRIBUTES);
+			continue;
+
+		// FIXME - contents from pattern ??
+
+		if ((pattern_r(CC, subj->u.list.first, psubj->u.list.first)) == SUCCESS) {
+			// insert matched attrubutes, contents,
+			// and then the subject again
+			elem = ref_list(pattr);
+			append_list(subject, elem);
+
+			// FIXME -- contents
+			
+			elem = ref_list(subj);
+			append_list(subject, elem);
 		}
 
 		nextpattern_act = nextpattern_act->next;
 	}
+	free_list(subj);  // remove temporary copy
 }
