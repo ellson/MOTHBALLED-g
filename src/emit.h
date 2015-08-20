@@ -103,5 +103,5 @@ typedef struct {
 //
 
 extern emit_t *emit, *emitters[];
-extern emit_t g_api, g1_api, g2_api, t_api, t1_api;
-#define SIZEOF_EMITTERS 5
+extern emit_t g_api, g1_api, g2_api, t_api, t1_api, gv_api;
+#define SIZEOF_EMITTERS 6

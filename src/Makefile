@@ -1,6 +1,6 @@
 CFLAGS = -g -O0 -Wall -W -Wextra -pedantic -Wno-unused-parameter
 #CFLAGS = -DNDEBUG
-OBJS = grammar.o parse.o token.o stats.o inbuf.o dumpg.o list.o hash.o sameas.o pattern.o emit.o emit_t.o emit_g.o g.o
+OBJS = grammar.o parse.o token.o stats.o inbuf.o dumpg.o list.o hash.o sameas.o pattern.o emit.o emit_t.o emit_g.o emit_gv.o g.o
 HDRS = grammar.h parse.h token.h stats.h inbuf.h dumpg.h list.h hash.h sameas.h pattern.h emit.h context.h
 
 all: g grammar.svg test_grammar.g test
@@ -29,7 +29,9 @@ grammar.svg: grammar.gv
 # This test processes 1000 copies of the graph to generate some stats
 .PHONY: test
 test: g
-	(for i in {1..1000}; do ./g -d; done) | ./g -s >/dev/null
+#	(for i in {1..1000}; do ./g -d; done) | ./g -s >/dev/null
+	(for i in {1..1000}; do cat ../neo4j/matrix.g; done) | ./g -s >/dev/null
+	
 
 clean:
 	rm -f ${OBJS} grammar.gv grammar.[ch] grammar.ebnf grammar.gv grammar.svg test_grammar.g

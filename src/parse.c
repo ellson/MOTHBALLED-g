@@ -208,24 +208,9 @@ parse_r(container_context_t * CC, elem_t * root,
             branch.state = si;
 			// Perform EQL "same as in subject of previous ACT" substitutions
 			// Also classifies ACT as NODE or EDGE based on SUBJECT
-#if 0
-char sep = ' ';
-putc('\n',stdout);
-putc('1',stdout);
-putc(' ',stdout);
-print_list(C->out, &branch, 2, &sep);
-putc('\n',stdout);
-#endif
 			if ((rc = sameas(CC, &branch)) == FAIL) {
 				break;
 			}
-#if 0
-putc('\n',stdout);
-putc('2',stdout);
-putc(' ',stdout);
-print_list(C->out, &branch, 2, &sep);
-putc('\n',stdout);
-#endif
 			// If this subject is not a pattern, then perform pattern matching and insertion if matched
 			if (!(CC->is_pattern = C->has_ast)) {
 				pattern(CC, root, &branch);
@@ -269,14 +254,11 @@ static success_t parse_activity(context_t * C)
 	stat_containercount++;
 	C->containment++;
 
-	if ((rc =
-	     parse_r(&container_context, &root, ACTIVITY, SREP, 0,
-		     0)) != SUCCESS) {
+	if ((rc = parse_r(&container_context, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
 		if (C->insi == NLL) {	// EOF is OK
 			rc = SUCCESS;
 		} else {
-			emit_error(C, C->state,
-				   "Parse error. Last good state was:");
+			emit_error(C, C->state, "Parse error. Last good state was:");
 		}
 	}
 
