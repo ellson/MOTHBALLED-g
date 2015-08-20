@@ -201,24 +201,18 @@ parse_r(container_context_t * CC, elem_t * root,
 		ti++;		// next ALT (if not yet satisfied), or next sequence item
 	}
 
-	// Any subtree rewrites or emits before adding branch to root
-	// in the state exit processing
+	// Any subtree rewrites or emits before adding branch to root in the state exit processing
 	if (rc == SUCCESS) {
 		switch (si) {
-		case ACT:
-			emit_act(CC, &branch);
-			break;
 		case SUBJECT:
 			// Perform EQL "same as in subject of previous ACT" substitutions
 			// Also classifies ACT as NODE or EDGE based on SUBJECT
 			if ((rc = sameas(CC, &branch)) == FAIL) {
 				break;
 			}
+			// If this subject is not a pattern, then perform pattern matching and insertion if matched
 			if (!(CC->is_pattern = C->has_ast)) {
-				// Perform pattern matching and insertion if matched
-				if ((rc = pattern(CC, &branch)) == FAIL) {
-					break;
-				}
+				pattern(CC, &branch);
 			}
 			emit_subject(CC, &branch);	// emit rewritten subject
 			break;
@@ -229,11 +223,11 @@ parse_r(container_context_t * CC, elem_t * root,
 			break;
 		}
 	}
-	// State exit processing
 
- done:
+ done: // State exit processing
 	if (rc == SUCCESS) {
 		if (branch.u.list.first != NULL || si == EQL) {	// mostly ignore empty lists
+            branch.state = si;
 			elem = move_list(&branch);
 			append_list(root, elem);
 		}
