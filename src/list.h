@@ -45,6 +45,6 @@ void push_list(elem_t * list, elem_t * elem);
 void pop_list(elem_t * list);
 void free_list(elem_t * list);
 
-void print_frag(FILE * chan, unsigned char len, unsigned char *frag);
 int print_len_frag(FILE * chan, unsigned char *len_frag);
-void print_list(FILE * chan, elem_t * list, int nest, char sep);
+void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep);
+void print_list(FILE * chan, elem_t * list, int nest, char *sep);

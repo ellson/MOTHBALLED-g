@@ -32,9 +32,11 @@ api_start_state(context_t * C, char class, unsigned char prop, int nest,
 
 static void api_string(context_t * C, elem_t * branch)
 {
-	fprintf(C->out, "\t\"");
-	print_list(C->out, branch, -1, 0);
-	putc('"', C->out);
+    char sep;
+
+    sep = 0;
+	putc('\t', C->out);
+	print_list(C->out, branch, -1, &sep);
 }
 
 static void api_token(context_t * C, char token)
@@ -95,8 +97,11 @@ static emit_t api = {
 
 static void api1_act(container_context_t * CC, elem_t * tree)
 {
+    char sep;
+
+    sep = ' ';
 	fprintf(CC->out, "%3d ACT", CC->context->containment);
-	print_list(CC->out, tree, 7, ' ');
+	print_list(CC->out, tree, 7, &sep);
 }
 
 static emit_t api1 = {

@@ -220,7 +220,7 @@ void free_list(elem_t * list)
 	// Note: ref count of header is not modified
 }
 
-void print_frag(FILE * chan, unsigned char len, unsigned char *frag)
+static void print_one_frag(FILE * chan, unsigned char len, unsigned char *frag)
 {
 	while (len--)
 		putc(*frag++, chan);
@@ -231,16 +231,53 @@ int print_len_frag(FILE * chan, unsigned char *len_frag)
 	unsigned char len;
 
 	len = *len_frag++;
-	print_frag(chan, len, len_frag);
+	print_one_frag(chan, len, len_frag);
 	return len;
 }
 
-void print_list(FILE * chan, elem_t * list, int indent, char sep)
+void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
+{
+    unsigned char *frag;
+    int len;
+
+    if (*sep) {
+        putc(*sep, chan);
+    }
+    if (liststate == DQT) {
+        putc('"', chan);
+    }
+    while (elem) {
+        frag = elem->u.frag.frag;
+        len = elem->v.frag.len;
+        assert(len > 0);
+        if ((state_t) elem->state == BSL) {
+            putc('\\', chan);
+        }
+        if ((state_t) elem->state == AST) {
+            if (liststate == DQT) {
+                putc('"', chan);
+                putc('*', chan);
+                putc('"', chan);
+            } else {
+                putc('*', chan);
+            }
+        }
+        else {
+            print_one_frag(chan, len, frag);
+        }
+        elem = elem->next;
+    }
+    if (liststate == DQT) {
+        putc('"', chan);
+    }
+    *sep = ' ';
+}
+
+void print_list(FILE * chan, elem_t * list, int indent, char *sep)
 {
 	elem_t *elem;
 	elemtype_t type;
-	unsigned char *cp;
-	int ind, cnt, len, width;
+	int ind, cnt, width;
 
 	assert(list->type == (char)LISTELEM);
 	elem = list->u.list.first;
@@ -249,27 +286,7 @@ void print_list(FILE * chan, elem_t * list, int indent, char sep)
 	type = (elemtype_t) (elem->type);
 	switch (type) {
 	case FRAGELEM:
-		if (sep) {
-			putc(sep, chan);
-		}
-		if (list->state == DQT) {
-			putc('"', chan);
-		}
-		while (elem) {
-			assert(elem->type == (char)type);	// check all the same type
-			cp = elem->u.frag.frag;
-			len = elem->v.frag.len;
-			assert(len > 0);
-			if (elem->state == BSL) {
-				putc('\\', chan);
-			}
-			while (len--)
-				putc(*cp++, chan);
-			elem = elem->next;
-		}
-		if (list->state == DQT) {
-			putc('"', chan);
-		}
+        print_frags(chan,list->state,elem,sep);
 		break;
 	case LISTELEM:
 		cnt = 0;

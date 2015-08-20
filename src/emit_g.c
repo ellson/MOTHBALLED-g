@@ -14,7 +14,10 @@ static void api_sep(context_t *C)
 
 static void api_string(context_t *C, elem_t * branch)
 {
-	print_list(C->out, branch, -1, 0);
+    char sep;
+
+    sep = 0;
+	print_list(C->out, branch, -1, &sep);
 }
 
 static void api_token(context_t *C, char token)

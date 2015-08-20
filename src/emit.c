@@ -39,9 +39,8 @@ static void print_list_r(container_context_t *CC, elem_t * list)
 {
 	elem_t *elem;
 	elemtype_t type;
-	unsigned char *cp;
-	int len;
-	state_t si;
+	int cnt;
+	state_t liststate;
     FILE *chan;
     char *sep;
 
@@ -52,46 +51,16 @@ static void print_list_r(container_context_t *CC, elem_t * list)
     chan = CC->context->out;
     sep = &(CC->sep);
 	type = (elemtype_t) elem->type;
+	liststate = (state_t) list->state;
 	switch (type) {
 	case FRAGELEM:
-        if (*sep) {
-			putc(*sep, chan);
-        }
-		if ((state_t) list->state == DQT) {
-			putc('"', chan);
-		}
-		while (elem) {
-			cp = elem->u.frag.frag;
-			len = elem->v.frag.len;
-			assert(len > 0);
-			if ((state_t) elem->state == BSL) {
-				putc('\\', chan);
-			}
-			if ((state_t) elem->state == AST) {
-				if ((state_t) list->state == DQT) {
-					putc('"', chan);
-					putc('*', chan);
-					putc('"', chan);
-				} else {
-					putc('*', chan);
-				}
-			}
-			else while (len--) {
-				putc(*cp++, chan);
-			}
-			elem = elem->next;
-		}
-		if ((state_t) list->state == DQT) {
-			putc('"', chan);
-		}
-        *sep = ' ';
+        print_frags(chan,liststate,elem,sep);
 		break;
 	case LISTELEM:
-		si = (state_t) list->state;
-		len = 0;
+		cnt = 0;
 		while (elem) {
-			if (len++ == 0) {
-				switch (si) {
+			if (cnt++ == 0) {
+				switch (liststate) {
 				case EDGE:
 					putc('<', chan);
 		            *sep = 0;
@@ -120,7 +89,7 @@ static void print_list_r(container_context_t *CC, elem_t * list)
 			print_list_r(CC, elem);	// recurse
 			elem = elem->next;
 		}
-		switch (si) {
+		switch (liststate) {
 		case EDGE:
 			putc('>', chan);
 		    *sep = 0;
