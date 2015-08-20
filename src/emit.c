@@ -36,26 +36,46 @@ char char_prop(unsigned char prop, char noprop)
 	return c;
 }
 
+static void put_token(container_context_t *CC, char tok)
+{
+    if (CC->style == SHELL_FRIENDLY_STYLE) {
+        putc('\n', CC->out);
+        putc(tok, CC->out);
+        putc(' ', CC->out);
+    } else {
+        putc(tok, CC->out);
+    }
+    CC->sep = 0;
+}
+
+static void put_close_token(container_context_t *CC, char tok)
+{
+    if (CC->style == SHELL_FRIENDLY_STYLE) {
+        putc('\n', CC->out);
+        putc(tok, CC->out);
+        putc('\n', CC->out);
+    } else {
+        putc(tok, CC->out);
+    }
+    CC->sep = 0;
+}
+
 static void print_list_r(container_context_t *CC, elem_t * list)
 {
 	elem_t *elem;
 	elemtype_t type;
 	int cnt;
 	state_t liststate;
-    FILE *chan;
-    char *sep;
 
 	assert(list);
 	if (! (elem = list->u.list.first)) {
 		return;
 	}
-    chan = CC->context->out;
-    sep = &(CC->sep);
 	type = (elemtype_t) elem->type;
 	liststate = (state_t) list->state;
 	switch (type) {
 	case FRAGELEM:
-        print_frags(chan,liststate,elem,sep);
+        print_frags(CC->out,liststate,elem,&(CC->sep));
 		break;
 	case LISTELEM:
 		cnt = 0;
@@ -63,25 +83,20 @@ static void print_list_r(container_context_t *CC, elem_t * list)
 			if (cnt++ == 0) {
 				switch (liststate) {
 				case EDGE:
-					putc('<', chan);
-		            *sep = 0;
+                    put_token(CC, '<');
 					break;
 				case OBJECT_LIST:
 				case ENDPOINTSET:
-					putc('(', chan);
-		            *sep = 0;
+                    put_token(CC, '(');
 					break;
 				case ATTRIBUTES:
-					putc('[', chan);
-		            *sep = 0;
+                    put_token(CC, '[');
 					break;
 				case CONTAINER:
-					putc('{', chan);
-		            *sep = 0;
+                    put_token(CC, '{');
 					break;
-				case VALASSIGN:		  // FIXME - leaves spaces around '='
-					putc('=', chan);
-		            *sep = 0;
+				case VALASSIGN:
+                    put_token(CC, '=');
                     break;
 				default:
 					break;
@@ -92,21 +107,17 @@ static void print_list_r(container_context_t *CC, elem_t * list)
 		}
 		switch (liststate) {
 		case EDGE:
-			putc('>', chan);
-		    *sep = 0;
+            put_close_token(CC, '>');
 			break;
 		case OBJECT_LIST:
 		case ENDPOINTSET:
-			putc(')', chan);
-		    *sep = 0;
+            put_close_token(CC, ')');
 			break;
 		case ATTRIBUTES:
-			putc(']', chan);
-		    *sep = 0;
+            put_close_token(CC, ']');
 			break;
 		case CONTAINER:
-			putc('}', chan);
-		    *sep = 0;
+            put_close_token(CC, '}');
 			break;
 		default:
 			break;
