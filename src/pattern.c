@@ -33,7 +33,7 @@
 static success_t
 pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 {
-	elem_t *s_elem, *p_elem;
+	elem_t *s_elem, *p_elem, *ts_elem, *tp_elem;
 	unsigned char *s_cp, *p_cp;
 	int s_len, p_len;
 
@@ -41,12 +41,21 @@ pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 	p_elem = pattern->u.list.first;
 	while (s_elem && p_elem) {
 		if (s_elem->type != p_elem->type) {
-			break;  // no match if one has reached FRAGELEMs without the other
+			return FAIL;  // no match if one has reached FRAGELEMs without the other
 		}
 		if ((elemtype_t) (s_elem->type) == LISTELEM) {
 			if (s_elem->state != p_elem->state) {
-				break; // no match if the state structure is different,  e.g. OBJECT vs. OBJECT_LIST
+				return FAIL; // no match if the state structure is different,  e.g. OBJECT vs. OBJECT_LIST
 			}
+            ts_elem = s_elem;
+            tp_elem = p_elem;
+            while (ts_elem || tp_elem) { // quick test before recursing...
+                if (! (ts_elem && tp_elem)) {
+                    return FAIL;   // no match if the number of elems ism't the same
+                }
+                ts_elem = ts_elem->next;
+                tp_elem = tp_elem->next;
+            }
 		    return (pattern_r(CC, s_elem, p_elem));   // recurse
 		} else {	// FRAGELEM
 			s_len = 0;
@@ -63,24 +72,20 @@ pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 					p_len = p_elem->v.frag.len;
 					p_elem = p_elem->next;
 				}
-				if (s_len == 0 && p_len == 0) {	// reached the end of both strings with no mismatch
-					return SUCCESS; // so its a match
-				}
+                s_len--;
+                p_len--;
 				if (*p_cp == '*') {	// reached an '*' in the pattern
                                     //    - prefix match completed
                                     //    FIXME - no support here for suffix matching
-					return SUCCESS; // so its a match 
+					break; // so its a match 
 				}
-				if (s_len == 0 || p_len == 0) { // one reached the end without the other, so no match
-					break;
-				}
-				if (*s_cp++ != *p_cp++) {  // test is chars match, if they do then move on to test the next chars
-					break;  // else, no match
+				if (*s_cp++ != *p_cp++) {  // test if chars match, if they do then move on to test the next STRING
+					return FAIL;  // else, no match
 				}
 			}
 		}
 	}
-    return FAIL;
+    return SUCCESS;
 }
 
 // Look for pattern match(es) to the current subject (segregated into NODE and EDGE patterns).
