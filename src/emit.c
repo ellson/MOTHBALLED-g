@@ -10,6 +10,7 @@
 #include "stats.h"
 
 emit_t *emit;
+emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api};
 
 char char_prop(unsigned char prop, char noprop)
 {

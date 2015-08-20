@@ -14,26 +14,21 @@
 #include "parse.h"
 #include "dumpg.h"
 
-#if 0
-emit_t *emitters[] = {emit_t_api, emit_t_api1};
-#endif
-
 int main(int argc, char *argv[])
 {
 	success_t rc;
 	int opt, optnum, needstats;
+    int i;
 	struct timespec starttime;
 	FILE *out, *err;
-#if 0
     emit_t *ep;
-#endif
 
 	rc = clock_gettime(CLOCK_MONOTONIC_RAW, &starttime);
 	assert(rc == SUCCESS);
 
 	out = stdout;
 	err = stderr;
-    emit = emit_g_api;      // default emitter
+    emit = &g_api;      // default emitter
 	needstats = 0;		// stats default to no stats
 
 	while ((opt = getopt(argc, argv, "T:d::g::t::s")) != -1) {
@@ -43,17 +38,17 @@ int main(int argc, char *argv[])
 			optnum = 0;
 		switch (opt) {
         case 'T':
-#if 0
-            for (ep = (emit_t*)emitters; ep < (emit_t*)emitters + sizeof(emitters); ep += sizeof(emit_t*)) {
-fprintf(stdout, "-T%s\b", ep->name);
+            for (i = 0; i < SIZEOF_EMITTERS; i++) {
+                ep = emitters[i];
                 if (strcmp(optarg, ep->name) == 0) {
                     emit = ep;
                     break;
                 }
             }
-			fprintf(stderr, "No back-end found for format: -T%s\n", optarg);
-            exit(1);
-#endif
+            if (i >= SIZEOF_EMITTERS) {
+                fprintf(stderr, "No back-end found for format: -T%s\n", optarg);
+                exit(1);
+            }
             break;
 		case 'd':
 			switch (optnum) {
@@ -72,39 +67,6 @@ fprintf(stdout, "-T%s\b", ep->name);
 				break;
 			}
 
-			break;
-		case 'g':
-			switch (optnum) {
-			case 0:
-				emit = emit_g_api;
-				break;
-			case 1:
-				emit = emit_g_api1;
-				break;
-			case 2:
-				emit = emit_g_api2;
-				break;
-			default:
-				fprintf(stderr, "%s\n",
-					"-g0 = minimal space, -g1 = shell-friendly spacing");
-				exit(1);
-				break;
-			}
-			break;
-		case 't':
-			switch (optnum) {
-			case 0:
-				emit = emit_t_api;
-				break;
-			case 1:
-				emit = emit_t_api1;
-				break;
-			default:
-				fprintf(stderr, "%s\n",
-					"-t0 = input parse, -t1 = output tree");
-				exit(1);
-				break;
-			}
 			break;
 		case 's':
 			needstats = 1;

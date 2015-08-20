@@ -102,5 +102,6 @@ typedef struct {
 #define emit_frag(C, len, frag)
 //
 
-extern emit_t *emit,
-    *emit_t_api, *emit_t_api1, *emit_g_api, *emit_g_api1, *emit_g_api2;
+extern emit_t *emit, *emitters[];
+extern emit_t g_api, g1_api, g2_api, t_api, t1_api;
+#define SIZEOF_EMITTERS 5

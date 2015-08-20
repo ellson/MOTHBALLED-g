@@ -63,7 +63,7 @@ static void api_end_parse(context_t * C)
 	putc('\n', C->out);
 }
 
-static emit_t api = { "t",
+emit_t t_api = { "t",
 	/* api_start_parse */ NULL,
 	/* api_end_parse */ api_end_parse,
 
@@ -104,7 +104,7 @@ static void api1_act(container_context_t * CC, elem_t * tree)
 	print_list(CC->out, tree, 7, &sep);
 }
 
-static emit_t api1 = { "t1",
+emit_t t1_api = { "t1",
 	/* api_start_parse */ NULL,
 	/* api_end_parse */ api_end_parse,
 
@@ -136,5 +136,5 @@ static emit_t api1 = { "t1",
 	/* api_error */ print_error
 };
 
-emit_t *emit_t_api = &api;
-emit_t *emit_t_api1 = &api1;
+emit_t *emit_t_api = &t_api;
+emit_t *emit_t_api1 = &t1_api;
