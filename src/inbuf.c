@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <errno.h>
 #include <assert.h>
 
 #include "grammar.h"
@@ -19,6 +20,7 @@ inbuf_t *new_inbuf(void)
 	if (!free_inbuf_list) {	// if no inbufs in free_inbuf_list
 
 		free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbuf_t));
+// FIXME - use errno
 // FIXME - add proper run-time error handling
 		assert(free_inbuf_list);
 		stat_inbufmalloc++;

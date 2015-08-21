@@ -18,15 +18,10 @@ static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api}
 
 int main(int argc, char *argv[])
 {
-	success_t rc;
-	int opt, optnum, needstats;
-    int i;
+	int i, opt, optnum, needstats;
 	struct timespec starttime;
     emit_t *ep;
     context_t context = { 0 };  // the input context
-
-	rc = clock_gettime(CLOCK_MONOTONIC_RAW, &starttime);
-	assert(rc == SUCCESS);
 
     // set some defaults
     context.out = stdout;
@@ -51,23 +46,22 @@ int main(int argc, char *argv[])
             }
             if (i >= SIZEOF_EMITTERS) {
                 fprintf(context.err, "No back-end found for format: -T%s\n", optarg);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
             break;
 		case 'd':
 			switch (optnum) {
 			case 0:
 				dumpg();
-				exit(0);
+				exit(EXIT_SUCCESS);
 				break;
 			case 1:
 				printg();
-				exit(0);
+				exit(EXIT_SUCCESS);
 				break;
 			default:
-				fprintf(context.err, "%s\n",
-					"-d0 = linear walk, -d1 = recursive walk");
-				exit(1);
+				fprintf(context.err, "%s\n", "-d0 = linear walk, -d1 = recursive walk");
+				exit(EXIT_FAILURE);
 				break;
 			}
 
@@ -76,10 +70,8 @@ int main(int argc, char *argv[])
 			needstats = 1;
 			break;
 		default:
-			fprintf(context.err,
-				"Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n",
-				argv[0]);
-			exit(1);
+			fprintf(context.err, "Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -94,8 +86,15 @@ int main(int argc, char *argv[])
     context.pargc = &argc;
     context.argv = argv;
 
+    // starttime
+	if (clock_gettime(CLOCK_MONOTONIC_RAW, &starttime) != 0) {
+        // FIXME - use errno
+        fprintf(context.err,"%s: Error: Cannot determine start time from clock_gettime()", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
     emit_start_parse(&context);
-    rc = parse(&context);
+    parse(&context);
     emit_end_parse(&context);
 
 	if (needstats) {
@@ -103,6 +102,6 @@ int main(int argc, char *argv[])
 	}
 	// any errors in parse() will be handled by emit_error().  If we get here
 	// then exit with success
-	exit(SUCCESS);
+	exit(EXIT_SUCCESS);
 
 }

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <errno.h>
 #include <assert.h>
 
 #include "grammar.h"
@@ -19,6 +20,7 @@ static elem_t *new_elem_sub(elemtype_t type)
 	if (!free_elem_list) {	// if no elems in free_elem_list
 
 		free_elem_list = malloc(LISTALLOCNUM * size_elem_t);
+// FIXME - use errno
 // FIXME - add proper run-time error handling
 		assert(free_elem_list);
 		stat_elemmalloc++;

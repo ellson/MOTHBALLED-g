@@ -205,20 +205,19 @@ parse_r(container_context_t * CC, elem_t * root,
 		switch (si) {
 		case SUBJECT:
             branch.state = si;
+
 			// Perform EQL "same as in subject of previous ACT" substitutions
 			// Also classifies ACT as NODE or EDGE based on SUBJECT
 			sameas(CC, &branch);
+
+// FIXME - maybe do in same tree-walk as sameas()
+            hash_list(CC->hashname, &(CC->subject));   // generate output filename
+
 			// If this subject is not a pattern, then perform pattern matching and insertion if matched
 			if (!(CC->is_pattern = C->has_ast)) {
 				pattern(CC, root, &branch);
 			}
 
-// FIXME - need to have hash available for patttern match inserts
-// FIXME - maybe can defer hash until we know if we have any content?
-// FIXME - maybe do in same tree-walk as sameas()
-// FIXME - do we keep files open ???  (e.g. patterns are to the same file)
-
-            hash_list(CC->hashname, &(CC->subject));   // generate output filename
 			emit_subject(CC, &branch);	// emit hook for rewritten subject
 			break;
 		case ATTRIBUTES:
