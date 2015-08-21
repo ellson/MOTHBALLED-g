@@ -247,6 +247,11 @@ static success_t parse_activity(context_t * C)
 	container_context_t container_context = { 0 };
 
 	container_context.context = C;
+
+    // FIXME - need a name (i,e, the parent subject)
+    //       - hash it to produce a name suitable for a file name
+    //       - open a file or named pipe with that name.
+ 
 	container_context.out = C->out;
 	container_context.err = C->err;
 
@@ -262,7 +267,7 @@ static success_t parse_activity(context_t * C)
 		}
 	}
 
-	free_list(&container_context.prev_subject);
+	free_list(&container_context.subject);
 	free_list(&container_context.node_pattern_acts);
 	free_list(&container_context.edge_pattern_acts);
 

@@ -29,7 +29,7 @@ struct elem_s {
 			int len;	// length of frag
 		} frag;
 	} v;
-	// FIXME -- can't store type as elemtype_t or it would assume int.
+	// FIXME -- can't store type as elemtype_t, or state as state_t, or it would assume ints.
 	char type;		// LISTELEM or FRAGELEM
 	char state;		// state_machine state that generated this list
 };

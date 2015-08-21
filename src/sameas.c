@@ -101,7 +101,7 @@ success_t sameas(container_context_t * CC, elem_t * subject)
 	elem_t subject_rewrite = { 0 };
 
 	newsubject = &subject_rewrite;
-	oldsubject = &(CC->prev_subject);
+	oldsubject = &(CC->subject);
 	nextold = oldsubject->u.list.first;
 
     assert(subject);

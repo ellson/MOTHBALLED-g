@@ -20,15 +20,23 @@ typedef struct {		// input_context
 	FILE *err;	    	// the output file for errors
 } context_t;
 
-struct container_context_s {	// container_context (also output context)
-	elem_t prev_subject;	// preceeding ACT's subject,  for sameend substitution
-	elem_t node_pattern_acts;	// complete ACTs from whenever the subject contains an "*"
-	elem_t edge_pattern_acts;	// complete ACTs from whenever the subject contains an "*"
-	state_t act_type;	// records if the SUBJECT is NODES, or EDGES
-	char is_pattern;	// flag set if '*' occurred in SUBJECT
-	char sep;       	// the next separator
-    char style;         // normal or SHELL_FRIENDLY
+struct container_context_s {	// container_context
 	context_t *context;	// the input context
+	elem_t subject; 	// Preceeding ACT's subject, until this ACT's SUBJECT has been parsed
+                        // and processd by sameas()  - at which point it becomes this ACT's subject.
+                        // (So: in SUBJECT parsing it is the previous ACT's subject and used for sameas()
+                        // substitutions once a new SUBJECT has been parsed. For ATTRIBUTES
+                        // and CONTAINERS it is this ACT.   It is the basis of the name for
+                        // the output files for contents.)
+	char is_pattern;	// flag set if '*' occurred in SUBJECT
+	state_t act_type;	// set by sameas() to record if the SUBJECT is NODE(s), or EDGE(s),
+                        //   and to check that it is not a mix of NODE(s) and EDGE(s).
+	elem_t node_pattern_acts;	// complete ACTs from whenever the NODE subject contains an "*"
+	elem_t edge_pattern_acts;	// complete ACTs from whenever the EDGE subject contains an "*"
+	char sep;       	// the next separator (either 0, or ' ' if following a STRING that requires a separator.
+                        //   may be ignored if the next character is a token which implicitly separates.)
+    char style;         // normal or SHELL_FRIENDLY  // FIXME use enum with additional styles
+    char hash_subject[12];   // base-64 ascii of 64bit hash of subject, '\0' terminated, for use as filename for contents
 	FILE *out;	    	// the output file for this container
 	FILE *err;	    	// the output file for errors for this container
 
@@ -36,4 +44,7 @@ struct container_context_s {	// container_context (also output context)
 
 };
 
+// FIXME - use an enum for styles
+//       - other styles:    newline per ACT
+//                          newline per sameas() ACT set  (new ACT has no EQL in SUBJECT)
 #define SHELL_FRIENDLY_STYLE 1
