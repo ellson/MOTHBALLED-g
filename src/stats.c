@@ -27,6 +27,12 @@ long stat_elemmalloc;
 long stat_elemmax;
 long stat_elemnow;
 
+
+// FIXME - needs to be dynamically built on each viewing.
+//       - build in minimal-space g format,  then use pretty-printer
+//         for output.
+//       - same pretty-printer can be used for session
+
 void print_stats(FILE * chan, struct timespec *starttime)
 {
 	success_t rc;
