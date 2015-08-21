@@ -7,25 +7,50 @@
 #include "hash.h"
 
 #define MSB_LONG (8*(sizeof(long))-1)
+#define SEED 0xA5A5A5A5
 
-static void hashfrag(unsigned long *phash, int len, unsigned char *frag)
+// Objective:
+//    - produce names suitable for use as filenames
+//    - hash all the frags from all the strings from a tree of elem_t
+//      into a hashname that has ~0 chance of collision
+//    - minimal cpu cost
+// It is not an objective for this hash to be cryptographic.     
+
+static void hash_list_r(unsigned long *phash, elem_t *list)
 {
+	elem_t *elem;
 	unsigned long hash;
 	unsigned char *cp;
+    int len;
 
-	assert(phash);
-	assert(len > 0);
-
-	cp = frag;
-	hash = *phash;
-	while (len--) {
-		hash = ((hash ^ *cp++) << 1) ^ (hash >> MSB_LONG);
+//fprintf(stdout,"list\n");
+	if ((elem = list->u.list.first)) {
+	    switch ((elemtype_t) elem->type) {
+	    case FRAGELEM:
+fprintf(stdout,"fragelem\n");
+            while (elem) {
+fprintf(stdout,"frag\n");
+                cp = elem->u.frag.frag;
+                len = elem->v.frag.len;
+                assert(len > 0);
+                hash = *phash;
+                while (len--) {
+                    // XOR character with hash, then rotate hash left one bit.
+                    hash = ((hash ^ *cp++) << 1) ^ (hash >> MSB_LONG);
+                }
+                *phash = hash;
+                elem = elem->next;
+            }
+		    break;
+	    case LISTELEM:
+fprintf(stdout,"listelem\n");
+		    while (elem) {
+			    hash_list_r(phash, elem);	// recurse
+			    elem = elem->next;
+		    }
+		    break;
+	    }
 	}
-	*phash = hash;
-}
-
-static void hash_subject_r(unsigned long *phash, elem_t *list)
-{
 }
 
 // 64 ascii chars that are safe in filenames
@@ -46,13 +71,18 @@ static void base64(char *hashname, unsigned long hash)
         *hashname++ = b64[(hash & 0x3F)];
         hash >>= 6;
     }
-    *hashname = '0';
+    *hashname = '\0';
 }
 
 void hash_list(char *hashname, elem_t *list)
 {
     unsigned long hash;
 
-    hash_subject_r (&hash, list);
+    assert(sizeof(long) == 8);
+    assert(list);
+
+    hash = SEED;
+    hash_list_r(&hash, list);
     base64(hashname, hash);
+fprintf(stdout,"\n%08lx %s\n",hash, hashname);
 }

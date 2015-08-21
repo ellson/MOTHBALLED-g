@@ -36,7 +36,7 @@ struct container_context_s {	// container_context
 	char sep;       	// the next separator (either 0, or ' ' if following a STRING that requires a separator.
                         //   may be ignored if the next character is a token which implicitly separates.)
     char style;         // normal or SHELL_FRIENDLY  // FIXME use enum with additional styles
-    char hash_subject[12];   // base-64 ascii of 64bit hash of subject, '\0' terminated, for use as filename for contents
+    char hashname[12];  // base-64 ascii of 64bit hash of subject, '\0' terminated, for use as filename for contents
 	FILE *out;	    	// the output file for this container
 	FILE *err;	    	// the output file for errors for this container
 

@@ -215,6 +215,7 @@ parse_r(container_context_t * CC, elem_t * root,
 			if (!(CC->is_pattern = C->has_ast)) {
 				pattern(CC, root, &branch);
 			}
+            hash_list(&(CC->hashname), CC->subject);   // generate output filename
 			emit_subject(CC, &branch);	// emit hook for rewritten subject
 			break;
 		case ATTRIBUTES:
