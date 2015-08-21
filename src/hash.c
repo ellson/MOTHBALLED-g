@@ -7,7 +7,7 @@
 #include "hash.h"
 
 #define MSB_LONG (8*(sizeof(long))-1)
-#define SEED 0xA5A5A5A5
+#define SEED 0xA5A5A5A5A5A5A5A5
 
 // Objective:
 //    - produce names suitable for use as filenames
@@ -23,13 +23,10 @@ static void hash_list_r(unsigned long *phash, elem_t *list)
 	unsigned char *cp;
     int len;
 
-//fprintf(stdout,"list\n");
 	if ((elem = list->u.list.first)) {
 	    switch ((elemtype_t) elem->type) {
 	    case FRAGELEM:
-fprintf(stdout,"fragelem\n");
             while (elem) {
-fprintf(stdout,"frag\n");
                 cp = elem->u.frag.frag;
                 len = elem->v.frag.len;
                 assert(len > 0);
@@ -43,7 +40,6 @@ fprintf(stdout,"frag\n");
             }
 		    break;
 	    case LISTELEM:
-fprintf(stdout,"listelem\n");
 		    while (elem) {
 			    hash_list_r(phash, elem);	// recurse
 			    elem = elem->next;

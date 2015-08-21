@@ -94,9 +94,8 @@ sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 //     compare subject with oldsubject
 //     substitue EQL in newsubject from corresponding member of oldsubject (or error if old not available)
 //     replace subject and oldsubject with newsubject
-success_t sameas(container_context_t * CC, elem_t * subject)
+void sameas(container_context_t * CC, elem_t * subject)
 {
-	success_t rc;
 	elem_t *newsubject, *oldsubject, *nextold;
 	elem_t subject_rewrite = { 0 };
 
@@ -120,7 +119,4 @@ success_t sameas(container_context_t * CC, elem_t * subject)
 	assert(newsubject->u.list.first);
 	newsubject->u.list.first->v.list.refs++;	// and increase its reference count
 	*subject = *newsubject; //    to also save as the rewritten current subject
-
-	rc = SUCCESS;
-	return rc;
 }

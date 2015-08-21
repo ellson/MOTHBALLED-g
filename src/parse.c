@@ -208,14 +208,12 @@ parse_r(container_context_t * CC, elem_t * root,
             branch.state = si;
 			// Perform EQL "same as in subject of previous ACT" substitutions
 			// Also classifies ACT as NODE or EDGE based on SUBJECT
-			if ((rc = sameas(CC, &branch)) == FAIL) {
-				break;
-			}
+			sameas(CC, &branch);
 			// If this subject is not a pattern, then perform pattern matching and insertion if matched
 			if (!(CC->is_pattern = C->has_ast)) {
 				pattern(CC, root, &branch);
 			}
-            hash_list(&(CC->hashname), CC->subject);   // generate output filename
+            hash_list(&(CC->hashname), &(CC->subject));   // generate output filename
 			emit_subject(CC, &branch);	// emit hook for rewritten subject
 			break;
 		case ATTRIBUTES:
