@@ -10,22 +10,44 @@
 #include <assert.h>
 
 // This code collects info from the environment to:
-//          - provide a readable unique session name
+//          - populate session info into attributes of a 'g' NODE
+//          - provide a readable unique session name for session-freeze tar file names
 //          - capture start time for stats.
-//
-// This code is very likely Linux specific.  It is 
-// here so that it can be conditionally adapted as needed.
 
-void session(char *progname)
+// This code is very likely Linux specific, and may need canoditionals for porting to other OS.
+
+// The resulting info is collected into a buffer using minimal spacing g format
+// e.g.      "session[progname=g username=ellson hostname=work .... ]
+
+// There is an attribute pretty-printer function for when this is printed for the user.
+
+// This info is gathered just once, so a statically sized buffer is used. It is only filled
+// on the first call,  if session() is called again the same result is used.
+
+
+#define SESSION_BUF_SIZE 1024
+
+char * session(char *progname)
 {
-    int len;
+    static char buf[SESSION_BUF_SIZE];
+    static int space = SESSION_BUF_SIZE;
+
 	struct timespec starttime;
     struct passwd *pw;
     uid_t uid;
     pid_t pid;
     struct utsname unamebuf;
 
+    int len, pos;
+
+    if (*buf != '\0') { // have we been here before?
+        return buf;
+    }
+
     len = 0;
+    pos = 0;
+
+    len = strcpy(buf+pos,"session["); 
 
     // command name
 
