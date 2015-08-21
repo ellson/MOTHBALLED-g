@@ -4,7 +4,7 @@ void print_subject(container_context_t * CC, elem_t * subject);
 void print_attributes(container_context_t * CC, elem_t * attributes);
 void print_error(context_t * CC, state_t si, char *message);
 
-typedef struct {
+struct emit_s {
     char *name;
 	void (*start_parse) (context_t * C);
 	void (*end_parse) (context_t * C);
@@ -35,7 +35,7 @@ typedef struct {
 	void (*string) (context_t * C, elem_t * branch);
 	void (*frag) (context_t * C, unsigned char len, unsigned char *frag);
 	void (*error) (context_t * C, state_t si, char *message);
-} emit_t;
+};
 
 #define emit_start_parse(C) \
     if (emit->start_parse) {emit->start_parse(C);}
@@ -102,6 +102,7 @@ typedef struct {
 #define emit_frag(C, len, frag)
 //
 
-extern emit_t *emit, *emitters[];
-extern emit_t g_api, g1_api, g2_api, t_api, t1_api, gv_api;
 #define SIZEOF_EMITTERS 6
+#define EMITTERS g_api, g1_api, g2_api, t_api, t1_api, gv_api
+extern emit_t EMITTERS;
+extern emit_t *emit;

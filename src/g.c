@@ -9,10 +9,12 @@
 #include "inbuf.h"
 #include "list.h"
 #include "context.h"
-#include "stats.h"
 #include "emit.h"
+#include "stats.h"
 #include "parse.h"
 #include "dumpg.h"
+
+static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
 
 int main(int argc, char *argv[])
 {
@@ -20,15 +22,17 @@ int main(int argc, char *argv[])
 	int opt, optnum, needstats;
     int i;
 	struct timespec starttime;
-	FILE *out, *err;
     emit_t *ep;
+    context_t context = { 0 };  // the input context
 
 	rc = clock_gettime(CLOCK_MONOTONIC_RAW, &starttime);
 	assert(rc == SUCCESS);
 
-	out = stdout;
-	err = stderr;
-    emit = &g_api;      // default emitter
+    // set some defaults
+    context.out = stdout;
+    context.err = stderr;
+
+    emit = &g_api;      // default output engine (-T)
 	needstats = 0;		// stats default to no stats
 
 	while ((opt = getopt(argc, argv, "T:d::g::t::s")) != -1) {
@@ -46,7 +50,7 @@ int main(int argc, char *argv[])
                 }
             }
             if (i >= SIZEOF_EMITTERS) {
-                fprintf(stderr, "No back-end found for format: -T%s\n", optarg);
+                fprintf(context.err, "No back-end found for format: -T%s\n", optarg);
                 exit(1);
             }
             break;
@@ -61,7 +65,7 @@ int main(int argc, char *argv[])
 				exit(0);
 				break;
 			default:
-				fprintf(stderr, "%s\n",
+				fprintf(context.err, "%s\n",
 					"-d0 = linear walk, -d1 = recursive walk");
 				exit(1);
 				break;
@@ -72,7 +76,7 @@ int main(int argc, char *argv[])
 			needstats = 1;
 			break;
 		default:
-			fprintf(stderr,
+			fprintf(context.err,
 				"Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n",
 				argv[0]);
 			exit(1);
@@ -87,10 +91,15 @@ int main(int argc, char *argv[])
 		argc++;
 	}
 
-	rc = parse(&argc, argv, out, err);
+    context.pargc = &argc;
+    context.argv = argv;
+
+    emit_start_parse(&context);
+    rc = parse(&context);
+    emit_end_parse(&context);
 
 	if (needstats) {
-		print_stats(err, &starttime);
+		print_stats(context.err, &starttime);
 	}
 	// any errors in parse() will be handled by emit_error().  If we get here
 	// then exit with success

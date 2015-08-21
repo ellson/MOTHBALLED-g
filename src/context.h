@@ -1,3 +1,4 @@
+typedef struct emit_s emit_t;
 typedef struct container_context_s container_context_t;
 
 typedef struct {		// input_context

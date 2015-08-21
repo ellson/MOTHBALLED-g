@@ -13,6 +13,7 @@
 #include "token.h"
 #include "sameas.h"
 #include "pattern.h"
+#include "hash.h"
 
 // This parser recurses at two levels:
 //
@@ -50,8 +51,6 @@ static success_t more_rep(context_t * C, unsigned char prop)
 	}
 	return SUCCESS;		// more repetitions
 }
-
-static success_t parse_activity(context_t * C);	// forward declaration for recursion
 
 static success_t
 parse_r(container_context_t * CC, elem_t * root,
@@ -108,7 +107,7 @@ parse_r(container_context_t * CC, elem_t * root,
 	case ACTIVITY:          // Recursion into Contained activity
 		if (C->bi == LBE) {	// if not top-level of containment
 			C->bi = NLL;
-			rc = parse_activity(C);	// recursively process contained ACTIVITY in to its own root
+			rc = parse(C);	// recursively process contained ACTIVITY in to its own root
 			C->bi = C->insi;	// The char class that terminates the ACTIVITY
 			goto done;
 		}
@@ -213,7 +212,13 @@ parse_r(container_context_t * CC, elem_t * root,
 			if (!(CC->is_pattern = C->has_ast)) {
 				pattern(CC, root, &branch);
 			}
-            hash_list(&(CC->hashname), &(CC->subject));   // generate output filename
+
+// FIXME - need to have hash available for patttern match inserts
+// FIXME - maybe can defer hash until we know if we have any content?
+// FIXME - maybe do in same tree-walk as sameas()
+// FIXME - do we keep files open ???  (e.g. patterns are to the same file)
+
+            hash_list(CC->hashname, &(CC->subject));   // generate output filename
 			emit_subject(CC, &branch);	// emit hook for rewritten subject
 			break;
 		case ATTRIBUTES:
@@ -239,7 +244,7 @@ parse_r(container_context_t * CC, elem_t * root,
 	return rc;
 }
 
-static success_t parse_activity(context_t * C)
+success_t parse(context_t * C)
 {
 	success_t rc;
 	elem_t root = { 0 };	// the output parse tree
@@ -272,22 +277,5 @@ static success_t parse_activity(context_t * C)
 
 	C->containment--;
 	emit_end_activity(C);
-	return rc;
-}
-
-success_t parse(int *pargc, char *argv[], FILE * out, FILE * err)
-{
-	success_t rc;
-	context_t context = { 0 };	// the input context
-
-	context.pargc = pargc;
-	context.argv = argv;
-	context.out = out;
-	context.err = err;
-
-	emit_start_parse(&context);
-	rc = parse_activity(&context);
-	emit_end_parse(&context);
-
 	return rc;
 }

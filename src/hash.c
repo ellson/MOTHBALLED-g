@@ -59,15 +59,15 @@ static char b64[64] = {
     'Q','R','S','T','U','V','W','X','Y','Z','6','7','8','9','_',',',
 };
 
-static void base64(char *hashname, unsigned long hash)
+static void base64(char hashname[], unsigned long hash)
 {
     int i;
 
     for (i = 0; i < 11; i++) {
-        *hashname++ = b64[(hash & 0x3F)];
+        hashname[i] = b64[(hash & 0x3F)];
         hash >>= 6;
     }
-    *hashname = '\0';
+    hashname[i] = '\0';
 }
 
 void hash_list(char *hashname, elem_t *list)
@@ -80,5 +80,4 @@ void hash_list(char *hashname, elem_t *list)
     hash = SEED;
     hash_list_r(&hash, list);
     base64(hashname, hash);
-fprintf(stdout,"\n%08lx %s\n",hash, hashname);
 }
