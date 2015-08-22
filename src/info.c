@@ -32,7 +32,7 @@ long stat_elemmalloc;
 long stat_elemmax;
 long stat_elemnow;
 
-#define TEN9 10000000
+#define TEN9 1000000000
 
 static void g_append_token(char **pos, char *sep, char tok)
 {
@@ -198,7 +198,8 @@ char * g_stats(char * progname)
         fprintf(stderr,"%s: Error: Cannot determine runtime from clock_gettime()", progname);
         exit(EXIT_FAILURE);
     }
-	runtime = (nowtime.tv_sec * TEN9 + nowtime.tv_nsec) - (uptime.tv_sec * TEN9 + uptime.tv_nsec);
+	runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_nsec)
+            - ((unsigned long)uptime.tv_sec * TEN9 + (unsigned long)uptime.tv_nsec);
 
     g_append_string  (&pos, &sep, "runtime");
     g_append_token   (&pos, &sep, '=');

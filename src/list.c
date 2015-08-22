@@ -8,7 +8,7 @@
 #include "inbuf.h"
 #include "list.h"
 #include "context.h"
-#include "stats.h"
+#include "info.h"
 
 static elem_t *free_elem_list;
 

@@ -7,7 +7,7 @@
 #include "inbuf.h"
 #include "list.h"
 #include "context.h"
-#include "stats.h"
+#include "info.h"
 #include "emit.h"
 #include "parse.h"
 #include "token.h"

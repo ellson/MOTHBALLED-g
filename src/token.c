@@ -6,7 +6,7 @@
 #include "grammar.h"
 #include "inbuf.h"
 #include "list.h"
-#include "stats.h"
+#include "info.h"
 #include "context.h"
 #include "emit.h"
 #include "token.h"

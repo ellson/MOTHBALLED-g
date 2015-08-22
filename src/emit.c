@@ -7,7 +7,7 @@
 #include "list.h"
 #include "context.h"
 #include "emit.h"
-#include "stats.h"
+#include "info.h"
 
 emit_t *emit;    // global
 

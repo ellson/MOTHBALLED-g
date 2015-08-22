@@ -8,7 +8,7 @@
 #include "inbuf.h"
 #include "list.h"
 #include "context.h"
-#include "stats.h"
+#include "info.h"
 
 static inbuf_t *free_inbuf_list;
 
