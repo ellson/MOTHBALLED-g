@@ -10,7 +10,7 @@
 #include "list.h"
 #include "context.h"
 #include "emit.h"
-#include "stats.h"
+#include "info.h"
 #include "parse.h"
 #include "dumpg.h"
 
@@ -19,9 +19,10 @@ static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api}
 int main(int argc, char *argv[])
 {
 	int i, opt, optnum, needstats;
-	struct timespec starttime;
     emit_t *ep;
     context_t context = { 0 };  // the input context
+
+    g_session(argv[0]); // gather session info, including starttime for stats
 
     // set some defaults
     context.out = stdout;
@@ -86,19 +87,14 @@ int main(int argc, char *argv[])
     context.pargc = &argc;
     context.argv = argv;
 
-    // starttime
-	if (clock_gettime(CLOCK_MONOTONIC_RAW, &starttime) != 0) {
-        // FIXME - use errno
-        fprintf(context.err,"%s: Error: Cannot determine start time from clock_gettime()", argv[0]);
-        exit(EXIT_FAILURE);
-    }
-
     emit_start_parse(&context);
     parse(&context);
     emit_end_parse(&context);
 
 	if (needstats) {
-		print_stats(context.err, &starttime);
+        // FIXME - need pretty-printer
+        fprintf (stderr, "%s\n", g_session(argv[0]));
+        fprintf (stderr, "%s\n", g_stats(argv[0]));
 	}
 	// any errors in parse() will be handled by emit_error().  If we get here
 	// then exit with success
