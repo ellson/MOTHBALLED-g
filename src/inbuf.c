@@ -20,9 +20,10 @@ inbuf_t *new_inbuf(void)
 	if (!free_inbuf_list) {	// if no inbufs in free_inbuf_list
 
 		free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbuf_t));
-// FIXME - use errno
-// FIXME - add proper run-time error handling
-		assert(free_inbuf_list);
+        if (!free_inbuf_list) {
+            perror("Error - malloc(): ");
+            exit(EXIT_FAILURE);
+        }
 		stat_inbufmalloc++;
 
 		next = free_inbuf_list;	// link the new inbufs into free_inbuf_list

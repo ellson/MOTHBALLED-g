@@ -24,7 +24,6 @@ int main(int argc, char *argv[])
 
     // set some defaults
     context.out = stdout;
-    context.err = stderr;
 
     emit = &g_api;      // default output engine (-T)
 	needstats = 0;		// stats default to no stats
@@ -44,7 +43,7 @@ int main(int argc, char *argv[])
                 }
             }
             if (i >= SIZEOF_EMITTERS) {
-                fprintf(context.err, "No back-end found for format: -T%s\n", optarg);
+                fprintf(stderr, "No back-end found for format: -T%s\n", optarg);
                 exit(EXIT_FAILURE);
             }
             break;
@@ -59,7 +58,7 @@ int main(int argc, char *argv[])
 				exit(EXIT_SUCCESS);
 				break;
 			default:
-				fprintf(context.err, "%s\n", "-d0 = linear walk, -d1 = recursive walk");
+				fprintf(stderr, "%s\n", "-d0 = linear walk, -d1 = recursive walk");
 				exit(EXIT_FAILURE);
 				break;
 			}
@@ -69,7 +68,8 @@ int main(int argc, char *argv[])
 			needstats = 1;
 			break;
 		default:
-			fprintf(context.err, "Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
+// FIXME - add -T options to usage message
+			fprintf(stderr, "Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -89,8 +89,5 @@ int main(int argc, char *argv[])
     parse(&context, needstats);
     emit_end_parse(&context);
 
-	// any errors in parse() will be handled by emit_error().  If we get here
-	// then exit with success
 	exit(EXIT_SUCCESS);
-
 }

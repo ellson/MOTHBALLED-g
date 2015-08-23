@@ -20,9 +20,10 @@ static elem_t *new_elem_sub(elemtype_t type)
 	if (!free_elem_list) {	// if no elems in free_elem_list
 
 		free_elem_list = malloc(LISTALLOCNUM * size_elem_t);
-// FIXME - use errno
-// FIXME - add proper run-time error handling
-		assert(free_elem_list);
+        if (!free_elem_list) {
+            perror("Error - malloc(): ");
+            exit(EXIT_FAILURE);
+        }
 		stat_elemmalloc++;
 
 		next = free_elem_list;	// link the new elems into free_elem_list
@@ -224,8 +225,9 @@ void free_list(elem_t * list)
 
 static void print_one_frag(FILE * chan, unsigned char len, unsigned char *frag)
 {
-	while (len--)
+	while (len--) {
 		putc(*frag++, chan);
+    }
 }
 
 int print_len_frag(FILE * chan, unsigned char *len_frag)

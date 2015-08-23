@@ -52,7 +52,7 @@ long stat_elemnow;
 
 #define SESSION_BUF_SIZE 1024
 
-char * g_session(container_context_t *CC, char *progname)
+char * g_session(container_context_t *CC)
 {
     static char buf[SESSION_BUF_SIZE];
     static char *pos = &buf[0];  // NB. static. This initalization happens only once
@@ -72,7 +72,7 @@ char * g_session(container_context_t *CC, char *progname)
 
     g_append_string  (CC, &pos, "progname");
     g_append_token   (CC, &pos, '=');
-    g_append_qstring (CC, &pos, progname);
+    g_append_qstring (CC, &pos, CC->context->argv[0]);
 
     pid = getpid();
     g_append_string  (CC, &pos, "pid");
@@ -82,7 +82,7 @@ char * g_session(container_context_t *CC, char *progname)
     uid = geteuid();
     pw = getpwuid(uid);
     if (!pw) {
-        fprintf(stderr,"%s: Error: Cannot find username for UID %u\n", progname, (unsigned)uid);
+        perror("Error - getpwuid(): ");
         exit(EXIT_FAILURE);
     }
     g_append_string  (CC, &pos, "username");
@@ -90,8 +90,7 @@ char * g_session(container_context_t *CC, char *progname)
     g_append_string  (CC, &pos, pw->pw_name);
 
     if (uname(&unamebuf) != 0) {
-        // FIXME - use errno
-        fprintf(stderr,"%s: Error: Cannot find machine name\n", progname);
+        perror("Error - uname(): ");
         exit(EXIT_FAILURE);
     } 
     g_append_string  (CC, &pos, "hostname");
@@ -99,8 +98,7 @@ char * g_session(container_context_t *CC, char *progname)
     g_append_string  (CC, &pos, unamebuf.nodename);
 
 	if (clock_gettime(CLOCK_BOOTTIME, &uptime) != 0) {
-        // FIXME - use errno
-        fprintf(stderr,"%s: Error: Cannot determine uptime from clock_gettime()", progname);
+        perror("Errror - clock_gettime(): ");
         exit(EXIT_FAILURE);
     }
     g_append_string  (CC, &pos, "uptime");
@@ -108,8 +106,7 @@ char * g_session(container_context_t *CC, char *progname)
     g_append_ulong   (CC, &pos, uptime.tv_sec);
 
 	if (clock_gettime(CLOCK_REALTIME, &starttime) != 0) {
-        // FIXME - use errno
-        fprintf(stderr,"%s: Error: Cannot determine starttime from clock_gettime()", progname);
+        perror("Errror - clock_gettime(): ");
         exit(EXIT_FAILURE);
     }
     g_append_string  (CC, &pos, "starttime");
@@ -123,7 +120,7 @@ char * g_session(container_context_t *CC, char *progname)
 #define STATS_BUF_SIZE 2048
 #define TEN9 1000000000
 
-char * g_stats(container_context_t *CC, char * progname)
+char * g_stats(container_context_t *CC)
 {
     static char buf[STATS_BUF_SIZE];
 
@@ -135,8 +132,7 @@ char * g_stats(container_context_t *CC, char * progname)
     g_append_token   (CC, &pos, '[');
 
 	if (clock_gettime(CLOCK_BOOTTIME, &nowtime) != 0) {
-        // FIXME - use errno
-        fprintf(stderr,"%s: Error: Cannot determine runtime from clock_gettime()", progname);
+        perror("Errror - clock_gettime(): ");
         exit(EXIT_FAILURE);
     }
 	runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_nsec)

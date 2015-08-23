@@ -37,20 +37,27 @@ char char_prop(unsigned char prop, char noprop)
 
 void g_append_token(container_context_t *CC, char **pos, char tok)
 {
+    // FIXME - check available buffer space
                         // ignore sep before
     *(*pos)++ = tok;    // copy token
     **pos = '\0';       // and replace terminating NULL
-    CC->sep = 0;     // no sep required after tokens
+    CC->sep = 0;        // no sep required after tokens
 }
 
 void g_append_string(container_context_t *CC, char **pos, char *string)
 {
     int len;
 
-    if (CC->sep) *(*pos)++ = CC->sep; // sep before, if any
+    // FIXME - check available buffer space
+    if (CC->sep) {
+        *(*pos)++ = CC->sep; // sep before, if any
+    }
     len = sprintf(*pos,"%s",string);  // copy string
-    // FIXME - deal with errors
-    CC->sep = ' ';   // sep required after strings 
+    if (len < 0) {
+        perror("Error - sprintf(): ");
+        exit(EXIT_FAILURE);
+    }
+    CC->sep = ' ';      // sep required after strings 
     *pos += len;
 }
 
@@ -59,10 +66,16 @@ void g_append_qstring(container_context_t *CC, char **pos, char *string)
 {
     int len;
 
-    if (CC->sep) *(*pos)++ = CC->sep; // sep before, if any
+    // FIXME - check available buffer space
+    if (CC->sep) {
+        *(*pos)++ = CC->sep; // sep before, if any
+    }
     len = sprintf(*pos,"\"%s\"",string);  // copy string
-    // FIXME - deal with errors
-    CC->sep = ' ';   // sep required after strings 
+    if (len < 0) {
+        perror("Error - sprintf(): ");
+        exit(EXIT_FAILURE);
+    }
+    CC->sep = ' ';      // sep required after strings 
     *pos += len;
 }
 
@@ -70,10 +83,16 @@ void g_append_ulong(container_context_t *CC, char **pos, unsigned long integer)
 {
     int len;
 
-    if (CC->sep) *(*pos)++ = CC->sep; // sep before, if any
+    // FIXME - check available buffer space
+    if (CC->sep) {
+        *(*pos)++ = CC->sep; // sep before, if any
+    }
     len = sprintf(*pos,"%lu",integer); // format integer to string
-    // FIXME - deal with errors
-    CC->sep = ' ';   // sep required after strings
+    if (len < 0) {
+        perror("Error - sprintf(): ");
+        exit(EXIT_FAILURE);
+    }
+    CC->sep = ' ';      // sep required after strings
     *pos += len;
 }
 
@@ -82,9 +101,13 @@ void g_append_runtime(container_context_t *CC, char **pos, unsigned long run_sec
 {
     int len;
 
+    // FIXME - check available buffer space
     if (CC->sep) *(*pos)++ = CC->sep; // sep before, if any
     len = sprintf(*pos,"%lu.%09lu",run_sec, run_ns);
-    // FIXME - deal with errors
+    if (len < 0) {
+        perror("Error - sprintf(): ");
+        exit(EXIT_FAILURE);
+    }
     CC->sep = ' ';   // sep required after strings
     *pos += len;
 }
@@ -199,16 +222,16 @@ void print_error(context_t * C, state_t si, char *message)
 {
 	unsigned char *p, c;
 
-	fprintf(C->err, "\nError: %s ", message);
-	print_len_frag(C->err, NAMEP(si));
-	fprintf(C->err, "\n	  in \"%s\" line: %ld just before: \"",
+	fprintf(stderr, "Error: %s ", message);
+	print_len_frag(stderr, NAMEP(si));
+	fprintf(stderr, "\n	  in \"%s\" line: %ld just before: \"",
 		C->filename, (stat_lfcount ? stat_lfcount : stat_crcount) - C->linecount_at_start + 1);
 	p = C->in;
 	while ((c = *p++)) {
 		if (c == '\n' || c == '\r')
 			break;
-		putc(c, C->err);
+		putc(c, stderr);
 	}
-	fprintf(C->err, "\"\n");
-	exit(1);
+	fprintf(stderr, "\"\n");
+	exit(EXIT_FAILURE);
 }

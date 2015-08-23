@@ -18,7 +18,6 @@ typedef struct {		// input_context
 	char has_quote;		// flag set if STRING contains one or more DQT fragments
 	int containment;	// depth of containment
 	FILE *out;	    	// the output file 
-	FILE *err;	    	// the output file for errors
 } context_t;
 
 struct container_context_s {	// container_context
@@ -39,7 +38,6 @@ struct container_context_s {	// container_context
     char style;         // normal or SHELL_FRIENDLY  // FIXME use enum with additional styles
     char hashname[12];  // base-64 ascii of 64bit hash of subject, '\0' terminated, for use as filename for contents
 	FILE *out;	    	// the output file for this container
-	FILE *err;	    	// the output file for errors for this container
 
 	// FIXME  - place for fork header for layout process...
 

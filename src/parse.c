@@ -256,9 +256,8 @@ success_t parse(context_t * C, int needstats)
     //       - open a file or named pipe with that name.
  
 	container_context.out = C->out;
-	container_context.err = C->err;
 
-    g_session(&container_context, C->argv[0]); // gather session info, including starttime for stats
+    g_session(&container_context); // gather session info, including starttime for stats
 
 	emit_start_activity(C);
 	stat_containercount++;
@@ -278,8 +277,8 @@ success_t parse(context_t * C, int needstats)
 
     if (needstats) {
         // FIXME - need pretty-printer
-        fprintf (stderr, "%s\n", g_session(&container_context, C->argv[0]));
-        fprintf (stderr, "%s\n", g_stats(&container_context, C->argv[0]));
+        fprintf (stderr, "%s\n", g_session(&container_context));
+        fprintf (stderr, "%s\n", g_stats(&container_context));
     }
     
 	C->containment--;
