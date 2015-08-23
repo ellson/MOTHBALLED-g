@@ -1,1 +1,1 @@
-success_t parse(context_t * C);
+success_t parse(context_t * C, int needstats);

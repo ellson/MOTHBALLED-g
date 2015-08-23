@@ -35,57 +35,57 @@ char char_prop(unsigned char prop, char noprop)
 	return c;
 }
 
-void g_append_token(char **pos, char *sep, char tok)
+void g_append_token(container_context_t *CC, char **pos, char tok)
 {
-                        // ignore *sep before
+                        // ignore sep before
     *(*pos)++ = tok;    // copy token
     **pos = '\0';       // and replace terminating NULL
-    *sep = 0;           // no sep required after tokens
+    CC->sep = 0;     // no sep required after tokens
 }
 
-void g_append_string(char **pos, char *sep, char *string)
+void g_append_string(container_context_t *CC, char **pos, char *string)
 {
     int len;
 
-    if (*sep) *(*pos)++ = *sep; // sep before, if any
+    if (CC->sep) *(*pos)++ = CC->sep; // sep before, if any
     len = sprintf(*pos,"%s",string);  // copy string
     // FIXME - deal with errors
-    *sep = ' ';                 // sep required after strings 
+    CC->sep = ' ';   // sep required after strings 
     *pos += len;
 }
 
 // FIXME - qstring should only quote if necessay, and should do escapes
-void g_append_qstring(char **pos, char *sep, char *string)
+void g_append_qstring(container_context_t *CC, char **pos, char *string)
 {
     int len;
 
-    if (*sep) *(*pos)++ = *sep; // sep before, if any
+    if (CC->sep) *(*pos)++ = CC->sep; // sep before, if any
     len = sprintf(*pos,"\"%s\"",string);  // copy string
     // FIXME - deal with errors
-    *sep = ' ';                 // sep required after strings 
+    CC->sep = ' ';   // sep required after strings 
     *pos += len;
 }
 
-void g_append_ulong(char **pos, char *sep, unsigned long integer)
+void g_append_ulong(container_context_t *CC, char **pos, unsigned long integer)
 {
     int len;
 
-    if (*sep) *(*pos)++ = *sep; // sep before, if any
+    if (CC->sep) *(*pos)++ = CC->sep; // sep before, if any
     len = sprintf(*pos,"%lu",integer); // format integer to string
     // FIXME - deal with errors
-    *sep = ' ';                 // sep required after strings
+    CC->sep = ' ';   // sep required after strings
     *pos += len;
 }
 
 // special case formatter for runtime
-void g_append_runtime(char **pos, char *sep, unsigned long run_sec, unsigned long run_ns)
+void g_append_runtime(container_context_t *CC, char **pos, unsigned long run_sec, unsigned long run_ns)
 {
     int len;
 
-    if (*sep) *(*pos)++ = *sep; // sep before, if any
+    if (CC->sep) *(*pos)++ = CC->sep; // sep before, if any
     len = sprintf(*pos,"%lu.%09lu",run_sec, run_ns);
     // FIXME - deal with errors
-    *sep = ' ';                 // sep required after strings
+    CC->sep = ' ';   // sep required after strings
     *pos += len;
 }
 

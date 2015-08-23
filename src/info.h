@@ -1,5 +1,5 @@
-char * g_session(char *progname);
-char * g_stats(char *progname);
+char * g_session(container_context_t *CC, char *progname);
+char * g_stats(container_context_t *CC, char *progname);
 
 extern long stat_filecount;
 extern long stat_lfcount;

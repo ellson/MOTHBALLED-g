@@ -6,10 +6,10 @@
 #include "grammar.h"
 #include "inbuf.h"
 #include "list.h"
-#include "info.h"
 #include "context.h"
-#include "emit.h"
 #include "token.h"
+#include "emit.h"
+#include "info.h"
 
 // fill buffers from input files
 static success_t more_in(context_t * C)

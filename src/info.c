@@ -52,7 +52,7 @@ long stat_elemnow;
 
 #define SESSION_BUF_SIZE 1024
 
-char * g_session(char *progname)
+char * g_session(container_context_t *CC, char *progname)
 {
     static char buf[SESSION_BUF_SIZE];
     static char *pos = &buf[0];  // NB. static. This initalization happens only once
@@ -70,17 +70,17 @@ char * g_session(char *progname)
 
     sep = 0;
 
-    g_append_string  (&pos, &sep, "session");
-    g_append_token   (&pos, &sep, '[');
+    g_append_string  (CC, &pos, "session");
+    g_append_token   (CC, &pos, '[');
 
-    g_append_string  (&pos, &sep, "progname");
-    g_append_token   (&pos, &sep, '=');
-    g_append_qstring (&pos, &sep, progname);
+    g_append_string  (CC, &pos, "progname");
+    g_append_token   (CC, &pos, '=');
+    g_append_qstring (CC, &pos, progname);
 
     pid = getpid();
-    g_append_string  (&pos, &sep, "pid");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, pid);
+    g_append_string  (CC, &pos, "pid");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, pid);
 
     uid = geteuid();
     pw = getpwuid(uid);
@@ -88,45 +88,45 @@ char * g_session(char *progname)
         fprintf(stderr,"%s: Error: Cannot find username for UID %u\n", progname, (unsigned)uid);
         exit(EXIT_FAILURE);
     }
-    g_append_string  (&pos, &sep, "username");
-    g_append_token   (&pos, &sep, '=');
-    g_append_string  (&pos, &sep, pw->pw_name);
+    g_append_string  (CC, &pos, "username");
+    g_append_token   (CC, &pos, '=');
+    g_append_string  (CC, &pos, pw->pw_name);
 
     if (uname(&unamebuf) != 0) {
         // FIXME - use errno
         fprintf(stderr,"%s: Error: Cannot find machine name\n", progname);
         exit(EXIT_FAILURE);
     } 
-    g_append_string  (&pos, &sep, "hostname");
-    g_append_token   (&pos, &sep, '=');
-    g_append_string  (&pos, &sep, unamebuf.nodename);
+    g_append_string  (CC, &pos, "hostname");
+    g_append_token   (CC, &pos, '=');
+    g_append_string  (CC, &pos, unamebuf.nodename);
 
 	if (clock_gettime(CLOCK_BOOTTIME, &uptime) != 0) {
         // FIXME - use errno
         fprintf(stderr,"%s: Error: Cannot determine uptime from clock_gettime()", progname);
         exit(EXIT_FAILURE);
     }
-    g_append_string  (&pos, &sep, "uptime");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, uptime.tv_sec);
+    g_append_string  (CC, &pos, "uptime");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, uptime.tv_sec);
 
 	if (clock_gettime(CLOCK_REALTIME, &starttime) != 0) {
         // FIXME - use errno
         fprintf(stderr,"%s: Error: Cannot determine starttime from clock_gettime()", progname);
         exit(EXIT_FAILURE);
     }
-    g_append_string  (&pos, &sep, "starttime");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, starttime.tv_sec);
+    g_append_string  (CC, &pos, "starttime");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, starttime.tv_sec);
 
-    g_append_token   (&pos, &sep, ']');
+    g_append_token   (CC, &pos, ']');
     return buf;
 }
 
 #define STATS_BUF_SIZE 2048
 #define TEN9 1000000000
 
-char * g_stats(char * progname)
+char * g_stats(container_context_t *CC, char * progname)
 {
     static char buf[STATS_BUF_SIZE];
 
@@ -137,8 +137,8 @@ char * g_stats(char * progname)
 
     sep = 0;
 
-    g_append_string  (&pos, &sep, "stats");
-    g_append_token   (&pos, &sep, '[');
+    g_append_string  (CC, &pos, "stats");
+    g_append_token   (CC, &pos, '[');
 
 	if (clock_gettime(CLOCK_BOOTTIME, &nowtime) != 0) {
         // FIXME - use errno
@@ -148,103 +148,103 @@ char * g_stats(char * progname)
 	runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_nsec)
             - ((unsigned long)uptime.tv_sec * TEN9 + (unsigned long)uptime.tv_nsec);
 
-    g_append_string  (&pos, &sep, "runtime");
-    g_append_token   (&pos, &sep, '=');
-    g_append_runtime (&pos, &sep, runtime/TEN9, runtime%TEN9);
+    g_append_string  (CC, &pos, "runtime");
+    g_append_token   (CC, &pos, '=');
+    g_append_runtime (CC, &pos, runtime/TEN9, runtime%TEN9);
 
-    g_append_string  (&pos, &sep, "files");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_filecount);
+    g_append_string  (CC, &pos, "files");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_filecount);
 
-    g_append_string  (&pos, &sep, "lines");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, 1 + (stat_lfcount ? stat_lfcount : stat_crcount));
+    g_append_string  (CC, &pos, "lines");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, 1 + (stat_lfcount ? stat_lfcount : stat_crcount));
 
-    g_append_string  (&pos, &sep, "acts");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_actcount);
+    g_append_string  (CC, &pos, "acts");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_actcount);
 
-    g_append_string  (&pos, &sep, "acts_per_second");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_actcount*TEN9/runtime);
+    g_append_string  (CC, &pos, "acts_per_second");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_actcount*TEN9/runtime);
 
-    g_append_string  (&pos, &sep, "patterns");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_patterncount);
+    g_append_string  (CC, &pos, "patterns");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_patterncount);
 
-    g_append_string  (&pos, &sep, "containers");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_containercount);
+    g_append_string  (CC, &pos, "containers");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_containercount);
 
-    g_append_string  (&pos, &sep, "strings");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_stringcount);
+    g_append_string  (CC, &pos, "strings");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_stringcount);
 
-    g_append_string  (&pos, &sep, "fragmentss");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_fragcount);
+    g_append_string  (CC, &pos, "fragmentss");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_fragcount);
 
-    g_append_string  (&pos, &sep, "inchars");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_inchars);
+    g_append_string  (CC, &pos, "inchars");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_inchars);
 
-    g_append_string  (&pos, &sep, "chars_per_second");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_inchars + TEN9 / runtime);
+    g_append_string  (CC, &pos, "chars_per_second");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_inchars + TEN9 / runtime);
 
-    g_append_string  (&pos, &sep, "inbufsize");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, sizeof(inbuf_t));
+    g_append_string  (CC, &pos, "inbufsize");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, sizeof(inbuf_t));
 
-    g_append_string  (&pos, &sep, "inbufmax");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_inbufmax);
+    g_append_string  (CC, &pos, "inbufmax");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_inbufmax);
 
-    g_append_string  (&pos, &sep, "inbufnow");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_inbufnow);
+    g_append_string  (CC, &pos, "inbufnow");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_inbufnow);
 
-    g_append_string  (&pos, &sep, "elemsize");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, size_elem_t);
+    g_append_string  (CC, &pos, "elemsize");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, size_elem_t);
 
-    g_append_string  (&pos, &sep, "elemmax");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_elemmax);
+    g_append_string  (CC, &pos, "elemmax");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_elemmax);
 
-    g_append_string  (&pos, &sep, "elemnow");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_elemnow);
+    g_append_string  (CC, &pos, "elemnow");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_elemnow);
 
-    g_append_string  (&pos, &sep, "inbufmallocsize");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, INBUFALLOCNUM * sizeof(inbuf_t));
+    g_append_string  (CC, &pos, "inbufmallocsize");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, INBUFALLOCNUM * sizeof(inbuf_t));
 
-    g_append_string  (&pos, &sep, "inbufmalloccount");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_inbufmalloc);
+    g_append_string  (CC, &pos, "inbufmalloccount");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_inbufmalloc);
 
-    g_append_string  (&pos, &sep, "inbufmalloctotal");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t));
+    g_append_string  (CC, &pos, "inbufmalloctotal");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t));
 
-    g_append_string  (&pos, &sep, "elemmallocsize");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, LISTALLOCNUM * size_elem_t);
+    g_append_string  (CC, &pos, "elemmallocsize");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, LISTALLOCNUM * size_elem_t);
 
-    g_append_string  (&pos, &sep, "elemmalloccount");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_elemmalloc);
+    g_append_string  (CC, &pos, "elemmalloccount");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_elemmalloc);
 
-    g_append_string  (&pos, &sep, "elemmalloctotal");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, stat_elemmalloc * LISTALLOCNUM * size_elem_t);
+    g_append_string  (CC, &pos, "elemmalloctotal");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, stat_elemmalloc * LISTALLOCNUM * size_elem_t);
 
-    g_append_string  (&pos, &sep, "malloctotal");
-    g_append_token   (&pos, &sep, '=');
-    g_append_ulong   (&pos, &sep, (stat_elemmalloc * LISTALLOCNUM * size_elem_t)
+    g_append_string  (CC, &pos, "malloctotal");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, (stat_elemmalloc * LISTALLOCNUM * size_elem_t)
                         + (stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t)));
 
-    g_append_token   (&pos, &sep, ']');
+    g_append_token   (CC, &pos, ']');
     return buf;
 }

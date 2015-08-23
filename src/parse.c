@@ -107,7 +107,7 @@ parse_r(container_context_t * CC, elem_t * root,
 	case ACTIVITY:          // Recursion into Contained activity
 		if (C->bi == LBE) {	// if not top-level of containment
 			C->bi = NLL;
-			rc = parse(C);	// recursively process contained ACTIVITY in to its own root
+			rc = parse(C, 0);	// recursively process contained ACTIVITY in to its own root
 			C->bi = C->insi;	// The char class that terminates the ACTIVITY
 			goto done;
 		}
@@ -243,7 +243,7 @@ parse_r(container_context_t * CC, elem_t * root,
 	return rc;
 }
 
-success_t parse(context_t * C)
+success_t parse(context_t * C, int needstats)
 {
 	success_t rc;
 	elem_t root = { 0 };	// the output parse tree
@@ -257,6 +257,8 @@ success_t parse(context_t * C)
  
 	container_context.out = C->out;
 	container_context.err = C->err;
+
+    g_session(&container_context, C->argv[0]); // gather session info, including starttime for stats
 
 	emit_start_activity(C);
 	stat_containercount++;
@@ -274,6 +276,12 @@ success_t parse(context_t * C)
 	free_list(&container_context.node_pattern_acts);
 	free_list(&container_context.edge_pattern_acts);
 
+    if (needstats) {
+        // FIXME - need pretty-printer
+        fprintf (stderr, "%s\n", g_session(&container_context, C->argv[0]));
+        fprintf (stderr, "%s\n", g_stats(&container_context, C->argv[0]));
+    }
+    
 	C->containment--;
 	emit_end_activity(C);
 	return rc;

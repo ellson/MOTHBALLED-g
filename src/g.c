@@ -22,8 +22,6 @@ int main(int argc, char *argv[])
     emit_t *ep;
     context_t context = { 0 };  // the input context
 
-    g_session(argv[0]); // gather session info, including starttime for stats
-
     // set some defaults
     context.out = stdout;
     context.err = stderr;
@@ -88,14 +86,9 @@ int main(int argc, char *argv[])
     context.argv = argv;
 
     emit_start_parse(&context);
-    parse(&context);
+    parse(&context, needstats);
     emit_end_parse(&context);
 
-	if (needstats) {
-        // FIXME - need pretty-printer
-        fprintf (stderr, "%s\n", g_session(argv[0]));
-        fprintf (stderr, "%s\n", g_stats(argv[0]));
-	}
 	// any errors in parse() will be handled by emit_error().  If we get here
 	// then exit with success
 	exit(EXIT_SUCCESS);
