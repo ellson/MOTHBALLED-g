@@ -62,13 +62,10 @@ char * g_session(container_context_t *CC, char *progname)
     uid_t uid;
     pid_t pid;
     struct utsname unamebuf;
-    char sep;
 
     if (pos != &buf[0]) { // have we been here before?
         return buf;
     }
-
-    sep = 0;
 
     g_append_string  (CC, &pos, "session");
     g_append_token   (CC, &pos, '[');
@@ -133,9 +130,6 @@ char * g_stats(container_context_t *CC, char * progname)
     char *pos = &buf[0];  // NB non-static.  stats are updated and re-formatted on each call
 	struct timespec nowtime;
 	long runtime;    // runtime in nano-seconds
-    char sep;
-
-    sep = 0;
 
     g_append_string  (CC, &pos, "stats");
     g_append_token   (CC, &pos, '[');
