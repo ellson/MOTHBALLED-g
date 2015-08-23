@@ -12,6 +12,8 @@
 #include "grammar.h"
 #include "inbuf.h"
 #include "list.h"
+#include "context.h"
+#include "emit.h"
 #include "info.h"
 
 // globals
@@ -31,62 +33,6 @@ long stat_inbufnow;
 long stat_elemmalloc;
 long stat_elemmax;
 long stat_elemnow;
-
-#define TEN9 1000000000
-
-static void g_append_token(char **pos, char *sep, char tok)
-{
-                        // ignore *sep before
-    *(*pos)++ = tok;    // copy token
-    **pos = '\0';       // and replace terminating NULL
-    *sep = 0;           // no sep required after tokens
-}
-
-static void g_append_string(char **pos, char *sep, char *string)
-{
-    int len;
-
-    if (*sep) *(*pos)++ = *sep; // sep before, if any
-    len = sprintf(*pos,"%s",string);  // copy string
-    // FIXME - deal with errors
-    *sep = ' ';                 // sep required after strings 
-    *pos += len;
-}
-
-// FIXME - qstring should only quote if necessay, and should do escapes
-static void g_append_qstring(char **pos, char *sep, char *string)
-{
-    int len;
-
-    if (*sep) *(*pos)++ = *sep; // sep before, if any
-    len = sprintf(*pos,"\"%s\"",string);  // copy string
-    // FIXME - deal with errors
-    *sep = ' ';                 // sep required after strings 
-    *pos += len;
-}
-
-static void g_append_ulong(char **pos, char *sep, unsigned long integer)
-{
-    int len;
-
-    if (*sep) *(*pos)++ = *sep; // sep before, if any
-    len = sprintf(*pos,"%lu",integer); // format integer to string
-    // FIXME - deal with errors
-    *sep = ' ';                 // sep required after strings
-    *pos += len;
-}
-
-// special case formatter for runtime
-static void g_append_runtime(char **pos, char *sep, unsigned long runtime)
-{
-    int len;
-
-    if (*sep) *(*pos)++ = *sep; // sep before, if any
-    len = sprintf(*pos,"%lu.%09lu",runtime/TEN9, runtime%TEN9);
-    // FIXME - deal with errors
-    *sep = ' ';                 // sep required after strings
-    *pos += len;
-}
 
 // This code collects info from the environment to:
 //          - populate session info into attributes of a 'g' NODE
@@ -178,6 +124,7 @@ char * g_session(char *progname)
 }
 
 #define STATS_BUF_SIZE 2048
+#define TEN9 1000000000
 
 char * g_stats(char * progname)
 {
@@ -203,7 +150,7 @@ char * g_stats(char * progname)
 
     g_append_string  (&pos, &sep, "runtime");
     g_append_token   (&pos, &sep, '=');
-    g_append_runtime (&pos, &sep, runtime);
+    g_append_runtime (&pos, &sep, runtime/TEN9, runtime%TEN9);
 
     g_append_string  (&pos, &sep, "files");
     g_append_token   (&pos, &sep, '=');
