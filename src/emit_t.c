@@ -52,9 +52,7 @@ api_end_state(container_context_t * CC, char class, success_t rc, int nest, int 
 
 static void api_end_activity(container_context_t * CC)
 {
-	if (CC->context->containment == 0) {
-		putc('\n', CC->out);
-	}
+	putc('\n', CC->out);
 }
 
 emit_t t_api = { "t",

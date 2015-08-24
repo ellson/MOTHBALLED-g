@@ -49,7 +49,7 @@ static success_t more_in(context_t * C)
 		}
 	}
 	if (!C->file) {		// if there is no active input file
-		if (*(C->pargc)) {	//   then try to open the next file
+		if (*(C->pargc) > 0) {	//   then try to open the next file
 			C->filename = C->argv[0];
 			(*(C->pargc))--;
 			C->argv = &(C->argv[1]);
