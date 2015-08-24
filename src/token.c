@@ -277,6 +277,13 @@ success_t parse_string(context_t * C, elem_t * fraglist)
 	return rc;
 }
 
+// collect fragments to form a VSTRING token
+success_t parse_vstring(context_t * C, elem_t * fraglist)
+{
+    // FIXME - add extra features
+    return parse_string(C, fraglist);
+}
+
 // process single character tokens
 success_t parse_token(context_t * C)
 {

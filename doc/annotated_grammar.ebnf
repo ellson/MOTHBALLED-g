@@ -223,14 +223,13 @@
 # The various IDs are all represented by STRINGs
 
        ATTRID ::= STRING
-        VALUE ::= STRING
        NODEID ::= STRING
        PORTID ::= STRING
      DISAMBID ::= STRING
 
 # STRINGs, without quoting or escapes, can contain any characters
-# in the ABC and UTF classes.  Also AST, which when present means that
-# the entire ACT is a pattern, which can be used to provide 
+# in the ABC and UTF classes.  Also AST (in an unquoted portion of the STRING),
+# which when present means that the entire ACT is a pattern, which can be used to provide 
 # additional attributes or contents to future ACTs that match the pattern.
 
 # Example:
@@ -238,11 +237,16 @@
 
 # FIXME - need more details on patterns
 
-
 # STRINGs can use various quoting and escape mechanisms to contain any
 # character withou special meaning
 
 # FIXME - details of various quoting schemes
+
+        VALUE ::= VSTRING
+
+# VSTRING are like STRING, but allow additional characters '/' '\' ':'
+# which allows URLs and file paths as VALUES without quoting.  Also VSTRING supports
+# additional quoting mechanisms (FIXME - not yet implemented - will include HTML-like).
 
           BIN ::= '0x01'|'0x02'|'0x03'|'0x04'|'0x05'|'0x06'|'0x07'|'0x08'|'0x0b'|'0x0c'
                 | '0x0e'|'0x0f'|'0x10'|'0x11'|'0x12'|'0x13'|'0x14'|'0x15'|'0x16'|'0x17'

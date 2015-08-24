@@ -119,6 +119,12 @@ parse_r(container_context_t * CC, elem_t * root,
 		goto done;
 		break;
 
+	case VSTRING:            // Value Strings
+		rc = parse_vstring(C, &branch);
+		C->bi = C->insi;	// the char class that terminates the VSTRING
+		goto done;
+		break;
+
 		// the remainder of the switch() is just state initialization and emit hooks;
 	case ACT:
 		// This is a bit ugly.
