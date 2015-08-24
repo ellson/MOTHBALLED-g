@@ -17,7 +17,6 @@
 #include "info.h"
 
 // globals
-struct timespec uptime;
 long stat_filecount;
 long stat_lfcount;
 long stat_crcount;
@@ -62,6 +61,7 @@ char * g_session(container_context_t *CC)
     uid_t uid;
     pid_t pid;
     struct utsname unamebuf;
+    context_t *C = CC->context;
 
     if (pos != &buf[0]) { // have we been here before?
         return buf;
@@ -72,7 +72,7 @@ char * g_session(container_context_t *CC)
 
     g_append_string  (CC, &pos, "progname");
     g_append_token   (CC, &pos, '=');
-    g_append_qstring (CC, &pos, CC->context->argv[0]);
+    g_append_qstring (CC, &pos, C->progname);
 
     pid = getpid();
     g_append_string  (CC, &pos, "pid");
@@ -97,13 +97,13 @@ char * g_session(container_context_t *CC)
     g_append_token   (CC, &pos, '=');
     g_append_string  (CC, &pos, unamebuf.nodename);
 
-	if (clock_gettime(CLOCK_BOOTTIME, &uptime) != 0) {
+	if (clock_gettime(CLOCK_BOOTTIME, &(C->uptime)) != 0) {
         perror("Errror - clock_gettime(): ");
         exit(EXIT_FAILURE);
     }
     g_append_string  (CC, &pos, "uptime");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, uptime.tv_sec);
+    g_append_ulong   (CC, &pos, C->uptime.tv_sec);
 
 	if (clock_gettime(CLOCK_REALTIME, &starttime) != 0) {
         perror("Errror - clock_gettime(): ");
@@ -127,6 +127,7 @@ char * g_stats(container_context_t *CC)
     char *pos = &buf[0];  // NB non-static.  stats are updated and re-formatted on each call
 	struct timespec nowtime;
 	long runtime;    // runtime in nano-seconds
+    context_t *C = CC->context;
 
     g_append_string  (CC, &pos, "stats");
     g_append_token   (CC, &pos, '[');
@@ -136,7 +137,7 @@ char * g_stats(container_context_t *CC)
         exit(EXIT_FAILURE);
     }
 	runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_nsec)
-            - ((unsigned long)uptime.tv_sec * TEN9 + (unsigned long)uptime.tv_nsec);
+            - ((unsigned long)(C->uptime.tv_sec) * TEN9 + (unsigned long)(C->uptime.tv_nsec));
 
     g_append_string  (CC, &pos, "runtime");
     g_append_token   (CC, &pos, '=');

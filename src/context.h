@@ -2,6 +2,7 @@ typedef struct emit_s emit_t;
 typedef struct container_context_s container_context_t;
 
 typedef struct {		// input_context
+	char *progname;		// name of program
 	int *pargc;	    	// remaining filenames from command line
 	char **argv;
 	char *filename;		// name of file currently being processed, or "-" for stdin
@@ -18,6 +19,8 @@ typedef struct {		// input_context
 	char has_quote;		// flag set if STRING contains one or more DQT fragments
 	int containment;	// depth of containment
 	FILE *out;	    	// the output file 
+	struct timespec uptime; // seconds since boot, also used as the starttime fpr runtime calculations
+
 } context_t;
 
 struct container_context_s {	// container_context

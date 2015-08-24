@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
 
     // set some defaults
     context.out = stdout;
+    context.progname = argv[0];
 
     emit = &g_api;      // default output engine (-T)
 	needstats = 0;		// stats default to no stats
@@ -69,7 +70,7 @@ int main(int argc, char *argv[])
 			break;
 		default:
 // FIXME - add -T options to usage message
-			fprintf(stderr, "Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
+			fprintf(stderr, "Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", context.progname);
 			exit(EXIT_FAILURE);
 		}
 	}
