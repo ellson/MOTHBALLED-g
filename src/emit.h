@@ -16,8 +16,8 @@ struct emit_s {
 	void (*start_file) (context_t * C);
 	void (*end_file) (context_t * C);
 
-	void (*start_activity) (context_t * C);
-	void (*end_activity) (context_t * C);
+	void (*start_activity) (container_context_t * CC);
+	void (*end_activity) (container_context_t * CC);
 
 	void (*start_act) (container_context_t * CC);
 	void (*end_act) (container_context_t * CC);
@@ -25,19 +25,17 @@ struct emit_s {
 	void (*start_subject) (container_context_t * CC);
 	void (*end_subject) (container_context_t * CC);
 
-	void (*start_state) (context_t * C, char class, unsigned char prop,
-			     int nest, int repc);
-	void (*end_state) (context_t * C, char class, success_t rc, int nest,
-			   int repc);
+	void (*start_state) (container_context_t * CC, char class, unsigned char prop, int nest, int repc);
+	void (*end_state) (container_context_t * CC, char class, success_t rc, int nest, int repc);
 
 	void (*act) (container_context_t * CC, elem_t * root);
 	void (*subject) (container_context_t * CC, elem_t * root);
 	void (*attributes) (container_context_t * CC, elem_t * root);
 
-	void (*sep) (context_t * C);
-	void (*token) (context_t * C, char token);
-	void (*string) (context_t * C, elem_t * branch);
-	void (*frag) (context_t * C, unsigned char len, unsigned char *frag);
+	void (*sep) (container_context_t * CC);
+	void (*token) (container_context_t * CC, char token);
+	void (*string) (container_context_t * CC, elem_t * branch);
+	void (*frag) (container_context_t * CC, unsigned char len, unsigned char *frag);
 	void (*error) (context_t * C, state_t si, char *message);
 };
 
@@ -51,10 +49,10 @@ struct emit_s {
 #define emit_end_file(C) \
     if (emit->end_file) {emit->end_file(C);}
 
-#define emit_start_activity(C) \
-    if (emit->start_activity) {emit->start_activity(C);}
-#define emit_end_activity(C) \
-    if (emit->end_activity) {emit->end_activity(C);}
+#define emit_start_activity(CC) \
+    if (emit->start_activity) {emit->start_activity(CC);}
+#define emit_end_activity(CC) \
+    if (emit->end_activity) {emit->end_activity(CC);}
 
 #define emit_start_act(CC) \
     if (emit->start_act) {emit->start_act(CC);}
@@ -77,14 +75,14 @@ struct emit_s {
 #define emit_attributes(CC, root) \
     if (emit->attributes) {emit->attributes(CC, root);}
 
-#define emit_sep(C) \
-    if (emit->sep) {emit->sep(C);}
-#define emit_token(C, token) \
-    if (emit->token) {emit->token(C, token);}
-#define emit_string(C, branch) \
-    if (emit->string) {emit->string(C, branch);}
-#define emit_frag(C, len, frag) \
-    if (emit->frag) {emit->frag(C, len, frag);}
+#define emit_sep(CC) \
+    if (emit->sep) {emit->sep(CC);}
+#define emit_token(CC, token) \
+    if (emit->token) {emit->token(CC, token);}
+#define emit_string(CC, branch) \
+    if (emit->string) {emit->string(CC, branch);}
+#define emit_frag(CC, len, frag) \
+    if (emit->frag) {emit->frag(CC, len, frag);}
 #define emit_error(C, si, message) \
     if (emit->error) {emit->error(C, si, message);}
 

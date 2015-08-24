@@ -18,16 +18,13 @@ static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api}
 
 int main(int argc, char *argv[])
 {
-	int i, opt, optnum, needstats;
+	int i, opt, optnum;
     emit_t *ep;
     context_t context = { 0 };  // the input context
 
-    // set some defaults
-    context.out = stdout;
     context.progname = argv[0];
 
     emit = &g_api;      // default output engine (-T)
-	needstats = 0;		// stats default to no stats
 
 	while ((opt = getopt(argc, argv, "T:d::g::t::s")) != -1) {
 		if (optarg)
@@ -66,7 +63,7 @@ int main(int argc, char *argv[])
 
 			break;
 		case 's':
-			needstats = 1;
+			context.needstats = 1;
 			break;
 		default:
 // FIXME - add -T options to usage message
@@ -87,7 +84,7 @@ int main(int argc, char *argv[])
     context.argv = argv;
 
     emit_start_parse(&context);
-    parse(&context, needstats);
+    parse(&context);
     emit_end_parse(&context);
 
 	exit(EXIT_SUCCESS);

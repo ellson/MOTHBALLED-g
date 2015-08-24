@@ -7,38 +7,38 @@
 #include "context.h"
 #include "emit.h"
 
-static void api_sep(context_t *C)
+static void api_end_activity(container_context_t * CC)
 {
-	putc(' ', C->out);
+	putc('\n', CC->out);
 }
 
-static void api_string(context_t *C, elem_t * branch)
+static void api_sep(container_context_t * CC)
+{
+	putc(' ', CC->out);
+}
+
+static void api_string(container_context_t *CC, elem_t * branch)
 {
     char sep;
 
     sep = 0;
-	print_list(C->out, branch, -1, &sep);
+	print_list(CC->out, branch, -1, &sep);
 }
 
-static void api_token(context_t *C, char token)
+static void api_token(container_context_t *CC, char token)
 {
-	putc(token, C->out);
-}
-
-static void api_end_parse(context_t *C)
-{
-	putc('\n', C->out);
+	putc(token, CC->out);
 }
 
 emit_t g_api = { "g",
 	/* api_start_parse */ NULL,
-	/* api_end_parse */ api_end_parse,
+	/* api_end_parse */ NULL,
 
 	/* api_start_file */ NULL,
 	/* api_end_file */ NULL,
 
 	/* api_start_activity */ NULL,
-	/* api_end_activity */ NULL,
+	/* api_end_activity */ api_end_activity,
 
 	/* api_start_act */ NULL,
 	/* api_end_act */ NULL,
@@ -62,27 +62,22 @@ emit_t g_api = { "g",
 	/* api_error */ print_error
 };
 
-static void api1_token(context_t *C, char token)
+static void api1_token(container_context_t * CC, char token)
 {
-	putc('\n', C->out);
-	putc(token, C->out);
-	putc(' ', C->out);
-}
-
-static void api1_end_activity(context_t *C)
-{
-	putc('\n', C->out);
+	putc('\n', CC->out);
+	putc(token, CC->out);
+	putc(' ', CC->out);
 }
 
 emit_t g1_api = { "g1",
 	/* api_start_parse */ NULL,
-	/* api_end_parse */ api_end_parse,
+	/* api_end_parse */ NULL,
 
 	/* api_start_file */ NULL,
 	/* api_end_file */ NULL,
 
 	/* api_start_activity */ NULL,
-	/* api_end_activity */ api1_end_activity,
+	/* api_end_activity */ api_end_activity,
 
 	/* api_start_act */ NULL,
 	/* api_end_act */ NULL,
@@ -106,23 +101,25 @@ emit_t g1_api = { "g1",
 	/* api_error */ print_error
 };
 
-static void api2_start_activity(context_t *C)
+static void api2_start_activity(container_context_t * CC)
 {
-	if (C->containment) {
-		putc('{', C->out);
+	if (CC->context->containment) {
+		putc('{', CC->out);
 	}
 }
 
-static void api2_end_activity(context_t *C)
+static void api2_end_activity(container_context_t * CC)
 {
-	if (C->containment) {
-		putc('}', C->out);
-	}
+	if (CC->context->containment) {
+		putc('}', CC->out);
+	} else {
+        putc('\n', CC->out);
+    }
 }
 
 emit_t g2_api = { "g2",
 	/* api_start_parse */ NULL,
-	/* api_end_parse */ api_end_parse,
+	/* api_end_parse */ NULL,
 
 	/* api_start_file */ NULL,
 	/* api_end_file */ NULL,

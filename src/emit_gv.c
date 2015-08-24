@@ -7,25 +7,25 @@
 #include "context.h"
 #include "emit.h"
 
-static void api_start_parse(context_t *C)
+static void api_start_activity(container_context_t * CC)
 {
-	fprintf(C->out, "graph {\n");
+	fprintf(CC->out, "graph {\n");
 }
 
-static void api_end_parse(context_t *C)
+static void api_end_activity(container_context_t * CC)
 {
-	fprintf(C->out, "\n}\n");
+	fprintf(CC->out, "\n}\n");
 }
 
 emit_t gv_api = { "gv",
-	/* api_start_parse */ api_start_parse,
-	/* api_end_parse */ api_end_parse,
+	/* api_start_parse */ NULL,
+	/* api_end_parse */ NULL,
 
 	/* api_start_file */ NULL,
 	/* api_end_file */ NULL,
 
-	/* api_start_activity */ NULL,
-	/* api_end_activity */ NULL,
+	/* api_start_activity */ api_start_activity,
+	/* api_end_activity */ api_end_activity,
 
 	/* api_start_act */ NULL,
 	/* api_end_act */ NULL,

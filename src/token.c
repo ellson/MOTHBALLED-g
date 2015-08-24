@@ -151,9 +151,10 @@ static success_t parse_non_comment(context_t * C)
 }
 
 // consume all whitespace or comments up to next token, or EOF
-success_t parse_whitespace(context_t * C)
+success_t parse_whitespace(container_context_t * CC)
 {
 	success_t rc;
+    context_t *C = CC->context;
 
 	rc = SUCCESS;
 	while (1) {
@@ -246,9 +247,10 @@ static int parse_string_fragment(context_t * C, elem_t * fraglist)
 }
 
 // collect fragments to form a STRING token
-success_t parse_string(context_t * C, elem_t * fraglist)
+success_t parse_string(container_context_t * CC, elem_t * fraglist)
 {
 	int len, slen;
+    context_t *C = CC->context;
 
 	C->has_quote = 0;
 	slen = parse_string_fragment(C, fraglist);	// leading string
@@ -268,7 +270,7 @@ success_t parse_string(context_t * C, elem_t * fraglist)
 		} else {
 			fraglist->state = ABC;
 		}
-		emit_string(C, fraglist);
+		emit_string(CC, fraglist);
 		return SUCCESS;
 	}
 	return FAIL;
@@ -348,9 +350,10 @@ static int parse_vstring_fragment(context_t * C, elem_t * fraglist)
 }
 
 // collect fragments to form a VSTRING token
-success_t parse_vstring(context_t * C, elem_t * fraglist)
+success_t parse_vstring(container_context_t * CC, elem_t * fraglist)
 {
 	int len, slen;
+    context_t *C = CC->context;
 
 	C->has_quote = 0;
 	slen = parse_vstring_fragment(C, fraglist);	// leading string
@@ -370,19 +373,20 @@ success_t parse_vstring(context_t * C, elem_t * fraglist)
 		} else {
 			fraglist->state = ABC;
 		}
-		emit_string(C, fraglist);  // FIXME ?
+		emit_string(CC, fraglist);  // FIXME ?
 		return SUCCESS;
 	} 
 	return FAIL;
 }
 
 // process single character tokens
-success_t parse_token(context_t * C)
+success_t parse_token(container_context_t * CC)
 {
 	char token;
+    context_t *C = CC->context;
 
 	token = state_token[C->insi];
-	emit_token(C, token);
+	emit_token(CC, token);
 	C->insi = char2state[*++(C->in)];
 	return SUCCESS;
 }

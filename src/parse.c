@@ -30,9 +30,10 @@
 // The outer recursion is through nested containment.
 // The top-level context (C) is available to both and maintains the input state.
 
-static success_t more_rep(context_t * C, unsigned char prop)
+static success_t more_rep(container_context_t * CC, unsigned char prop)
 {
 	state_t ei, bi;
+    context_t *C = CC->context;
 
 	if (!(prop & (REP | SREP)))
 		return FAIL;
@@ -47,7 +48,7 @@ static success_t more_rep(context_t * C, unsigned char prop)
 		return SUCCESS;	// more repetitions, but additional WS sep is optional
 	}
 	if (prop & SREP) {
-		emit_sep(C);	// sep is non-optional, emit the minimal sep
+		emit_sep(CC);	// sep is non-optional, emit the minimal sep
 	}
 	return SUCCESS;		// more repetitions
 }
@@ -62,13 +63,11 @@ parse_r(container_context_t * CC, elem_t * root,
 	success_t rc;
 	elem_t *elem;
 	elem_t branch = { 0 };
-	context_t *C;
+	context_t *C = CC->context;
 	static unsigned char nullstring[] = { '\0' };
 
-	C = CC->context;
-
 	rc = SUCCESS;
-	emit_start_state(C, si, prop, nest, repc);
+	emit_start_state(CC, si, prop, nest, repc);
 	branch.state = si;
 
 	nest++;
@@ -92,14 +91,14 @@ parse_r(container_context_t * CC, elem_t * root,
 	C->ei = C->insi;	// the char class that ended the last token
 
 	// Whitespace
-	if ((rc = parse_whitespace(C)) == FAIL) {
+	if ((rc = parse_whitespace(CC)) == FAIL) {
 		goto done;	// EOF during whitespace
 	}
 
 	// Special character tokens
 	if (si == C->insi) {	// single character terminals matching state_machine expectation
 		C->bi = C->insi;
-		rc = parse_token(C);
+		rc = parse_token(CC);
 		C->ei = C->insi;
 		goto done;
 	}
@@ -107,20 +106,20 @@ parse_r(container_context_t * CC, elem_t * root,
 	case ACTIVITY:          // Recursion into Contained activity
 		if (C->bi == LBE) {	// if not top-level of containment
 			C->bi = NLL;
-			rc = parse(C, 0);	// recursively process contained ACTIVITY in to its own root
+			rc = parse(CC->context);	// recursively process contained ACTIVITY in to its own root
 			C->bi = C->insi;	// The char class that terminates the ACTIVITY
 			goto done;
 		}
 		break;
 
 	case STRING:            // Strings
-		rc = parse_string(C, &branch);
+		rc = parse_string(CC, &branch);
 		C->bi = C->insi;	// the char class that terminates the STRING
 		goto done;
 		break;
 
 	case VSTRING:            // Value Strings
-		rc = parse_vstring(C, &branch);
+		rc = parse_vstring(CC, &branch);
 		C->bi = C->insi;	// the char class that terminates the VSTRING
 		goto done;
 		break;
@@ -152,7 +151,7 @@ parse_r(container_context_t * CC, elem_t * root,
 			C->stat_actcount++;
 		}
 
-		free_list(C, root);	// now we're done with the last ACT
+		free_list(CC, root);	// now we're done with the last ACT
 		                    // and we can really start on the new ACT
 		break;
 	case SUBJECT:
@@ -186,7 +185,7 @@ parse_r(container_context_t * CC, elem_t * root,
 			repc = 0;
 			if (nprop & OPT) {          // OPTional
 				if ((parse_r(CC, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
-					while (more_rep(C, nprop) == SUCCESS) {
+					while (more_rep(CC, nprop) == SUCCESS) {
 						if (parse_r(CC, &branch, ni, nprop, nest, repc++) == FAIL) {
 							break;
 						}
@@ -196,7 +195,7 @@ parse_r(container_context_t * CC, elem_t * root,
 				if ((rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 					break;
 				}
-				while (more_rep(C, nprop) == SUCCESS) {
+				while (more_rep(CC, nprop) == SUCCESS) {
 					if ((rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 						break;
 					}
@@ -244,12 +243,12 @@ parse_r(container_context_t * CC, elem_t * root,
 	}
 	nest--;
 	assert(nest >= 0);
-	emit_end_state(C, si, rc, nest, repc);
+	emit_end_state(CC, si, rc, nest, repc);
 
 	return rc;
 }
 
-success_t parse(context_t * C, int needstats)
+success_t parse(context_t * C)
 {
 	success_t rc;
 	elem_t root = { 0 };	// the output parse tree
@@ -261,11 +260,11 @@ success_t parse(context_t * C, int needstats)
     //       - hash it to produce a name suitable for a file name
     //       - open a file or named pipe with that name.
  
-	container_context.out = C->out;
+	container_context.out = stdout;
 
     g_session(&container_context); // gather session info, including starttime for stats
 
-	emit_start_activity(C);
+	emit_start_activity(&container_context);
 	C->stat_containercount++;
 	C->containment++;
 
@@ -281,13 +280,13 @@ success_t parse(context_t * C, int needstats)
 	free_list(C, &container_context.node_pattern_acts);
 	free_list(C, &container_context.edge_pattern_acts);
 
-    if (needstats) {
+    if (C->needstats) {
         // FIXME - need pretty-printer
         fprintf (stderr, "%s\n", g_session(&container_context));
         fprintf (stderr, "%s\n", g_stats(&container_context));
     }
     
 	C->containment--;
-	emit_end_activity(C);
+	emit_end_activity(&container_context);
 	return rc;
 }

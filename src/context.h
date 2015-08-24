@@ -3,15 +3,21 @@ typedef struct emit_s emit_t;
 typedef struct context_s context_t;
 typedef struct container_context_s container_context_t;
 
+struct hashfile_s {
+    char hashname[12];
+    FILE *out;
+};
+
 struct context_s {		// input_context
 	char *progname;		// name of program
 	int *pargc;	    	// remaining filenames from command line
 	char **argv;
 	char *filename;		// name of file currently being processed, or "-" for stdin
 	FILE *file;	    	// open file handle for file currently being processed
-	long linecount_at_start;	// activity line count when this file was opened.
 	inbuf_t *inbuf;		// the active input buffer
 	unsigned char *in;	// next charater to be processed
+    inbuf_t *free_inbuf_list; // linked list of unused inbufs
+    elem_t *free_elem_list; // linked list of unused list elems
 	state_t insi;		// state represented by last character read
 	state_t ei;	    	// ei, bi are used to determine whitespace needs around STRINGs
 	state_t bi;
@@ -19,11 +25,9 @@ struct context_s {		// input_context
 	char has_ast;		// flag set if an '*' is found in a STRING
 	char in_quote;		// flag set if between "..."
 	char has_quote;		// flag set if STRING contains one or more DQT fragments
+	char needstats;		// flag set if -s on command line
 	int containment;	// depth of containment
-	FILE *out;	    	// the output file 
-    inbuf_t *free_inbuf_list; // linked list of unused inbufs
-    elem_t *free_elem_list; // linked list of unused list elems
-	struct timespec uptime; // seconds since boot, also used as the starttime fpr runtime calculations
+	long linecount_at_start;	// activity line count when this file was opened.
     long stat_filecount;  // various stats
     long stat_lfcount;
     long stat_crcount;
@@ -39,6 +43,7 @@ struct context_s {		// input_context
     long stat_elemmalloc;
     long stat_elemmax;
     long stat_elemnow;
+	struct timespec uptime; // seconds since boot, also used as the starttime fpr runtime calculations
 };
 
 struct container_context_s {	// container_context
