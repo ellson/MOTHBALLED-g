@@ -64,10 +64,12 @@ static char b64[64] = {
     'Q','R','S','T','U','V','W','X','Y','Z','6','7','8','9','_',',',
 };
 
-void base64(char hashname[], unsigned long hash)
+void base64(char hashname[], unsigned long *phash)
 {
     int i;
+    unsigned long hash;
 
+    hash = *phash;
     for (i = 0; i < 11; i++) {
         hashname[i] = b64[(hash & 0x3F)];
         hash >>= 6;

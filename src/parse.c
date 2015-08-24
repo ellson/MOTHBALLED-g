@@ -63,7 +63,6 @@ parse_r(container_context_t * CC, elem_t * root,
 	state_t ti, ni;
 	success_t rc;
 	elem_t *elem;
-    elem_t *hashelem;
 	elem_t branch = { 0 };
 	context_t *C = CC->context;
     unsigned long hash;
@@ -220,9 +219,7 @@ parse_r(container_context_t * CC, elem_t * root,
 
 // FIXME - maybe do hashing while in same tree-walk as sameas() ?
             hash_list(&hash, &(CC->subject));   // generate name hash
-            hashelem = hash_bucket(C, hash);    // save in bucket list 
-
-            base64(CC->hashname, hash);
+            hash_bucket(C, hash);    // save in bucket list 
 
 			// If this subject is not a pattern, then perform pattern matching and insertion if matched
 			if (!(CC->is_pattern = C->has_ast)) {
@@ -259,12 +256,15 @@ success_t parse(context_t * C, elem_t * name)
 	container_context_t container_context = { 0 };
 	elem_t root = { 0 };	// the output parse tree
     elem_t myname = { 0 };
-    elem_t *hashelem;
+    elem_t *hashelem, **next;
 	success_t rc;
     elem_t *elem;
     unsigned long hash;
     char template[] = {'g','_','X','X','X','X','X','X','\0'};
-    char outfilename[sizeof(template) + sizeof(container_context.hashname)];
+    char outhashname[12];
+    char outfilename[sizeof(template) + sizeof(outhashname)];
+    int i;
+    FILE *fp;
 
 	container_context.context = C;
 
@@ -294,20 +294,21 @@ success_t parse(context_t * C, elem_t * name)
             exit(EXIT_FAILURE);
         }
     }
-    hash_list(&hash, name);
+    hash_list(&hash, name);    // hash name (subject "names" can be very long)
     hashelem = hash_bucket(C, hash);    // save in bucket list 
+    if (! hashelem->u.hash.out) { // open file, if not already open
+        base64(outhashname, &hash);
+        strcpy(outfilename, C->tempdir);
+        strcat(outfilename, "/");
+        strcat(outfilename, outhashname);
+        hashelem->u.hash.out = fopen(outfilename,"wb");
+        if (! hashelem->u.hash.out) {
+            perror("Error - fopen(): ");
+            exit(EXIT_FAILURE);
+        }
+    }
+    container_context.out = hashelem->u.hash.out;
 
-    base64(container_context.hashname, hash);
-    strcpy(outfilename, C->tempdir);
-    strcat(outfilename, "/");
-    strcat(outfilename, container_context.hashname);
-
-//fprintf(stderr,"%s\n", outfilename);
-    // FIXME - need a name (i,e, the parent subject)
-    //       - hash it to produce a name suitable for a file name
-    //       - open a file or named pipe with that name.
-    container_context.out = stdout;
- 
 	C->stat_containercount++;
 
 	emit_start_activity(&container_context);
@@ -333,6 +334,33 @@ success_t parse(context_t * C, elem_t * name)
         }
         free_list(C, &myname);
 
+        for (i=0; i<64; i++) {
+            next = &(C->hash_buckets[i]);
+            while(*next) {
+                elem=*next;
+                next = &(elem->next);
+                if ((fp = elem->u.hash.out)) {
+                    if (fclose(fp) != 0) {
+                        perror("Error - fclose(): ");
+                        exit(EXIT_FAILURE);
+                    }
+
+                    // reconsitute the filename and unlink
+                    base64(outhashname, &(elem->u.hash.hash));
+                    strcpy(outfilename, C->tempdir);
+                    strcat(outfilename, "/");
+                    strcat(outfilename, outhashname);
+                    if (unlink(outfilename) == -1) {
+                        perror("Error - unlink(): ");
+                        exit(EXIT_FAILURE);
+                    }
+                }
+
+                // return elem to free_elem_list
+                elem->next = C->free_elem_list;
+                C->free_elem_list = elem;
+            }
+        }
         if (rmdir(C->tempdir) == -1) {
             perror("Error - rmdir(): ");
             exit(EXIT_FAILURE);
