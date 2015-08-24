@@ -173,7 +173,7 @@ success_t parse_whitespace(container_context_t * CC)
 	return rc;
 }
 
-// load string fragments
+// load STRING fragments
 static int parse_string_fragment(context_t * C, elem_t * fraglist)
 {
 	unsigned char *frag;
@@ -205,8 +205,7 @@ static int parse_string_fragment(context_t * C, elem_t * fraglist)
 				len = 1;
 				while (1) {
 					insi = char2state[*++(C->in)];
-					if (insi == DQT || insi == BSL
-					    || insi == NLL) {
+					if (insi == DQT || insi == BSL || insi == NLL) {
 						break;
 					}
 					len++;
@@ -276,7 +275,10 @@ success_t parse_string(container_context_t * CC, elem_t * fraglist)
 	return FAIL;
 }
 
-// load vstring fragments
+// load VSTRING fragments
+//
+// FIXME - add support for additonal quoting formats  (HTML-like, ...)
+//
 static int parse_vstring_fragment(context_t * C, elem_t * fraglist)
 {
 	unsigned char *frag;
@@ -308,8 +310,7 @@ static int parse_vstring_fragment(context_t * C, elem_t * fraglist)
 				len = 1;
 				while (1) {
 					insi = char2state[*++(C->in)];
-					if (insi == DQT || insi == BSL
-					    || insi == NLL) {
+					if (insi == DQT || insi == BSL || insi == NLL) {
 						break;
 					}
 					len++;
@@ -318,6 +319,8 @@ static int parse_vstring_fragment(context_t * C, elem_t * fraglist)
 				elem = new_frag(C, DQT, len, frag);
 				slen += len;
 			}
+        // In the unquoted portions of VSTRING we allow '/' '\' ':' in addition to the ABC class
+        // this allows URIs as values without quoting
 		} else if (C->insi == ABC || C->insi == FSL || C->insi == BSL || C->insi == CLN) {
 			frag = C->in;
 			len = 1;
@@ -327,6 +330,8 @@ static int parse_vstring_fragment(context_t * C, elem_t * fraglist)
 			C->insi = insi;
 			elem = new_frag(C, ABC, len, frag);
 			slen += len;
+
+        // but '*' are still special  (maybe used ias wild card in queries)
 		} else if (C->insi == AST) {
 			C->has_ast = 1;
 			frag = C->in;

@@ -65,6 +65,7 @@ parse_r(container_context_t * CC, elem_t * root,
 	elem_t *elem;
 	elem_t branch = { 0 };
 	context_t *C = CC->context;
+    unsigned long hash;
 	static unsigned char nullstring[] = { '\0' };
 
 	rc = SUCCESS;
@@ -216,8 +217,10 @@ parse_r(container_context_t * CC, elem_t * root,
 			// Also classifies ACT as NODE or EDGE based on SUBJECT
 			sameas(CC, &branch);
 
-// FIXME - maybe do in same tree-walk as sameas()
-            hash_list(CC->hashname, &(CC->subject));   // generate output filename
+// FIXME - maybe do hashig while in same tree-walk as sameas() ?
+            hash_list(&hash, &(CC->subject));   // generate output filename
+
+            base64(CC->hashname, hash);
 
 			// If this subject is not a pattern, then perform pattern matching and insertion if matched
 			if (!(CC->is_pattern = C->has_ast)) {
@@ -256,9 +259,9 @@ success_t parse(context_t * C, elem_t * name)
     elem_t myname = { 0 };
 	success_t rc;
     elem_t *elem;
+    unsigned long hash;
     char template[] = {'g','_','X','X','X','X','X','X','\0'};
-    char hashname[12];
-    char outfilename[sizeof(template) + sizeof(hashname)];
+    char outfilename[sizeof(template) + sizeof(container_context.hashname)];
 
 	container_context.context = C;
 
@@ -278,8 +281,9 @@ success_t parse(context_t * C, elem_t * name)
         append_list(name, elem);
 
 // FIXME - add string versions of pid and starttime to name
+//       - how is this node named in a distribution of nodes???
 
-        C->inbuf = NULL;   // hang on to this one privately for myname
+        C->inbuf = NULL;   // hang on to this inbuf privately for myname
 
         C->tempdir = mkdtemp(template);
         if (!C->tempdir) {
@@ -287,10 +291,12 @@ success_t parse(context_t * C, elem_t * name)
             exit(EXIT_FAILURE);
         }
     }
-    hash_list(hashname, name);
+    hash_list(&hash, name);
+
+    base64(container_context.hashname, hash);
     strcpy(outfilename, C->tempdir);
     strcat(outfilename, "/");
-    strcat(outfilename, hashname);
+    strcat(outfilename, container_context.hashname);
 
 //fprintf(stderr,"%s\n", outfilename);
     // FIXME - need a name (i,e, the parent subject)
