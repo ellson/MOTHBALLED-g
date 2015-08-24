@@ -55,7 +55,7 @@ char * g_session(container_context_t *CC)
 
     g_append_string  (CC, &pos, "progname");
     g_append_token   (CC, &pos, '=');
-    g_append_qstring (CC, &pos, C->progname);
+    g_append_string  (CC, &pos, C->progname);
 
     pid = getpid();
     g_append_string  (CC, &pos, "pid");

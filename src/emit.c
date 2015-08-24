@@ -61,24 +61,6 @@ void g_append_string(container_context_t *CC, char **pos, char *string)
     *pos += len;
 }
 
-// FIXME - qstring should only quote if necessay, and should do escapes
-void g_append_qstring(container_context_t *CC, char **pos, char *string)
-{
-    int len;
-
-    // FIXME - check available buffer space
-    if (CC->sep) {
-        *(*pos)++ = CC->sep; // sep before, if any
-    }
-    len = sprintf(*pos,"\"%s\"",string);  // copy string
-    if (len < 0) {
-        perror("Error - sprintf(): ");
-        exit(EXIT_FAILURE);
-    }
-    CC->sep = ' ';      // sep required after strings 
-    *pos += len;
-}
-
 void g_append_ulong(container_context_t *CC, char **pos, unsigned long integer)
 {
     int len;

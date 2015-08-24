@@ -2,7 +2,6 @@ char *get_name(char *p);
 char char_prop(unsigned char prop, char noprop);
 void g_append_token(container_context_t *CC, char **pos, char tok);
 void g_append_string(container_context_t *CC, char **pos, char *string);
-void g_append_qstring(container_context_t *CC, char **pos, char *string);
 void g_append_ulong(container_context_t *CC, char **pos, unsigned long integer);
 void g_append_runtime(container_context_t *CC, char **pos, unsigned long run_sec, unsigned long run_ns);
 void print_subject(container_context_t * CC, elem_t * subject);

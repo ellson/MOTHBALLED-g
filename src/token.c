@@ -316,10 +316,10 @@ static int parse_vstring_fragment(context_t * C, elem_t * fraglist)
 				elem = new_frag(C, DQT, len, frag);
 				slen += len;
 			}
-		} else if (C->insi == ABC) {
+		} else if (C->insi == ABC || C->insi == FSL || C->insi == BSL || C->insi == CLN) {
 			frag = C->in;
 			len = 1;
-			while ((insi = char2state[*++(C->in)]) == ABC) {
+			while ((insi = char2state[*++(C->in)]) == ABC || insi == FSL || insi == BSL || insi == CLN) {
 				len++;
 			}
 			C->insi = insi;

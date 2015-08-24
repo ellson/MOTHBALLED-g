@@ -228,7 +228,7 @@
      DISAMBID ::= STRING
 
 # STRINGs, without quoting or escapes, can contain any characters
-# in the ABC and UTF classes.  Also AST (in an unquoted portion of the STRING),
+# in the ABC class.  Also AST (in an unquoted portion of the STRING),
 # which when present means that the entire ACT is a pattern, which can be used to provide 
 # additional attributes or contents to future ACTs that match the pattern.
 
