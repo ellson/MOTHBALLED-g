@@ -181,6 +181,9 @@ static void print_list_r(container_context_t *CC, elem_t * list)
 			break;
 		}
 		break;
+	case HASHELEM:
+        assert(0);  // should not be here
+		break;
 	}
 }
 

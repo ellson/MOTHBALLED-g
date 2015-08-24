@@ -1,4 +1,5 @@
 typedef struct inbuf_s inbuf_t;
+typedef struct elem_s elem_t;
 typedef struct emit_s emit_t;
 typedef struct context_s context_t;
 typedef struct container_context_s container_context_t;
@@ -32,8 +33,8 @@ struct context_s {		// input_context
 	char has_quote;		// flag set if STRING contains one or more DQT fragments
 	char needstats;		// flag set if -s on command line
 	int containment;	// depth of containment
-	long linecount_at_start;	// activity line count when this file was opened.
-    hashfile_t hashfile_buckets[64];  // 64 buckets of filename hashes.
+	long linecount_at_start;    // activity line count when this file was opened.
+    elem_t *hash_buckets[64];   // 64 buckets of name hashes and FILE*.
     long stat_filecount;  // various stats
     long stat_lfcount;
     long stat_crcount;

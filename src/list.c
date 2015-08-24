@@ -66,6 +66,18 @@ elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag)
 	return elem;
 }
 
+elem_t *new_hash(context_t * C, unsigned long hash)
+{
+	elem_t *elem;
+
+	elem = new_elem_sub(C, HASHELEM);
+
+	// complete frag elem initialization
+	elem->u.hash.hash = hash;	// the hash value
+	elem->u.hash.out = NULL;    // open later
+	return elem;
+}
+
 // clone_list -  clone a list header to a new elem
 //  -- ref count in first elem is not updated
 //     so this function is only for use by move_list() or ref_list()
@@ -163,6 +175,9 @@ void free_list(context_t * C, elem_t * list)
 			}
 			free_list(C, elem);	// recursively free lists that have no references
 			break;
+		case HASHELEM:
+            assert(0);  // should not be here
+            break;
 		}
 
 		// insert elem at beginning of freelist
@@ -272,5 +287,8 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep)
 			elem = elem->next;
 		}
 		break;
+	case HASHELEM:
+        assert(0);  // should not be here
+        break;
 	}
 }

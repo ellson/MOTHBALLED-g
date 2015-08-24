@@ -1,9 +1,11 @@
 #include <stdio.h>
+#include <time.h>
 #include <assert.h>
 
 #include "grammar.h"
 #include "inbuf.h"
 #include "list.h"
+#include "context.h"
 #include "hash.h"
 
 #define MSB_LONG (8*(sizeof(long))-1)
@@ -45,6 +47,9 @@ static void hash_list_r(unsigned long *phash, elem_t *list)
 			    elem = elem->next;
 		    }
 		    break;
+	    case HASHELEM:
+		    assert(0);  // should not be here
+            break;
 	    }
 	}
 }
@@ -78,3 +83,21 @@ void hash_list(unsigned long *hash, elem_t *list)
     *hash = SEED;
     hash_list_r(hash, list);
 }
+
+elem_t *hash_bucket(context_t * C, unsigned long hash)
+{
+    elem_t *hashbucket, *elem, **next;
+
+    next = &(C->hash_buckets[(hash & 0x3F)]);
+    while(*next) {
+        hashbucket = *next;
+        if (hashbucket->u.hash.hash == hash) {
+            return hashbucket;
+        }
+        next = &(hashbucket->next);
+    }
+    elem = new_hash(C, hash);
+    *next = elem;
+    return elem;
+}
+

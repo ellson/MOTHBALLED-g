@@ -63,6 +63,7 @@ parse_r(container_context_t * CC, elem_t * root,
 	state_t ti, ni;
 	success_t rc;
 	elem_t *elem;
+    elem_t *hashelem;
 	elem_t branch = { 0 };
 	context_t *C = CC->context;
     unsigned long hash;
@@ -217,8 +218,9 @@ parse_r(container_context_t * CC, elem_t * root,
 			// Also classifies ACT as NODE or EDGE based on SUBJECT
 			sameas(CC, &branch);
 
-// FIXME - maybe do hashig while in same tree-walk as sameas() ?
-            hash_list(&hash, &(CC->subject));   // generate output filename
+// FIXME - maybe do hashing while in same tree-walk as sameas() ?
+            hash_list(&hash, &(CC->subject));   // generate name hash
+            hashelem = hash_bucket(C, hash);    // save in bucket list 
 
             base64(CC->hashname, hash);
 
@@ -257,6 +259,7 @@ success_t parse(context_t * C, elem_t * name)
 	container_context_t container_context = { 0 };
 	elem_t root = { 0 };	// the output parse tree
     elem_t myname = { 0 };
+    elem_t *hashelem;
 	success_t rc;
     elem_t *elem;
     unsigned long hash;
@@ -292,6 +295,7 @@ success_t parse(context_t * C, elem_t * name)
         }
     }
     hash_list(&hash, name);
+    hashelem = hash_bucket(C, hash);    // save in bucket list 
 
     base64(container_context.hashname, hash);
     strcpy(outfilename, C->tempdir);

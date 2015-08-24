@@ -4,7 +4,8 @@ typedef struct context_s context_t;
 // LISTELEM must = 0 for static or calloc allocation of list headers
 typedef enum {
 	LISTELEM = 0,
-	FRAGELEM = 1
+	FRAGELEM = 1,
+	HASHELEM = 2
 } elemtype_t;
 
 struct elem_s {
@@ -18,6 +19,10 @@ struct elem_s {
 			inbuf_t *inbuf;	// inbuf containing frag
 			unsigned char *frag;	// point to beginning of frag
 		} frag;
+		struct {
+			unsigned long hash; // hash value
+			FILE *out;      // file handle, or NULL if not opened yet.
+		} hash;
 	} u;
 	// FIXME -- There must be a better way ?
 	//          If these "ref" or "len" ints are included in the above union{}, then
@@ -38,6 +43,7 @@ struct elem_s {
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
+elem_t *new_hash(context_t * C, unsigned long hash);
 elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag);
 elem_t *move_list(context_t * C, elem_t * list);
 elem_t *ref_list(context_t * C, elem_t * list);
