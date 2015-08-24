@@ -256,10 +256,9 @@ success_t parse(context_t * C, elem_t * name)
     elem_t myname = { 0 };
 	success_t rc;
     elem_t *elem;
-    char *tempdir;
-    char sep = '\0';
     char template[] = {'g','_','X','X','X','X','X','X','\0'};
     char hashname[12];
+    char outfilename[sizeof(template) + sizeof(hashname)];
 
 	container_context.context = C;
 
@@ -282,20 +281,22 @@ success_t parse(context_t * C, elem_t * name)
 
         C->inbuf = NULL;   // hang on to this one privately for myname
 
-        tempdir = mkdtemp(template);
-        if (!tempdir) {
+        C->tempdir = mkdtemp(template);
+        if (!C->tempdir) {
             perror("Error - mkdtemp(): ");
             exit(EXIT_FAILURE);
         }
     }
     hash_list(hashname, name);
+    strcpy(outfilename, C->tempdir);
+    strcat(outfilename, "/");
+    strcat(outfilename, hashname);
 
-fprintf(stderr,"%s\n", hashname);
-
-	container_context.out = stdout;
+//fprintf(stderr,"%s\n", outfilename);
     // FIXME - need a name (i,e, the parent subject)
     //       - hash it to produce a name suitable for a file name
     //       - open a file or named pipe with that name.
+    container_context.out = stdout;
  
 	C->stat_containercount++;
 
@@ -322,7 +323,7 @@ fprintf(stderr,"%s\n", hashname);
         }
         free_list(C, &myname);
 
-        if (rmdir(tempdir) == -1) {
+        if (rmdir(C->tempdir) == -1) {
             perror("Error - rmdir(): ");
             exit(EXIT_FAILURE);
         }

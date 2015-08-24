@@ -20,6 +20,7 @@ struct context_s {		// input_context
 	unsigned char *in;	// next charater to be processed
     char *username;     // set by first call to g_session
     char *hostname;     // ditto
+    char *tempdir;      // temporary dir for container files
     inbuf_t *free_inbuf_list; // linked list of unused inbufs
     elem_t *free_elem_list; // linked list of unused list elems
 	state_t insi;		// state represented by last character read
