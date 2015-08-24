@@ -74,7 +74,7 @@ parse_r(container_context_t * CC, elem_t * root,
 	assert(nest >= 0);	// catch overflows
 
 	if (!C->inbuf) {	// state_machine just started
-		C->bi = WS;	    // pretend preceeded by WS // to satisfy toplevel SREP or REP
+		C->bi = WS;	    // pretend preceeded by WS to satisfy toplevel SREP or REP
 		                // (Note, first REP of a sequence *can*
 		                // be preceeded by WS, just not the
 		                // rest of the REPs. )
@@ -106,7 +106,7 @@ parse_r(container_context_t * CC, elem_t * root,
 	case ACTIVITY:          // Recursion into Contained activity
 		if (C->bi == LBE) {	// if not top-level of containment
 			C->bi = NLL;
-			rc = parse(CC->context);	// recursively process contained ACTIVITY in to its own root
+			rc = parse(CC->context, &CC->subject);	// recursively process contained ACTIVITY in to its own root
 			C->bi = C->insi;	// The char class that terminates the ACTIVITY
 			goto done;
 		}
@@ -151,7 +151,7 @@ parse_r(container_context_t * CC, elem_t * root,
 			C->stat_actcount++;
 		}
 
-		free_list(CC, root);	// now we're done with the last ACT
+		free_list(C, root);	// now we're done with the last ACT
 		                    // and we can really start on the new ACT
 		break;
 	case SUBJECT:
@@ -248,26 +248,41 @@ parse_r(container_context_t * CC, elem_t * root,
 	return rc;
 }
 
-success_t parse(context_t * C)
+success_t parse(context_t * C, elem_t * name)
 {
 	success_t rc;
 	elem_t root = { 0 };	// the output parse tree
+    elem_t myname = { 0 };
+    elem_t *elem;
 	container_context_t container_context = { 0 };
 
 	container_context.context = C;
 
+    if ((C->containment++) == 0) {  // top container
+        g_session(&container_context); // gather session info, including starttime for stats
+
+        name = &myname;
+
+        assert (C->inbuf == NULL);
+        new_inbuf(C);
+
+        elem = new_frag(C, ABC, strlen(C->username), (unsigned char*)C->username);
+        append_list(name, elem);
+        elem = new_frag(C, ABC, 1, (unsigned char*)"@");
+        append_list(name, elem);
+        elem = new_frag(C, ABC, strlen(C->hostname), (unsigned char*)C->hostname);
+        append_list(name, elem);
+
+        C->inbuf = NULL;   // hang on to this one for myname
+    }
+	container_context.out = stdout;
     // FIXME - need a name (i,e, the parent subject)
     //       - hash it to produce a name suitable for a file name
     //       - open a file or named pipe with that name.
  
-	container_context.out = stdout;
-
-    g_session(&container_context); // gather session info, including starttime for stats
+	C->stat_containercount++;
 
 	emit_start_activity(&container_context);
-	C->stat_containercount++;
-	C->containment++;
-
 	if ((rc = parse_r(&container_context, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
 		if (C->insi == NLL) {	// EOF is OK
 			rc = SUCCESS;
@@ -280,13 +295,16 @@ success_t parse(context_t * C)
 	free_list(C, &container_context.node_pattern_acts);
 	free_list(C, &container_context.edge_pattern_acts);
 
-    if (C->needstats) {
-        // FIXME - need pretty-printer
-        fprintf (stderr, "%s\n", g_session(&container_context));
-        fprintf (stderr, "%s\n", g_stats(&container_context));
+	emit_end_activity(&container_context);
+
+    if (--(C->containment) == 0) {  // top container
+        if (C->needstats) {
+            // FIXME - need pretty-printer
+            fprintf (stderr, "%s\n", g_session(&container_context));
+            fprintf (stderr, "%s\n", g_stats(&container_context));
+        }
+//        free_list(C, &myname);
     }
     
-	C->containment--;
-	emit_end_activity(&container_context);
 	return rc;
 }

@@ -39,7 +39,7 @@ void g_append_token(container_context_t *CC, char **pos, char tok)
 {
     // FIXME - check available buffer space
                         // ignore sep before
-    *(*pos)++ = tok;    // copy token
+    *(*pos)++ = (unsigned char)tok;    // copy token
     **pos = '\0';       // and replace terminating NULL
     CC->sep = 0;        // no sep required after tokens
 }

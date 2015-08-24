@@ -38,12 +38,11 @@ char * g_session(container_context_t *CC)
 {
     static char buf[SESSION_BUF_SIZE];
     static char *pos = &buf[0];  // NB. static. This initalization happens only once
-
-	struct timespec starttime;
-    struct passwd *pw;
-    uid_t uid;
-    pid_t pid;
-    struct utsname unamebuf;
+    static struct passwd *pw;
+    static struct utsname unamebuf;
+	static struct timespec starttime;
+    static uid_t uid;
+    static pid_t pid;
     context_t *C = CC->context;
 
     if (pos != &buf[0]) { // have we been here before?
@@ -68,17 +67,19 @@ char * g_session(container_context_t *CC)
         perror("Error - getpwuid(): ");
         exit(EXIT_FAILURE);
     }
+    C->username = pw->pw_name;
     g_append_string  (CC, &pos, "username");
     g_append_token   (CC, &pos, '=');
-    g_append_string  (CC, &pos, pw->pw_name);
+    g_append_string  (CC, &pos, C->username);
 
     if (uname(&unamebuf) != 0) {
         perror("Error - uname(): ");
         exit(EXIT_FAILURE);
     } 
+    C->hostname = unamebuf.nodename;
     g_append_string  (CC, &pos, "hostname");
     g_append_token   (CC, &pos, '=');
-    g_append_string  (CC, &pos, unamebuf.nodename);
+    g_append_string  (CC, &pos, C->hostname);
 
 	if (clock_gettime(CLOCK_BOOTTIME, &(C->uptime)) != 0) {
         perror("Errror - clock_gettime(): ");

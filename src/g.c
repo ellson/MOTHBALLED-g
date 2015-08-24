@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
     context.argv = argv;
 
     emit_start_parse(&context);
-    parse(&context);
+    parse(&context, NULL);
     emit_end_parse(&context);
 
 	exit(EXIT_SUCCESS);

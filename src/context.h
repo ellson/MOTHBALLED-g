@@ -2,10 +2,12 @@ typedef struct inbuf_s inbuf_t;
 typedef struct emit_s emit_t;
 typedef struct context_s context_t;
 typedef struct container_context_s container_context_t;
+typedef struct hashfile_s hashfile_t;
 
 struct hashfile_s {
-    char hashname[12];
+    hashfile_t *next;
     FILE *out;
+    long hash;
 };
 
 struct context_s {		// input_context
@@ -16,6 +18,8 @@ struct context_s {		// input_context
 	FILE *file;	    	// open file handle for file currently being processed
 	inbuf_t *inbuf;		// the active input buffer
 	unsigned char *in;	// next charater to be processed
+    char *username;     // set by first call to g_session
+    char *hostname;     // ditto
     inbuf_t *free_inbuf_list; // linked list of unused inbufs
     elem_t *free_elem_list; // linked list of unused list elems
 	state_t insi;		// state represented by last character read
@@ -28,6 +32,7 @@ struct context_s {		// input_context
 	char needstats;		// flag set if -s on command line
 	int containment;	// depth of containment
 	long linecount_at_start;	// activity line count when this file was opened.
+    hashfile_t hashfile_buckets[64];  // 64 buckets of filename hashes.
     long stat_filecount;  // various stats
     long stat_lfcount;
     long stat_crcount;
