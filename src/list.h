@@ -1,4 +1,5 @@
 typedef struct elem_s elem_t;
+typedef struct context_s context_t;
 
 // LISTELEM must = 0 for static or calloc allocation of list headers
 typedef enum {
@@ -37,13 +38,11 @@ struct elem_s {
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
-elem_t *new_frag(char state, int len, unsigned char *frag, inbuf_t * inbuf);
-elem_t *move_list(elem_t * list);
-elem_t *ref_list(elem_t * list);
+elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag, inbuf_t * inbuf);
+elem_t *move_list(context_t * C, elem_t * list);
+elem_t *ref_list(context_t * C, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);
-void push_list(elem_t * list, elem_t * elem);
-void pop_list(elem_t * list);
-void free_list(elem_t * list);
+void free_list(context_t * C, elem_t * list);
 
 int print_len_frag(FILE * chan, unsigned char *len_frag);
 void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep);

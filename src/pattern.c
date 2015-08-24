@@ -106,8 +106,8 @@ pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 // subject to be appended with its own ATTRIBUTES and CONTENTS.
 void pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 {
-	elem_t *pattern_acts, *nextpattern_act,
-		*elem, *psubj, *pattr;
+	elem_t *pattern_acts, *nextpattern_act, *elem, *psubj, *pattr;
+    context_t *C = CC->context;
 
     assert(root);
     assert(subject);
@@ -140,12 +140,12 @@ void pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 			// insert matched attrubutes, contents,
 			// and then the subject again
 			
-			elem = ref_list(subject);
+			elem = ref_list(C, subject);
 			append_list(root, elem);
             emit_subject(CC, subject);
 
             if (pattr && (state_t)pattr->state == ATTRIBUTES) {
-                elem = ref_list(pattr);
+                elem = ref_list(C, pattr);
                 append_list(root, elem);
                 emit_attributes(CC, pattr);
             }

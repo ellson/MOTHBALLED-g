@@ -16,6 +16,7 @@ sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 	elem_t *elem, *new, *nextoldelem = NULL;
 	elem_t object = { 0 };
 	state_t si;
+    context_t * C = CC->context;
 
 	assert(list->type == (char)LISTELEM);
 
@@ -51,12 +52,12 @@ sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 				}
 			}
 			sameas_r(CC, elem, &nextoldelem, &object);	// recurse, adding result to a sublist
-			new = move_list(&object);
+			new = move_list(C, &object);
             new->state = si;
 			append_list(newlist, new);
 			break;
 		case NODEID:
-			new = ref_list(elem);
+			new = ref_list(C, elem);
 			append_list(newlist, new);
 			if (*nextold) {	// doesn't matter if old is shorter
 				// ... as long as no forther substitutions are needed
@@ -65,7 +66,7 @@ sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 			break;
 		case EQL:
 			if (*nextold) {
-				new = ref_list(*nextold);
+				new = ref_list(C, *nextold);
 				append_list(newlist, new);
 
 				*nextold = (*nextold)->next;
@@ -76,13 +77,11 @@ sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 		default:
 			if (*nextold) {	// doesn't matter if old is shorter
 				// ... as long as no forther substitutions are needed
-//				new = ref_list(*nextold);
-//				append_list(newlist, new);
 				nextoldelem = (*nextold)->u.list.first;	// for the recursion
 				*nextold = (*nextold)->next;	// at this level, continue over the elems
 			}
 			sameas_r(CC, elem, &nextoldelem, &object);	// recurse, adding result to a sublist
-			new = move_list(&object);
+			new = move_list(C, &object);
             new->state = si;
 			append_list(newlist, new);
 			break;
@@ -99,6 +98,7 @@ void sameas(container_context_t * CC, elem_t * subject)
 {
 	elem_t *newsubject, *oldsubject, *nextold;
 	elem_t subject_rewrite = { 0 };
+    context_t * C = CC->context;
 
 	newsubject = &subject_rewrite;
 	oldsubject = &(CC->subject);
@@ -111,9 +111,9 @@ void sameas(container_context_t * CC, elem_t * subject)
 	// rewrite subject into newsubject with any EQL elements substituted from oldsubject
 	sameas_r(CC, subject, &nextold, newsubject);
 
-	free_list(subject);     // free original subject
+	free_list(C, subject);     // free original subject
                            	//    ( although refs are retained in other lists )
-	free_list(oldsubject);	// free the previos oldsubject
+	free_list(C, oldsubject);	// free the previos oldsubject
 
     newsubject->state = SUBJECT;  
 	*oldsubject = *newsubject;	// save the newsubject as oldsubject

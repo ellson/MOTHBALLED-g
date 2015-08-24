@@ -12,7 +12,7 @@
 
 static inbuf_t *free_inbuf_list;
 
-inbuf_t *new_inbuf(void)
+inbuf_t *new_inbuf(context_t *C)
 {
 	inbuf_t *inbuf, *next;
 	int i;
@@ -24,7 +24,7 @@ inbuf_t *new_inbuf(void)
             perror("Error - malloc(): ");
             exit(EXIT_FAILURE);
         }
-		stat_inbufmalloc++;
+		C->stat_inbufmalloc++;
 
 		next = free_inbuf_list;	// link the new inbufs into free_inbuf_list
 		i = INBUFALLOCNUM;
@@ -42,14 +42,14 @@ inbuf_t *new_inbuf(void)
 	inbuf->refs = 0;
 	inbuf->end_of_buf = '\0';	// parse() sees this null like an EOF
 
-	stat_inbufnow++;	// stats
-	if (stat_inbufnow > stat_inbufmax) {
-		stat_inbufmax = stat_inbufnow;
+	C->stat_inbufnow++;	// stats
+	if (C->stat_inbufnow > C->stat_inbufmax) {
+		C->stat_inbufmax = C->stat_inbufnow;
 	}
 	return inbuf;
 }
 
-void free_inbuf(inbuf_t * inbuf)
+void free_inbuf(context_t *C, inbuf_t * inbuf)
 {
 	assert(inbuf);
 
@@ -57,5 +57,5 @@ void free_inbuf(inbuf_t * inbuf)
 	inbuf->next = free_inbuf_list;
 	free_inbuf_list = inbuf;
 
-	stat_inbufnow--;	// stats
+	C->stat_inbufnow--;	// stats
 }

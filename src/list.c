@@ -12,7 +12,7 @@
 
 static elem_t *free_elem_list;
 
-static elem_t *new_elem_sub(elemtype_t type)
+static elem_t *new_elem_sub(context_t * C, elemtype_t type)
 {
 	elem_t *elem, *next;
 	int i;
@@ -24,7 +24,7 @@ static elem_t *new_elem_sub(elemtype_t type)
             perror("Error - malloc(): ");
             exit(EXIT_FAILURE);
         }
-		stat_elemmalloc++;
+		C->stat_elemmalloc++;
 
 		next = free_elem_list;	// link the new elems into free_elem_list
 		i = LISTALLOCNUM;
@@ -41,18 +41,18 @@ static elem_t *new_elem_sub(elemtype_t type)
 	elem->type = (char)type;	// init the new elem
 	elem->next = NULL;
 
-	stat_elemnow++;		// stats
-	if (stat_elemnow > stat_elemmax) {
-		stat_elemmax = stat_elemnow;
+	C->stat_elemnow++;		// stats
+	if (C->stat_elemnow > C->stat_elemmax) {
+		C->stat_elemmax = C->stat_elemnow;
 	}
 	return elem;
 }
 
-elem_t *new_frag(char state, int len, unsigned char *frag, inbuf_t * inbuf)
+elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag, inbuf_t * inbuf)
 {
 	elem_t *elem;
 
-	elem = new_elem_sub(FRAGELEM);
+	elem = new_elem_sub(C, FRAGELEM);
 
 	assert(inbuf);
 	assert(inbuf->refs >= 0);
@@ -71,13 +71,13 @@ elem_t *new_frag(char state, int len, unsigned char *frag, inbuf_t * inbuf)
 // clone_list -  clone a list header to a new elem
 //  -- ref count in first elem is not updated
 //     so this function is only for use by move_list() or ref_list()
-static elem_t *clone_list(elem_t * list)
+static elem_t *clone_list(context_t * C, elem_t * list)
 {
 	elem_t *elem;
 
 	assert(list->type == (char)LISTELEM);
 
-	elem = new_elem_sub(LISTELEM);
+	elem = new_elem_sub(C, LISTELEM);
 
 	elem->u.list.first = list->u.list.first;	// copy details
 	elem->u.list.last = list->u.list.last;
@@ -91,11 +91,11 @@ static elem_t *clone_list(elem_t * list)
 //         clone_list didn't increase ref count in first elem,
 //         so no need to deref.
 //     clean up the old list header so it no longer references the list elems.
-elem_t *move_list(elem_t * list)
+elem_t *move_list(context_t * C, elem_t * list)
 {
 	elem_t *elem;
 
-	elem = clone_list(list);
+	elem = clone_list(C, list);
 
 	list->u.list.first = NULL;	// reset old header
 	list->u.list.last = NULL;
@@ -108,11 +108,11 @@ elem_t *move_list(elem_t * list)
 //     implement as a clone_list with a ref count adjustment
 //     if there is a first elem and if it is a LISTELEM, then
 //           increment the first elems ref count.  (NB, not this new elem)
-elem_t *ref_list(elem_t * list)
+elem_t *ref_list(context_t * C, elem_t * list)
 {
 	elem_t *elem;
 
-	elem = clone_list(list);
+	elem = clone_list(C, list);
 
 	if (list->u.list.first && list->u.list.first->type == LISTELEM) {
 		list->u.list.first->v.list.refs++;	// increment ref count
@@ -137,49 +137,9 @@ void append_list(elem_t * list, elem_t * elem)
 	}
 }
 
-// prepend elem to the beginning of the list so that elem becomes the new u.list.first
-void push_list(elem_t * list, elem_t * elem)
-{
-	assert(list->type == (char)LISTELEM);
-
-	elem->next = list->u.list.first;
-	list->u.list.first = elem;
-	if (elem->type == (char)LISTELEM) {
-		elem->v.list.refs++;	// increment ref count in prepended elem
-		assert(elem->v.list.refs > 0);
-	}
-}
-
-// remove elem from the beginning of the list so that the next elem becomes the new u.list.first
-// the popped elem is discarded, freeing any refs that it held
-void pop_list(elem_t * list)
-{
-	elem_t *elem;
-
-	assert(list->type == (char)LISTELEM);
-
-	elem = list->u.list.first;
-	if (elem) {		// silently ignore if nothing to pop
-		list->u.list.first = elem->next;
-		if (elem->type == (char)LISTELEM) {
-			assert(elem->v.list.refs > 0);
-			if (--(elem->v.list.refs) == 0) {
-				free_list(elem);	// recursively free lists that have no references
-			}
-		}
-		// and elem is discarded
-
-		// insert elem at beginning of freelist
-		elem->next = free_elem_list;
-		free_elem_list = elem;
-
-		stat_elemnow--;	// maintain stats
-	}
-}
-
 // free the list contents, but not the list header.
 // ( this function can be used on statically or stack allocated list headers )
-void free_list(elem_t * list)
+void free_list(context_t * C, elem_t * list)
 {
 	elem_t *elem, *next;
 
@@ -195,7 +155,7 @@ void free_list(elem_t * list)
 		case FRAGELEM:
 			assert(elem->u.frag.inbuf->refs > 0);
 			if (--(elem->u.frag.inbuf->refs) == 0) {
-				free_inbuf(elem->u.frag.inbuf);
+				free_inbuf(C, elem->u.frag.inbuf);
 			}
 			break;
 		case LISTELEM:
@@ -203,7 +163,7 @@ void free_list(elem_t * list)
 			if (--(elem->v.list.refs) > 0) {
 				goto done;	// stop at any point with additional refs
 			}
-			free_list(elem);	// recursively free lists that have no references
+			free_list(C, elem);	// recursively free lists that have no references
 			break;
 		}
 
@@ -211,7 +171,7 @@ void free_list(elem_t * list)
 		elem->next = free_elem_list;
 		free_elem_list = elem;
 
-		stat_elemnow--;	// maintain stats
+		C->stat_elemnow--;	// maintain stats
 
 		elem = next;
 	}

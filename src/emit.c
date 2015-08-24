@@ -225,7 +225,7 @@ void print_error(context_t * C, state_t si, char *message)
 	fprintf(stderr, "Error: %s ", message);
 	print_len_frag(stderr, NAMEP(si));
 	fprintf(stderr, "\n	  in \"%s\" line: %ld just before: \"",
-		C->filename, (stat_lfcount ? stat_lfcount : stat_crcount) - C->linecount_at_start + 1);
+		C->filename, (C->stat_lfcount ? C->stat_lfcount : C->stat_crcount) - C->linecount_at_start + 1);
 	p = C->in;
 	while ((c = *p++)) {
 		if (c == '\n' || c == '\r')

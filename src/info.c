@@ -16,23 +16,6 @@
 #include "emit.h"
 #include "info.h"
 
-// globals
-long stat_filecount;
-long stat_lfcount;
-long stat_crcount;
-long stat_inchars;
-long stat_actcount;
-long stat_patterncount;
-long stat_containercount;
-long stat_stringcount;
-long stat_fragcount;
-long stat_inbufmalloc;
-long stat_inbufmax;
-long stat_inbufnow;
-long stat_elemmalloc;
-long stat_elemmax;
-long stat_elemnow;
-
 // This code collects info from the environment to:
 //          - populate session info into attributes of a 'g' NODE
 //          - provide a readable unique session name for session-freeze tar file names
@@ -145,43 +128,43 @@ char * g_stats(container_context_t *CC)
 
     g_append_string  (CC, &pos, "files");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_filecount);
+    g_append_ulong   (CC, &pos, C->stat_filecount);
 
     g_append_string  (CC, &pos, "lines");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, 1 + (stat_lfcount ? stat_lfcount : stat_crcount));
+    g_append_ulong   (CC, &pos, 1 + (C->stat_lfcount ? C->stat_lfcount : C->stat_crcount));
 
     g_append_string  (CC, &pos, "acts");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_actcount);
+    g_append_ulong   (CC, &pos, C->stat_actcount);
 
     g_append_string  (CC, &pos, "acts_per_second");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_actcount*TEN9/runtime);
+    g_append_ulong   (CC, &pos, C->stat_actcount*TEN9/runtime);
 
     g_append_string  (CC, &pos, "patterns");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_patterncount);
+    g_append_ulong   (CC, &pos, C->stat_patterncount);
 
     g_append_string  (CC, &pos, "containers");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_containercount);
+    g_append_ulong   (CC, &pos, C->stat_containercount);
 
     g_append_string  (CC, &pos, "strings");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_stringcount);
+    g_append_ulong   (CC, &pos, C->stat_stringcount);
 
     g_append_string  (CC, &pos, "fragmentss");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_fragcount);
+    g_append_ulong   (CC, &pos, C->stat_fragcount);
 
     g_append_string  (CC, &pos, "inchars");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_inchars);
+    g_append_ulong   (CC, &pos, C->stat_inchars);
 
     g_append_string  (CC, &pos, "chars_per_second");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_inchars + TEN9 / runtime);
+    g_append_ulong   (CC, &pos, C->stat_inchars + TEN9 / runtime);
 
     g_append_string  (CC, &pos, "inbufsize");
     g_append_token   (CC, &pos, '=');
@@ -189,11 +172,11 @@ char * g_stats(container_context_t *CC)
 
     g_append_string  (CC, &pos, "inbufmax");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_inbufmax);
+    g_append_ulong   (CC, &pos, C->stat_inbufmax);
 
     g_append_string  (CC, &pos, "inbufnow");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_inbufnow);
+    g_append_ulong   (CC, &pos, C->stat_inbufnow);
 
     g_append_string  (CC, &pos, "elemsize");
     g_append_token   (CC, &pos, '=');
@@ -201,11 +184,11 @@ char * g_stats(container_context_t *CC)
 
     g_append_string  (CC, &pos, "elemmax");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_elemmax);
+    g_append_ulong   (CC, &pos, C->stat_elemmax);
 
     g_append_string  (CC, &pos, "elemnow");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_elemnow);
+    g_append_ulong   (CC, &pos, C->stat_elemnow);
 
     g_append_string  (CC, &pos, "inbufmallocsize");
     g_append_token   (CC, &pos, '=');
@@ -213,11 +196,11 @@ char * g_stats(container_context_t *CC)
 
     g_append_string  (CC, &pos, "inbufmalloccount");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_inbufmalloc);
+    g_append_ulong   (CC, &pos, C->stat_inbufmalloc);
 
     g_append_string  (CC, &pos, "inbufmalloctotal");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t));
+    g_append_ulong   (CC, &pos, C->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t));
 
     g_append_string  (CC, &pos, "elemmallocsize");
     g_append_token   (CC, &pos, '=');
@@ -225,16 +208,16 @@ char * g_stats(container_context_t *CC)
 
     g_append_string  (CC, &pos, "elemmalloccount");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_elemmalloc);
+    g_append_ulong   (CC, &pos, C->stat_elemmalloc);
 
     g_append_string  (CC, &pos, "elemmalloctotal");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, stat_elemmalloc * LISTALLOCNUM * size_elem_t);
+    g_append_ulong   (CC, &pos, C->stat_elemmalloc * LISTALLOCNUM * size_elem_t);
 
     g_append_string  (CC, &pos, "malloctotal");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, (stat_elemmalloc * LISTALLOCNUM * size_elem_t)
-                        + (stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t)));
+    g_append_ulong   (CC, &pos, (C->stat_elemmalloc * LISTALLOCNUM * size_elem_t)
+                        + (C->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t)));
 
     g_append_token   (CC, &pos, ']');
     return buf;

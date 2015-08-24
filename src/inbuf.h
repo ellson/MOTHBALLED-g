@@ -1,4 +1,5 @@
 typedef struct inbuf_s inbuf_t;
+typedef struct context_s context_t;
 
 // sizeof(inbuf_t) = 1<<7  (128 bytes)
 // the size of .buf is sizeof(inbuf_t) less the other bits  (~115 bytes, I think)
@@ -12,5 +13,5 @@ struct inbuf_s {
 	unsigned char end_of_buf;	// maintain a '\0' here 
 };
 
-inbuf_t *new_inbuf(void);
-void free_inbuf(inbuf_t * inbuf);
+inbuf_t *new_inbuf(context_t * C);
+void free_inbuf(context_t * C, inbuf_t * inbuf);

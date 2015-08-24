@@ -133,8 +133,8 @@ parse_r(container_context_t * CC, elem_t * root,
 
 		if (CC->is_pattern) {   // flag was set by SUBJECT in previous ACT
 			                    //  save entire previous ACT in a list of pattern_acts
-			stat_patterncount++;
-			elem = ref_list(root);
+			C->stat_patterncount++;
+			elem = ref_list(C, root);
 
 			if (CC->act_type == NODE) {
 				append_list(&(CC->node_pattern_acts), elem);
@@ -143,10 +143,10 @@ parse_r(container_context_t * CC, elem_t * root,
 				append_list(&(CC->edge_pattern_acts), elem);
 			}
 		} else {
-			stat_actcount++;
+			C->stat_actcount++;
 		}
 
-		free_list(root);	// now we're done with the last ACT
+		free_list(C, root);	// now we're done with the last ACT
 		                    // and we can really start on the new ACT
 		break;
 	case SUBJECT:
@@ -232,7 +232,7 @@ parse_r(container_context_t * CC, elem_t * root,
 	if (rc == SUCCESS) {
 		if (branch.u.list.first != NULL || si == EQL) {	// mostly ignore empty lists
             branch.state = si;
-			elem = move_list(&branch);
+			elem = move_list(C, &branch);
 			append_list(root, elem);
 		}
 	}
@@ -260,7 +260,7 @@ success_t parse(context_t * C, int needstats)
     g_session(&container_context); // gather session info, including starttime for stats
 
 	emit_start_activity(C);
-	stat_containercount++;
+	C->stat_containercount++;
 	C->containment++;
 
 	if ((rc = parse_r(&container_context, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
@@ -271,9 +271,9 @@ success_t parse(context_t * C, int needstats)
 		}
 	}
 
-	free_list(&container_context.subject);
-	free_list(&container_context.node_pattern_acts);
-	free_list(&container_context.edge_pattern_acts);
+	free_list(C, &container_context.subject);
+	free_list(C, &container_context.node_pattern_acts);
+	free_list(C, &container_context.edge_pattern_acts);
 
     if (needstats) {
         // FIXME - need pretty-printer

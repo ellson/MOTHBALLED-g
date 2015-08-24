@@ -1,7 +1,8 @@
 typedef struct emit_s emit_t;
+typedef struct context_s context_t;
 typedef struct container_context_s container_context_t;
 
-typedef struct {		// input_context
+struct context_s {		// input_context
 	char *progname;		// name of program
 	int *pargc;	    	// remaining filenames from command line
 	char **argv;
@@ -20,8 +21,22 @@ typedef struct {		// input_context
 	int containment;	// depth of containment
 	FILE *out;	    	// the output file 
 	struct timespec uptime; // seconds since boot, also used as the starttime fpr runtime calculations
-
-} context_t;
+    long stat_filecount;  // various stats
+    long stat_lfcount;
+    long stat_crcount;
+    long stat_inchars;
+    long stat_actcount;
+    long stat_patterncount;
+    long stat_containercount;
+    long stat_stringcount;
+    long stat_fragcount;
+    long stat_inbufmalloc;
+    long stat_inbufmax;
+    long stat_inbufnow;
+    long stat_elemmalloc;
+    long stat_elemmax;
+    long stat_elemnow;
+};
 
 struct container_context_s {	// container_context
 	context_t *context;	// the input context
