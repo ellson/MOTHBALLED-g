@@ -10,23 +10,21 @@
 #include "context.h"
 #include "info.h"
 
-static inbuf_t *free_inbuf_list;
-
-inbuf_t *new_inbuf(context_t *C)
+void new_inbuf(context_t *C)
 {
 	inbuf_t *inbuf, *next;
 	int i;
 
-	if (!free_inbuf_list) {	// if no inbufs in free_inbuf_list
+	if (!C->free_inbuf_list) {	// if no inbufs in free_inbuf_list
 
-		free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbuf_t));
-        if (!free_inbuf_list) {
+		C->free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbuf_t));
+        if (!C->free_inbuf_list) {
             perror("Error - malloc(): ");
             exit(EXIT_FAILURE);
         }
 		C->stat_inbufmalloc++;
 
-		next = free_inbuf_list;	// link the new inbufs into free_inbuf_list
+		next = C->free_inbuf_list;	// link the new inbufs into free_inbuf_list
 		i = INBUFALLOCNUM;
 		while (i--) {
 			inbuf = next++;
@@ -35,8 +33,8 @@ inbuf_t *new_inbuf(context_t *C)
 		inbuf->next = NULL;	// terminate last inbuf
 
 	}
-	inbuf = free_inbuf_list;	// use first inbuf from free_inbuf_list
-	free_inbuf_list = inbuf->next;	// update list to point to next available
+	inbuf = C->free_inbuf_list;	// use first inbuf from free_inbuf_list
+	C->free_inbuf_list = inbuf->next;	// update list to point to next available
 
 	inbuf->next = NULL;
 	inbuf->refs = 0;
@@ -46,16 +44,17 @@ inbuf_t *new_inbuf(context_t *C)
 	if (C->stat_inbufnow > C->stat_inbufmax) {
 		C->stat_inbufmax = C->stat_inbufnow;
 	}
-	return inbuf;
+    C->inbuf = inbuf;
 }
 
+// free an inbuf (probably not the currently active one in C->inbuf)
 void free_inbuf(context_t *C, inbuf_t * inbuf)
 {
 	assert(inbuf);
 
 	// insert inbuf into inbuf_freelist
-	inbuf->next = free_inbuf_list;
-	free_inbuf_list = inbuf;
+	inbuf->next = C->free_inbuf_list;
+	C->free_inbuf_list = inbuf;
 
 	C->stat_inbufnow--;	// stats
 }

@@ -13,5 +13,5 @@ struct inbuf_s {
 	unsigned char end_of_buf;	// maintain a '\0' here 
 };
 
-inbuf_t *new_inbuf(context_t * C);
+void new_inbuf(context_t * C);
 void free_inbuf(context_t * C, inbuf_t * inbuf);

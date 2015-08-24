@@ -10,23 +10,21 @@
 #include "context.h"
 #include "info.h"
 
-static elem_t *free_elem_list;
-
 static elem_t *new_elem_sub(context_t * C, elemtype_t type)
 {
 	elem_t *elem, *next;
 	int i;
 
-	if (!free_elem_list) {	// if no elems in free_elem_list
+	if (!C->free_elem_list) {	// if no elems in free_elem_list
 
-		free_elem_list = malloc(LISTALLOCNUM * size_elem_t);
-        if (!free_elem_list) {
+		C->free_elem_list = malloc(LISTALLOCNUM * size_elem_t);
+        if (!C->free_elem_list) {
             perror("Error - malloc(): ");
             exit(EXIT_FAILURE);
         }
 		C->stat_elemmalloc++;
 
-		next = free_elem_list;	// link the new elems into free_elem_list
+		next = C->free_elem_list;	// link the new elems into free_elem_list
 		i = LISTALLOCNUM;
 		while (i--) {
 			elem = next++;
@@ -35,8 +33,8 @@ static elem_t *new_elem_sub(context_t * C, elemtype_t type)
 		elem->next = NULL;	// terminate last elem
 
 	}
-	elem = free_elem_list;	// use first elem from free_elem_list
-	free_elem_list = elem->next;	// update list to point to next available
+	elem = C->free_elem_list;	// use first elem from free_elem_list
+	C->free_elem_list = elem->next;	// update list to point to next available
 
 	elem->type = (char)type;	// init the new elem
 	elem->next = NULL;
@@ -48,23 +46,23 @@ static elem_t *new_elem_sub(context_t * C, elemtype_t type)
 	return elem;
 }
 
-elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag, inbuf_t * inbuf)
+elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag)
 {
 	elem_t *elem;
 
 	elem = new_elem_sub(C, FRAGELEM);
 
-	assert(inbuf);
-	assert(inbuf->refs >= 0);
+	assert(C->inbuf);
+	assert(C->inbuf->refs >= 0);
 	assert(frag);
 	assert(len > 0);
 	// complete frag elem initialization
-	elem->u.frag.inbuf = inbuf;	// record inbuf for ref counting
+	elem->u.frag.inbuf = C->inbuf;	// record inbuf for ref counting
 	elem->u.frag.frag = frag;	// pointer to begging of frag
 	elem->v.frag.len = len;	// length of frag
 	elem->state = state;	// state_machine state that created this frag
 
-	inbuf->refs++;		// increment reference count in inbuf.
+	C->inbuf->refs++;		// increment reference count in inbuf.
 	return elem;
 }
 
@@ -168,8 +166,8 @@ void free_list(context_t * C, elem_t * list)
 		}
 
 		// insert elem at beginning of freelist
-		elem->next = free_elem_list;
-		free_elem_list = elem;
+		elem->next = C->free_elem_list;
+		C->free_elem_list = elem;
 
 		C->stat_elemnow--;	// maintain stats
 

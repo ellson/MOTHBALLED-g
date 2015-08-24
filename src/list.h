@@ -38,7 +38,7 @@ struct elem_s {
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
-elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag, inbuf_t * inbuf);
+elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag);
 elem_t *move_list(context_t * C, elem_t * list);
 elem_t *ref_list(context_t * C, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);

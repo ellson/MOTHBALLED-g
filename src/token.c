@@ -19,15 +19,15 @@ static success_t more_in(context_t * C)
 	if (C->inbuf) {		// if there is an existing active-inbuf
 		if (C->in == &(C->inbuf->end_of_buf)) {	// if it is full
 			if ((--(C->inbuf->refs)) == 0) {	// dereference active-inbuf
-				free_inbuf(C, C->inbuf);	// free if no refs left
+				free_inbuf(C, C->inbuf);	// free if no refs left (unlikely)
 			}
-			C->inbuf = new_inbuf(C);	// get new
+			new_inbuf(C);	// get new
 			assert(C->inbuf);
 			C->inbuf->refs = 1;	// add active-inbuf reference
 			C->in = C->inbuf->buf;	// point to beginning of buffer
 		}
 	} else {		// no inbuf, implies just starting
-		C->inbuf = new_inbuf(C);	// get new
+		new_inbuf(C);	// get new
 		assert(C->inbuf);
 		C->inbuf->refs = 1;	// add active-inbuf reference
 		C->in = C->inbuf->buf;
@@ -187,7 +187,7 @@ static int parse_string_fragment(context_t * C, elem_t * fraglist)
 				C->in_quote = 1;
 				frag = C->in;
 				C->insi = char2state[*++(C->in)];
-				elem = new_frag(C, BSL, 1, frag, C->inbuf);
+				elem = new_frag(C, BSL, 1, frag);
 				slen++;
 			} else if (C->insi == DQT) {
 				C->in_quote = 0;
@@ -211,7 +211,7 @@ static int parse_string_fragment(context_t * C, elem_t * fraglist)
 					len++;
 				}
 				C->insi = insi;
-				elem = new_frag(C, DQT, len, frag, C->inbuf);
+				elem = new_frag(C, DQT, len, frag);
 				slen += len;
 			}
 		} else if (C->insi == ABC) {
@@ -221,14 +221,14 @@ static int parse_string_fragment(context_t * C, elem_t * fraglist)
 				len++;
 			}
 			C->insi = insi;
-			elem = new_frag(C, ABC, len, frag, C->inbuf);
+			elem = new_frag(C, ABC, len, frag);
 			slen += len;
 		} else if (C->insi == AST) {
 			C->has_ast = 1;
 			frag = C->in;
 			while ((C->insi = char2state[*++(C->in)]) == AST) {
 			}	// extra '*' ignored
-			elem = new_frag(C, AST, 1, frag, C->inbuf);
+			elem = new_frag(C, AST, 1, frag);
 			slen++;
 		} else if (C->insi == DQT) {
 			C->in_quote = 1;

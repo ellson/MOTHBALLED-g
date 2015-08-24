@@ -20,6 +20,8 @@ struct context_s {		// input_context
 	char has_quote;		// flag set if STRING contains one or more DQT fragments
 	int containment;	// depth of containment
 	FILE *out;	    	// the output file 
+    inbuf_t *free_inbuf_list; // linked list of unused inbufs
+    elem_t *free_elem_list; // linked list of unused list elems
 	struct timespec uptime; // seconds since boot, also used as the starttime fpr runtime calculations
     long stat_filecount;  // various stats
     long stat_lfcount;
