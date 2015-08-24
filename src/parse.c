@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <assert.h>
 
 #include "grammar.h"
@@ -250,11 +251,15 @@ parse_r(container_context_t * CC, elem_t * root,
 
 success_t parse(context_t * C, elem_t * name)
 {
-	success_t rc;
+	container_context_t container_context = { 0 };
 	elem_t root = { 0 };	// the output parse tree
     elem_t myname = { 0 };
+	success_t rc;
     elem_t *elem;
-	container_context_t container_context = { 0 };
+    char *tempdir;
+    char sep = '\0';
+    char template[] = {'g','_','X','X','X','X','X','X','\0'};
+    char hashname[12];
 
 	container_context.context = C;
 
@@ -273,8 +278,20 @@ success_t parse(context_t * C, elem_t * name)
         elem = new_frag(C, ABC, strlen(C->hostname), (unsigned char*)C->hostname);
         append_list(name, elem);
 
-        C->inbuf = NULL;   // hang on to this one for myname
+// FIXME - add string versions of pid and starttime to name
+
+        C->inbuf = NULL;   // hang on to this one privately for myname
+
+        tempdir = mkdtemp(template);
+        if (!tempdir) {
+            perror("Error - mkdtemp(): ");
+            exit(EXIT_FAILURE);
+        }
     }
+    hash_list(hashname, name);
+
+fprintf(stderr,"%s\n", hashname);
+
 	container_context.out = stdout;
     // FIXME - need a name (i,e, the parent subject)
     //       - hash it to produce a name suitable for a file name
@@ -303,7 +320,12 @@ success_t parse(context_t * C, elem_t * name)
             fprintf (stderr, "%s\n", g_session(&container_context));
             fprintf (stderr, "%s\n", g_stats(&container_context));
         }
-//        free_list(C, &myname);
+        free_list(C, &myname);
+
+        if (rmdir(tempdir) == -1) {
+            perror("Error - rmdir(): ");
+            exit(EXIT_FAILURE);
+        }
     }
     
 	return rc;
