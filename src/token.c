@@ -248,13 +248,12 @@ static int parse_string_fragment(context_t * C, elem_t * fraglist)
 // collect fragments to form a STRING token
 success_t parse_string(context_t * C, elem_t * fraglist)
 {
-	success_t rc;
 	int len, slen;
 
 	C->has_quote = 0;
 	slen = parse_string_fragment(C, fraglist);	// leading string
 	while (C->insi == NLL) {	// end_of_buffer, or EOF, during whitespace
-		if ((rc = more_in(C) == FAIL)) {
+		if ((more_in(C) == FAIL)) {
 			break;	// EOF
 		}
 		if ((len = parse_string_fragment(C, fraglist)) == 0) {
@@ -270,18 +269,111 @@ success_t parse_string(context_t * C, elem_t * fraglist)
 			fraglist->state = ABC;
 		}
 		emit_string(C, fraglist);
-		rc = SUCCESS;
-	} else {
-		rc = FAIL;
+		return SUCCESS;
 	}
-	return rc;
+	return FAIL;
+}
+
+// load vstring fragments
+static int parse_vstring_fragment(context_t * C, elem_t * fraglist)
+{
+	unsigned char *frag;
+	state_t insi;
+	int slen, len;
+	elem_t *elem;
+
+	slen = 0;
+	while (1) {
+		if (C->in_quote) {
+			if (C->in_quote == 2) {	// character after BSL
+				C->in_quote = 1;
+				frag = C->in;
+				C->insi = char2state[*++(C->in)];
+				elem = new_frag(C, BSL, 1, frag);
+				slen++;
+			} else if (C->insi == DQT) {
+				C->in_quote = 0;
+				C->insi = char2state[*++(C->in)];
+				continue;
+			} else if (C->insi == BSL) {
+				C->in_quote = 2;
+				C->insi = char2state[*++(C->in)];
+				continue;
+			} else if (C->insi == NLL) {
+				break;
+			} else {
+				frag = C->in;
+				len = 1;
+				while (1) {
+					insi = char2state[*++(C->in)];
+					if (insi == DQT || insi == BSL
+					    || insi == NLL) {
+						break;
+					}
+					len++;
+				}
+				C->insi = insi;
+				elem = new_frag(C, DQT, len, frag);
+				slen += len;
+			}
+		} else if (C->insi == ABC) {
+			frag = C->in;
+			len = 1;
+			while ((insi = char2state[*++(C->in)]) == ABC) {
+				len++;
+			}
+			C->insi = insi;
+			elem = new_frag(C, ABC, len, frag);
+			slen += len;
+		} else if (C->insi == AST) {
+			C->has_ast = 1;
+			frag = C->in;
+			while ((C->insi = char2state[*++(C->in)]) == AST) {
+			}	// extra '*' ignored
+			elem = new_frag(C, AST, 1, frag);
+			slen++;
+		} else if (C->insi == DQT) {
+			C->in_quote = 1;
+			C->has_quote = 1;
+			C->insi = char2state[*++(C->in)];
+			continue;
+		} else {
+			break;
+		}
+		append_list(fraglist, elem);
+		emit_frag(C, len, frag);
+		C->stat_fragcount++;
+	}
+	return slen;
 }
 
 // collect fragments to form a VSTRING token
 success_t parse_vstring(context_t * C, elem_t * fraglist)
 {
-    // FIXME - add extra features
-    return parse_string(C, fraglist);
+	int len, slen;
+
+	C->has_quote = 0;
+	slen = parse_vstring_fragment(C, fraglist);	// leading string
+	while (C->insi == NLL) {	// end_of_buffer, or EOF, during whitespace
+		if ((more_in(C) == FAIL)) {
+			break;	// EOF
+		}
+		if ((len = parse_vstring_fragment(C, fraglist)) == 0) {
+			break;
+		}
+		slen += len;
+	}
+	if (slen > 0) {
+		C->stat_stringcount++;     //FIXME ?
+		if (C->has_quote) {
+			fraglist->state = DQT;
+		} else {
+			fraglist->state = ABC;
+		}
+		emit_string(C, fraglist);  // FIXME ?
+		return SUCCESS;
+	} 
+	return FAIL;
 }
 
 // process single character tokens
