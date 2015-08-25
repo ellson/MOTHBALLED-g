@@ -208,10 +208,15 @@ parse_r(container_context_t * CC, elem_t * root,
 		ti++;		// next ALT (if not yet satisfied), or next sequence item
 	}
 
-	// Any subtree rewrites or emits before adding branch to root in the state exit processing
+ done: // State exit processing
 	if (rc == SUCCESS) {
 		switch (si) {
-		case SUBJECT:
+		case TLD:
+		case HAT:
+		case QRY:
+            C->verb = si;  // record verb prefix, if not default
+            break;
+		case SUBJECT: // subject rewrites before adding branch to root
             branch.state = si;
 
 			// Perform EQL "same as in subject of previous ACT" substitutions
@@ -221,29 +226,17 @@ parse_r(container_context_t * CC, elem_t * root,
             hash_list(&hash, &(CC->subject));   // generate name hash
             elem = hash_bucket(C, hash);    // save in bucket list 
 
-			// If this subject is not a pattern, then perform pattern matching and insertion if matched
+			// If this subject is not itself a pattern, then
+            // i  perform pattern matching and insertion if matched
 			if (!(CC->is_pattern = C->has_ast)) {
 				pattern(CC, root, &branch);
 			}
 
-			emit_subject(CC, &branch);	// emit hook for rewritten subject
+			emit_subject(CC, &branch);      // emit hook for rewritten subject
 			break;
 		case ATTRIBUTES:
-			emit_attributes(CC, &branch);
+			emit_attributes(CC, &branch);   // emit hook for attributes
 			break;
-		default:
-			break;
-		}
-	}
-
- done: // State exit processing
-	if (rc == SUCCESS) {
-		switch (si) {
-		case TLD:
-		case HAT:
-		case QRY:
-            C->verb = si;
-            break;
         default:
             break;
         }
@@ -265,7 +258,7 @@ success_t parse(context_t * C, elem_t * name)
 	container_context_t container_context = { 0 };
 	elem_t root = { 0 };	// the output parse tree
     elem_t myname = { 0 };
-    elem_t *elem, **next;
+    elem_t *elem, *next;
 	success_t rc;
     unsigned long hash;
     char template[] = {'g','_','X','X','X','X','X','X','\0'};
@@ -345,7 +338,7 @@ success_t parse(context_t * C, elem_t * name)
         for (i=0; i<64; i++) {
             next = C->hash_buckets[i];
             while(next) {
-                elem=next;
+                elem = next;
                 next = elem->next;
                 if ((fp = elem->u.hash.out)) {
                     if (fclose(fp) != 0) {
