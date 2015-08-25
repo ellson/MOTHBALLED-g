@@ -1,11 +1,7 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <time.h>
-#include <sys/types.h>
 #include <sys/utsname.h>
-#include <unistd.h>
 #include <pwd.h>
 #include <assert.h>
 
@@ -42,7 +38,6 @@ char * g_session(container_context_t *CC)
     static struct utsname unamebuf;
 	static struct timespec starttime;
     static uid_t uid;
-    static pid_t pid;
     context_t *C = CC->context;
 
     if (pos != &buf[0]) { // have we been here before?
@@ -56,10 +51,10 @@ char * g_session(container_context_t *CC)
     g_append_token   (CC, &pos, '=');
     g_append_string  (CC, &pos, C->progname);
 
-    pid = getpid();
+    C->pid = getpid();
     g_append_string  (CC, &pos, "pid");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, pid);
+    g_append_ulong   (CC, &pos, C->pid);
 
     uid = geteuid();
     pw = getpwuid(uid);

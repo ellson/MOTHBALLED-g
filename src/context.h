@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <time.h>
+#include <sys/utsname.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 typedef struct inbuf_s inbuf_t;
 typedef struct elem_s elem_t;
 typedef struct emit_s emit_t;
@@ -56,6 +62,7 @@ struct context_s {		// input_context
     long stat_elemmax;
     long stat_elemnow;
 	struct timespec uptime; // seconds since boot, also used as the starttime fpr runtime calculations
+    pid_t pid;
 };
 
 struct container_context_s {	// container_context

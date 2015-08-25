@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <assert.h>
 
 #include "grammar.h"
@@ -259,19 +258,80 @@ parse_r(container_context_t * CC, elem_t * root,
 	return rc;
 }
 
+// clean up temporary files - save if wanted
+static void suspend (context_t *C)
+{
+    int i;
+    elem_t *elem, *next;
+    FILE *fp;
+    char outhashname[12];
+//    char outfilename[sizeof(template) + sizeof(outhashname)];
+//    FIXME - bad hack
+    char outfilename[20 + sizeof(outhashname)];
+
+    // close all open files
+    for (i=0; i<64; i++) {
+        next = C->hash_buckets[i];
+        while(next) {
+            elem = next;
+            next = elem->next;
+            if ((fp = elem->u.hash.out)) {
+                if (fclose(fp) != 0) {
+                    perror("Error - fclose(): ");
+                    exit(EXIT_FAILURE);
+                }
+            }
+        }
+    }
+
+    // save if wanted
+    if (C->suspend) {
+        system("grep . g_*/*");
+    }
+
+    // rm all output files
+    for (i=0; i<64; i++) {
+        next = C->hash_buckets[i];
+        while(next) {
+            elem = next;
+            next = elem->next;
+            if ((fp = elem->u.hash.out)) {
+                // reconsitute the filename and unlink
+                base64(outhashname, &(elem->u.hash.hash));
+                strcpy(outfilename, C->tempdir);
+                strcat(outfilename, "/");
+                strcat(outfilename, outhashname);
+                if (unlink(outfilename) == -1) {
+                    perror("Error - unlink(): ");
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            // return elem to free_elem_list
+            elem->next = C->free_elem_list;
+            C->free_elem_list = elem;
+        }
+    }
+  
+    // rmdir the temporary directory
+    if (rmdir(C->tempdir) == -1) {
+        perror("Error - rmdir(): ");
+        exit(EXIT_FAILURE);
+    }
+}
+
 success_t parse(context_t * C, elem_t * name)
 {
 	container_context_t container_context = { 0 };
 	elem_t root = { 0 };	// the output parse tree
     elem_t myname = { 0 };
-    elem_t *elem, *next;
+    elem_t *elem;
 	success_t rc;
     unsigned long hash;
+    char pidbuf[16];
     char template[] = {'g','_','X','X','X','X','X','X','\0'};
-    char outhashname[12];
+    char outhashname[32];
     char outfilename[sizeof(template) + sizeof(outhashname)];
-    int i;
-    FILE *fp;
 
 	container_context.context = C;
 
@@ -288,6 +348,11 @@ success_t parse(context_t * C, elem_t * name)
         elem = new_frag(C, ABC, 1, (unsigned char*)"@");
         append_list(name, elem);
         elem = new_frag(C, ABC, strlen(C->hostname), (unsigned char*)C->hostname);
+        append_list(name, elem);
+        elem = new_frag(C, ABC, 1, (unsigned char*)"_");
+        append_list(name, elem);
+        sprintf(pidbuf,"%u",C->pid);
+        elem = new_frag(C, ABC, strlen(C->hostname), (unsigned char*)pidbuf);
         append_list(name, elem);
 
 // FIXME - add string versions of pid and starttime to name
@@ -341,50 +406,8 @@ success_t parse(context_t * C, elem_t * name)
         }
         free_list(C, &myname);
 
-        for (i=0; i<64; i++) {
-            next = C->hash_buckets[i];
-            while(next) {
-                elem = next;
-                next = elem->next;
-                if ((fp = elem->u.hash.out)) {
-                    if (fclose(fp) != 0) {
-                        perror("Error - fclose(): ");
-                        exit(EXIT_FAILURE);
-                    }
-                }
-            }
-        }
+        suspend (C);
 
-        if (C->suspend) {
-            system("grep . g_*/*");
-        }
-
-        for (i=0; i<64; i++) {
-            next = C->hash_buckets[i];
-            while(next) {
-                elem = next;
-                next = elem->next;
-                if ((fp = elem->u.hash.out)) {
-                    // reconsitute the filename and unlink
-                    base64(outhashname, &(elem->u.hash.hash));
-                    strcpy(outfilename, C->tempdir);
-                    strcat(outfilename, "/");
-                    strcat(outfilename, outhashname);
-                    if (unlink(outfilename) == -1) {
-                        perror("Error - unlink(): ");
-                        exit(EXIT_FAILURE);
-                    }
-                }
-
-                // return elem to free_elem_list
-                elem->next = C->free_elem_list;
-                C->free_elem_list = elem;
-            }
-        }
-        if (rmdir(C->tempdir) == -1) {
-            perror("Error - rmdir(): ");
-            exit(EXIT_FAILURE);
-        }
     }
     
 	return rc;
