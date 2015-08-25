@@ -27,6 +27,10 @@ struct context_s {		// input_context
 	state_t insi;		// state represented by last character read
 	state_t ei;	    	// ei, bi are used to determine whitespace needs around STRINGs
 	state_t bi;
+	state_t verb;       // the "verb" for the ACT. Default is "add",
+                                                    // '~' is "delete",
+                                                    // '^' is "suspend" to tar file,
+                                                    // '?' is "query"
 	state_t state;		// last state entered
 	char has_ast;		// flag set if an '*' is found in a STRING
 	char in_quote;		// flag set if between "..."

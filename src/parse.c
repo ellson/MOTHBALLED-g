@@ -155,6 +155,7 @@ parse_r(container_context_t * CC, elem_t * root,
 
 		free_list(C, root);	// now we're done with the last ACT
 		                    // and we can really start on the new ACT
+        C->verb = 0;        // initialize verb to default "add"
 		break;
 	case SUBJECT:
 		C->has_ast = 0;     // maintain a flag for an '*' found anywhere in the subject
@@ -217,10 +218,8 @@ parse_r(container_context_t * CC, elem_t * root,
 			// Also classifies ACT as NODE or EDGE based on SUBJECT
 			sameas(CC, &branch);
 
-// FIXME - maybe do hashing while in same tree-walk as sameas() ?
             hash_list(&hash, &(CC->subject));   // generate name hash
             elem = hash_bucket(C, hash);    // save in bucket list 
-//fprintf(stderr,"parse_r: %lu %lu\n",hash,elem->u.hash.hash);
 
 			// If this subject is not a pattern, then perform pattern matching and insertion if matched
 			if (!(CC->is_pattern = C->has_ast)) {
@@ -239,6 +238,15 @@ parse_r(container_context_t * CC, elem_t * root,
 
  done: // State exit processing
 	if (rc == SUCCESS) {
+		switch (si) {
+		case TLD:
+		case HAT:
+		case QRY:
+            C->verb = si;
+            break;
+        default:
+            break;
+        }
 		if (branch.u.list.first != NULL || si == EQL) {	// mostly ignore empty lists
             branch.state = si;
 			elem = move_list(C, &branch);
