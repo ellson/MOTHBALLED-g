@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #include <assert.h>
 
 #include "grammar.h"
@@ -11,17 +12,34 @@
 #include "parse.h"
 #include "dumpg.h"
 
+#define NOTUSED(var)    (void) var
+
 static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
+
+static context_t context;  // the input context
+
+static void intr(int s)
+{
+    /* if interrupted we try to gracefully suspend the current state */
+
+    NOTUSED(s);
+
+    context.suspend = 1;
+    g_suspend(&context);
+    
+    exit (EXIT_SUCCESS);
+}
 
 int main(int argc, char *argv[])
 {
 	int i, opt, optnum;
     emit_t *ep;
-    context_t context = { 0 };  // the input context
 
     context.progname = argv[0];
 
     emit = &g_api;      // default output engine (-Tg)
+
+    signal(SIGINT, intr);
 
 	while ((opt = getopt(argc, argv, "T:d::g::t::s")) != -1) {
 		if (optarg)
@@ -81,7 +99,7 @@ int main(int argc, char *argv[])
     context.argv = argv;
 
     emit_start_parse(&context);
-    parse(&context, NULL);
+    g_parse(&context, NULL);
     emit_end_parse(&context);
 
 	exit(EXIT_SUCCESS);

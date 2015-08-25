@@ -81,7 +81,7 @@ static success_t more_in(context_t * C)
 }
 
 // consume comment fagmentxs
-static void parse_comment_fragment(context_t * C)
+static void g_parse_comment_fragment(context_t * C)
 {
 	unsigned char *in, c;
 
@@ -95,23 +95,23 @@ static void parse_comment_fragment(context_t * C)
 }
 
 // consume all comment up to next token, or EOF
-static success_t parse_comment(context_t * C)
+static success_t g_parse_comment(context_t * C)
 {
 	success_t rc;
 
 	rc = SUCCESS;
-	parse_comment_fragment(C);	// eat comment
+	g_parse_comment_fragment(C);	// eat comment
 	while (C->insi == NLL) {	// end_of_buffer, or EOF, during comment
 		if ((rc = more_in(C) == FAIL)) {
 			break;	// EOF
 		}
-		parse_comment_fragment(C);	// eat comment
+		g_parse_comment_fragment(C);	// eat comment
 	}
 	return rc;
 }
 
 // consume whitespace fagments
-static void parse_whitespace_fragment(context_t * C)
+static void g_parse_whitespace_fragment(context_t * C)
 {
 	unsigned char *in, c;
 	state_t insi;
@@ -135,37 +135,37 @@ static void parse_whitespace_fragment(context_t * C)
 }
 
 // consume all non-comment whitespace up to next token, or EOF
-static success_t parse_non_comment(context_t * C)
+static success_t g_parse_non_comment(context_t * C)
 {
 	success_t rc;
 
 	rc = SUCCESS;
-	parse_whitespace_fragment(C);	// eat whitespace
+	g_parse_whitespace_fragment(C);	// eat whitespace
 	while (C->insi == NLL) {	// end_of_buffer, or EOF, during whitespace
 		if ((rc = more_in(C) == FAIL)) {
 			break;	// EOF
 		}
-		parse_whitespace_fragment(C);	// eat all remaining leading whitespace
+		g_parse_whitespace_fragment(C);	// eat all remaining leading whitespace
 	}
 	return rc;
 }
 
 // consume all whitespace or comments up to next token, or EOF
-success_t parse_whitespace(container_context_t * CC)
+success_t g_parse_whitespace(container_context_t * CC)
 {
 	success_t rc;
     context_t *C = CC->context;
 
 	rc = SUCCESS;
 	while (1) {
-		if ((rc = parse_non_comment(C)) == FAIL) {
+		if ((rc = g_parse_non_comment(C)) == FAIL) {
 			break;
 		}
 		if (C->insi != OCT) {
 			break;
 		}
 		while (C->insi == OCT) {
-			if ((rc = parse_comment(C)) == FAIL) {
+			if ((rc = g_parse_comment(C)) == FAIL) {
 				break;
 			}
 		}
@@ -174,7 +174,7 @@ success_t parse_whitespace(container_context_t * CC)
 }
 
 // load STRING fragments
-static int parse_string_fragment(context_t * C, elem_t * fraglist)
+static int g_parse_string_fragment(context_t * C, elem_t * fraglist)
 {
 	unsigned char *frag;
 	state_t insi;
@@ -246,18 +246,18 @@ static int parse_string_fragment(context_t * C, elem_t * fraglist)
 }
 
 // collect fragments to form a STRING token
-success_t parse_string(container_context_t * CC, elem_t * fraglist)
+success_t g_parse_string(container_context_t * CC, elem_t * fraglist)
 {
 	int len, slen;
     context_t *C = CC->context;
 
 	C->has_quote = 0;
-	slen = parse_string_fragment(C, fraglist);	// leading string
+	slen = g_parse_string_fragment(C, fraglist);	// leading string
 	while (C->insi == NLL) {	// end_of_buffer, or EOF, during whitespace
 		if ((more_in(C) == FAIL)) {
 			break;	// EOF
 		}
-		if ((len = parse_string_fragment(C, fraglist)) == 0) {
+		if ((len = g_parse_string_fragment(C, fraglist)) == 0) {
 			break;
 		}
 		slen += len;
@@ -279,7 +279,7 @@ success_t parse_string(container_context_t * CC, elem_t * fraglist)
 //
 // FIXME - add support for additonal quoting formats  (HTML-like, ...)
 //
-static int parse_vstring_fragment(context_t * C, elem_t * fraglist)
+static int g_parse_vstring_fragment(context_t * C, elem_t * fraglist)
 {
 	unsigned char *frag;
 	state_t insi;
@@ -355,18 +355,18 @@ static int parse_vstring_fragment(context_t * C, elem_t * fraglist)
 }
 
 // collect fragments to form a VSTRING token
-success_t parse_vstring(container_context_t * CC, elem_t * fraglist)
+success_t g_parse_vstring(container_context_t * CC, elem_t * fraglist)
 {
 	int len, slen;
     context_t *C = CC->context;
 
 	C->has_quote = 0;
-	slen = parse_vstring_fragment(C, fraglist);	// leading string
+	slen = g_parse_vstring_fragment(C, fraglist);	// leading string
 	while (C->insi == NLL) {	// end_of_buffer, or EOF, during whitespace
 		if ((more_in(C) == FAIL)) {
 			break;	// EOF
 		}
-		if ((len = parse_vstring_fragment(C, fraglist)) == 0) {
+		if ((len = g_parse_vstring_fragment(C, fraglist)) == 0) {
 			break;
 		}
 		slen += len;
@@ -385,7 +385,7 @@ success_t parse_vstring(container_context_t * CC, elem_t * fraglist)
 }
 
 // process single character tokens
-success_t parse_token(container_context_t * CC)
+success_t g_parse_token(container_context_t * CC)
 {
 	char token;
     context_t *C = CC->context;

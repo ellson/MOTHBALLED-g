@@ -18,12 +18,12 @@
 
 // This parser recurses at two levels:
 //
-//     parse() ----> parse_activity(C) ----> parse_r(CC) -| -|  
-//                   ^                       ^            |  |
-//                   |                       |            |  |
-//                   |                       ------<-------  |
-//                   |                                       |
-//                   -----------------<-----------------------
+//     main() -----> g_parse(C) ----> g_parse_r(CC) -| -|  
+//                     ^                ^            |  |
+//                     |                |            |  |
+//                     |                ------<-------  |
+//                     |                                |
+//                     --------------<-------------------
 //
 // The inner recursions is through the grammar state_machine at a single
 // level of containment - maintained in container_context (CC)
@@ -55,7 +55,7 @@ static success_t more_rep(container_context_t * CC, unsigned char prop)
 }
 
 static success_t
-parse_r(container_context_t * CC, elem_t * root,
+g_parse_r(container_context_t * CC, elem_t * root,
 	state_t si, unsigned char prop, int nest, int repc)
 {
 	unsigned char nprop;
@@ -93,14 +93,14 @@ parse_r(container_context_t * CC, elem_t * root,
 	C->ei = C->insi;	// the char class that ended the last token
 
 	// Whitespace
-	if ((rc = parse_whitespace(CC)) == FAIL) {
+	if ((rc = g_parse_whitespace(CC)) == FAIL) {
 		goto done;	// EOF during whitespace
 	}
 
 	// Special character tokens
 	if (si == C->insi) {	// single character terminals matching state_machine expectation
 		C->bi = C->insi;
-		rc = parse_token(CC);
+		rc = g_parse_token(CC);
 		C->ei = C->insi;
 		goto done;
 	}
@@ -108,20 +108,20 @@ parse_r(container_context_t * CC, elem_t * root,
 	case ACTIVITY:          // Recursion into Contained activity
 		if (C->bi == LBE) {	// if not top-level of containment
 			C->bi = NLL;
-			rc = parse(CC->context, &CC->subject);	// recursively process contained ACTIVITY in to its own root
+			rc = g_parse(CC->context, &CC->subject);	// recursively process contained ACTIVITY in to its own root
 			C->bi = C->insi;	// The char class that terminates the ACTIVITY
 			goto done;
 		}
 		break;
 
 	case STRING:            // Strings
-		rc = parse_string(CC, &branch);
+		rc = g_parse_string(CC, &branch);
 		C->bi = C->insi;	// the char class that terminates the STRING
 		goto done;
 		break;
 
 	case VSTRING:            // Value Strings
-		rc = parse_vstring(CC, &branch);
+		rc = g_parse_vstring(CC, &branch);
 		C->bi = C->insi;	// the char class that terminates the VSTRING
 		goto done;
 		break;
@@ -183,7 +183,7 @@ parse_r(container_context_t * CC, elem_t * root,
                                         // offset from the current state.
 
 		if (nprop & ALT) {              // look for ALT
-			if ((rc = parse_r(CC, &branch, ni, nprop, nest, 0)) == SUCCESS) {
+			if ((rc = g_parse_r(CC, &branch, ni, nprop, nest, 0)) == SUCCESS) {
 				break;                  // ALT satisfied
 			}
 
@@ -191,19 +191,19 @@ parse_r(container_context_t * CC, elem_t * root,
 		} else {                    	// else it is a sequence (or the last ALT, same thing)
 			repc = 0;
 			if (nprop & OPT) {          // OPTional
-				if ((parse_r(CC, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
+				if ((g_parse_r(CC, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
 					while (more_rep(CC, nprop) == SUCCESS) {
-						if (parse_r(CC, &branch, ni, nprop, nest, repc++) == FAIL) {
+						if (g_parse_r(CC, &branch, ni, nprop, nest, repc++) == FAIL) {
 							break;
 						}
 					}
 				}
 			} else {                	// else not OPTional
-				if ((rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
+				if ((rc = g_parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 					break;
 				}
 				while (more_rep(CC, nprop) == SUCCESS) {
-					if ((rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
+					if ((rc = g_parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 						break;
 					}
 				}
@@ -260,7 +260,7 @@ parse_r(container_context_t * CC, elem_t * root,
 }
 
 // clean up temporary files - save if wanted
-static void suspend (context_t *C)
+void g_suspend (context_t *C)
 {
     int i;
     elem_t *elem, *next;
@@ -321,7 +321,7 @@ static void suspend (context_t *C)
     }
 }
 
-success_t parse(context_t * C, elem_t * name)
+success_t g_parse(context_t * C, elem_t * name)
 {
 	container_context_t container_context = { 0 };
 	elem_t root = { 0 };	// the output parse tree
@@ -385,7 +385,7 @@ success_t parse(context_t * C, elem_t * name)
 	C->stat_containercount++;
 
 	emit_start_activity(&container_context);
-	if ((rc = parse_r(&container_context, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+	if ((rc = g_parse_r(&container_context, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
 		if (C->insi == NLL) {	// EOF is OK
 			rc = SUCCESS;
 		} else {
@@ -407,7 +407,7 @@ success_t parse(context_t * C, elem_t * name)
         }
         free_list(C, &myname);
 
-        suspend (C);
+        g_suspend (C);
 
     }
     
