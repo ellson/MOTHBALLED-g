@@ -113,10 +113,10 @@ void pattern(container_context_t * CC, elem_t * root, elem_t * subject)
     assert(subject);
     assert((state_t) subject->state == SUBJECT);
 
-	if (CC->act_type == NODE) {
+	if (CC->subject_type == NODE) {
 		pattern_acts = &(CC->node_pattern_acts);
 	} else {
-		assert(CC->act_type == EDGE);
+		assert(CC->subject_type == EDGE);
 		pattern_acts = &(CC->edge_pattern_acts);
 	}
 	nextpattern_act = pattern_acts->u.list.first;

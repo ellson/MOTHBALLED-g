@@ -26,10 +26,10 @@ sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 		switch (si) {
 		case NODE:
 		case EDGE:
-			if (CC->act_type == 0) {
-				CC->act_type = si;	// record if the ACT has a NODE or EDGE SUBJECT
+			if (CC->subject_type == 0) {
+				CC->subject_type = si;	// record if the ACT has a NODE or EDGE SUBJECT
 			} else {
-				if (si != CC->act_type) {
+				if (si != CC->subject_type) {
 					if (si == NODE) {
 						emit_error(CC->context, si, "EDGE subject includes");
 					} else {
@@ -106,7 +106,7 @@ void sameas(container_context_t * CC, elem_t * subject)
 
     assert(subject);
     assert((state_t)subject->state == SUBJECT);
-    CC->act_type = 0;
+    CC->subject_type = 0;
 
 	// rewrite subject into newsubject with any EQL elements substituted from oldsubject
 	sameas_r(CC, subject, &nextold, newsubject);

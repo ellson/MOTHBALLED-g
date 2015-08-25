@@ -127,7 +127,7 @@ parse_r(container_context_t * CC, elem_t * root,
 		break;
 
 		// the remainder of the switch() is just state initialization and emit hooks;
-	case ACT:
+	case SUBJECT:
 		// This is a bit ugly.
 		//
 		// Because the grammar has no mandatory terminal token for ACTs, the 
@@ -143,21 +143,25 @@ parse_r(container_context_t * CC, elem_t * root,
 			C->stat_patterncount++;
 			elem = ref_list(C, root);
 
-			if (CC->act_type == NODE) {
+			if (CC->subject_type == NODE) {
 				append_list(&(CC->node_pattern_acts), elem);
 			} else {
-				assert(CC->act_type == EDGE);
+				assert(CC->subject_type == EDGE);
 				append_list(&(CC->edge_pattern_acts), elem);
 			}
 		} else {
 			C->stat_actcount++;
 		}
+//fprintf(stderr,"verb = %d\n", C->verb);
+
+// FIXME - at this point we have all of the last act.
+//       - decompose node and edge lists
+//       - emit each object with is arrtibutes
+//       - emit each object with its contents (need copy on write reference)
 
 		free_list(C, root);	// now we're done with the last ACT
 		                    // and we can really start on the new ACT
         C->verb = 0;        // initialize verb to default "add"
-		break;
-	case SUBJECT:
 		C->has_ast = 0;     // maintain a flag for an '*' found anywhere in the subject
 		break;
 	default:
@@ -212,9 +216,11 @@ parse_r(container_context_t * CC, elem_t * root,
 	if (rc == SUCCESS) {
 		switch (si) {
 		case TLD:
-		case HAT:
 		case QRY:
             C->verb = si;  // record verb prefix, if not default
+            break;
+		case HAT:
+            C->suspend = si;  // record the suspend TERM token
             break;
 		case SUBJECT: // subject rewrites before adding branch to root
             branch.state = si;
@@ -227,7 +233,7 @@ parse_r(container_context_t * CC, elem_t * root,
             elem = hash_bucket(C, hash);    // save in bucket list 
 
 			// If this subject is not itself a pattern, then
-            // i  perform pattern matching and insertion if matched
+            // perform pattern matching and insertion if matched
 			if (!(CC->is_pattern = C->has_ast)) {
 				pattern(CC, root, &branch);
 			}
@@ -345,8 +351,20 @@ success_t parse(context_t * C, elem_t * name)
                         perror("Error - fclose(): ");
                         exit(EXIT_FAILURE);
                     }
+                }
+            }
+        }
 
-#if 0
+        if (C->suspend) {
+            system("grep . g_*/*");
+        }
+
+        for (i=0; i<64; i++) {
+            next = C->hash_buckets[i];
+            while(next) {
+                elem = next;
+                next = elem->next;
+                if ((fp = elem->u.hash.out)) {
                     // reconsitute the filename and unlink
                     base64(outhashname, &(elem->u.hash.hash));
                     strcpy(outfilename, C->tempdir);
@@ -356,7 +374,6 @@ success_t parse(context_t * C, elem_t * name)
                         perror("Error - unlink(): ");
                         exit(EXIT_FAILURE);
                     }
-#endif
                 }
 
                 // return elem to free_elem_list
@@ -364,12 +381,10 @@ success_t parse(context_t * C, elem_t * name)
                 C->free_elem_list = elem;
             }
         }
-#if 0
         if (rmdir(C->tempdir) == -1) {
             perror("Error - rmdir(): ");
             exit(EXIT_FAILURE);
         }
-#endif
     }
     
 	return rc;

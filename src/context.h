@@ -27,6 +27,7 @@ struct context_s {		// input_context
 	state_t insi;		// state represented by last character read
 	state_t ei;	    	// ei, bi are used to determine whitespace needs around STRINGs
 	state_t bi;
+	state_t suspend;    // the '^' "term" for the ACT to suspend
 	state_t verb;       // the "verb" for the ACT. Default is "add",
                                                     // '~' is "delete",
                                                     // '^' is "suspend" to tar file,
@@ -66,7 +67,7 @@ struct container_context_s {	// container_context
                         // and CONTAINERS it is this ACT.   It is the basis of the name for
                         // the output files for contents.)
 	char is_pattern;	// flag set if '*' occurred in SUBJECT
-	state_t act_type;	// set by sameas() to record if the SUBJECT is NODE(s), or EDGE(s),
+	state_t subject_type;	// set by sameas() to record if the SUBJECT is NODE(s), or EDGE(s),
                         //   and to check that it is not a mix of NODE(s) and EDGE(s).
 	elem_t node_pattern_acts;	// complete ACTs from whenever the NODE subject contains an "*"
 	elem_t edge_pattern_acts;	// complete ACTs from whenever the EDGE subject contains an "*"

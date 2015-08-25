@@ -1,5 +1,5 @@
 //
-// Edged are owned (stored, rendered) by the common ancestor
+// Edges are owned (stored, rendered) by the common ancestor
 // of all the endpoints.
 //
 // So an edge to an external node:, e.g
