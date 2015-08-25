@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
     context.progname = argv[0];
 
-    emit = &g_api;      // default output engine (-T)
+    emit = &g_api;      // default output engine (-Tg)
 
 	while ((opt = getopt(argc, argv, "T:d::g::t::s")) != -1) {
 		if (optarg)

@@ -345,6 +345,7 @@ success_t parse(context_t * C, elem_t * name)
                         exit(EXIT_FAILURE);
                     }
 
+#if 0
                     // reconsitute the filename and unlink
                     base64(outhashname, &(elem->u.hash.hash));
                     strcpy(outfilename, C->tempdir);
@@ -354,6 +355,7 @@ success_t parse(context_t * C, elem_t * name)
                         perror("Error - unlink(): ");
                         exit(EXIT_FAILURE);
                     }
+#endif
                 }
 
                 // return elem to free_elem_list
@@ -361,10 +363,12 @@ success_t parse(context_t * C, elem_t * name)
                 C->free_elem_list = elem;
             }
         }
+#if 0
         if (rmdir(C->tempdir) == -1) {
             perror("Error - rmdir(): ");
             exit(EXIT_FAILURE);
         }
+#endif
     }
     
 	return rc;
