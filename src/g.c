@@ -20,13 +20,10 @@ static context_t context;  // the input context
 
 static void intr(int s)
 {
-    /* if interrupted we try to gracefully suspend the current state */
+    /* if interrupted we try to gracefully snapshot the current state */
 
     NOTUSED(s);
-
-    context.suspend = 1;
-    g_suspend(&context);
-    
+    g_snapshot(&context);
     exit (EXIT_SUCCESS);
 }
 

@@ -260,24 +260,20 @@ g_parse_r(container_context_t * CC, elem_t * root,
 }
 
 // clean up temporary files - save if wanted
-void g_suspend (context_t *C)
+void g_snapshot (context_t *C)
 {
     int i;
     elem_t *elem, *next;
     FILE *fp;
-    char outhashname[12];
-//    char outfilename[sizeof(template) + sizeof(outhashname)];
-//    FIXME - bad hack
-    char outfilename[20 + sizeof(outhashname)];
 
-    // close all open files
+    // flush all open files
     for (i=0; i<64; i++) {
         next = C->hash_buckets[i];
         while(next) {
             elem = next;
             next = elem->next;
             if ((fp = elem->u.hash.out)) {
-                if (fclose(fp) != 0) {
+                if (fflush(fp) != 0) {
                     perror("Error - fclose(): ");
                     exit(EXIT_FAILURE);
                 }
@@ -285,40 +281,8 @@ void g_suspend (context_t *C)
         }
     }
 
-    // save if wanted
-    if (C->suspend) {
-        system("grep . g_*/*");
-    }
-
-    // rm all output files
-    for (i=0; i<64; i++) {
-        next = C->hash_buckets[i];
-        while(next) {
-            elem = next;
-            next = elem->next;
-            if ((fp = elem->u.hash.out)) {
-                // reconsitute the filename and unlink
-                base64(outhashname, &(elem->u.hash.hash));
-                strcpy(outfilename, C->tempdir);
-                strcat(outfilename, "/");
-                strcat(outfilename, outhashname);
-                if (unlink(outfilename) == -1) {
-                    perror("Error - unlink(): ");
-                    exit(EXIT_FAILURE);
-                }
-            }
-
-            // return elem to free_elem_list
-            elem->next = C->free_elem_list;
-            C->free_elem_list = elem;
-        }
-    }
-  
-    // rmdir the temporary directory
-    if (rmdir(C->tempdir) == -1) {
-        perror("Error - rmdir(): ");
-        exit(EXIT_FAILURE);
-    }
+    // snapshot
+    system("grep . g_*/*");
 }
 
 success_t g_parse(context_t * C, elem_t * name)
@@ -326,7 +290,9 @@ success_t g_parse(context_t * C, elem_t * name)
 	container_context_t container_context = { 0 };
 	elem_t root = { 0 };	// the output parse tree
     elem_t myname = { 0 };
-    elem_t *elem;
+    elem_t *elem, *next;
+    int i;
+    FILE *fp;
 	success_t rc;
     unsigned long hash;
     char pidbuf[16];
@@ -374,7 +340,7 @@ success_t g_parse(context_t * C, elem_t * name)
         strcpy(outfilename, C->tempdir);
         strcat(outfilename, "/");
         strcat(outfilename, outhashname);
-        elem->u.hash.out = fopen(outfilename,"wb");
+        elem->u.hash.out = fopen(outfilename,"a+b"); //open for binary append writes, + read.
         if (! elem->u.hash.out) {
             perror("Error - fopen(): ");
             exit(EXIT_FAILURE);
@@ -407,7 +373,43 @@ success_t g_parse(context_t * C, elem_t * name)
         }
         free_list(C, &myname);
 
-        g_suspend (C);
+        for (i=0; i<64; i++) {
+            next = C->hash_buckets[i];
+            while(next) {
+                elem = next;
+                next = elem->next;
+                if ((fp = elem->u.hash.out)) {
+  
+                    // close all open files
+                    if (fclose(fp) != 0) {
+                        perror("Error - fclose(): ");
+                        exit(EXIT_FAILURE);
+                    }
+
+                    // reconsitute the filename and unlink
+                    base64(outhashname, &(elem->u.hash.hash));
+                    strcpy(outfilename, C->tempdir);
+                    strcat(outfilename, "/");
+                    strcat(outfilename, outhashname);
+                    
+                    // rm all output files
+                    if (unlink(outfilename) == -1) {
+                        perror("Error - unlink(): ");
+                        exit(EXIT_FAILURE);
+                    }
+                }
+    
+                // return elem to free_elem_list
+                elem->next = C->free_elem_list;
+                C->free_elem_list = elem;
+            }
+        }
+    
+        // rmdir the temporary directory
+        if (rmdir(C->tempdir) == -1) {
+            perror("Error - rmdir(): ");
+            exit(EXIT_FAILURE);
+        }
 
     }
     
