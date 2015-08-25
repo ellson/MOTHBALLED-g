@@ -219,7 +219,8 @@ parse_r(container_context_t * CC, elem_t * root,
 
 // FIXME - maybe do hashing while in same tree-walk as sameas() ?
             hash_list(&hash, &(CC->subject));   // generate name hash
-            hash_bucket(C, hash);    // save in bucket list 
+            elem = hash_bucket(C, hash);    // save in bucket list 
+//fprintf(stderr,"parse_r: %lu %lu\n",hash,elem->u.hash.hash);
 
 			// If this subject is not a pattern, then perform pattern matching and insertion if matched
 			if (!(CC->is_pattern = C->has_ast)) {
@@ -256,9 +257,8 @@ success_t parse(context_t * C, elem_t * name)
 	container_context_t container_context = { 0 };
 	elem_t root = { 0 };	// the output parse tree
     elem_t myname = { 0 };
-    elem_t *hashelem, **next;
+    elem_t *elem, **next;
 	success_t rc;
-    elem_t *elem;
     unsigned long hash;
     char template[] = {'g','_','X','X','X','X','X','X','\0'};
     char outhashname[12];
@@ -295,19 +295,19 @@ success_t parse(context_t * C, elem_t * name)
         }
     }
     hash_list(&hash, name);    // hash name (subject "names" can be very long)
-    hashelem = hash_bucket(C, hash);    // save in bucket list 
-    if (! hashelem->u.hash.out) { // open file, if not already open
+    elem = hash_bucket(C, hash);    // save in bucket list 
+    if (! elem->u.hash.out) { // open file, if not already open
         base64(outhashname, &hash);
         strcpy(outfilename, C->tempdir);
         strcat(outfilename, "/");
         strcat(outfilename, outhashname);
-        hashelem->u.hash.out = fopen(outfilename,"wb");
-        if (! hashelem->u.hash.out) {
+        elem->u.hash.out = fopen(outfilename,"wb");
+        if (! elem->u.hash.out) {
             perror("Error - fopen(): ");
             exit(EXIT_FAILURE);
         }
     }
-    container_context.out = hashelem->u.hash.out;
+    container_context.out = elem->u.hash.out;
 
 	C->stat_containercount++;
 
@@ -335,10 +335,10 @@ success_t parse(context_t * C, elem_t * name)
         free_list(C, &myname);
 
         for (i=0; i<64; i++) {
-            next = &(C->hash_buckets[i]);
-            while(*next) {
-                elem=*next;
-                next = &(elem->next);
+            next = C->hash_buckets[i];
+            while(next) {
+                elem=next;
+                next = elem->next;
                 if ((fp = elem->u.hash.out)) {
                     if (fclose(fp) != 0) {
                         perror("Error - fclose(): ");

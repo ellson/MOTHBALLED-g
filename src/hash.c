@@ -88,15 +88,15 @@ void hash_list(unsigned long *hash, elem_t *list)
 
 elem_t *hash_bucket(context_t * C, unsigned long hash)
 {
-    elem_t *hashbucket, *elem, **next;
+    elem_t *elem, **next;
 
     next = &(C->hash_buckets[(hash & 0x3F)]);
     while(*next) {
-        hashbucket = *next;
-        if (hashbucket->u.hash.hash == hash) {
-            return hashbucket;
+        elem  = *next;
+        if (elem->u.hash.hash == hash) {
+            return elem;
         }
-        next = &(hashbucket->next);
+        next = &(elem->next);
     }
     elem = new_hash(C, hash);
     *next = elem;
