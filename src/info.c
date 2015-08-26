@@ -138,13 +138,17 @@ char * g_stats(container_context_t *CC)
     g_append_token   (CC, &pos, '=');
     g_append_ulong   (CC, &pos, C->stat_actcount*TEN9/runtime);
 
+    g_append_string  (CC, &pos, "sameas");
+    g_append_token   (CC, &pos, '=');
+    g_append_ulong   (CC, &pos, C->stat_sameas);
+
     g_append_string  (CC, &pos, "patterns");
     g_append_token   (CC, &pos, '=');
     g_append_ulong   (CC, &pos, C->stat_patterncount);
 
-    g_append_string  (CC, &pos, "containers");
+    g_append_string  (CC, &pos, "patternmatches");
     g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_containercount);
+    g_append_ulong   (CC, &pos, C->stat_patternmatches);
 
     g_append_string  (CC, &pos, "strings");
     g_append_token   (CC, &pos, '=');

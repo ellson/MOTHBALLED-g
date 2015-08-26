@@ -70,6 +70,8 @@ sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 				append_list(newlist, new);
 
 				*nextold = (*nextold)->next;
+
+                C->stat_sameas++;
 			} else {
 				emit_error(CC->context, si, "No corresponding object found for same-as substitution");
 			}

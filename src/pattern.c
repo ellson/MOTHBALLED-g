@@ -151,6 +151,8 @@ void pattern(container_context_t * CC, elem_t * root, elem_t * subject)
             }
 
 			// FIXME -- contents
+
+            C->stat_patternmatches++;
 		}
 
 		nextpattern_act = nextpattern_act->next;

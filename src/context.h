@@ -51,7 +51,9 @@ struct context_s {		// input_context
     long stat_crcount;
     long stat_inchars;
     long stat_actcount;
+    long stat_sameas;
     long stat_patterncount;
+    long stat_patternmatches;
     long stat_containercount;
     long stat_stringcount;
     long stat_fragcount;
