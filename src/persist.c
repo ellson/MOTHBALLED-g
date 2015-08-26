@@ -23,7 +23,9 @@ elem_t * je_persist_open(context_t *C)
 
     // copy template including trailing NULL
     i = 0;
-    while ((C->template[i] = template_init[i])) i++;
+    while ((C->template[i] = template_init[i])) {
+        i++;
+    }
 
     name = &(C->myname);
 
@@ -76,8 +78,8 @@ void je_persist_snapshot (context_t *C)
     elem_t *elem, *next;
     FILE *fp;
     TAR *pTar;
-    char *tarFilename = "g_file.tar";
-    char *extractTo = ".";
+    char *tarFilename = "g_suspend.tar";
+    char *extractTo = "g_suspend";
 
     // flush all open files
     for (i=0; i<64; i++) {
