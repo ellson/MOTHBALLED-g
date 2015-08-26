@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <libtar.h>
+#include <fcntl.h>
 #include <assert.h>
 
 #include "grammar.h"
@@ -73,6 +75,9 @@ void je_persist_snapshot (context_t *C)
     int i;
     elem_t *elem, *next;
     FILE *fp;
+    TAR *pTar;
+    char *tarFilename = "g_file.tar";
+    char *extractTo = ".";
 
     // flush all open files
     for (i=0; i<64; i++) {
@@ -90,7 +95,22 @@ void je_persist_snapshot (context_t *C)
     }
 
     // snapshot
-    system("grep . /tmp/g_*/*");
+    if (tar_open(&pTar, tarFilename, NULL, O_WRONLY | O_CREAT, 0644, TAR_GNU) == -1) {
+        perror("Error - tar_open():");
+        exit(EXIT_FAILURE);
+    }
+    if (tar_append_tree(pTar, C->tempdir, extractTo) == -1) {
+        perror("Error - tar_append_tree():");
+        exit(EXIT_FAILURE);
+    }
+    if (tar_append_eof(pTar) == -1) {
+        perror("Error - tar_append_eof():");
+        exit(EXIT_FAILURE);
+    }
+    if (tar_close(pTar) == -1) {
+        perror("Error - tar_close():");
+        exit(EXIT_FAILURE);
+    }
 }
 
 // cleanup of temporary files

@@ -1,6 +1,8 @@
 CFLAGS = -g -O0 -Wall -W -Wextra -pedantic
 #CFLAGS = -DNDEBUG
 
+LDFLAGS = -ltar
+
 OBJS = grammar.o parse.o persist.o token.o info.o inbuf.o dumpg.o list.o hash.o sameas.o pattern.o emit.o emit_t.o emit_g.o emit_gv.o g.o
 HDRS = grammar.h parse.h persist.h token.h info.h inbuf.h dumpg.h list.h hash.h sameas.h pattern.h emit.h context.h
 
