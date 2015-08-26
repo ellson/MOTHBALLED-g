@@ -292,6 +292,7 @@ success_t g_parse(context_t * C, elem_t * name)
     elem_t myname = { 0 };
     elem_t *elem, *next;
     int i;
+    size_t len = 0, slen = 0;
     FILE *fp;
 	success_t rc;
     unsigned long hash;
@@ -303,36 +304,54 @@ success_t g_parse(context_t * C, elem_t * name)
 	container_context.context = C;
 
     if ((C->containment++) == 0) {  // top container
-        g_session(&container_context); // gather session info, including starttime for stats
 
+        // gather session info, including starttime for stats
+        g_session(&container_context);
+
+        // assemble a name for this nameless top container
+        assert (name == NULL);
         name = &myname;
 
         assert (C->inbuf == NULL);
         new_inbuf(C);
 
-        elem = new_frag(C, ABC, strlen(C->username), (unsigned char*)C->username);
+        len = strlen(C->username);
+        elem = new_frag(C, ABC, len, (unsigned char*)C->username);
         append_list(name, elem);
+        slen += len;
+
         elem = new_frag(C, ABC, 1, (unsigned char*)"@");
         append_list(name, elem);
-        elem = new_frag(C, ABC, strlen(C->hostname), (unsigned char*)C->hostname);
+        slen++;
+
+        len = strlen(C->hostname);
+        elem = new_frag(C, ABC, len, (unsigned char*)C->hostname);
         append_list(name, elem);
+        slen += len;
+
         elem = new_frag(C, ABC, 1, (unsigned char*)"_");
         append_list(name, elem);
-        sprintf(pidbuf,"%u",C->pid);
-        elem = new_frag(C, ABC, strlen(C->hostname), (unsigned char*)pidbuf);
-        append_list(name, elem);
+        slen++;
 
-// FIXME - add string versions of pid and starttime to name
-//       - how is this node named in a distribution of nodes???
+        sprintf(pidbuf,"%u",C->pid);
+        len = strlen(C->hostname);
+        assert (len  < sizeof(pidbuf));
+        elem = new_frag(C, ABC, len, (unsigned char*)pidbuf);
+        append_list(name, elem);
+        slen += len;
+
+        assert (slen < INBUFSIZE);
 
         C->inbuf = NULL;   // hang on to this inbuf privately for myname
 
+        // make a temporary directory
         C->tempdir = mkdtemp(template);
         if (!C->tempdir) {
             perror("Error - mkdtemp(): ");
             exit(EXIT_FAILURE);
         }
     }
+
     hash_list(&hash, name);    // hash name (subject "names" can be very long)
     elem = hash_bucket(C, hash);    // save in bucket list 
     if (! elem->u.hash.out) { // open file, if not already open
