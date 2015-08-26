@@ -10,6 +10,7 @@
 #include "emit.h"
 #include "info.h"
 #include "parse.h"
+#include "persist.h"
 #include "dumpg.h"
 
 #define NOTUSED(var)    (void) var
@@ -22,8 +23,8 @@ static context_t context;  // the input context
 static void intr(int s)
 {
     NOTUSED(s);
-    g_snapshot(&context);
-    g_cleanup(&context);
+    g_persist_snapshot(&context);
+    g_persist_close(&context);
     exit (EXIT_FAILURE);
 }
 

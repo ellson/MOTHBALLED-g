@@ -43,6 +43,7 @@ struct context_s {		// input_context
 	char needstats;		// flag set if -s on command line
 	int containment;	// depth of containment
 	long linecount_at_start;    // activity line count when this file was opened.
+    elem_t myname;      // header for a list of components of my name (in the same form as subjects)
     elem_t *hash_buckets[64];   // 64 buckets of name hashes and FILE*.
     long stat_filecount;  // various stats
     long stat_lfcount;
