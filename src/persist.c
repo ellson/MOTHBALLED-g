@@ -11,13 +11,17 @@
 #include "persist.h"
 #include "hash.h"
 
-static char template[] = {'g','_','X','X','X','X','X','X','\0'};
-
 elem_t * je_persist_open(context_t *C)
 {
     elem_t *elem, *name;
     size_t len = 0, slen = 0;
     char pidbuf[16];
+    int i;
+    char *template_init = "/tmp/g_XXXXXX";
+
+    // copy template including trailing NULL
+    i = 0;
+    while ((C->template[i] = template_init[i])) i++;
 
     name = &(C->myname);
 
@@ -54,7 +58,7 @@ elem_t * je_persist_open(context_t *C)
     C->inbuf = NULL;   // hang on to this inbuf privately for myname
 
     // make a temporary directory
-    C->tempdir = mkdtemp(template);
+    C->tempdir = mkdtemp(C->template);
     if (!C->tempdir) {
         perror("Error - mkdtemp(): ");
         exit(EXIT_FAILURE);
@@ -86,7 +90,7 @@ void je_persist_snapshot (context_t *C)
     }
 
     // snapshot
-    system("grep . g_*/*");
+    system("grep . /tmp/g_*/*");
 }
 
 // cleanup of temporary files
@@ -96,7 +100,7 @@ void je_persist_close (context_t *C)
     int i;
     elem_t *elem, *next;
     char outhashname[32];
-    char outfilename[sizeof(template) + 1 + sizeof(outhashname)];
+    char outfilename[sizeof(C->template) + 1 + sizeof(outhashname)];
 
     for (i=0; i<64; i++) {
         next = C->hash_buckets[i];

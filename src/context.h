@@ -42,6 +42,7 @@ struct context_s {		// input_context
 	char has_quote;		// flag set if STRING contains one or more DQT fragments
 	char needstats;		// flag set if -s on command line
 	int containment;	// depth of containment
+    char template[32];  // place to keep template for mkdtemp()
 	long linecount_at_start;    // activity line count when this file was opened.
     elem_t myname;      // header for a list of components of my name (in the same form as subjects)
     elem_t *hash_buckets[64];   // 64 buckets of name hashes and FILE*.
