@@ -10,7 +10,7 @@
 
 // rewrite list into new list with any EQL elements substituted from oldlist
 static void
-sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
+je_sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 	 elem_t * newlist)
 {
 	elem_t *elem, *new, *nextoldelem = NULL;
@@ -51,7 +51,7 @@ sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 					*nextold = NULL;
 				}
 			}
-			sameas_r(CC, elem, &nextoldelem, &object);	// recurse, adding result to a sublist
+			je_sameas_r(CC, elem, &nextoldelem, &object);	// recurse, adding result to a sublist
 			new = move_list(C, &object);
             new->state = si;
 			append_list(newlist, new);
@@ -82,7 +82,7 @@ sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 				nextoldelem = (*nextold)->u.list.first;	// for the recursion
 				*nextold = (*nextold)->next;	// at this level, continue over the elems
 			}
-			sameas_r(CC, elem, &nextoldelem, &object);	// recurse, adding result to a sublist
+			je_sameas_r(CC, elem, &nextoldelem, &object);	// recurse, adding result to a sublist
 			new = move_list(C, &object);
             new->state = si;
 			append_list(newlist, new);
@@ -96,7 +96,7 @@ sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
 //     compare subject with oldsubject
 //     substitue EQL in newsubject from corresponding member of oldsubject (or error if old not available)
 //     replace subject and oldsubject with newsubject
-void sameas(container_context_t * CC, elem_t * subject)
+void je_sameas(container_context_t * CC, elem_t * subject)
 {
 	elem_t *newsubject, *oldsubject, *nextold;
 	elem_t subject_rewrite = { 0 };
@@ -111,7 +111,7 @@ void sameas(container_context_t * CC, elem_t * subject)
     CC->subject_type = 0;
 
 	// rewrite subject into newsubject with any EQL elements substituted from oldsubject
-	sameas_r(CC, subject, &nextold, newsubject);
+	je_sameas_r(CC, subject, &nextold, newsubject);
 
 	free_list(C, subject);     // free original subject
                            	//    ( although refs are retained in other lists )

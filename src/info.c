@@ -30,7 +30,7 @@
 
 #define SESSION_BUF_SIZE 1024
 
-char * g_session(container_context_t *CC)
+char * je_session(container_context_t *CC)
 {
     static char buf[SESSION_BUF_SIZE];
     static char *pos = &buf[0];  // NB. static. This initalization happens only once
@@ -44,17 +44,17 @@ char * g_session(container_context_t *CC)
         return buf;
     }
 
-    g_append_string  (CC, &pos, "session");
-    g_append_token   (CC, &pos, '[');
+    je_append_string  (CC, &pos, "session");
+    je_append_token   (CC, &pos, '[');
 
-    g_append_string  (CC, &pos, "progname");
-    g_append_token   (CC, &pos, '=');
-    g_append_string  (CC, &pos, C->progname);
+    je_append_string  (CC, &pos, "progname");
+    je_append_token   (CC, &pos, '=');
+    je_append_string  (CC, &pos, C->progname);
 
     C->pid = getpid();
-    g_append_string  (CC, &pos, "pid");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->pid);
+    je_append_string  (CC, &pos, "pid");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->pid);
 
     uid = geteuid();
     pw = getpwuid(uid);
@@ -63,43 +63,43 @@ char * g_session(container_context_t *CC)
         exit(EXIT_FAILURE);
     }
     C->username = pw->pw_name;
-    g_append_string  (CC, &pos, "username");
-    g_append_token   (CC, &pos, '=');
-    g_append_string  (CC, &pos, C->username);
+    je_append_string  (CC, &pos, "username");
+    je_append_token   (CC, &pos, '=');
+    je_append_string  (CC, &pos, C->username);
 
     if (uname(&unamebuf) != 0) {
         perror("Error - uname(): ");
         exit(EXIT_FAILURE);
     } 
     C->hostname = unamebuf.nodename;
-    g_append_string  (CC, &pos, "hostname");
-    g_append_token   (CC, &pos, '=');
-    g_append_string  (CC, &pos, C->hostname);
+    je_append_string  (CC, &pos, "hostname");
+    je_append_token   (CC, &pos, '=');
+    je_append_string  (CC, &pos, C->hostname);
 
 	if (clock_gettime(CLOCK_BOOTTIME, &(C->uptime)) != 0) {
         perror("Errror - clock_gettime(): ");
         exit(EXIT_FAILURE);
     }
-    g_append_string  (CC, &pos, "uptime");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->uptime.tv_sec);
+    je_append_string  (CC, &pos, "uptime");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->uptime.tv_sec);
 
 	if (clock_gettime(CLOCK_REALTIME, &starttime) != 0) {
         perror("Errror - clock_gettime(): ");
         exit(EXIT_FAILURE);
     }
-    g_append_string  (CC, &pos, "starttime");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, starttime.tv_sec);
+    je_append_string  (CC, &pos, "starttime");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, starttime.tv_sec);
 
-    g_append_token   (CC, &pos, ']');
+    je_append_token   (CC, &pos, ']');
     return buf;
 }
 
 #define STATS_BUF_SIZE 2048
 #define TEN9 1000000000
 
-char * g_stats(container_context_t *CC)
+char * je_stats(container_context_t *CC)
 {
     static char buf[STATS_BUF_SIZE];
 
@@ -108,8 +108,8 @@ char * g_stats(container_context_t *CC)
 	long runtime;    // runtime in nano-seconds
     context_t *C = CC->context;
 
-    g_append_string  (CC, &pos, "stats");
-    g_append_token   (CC, &pos, '[');
+    je_append_string  (CC, &pos, "stats");
+    je_append_token   (CC, &pos, '[');
 
 	if (clock_gettime(CLOCK_BOOTTIME, &nowtime) != 0) {
         perror("Errror - clock_gettime(): ");
@@ -118,107 +118,107 @@ char * g_stats(container_context_t *CC)
 	runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_nsec)
             - ((unsigned long)(C->uptime.tv_sec) * TEN9 + (unsigned long)(C->uptime.tv_nsec));
 
-    g_append_string  (CC, &pos, "runtime");
-    g_append_token   (CC, &pos, '=');
-    g_append_runtime (CC, &pos, runtime/TEN9, runtime%TEN9);
+    je_append_string  (CC, &pos, "runtime");
+    je_append_token   (CC, &pos, '=');
+    je_append_runtime (CC, &pos, runtime/TEN9, runtime%TEN9);
 
-    g_append_string  (CC, &pos, "files");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_filecount);
+    je_append_string  (CC, &pos, "files");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_filecount);
 
-    g_append_string  (CC, &pos, "lines");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, 1 + (C->stat_lfcount ? C->stat_lfcount : C->stat_crcount));
+    je_append_string  (CC, &pos, "lines");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, 1 + (C->stat_lfcount ? C->stat_lfcount : C->stat_crcount));
 
-    g_append_string  (CC, &pos, "acts");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_actcount);
+    je_append_string  (CC, &pos, "acts");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_actcount);
 
-    g_append_string  (CC, &pos, "acts_per_second");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_actcount*TEN9/runtime);
+    je_append_string  (CC, &pos, "acts_per_second");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_actcount*TEN9/runtime);
 
-    g_append_string  (CC, &pos, "sameas");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_sameas);
+    je_append_string  (CC, &pos, "sameas");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_sameas);
 
-    g_append_string  (CC, &pos, "patterns");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_patterncount);
+    je_append_string  (CC, &pos, "patterns");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_patterncount);
 
-    g_append_string  (CC, &pos, "patternmatches");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_patternmatches);
+    je_append_string  (CC, &pos, "patternmatches");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_patternmatches);
 
-    g_append_string  (CC, &pos, "strings");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_stringcount);
+    je_append_string  (CC, &pos, "strings");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_stringcount);
 
-    g_append_string  (CC, &pos, "fragmentss");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_fragcount);
+    je_append_string  (CC, &pos, "fragmentss");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_fragcount);
 
-    g_append_string  (CC, &pos, "inchars");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_inchars);
+    je_append_string  (CC, &pos, "inchars");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_inchars);
 
-    g_append_string  (CC, &pos, "chars_per_second");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_inchars + TEN9 / runtime);
+    je_append_string  (CC, &pos, "chars_per_second");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_inchars + TEN9 / runtime);
 
-    g_append_string  (CC, &pos, "inbufsize");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, sizeof(inbuf_t));
+    je_append_string  (CC, &pos, "inbufsize");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, sizeof(inbuf_t));
 
-    g_append_string  (CC, &pos, "inbufmax");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_inbufmax);
+    je_append_string  (CC, &pos, "inbufmax");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_inbufmax);
 
-    g_append_string  (CC, &pos, "inbufnow");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_inbufnow);
+    je_append_string  (CC, &pos, "inbufnow");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_inbufnow);
 
-    g_append_string  (CC, &pos, "elemsize");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, size_elem_t);
+    je_append_string  (CC, &pos, "elemsize");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, size_elem_t);
 
-    g_append_string  (CC, &pos, "elemmax");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_elemmax);
+    je_append_string  (CC, &pos, "elemmax");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_elemmax);
 
-    g_append_string  (CC, &pos, "elemnow");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_elemnow);
+    je_append_string  (CC, &pos, "elemnow");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_elemnow);
 
-    g_append_string  (CC, &pos, "inbufmallocsize");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, INBUFALLOCNUM * sizeof(inbuf_t));
+    je_append_string  (CC, &pos, "inbufmallocsize");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, INBUFALLOCNUM * sizeof(inbuf_t));
 
-    g_append_string  (CC, &pos, "inbufmalloccount");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_inbufmalloc);
+    je_append_string  (CC, &pos, "inbufmalloccount");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_inbufmalloc);
 
-    g_append_string  (CC, &pos, "inbufmalloctotal");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t));
+    je_append_string  (CC, &pos, "inbufmalloctotal");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t));
 
-    g_append_string  (CC, &pos, "elemmallocsize");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, LISTALLOCNUM * size_elem_t);
+    je_append_string  (CC, &pos, "elemmallocsize");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, LISTALLOCNUM * size_elem_t);
 
-    g_append_string  (CC, &pos, "elemmalloccount");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_elemmalloc);
+    je_append_string  (CC, &pos, "elemmalloccount");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_elemmalloc);
 
-    g_append_string  (CC, &pos, "elemmalloctotal");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, C->stat_elemmalloc * LISTALLOCNUM * size_elem_t);
+    je_append_string  (CC, &pos, "elemmalloctotal");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, C->stat_elemmalloc * LISTALLOCNUM * size_elem_t);
 
-    g_append_string  (CC, &pos, "malloctotal");
-    g_append_token   (CC, &pos, '=');
-    g_append_ulong   (CC, &pos, (C->stat_elemmalloc * LISTALLOCNUM * size_elem_t)
+    je_append_string  (CC, &pos, "malloctotal");
+    je_append_token   (CC, &pos, '=');
+    je_append_ulong   (CC, &pos, (C->stat_elemmalloc * LISTALLOCNUM * size_elem_t)
                         + (C->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t)));
 
-    g_append_token   (CC, &pos, ']');
+    je_append_token   (CC, &pos, ']');
     return buf;
 }

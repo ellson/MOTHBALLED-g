@@ -36,7 +36,7 @@ char char_prop(unsigned char prop, char noprop)
 	return c;
 }
 
-void g_append_token(container_context_t *CC, char **pos, char tok)
+void je_append_token(container_context_t *CC, char **pos, char tok)
 {
     // FIXME - check available buffer space
                         // ignore sep before
@@ -45,7 +45,7 @@ void g_append_token(container_context_t *CC, char **pos, char tok)
     CC->sep = 0;        // no sep required after tokens
 }
 
-void g_append_string(container_context_t *CC, char **pos, char *string)
+void je_append_string(container_context_t *CC, char **pos, char *string)
 {
     int len;
 
@@ -62,7 +62,7 @@ void g_append_string(container_context_t *CC, char **pos, char *string)
     *pos += len;
 }
 
-void g_append_ulong(container_context_t *CC, char **pos, unsigned long integer)
+void je_append_ulong(container_context_t *CC, char **pos, unsigned long integer)
 {
     int len;
 
@@ -80,7 +80,7 @@ void g_append_ulong(container_context_t *CC, char **pos, unsigned long integer)
 }
 
 // special case formatter for runtime
-void g_append_runtime(container_context_t *CC, char **pos, unsigned long run_sec, unsigned long run_ns)
+void je_append_runtime(container_context_t *CC, char **pos, unsigned long run_sec, unsigned long run_ns)
 {
     int len;
 

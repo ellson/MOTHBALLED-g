@@ -32,7 +32,7 @@
 // before pattern matching.
 
 static success_t
-pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
+je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 {
 	elem_t *s_elem, *p_elem, *ts_elem, *tp_elem;
 	unsigned char *s_cp, *p_cp;
@@ -57,7 +57,7 @@ pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 				ts_elem = ts_elem->next;
 				tp_elem = tp_elem->next;
 			}
-			if ((pattern_r(CC, s_elem, p_elem)) == FAIL) {  // recurse
+			if ((je_pattern_r(CC, s_elem, p_elem)) == FAIL) {  // recurse
 				return FAIL;
 			}
 		} else {	// FRAGELEM
@@ -104,7 +104,7 @@ pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 // subject, followed by (refcounted) copies of the ATTRIBUTES
 // and CONTAINER from the pattern.  Finally return for the current
 // subject to be appended with its own ATTRIBUTES and CONTENTS.
-void pattern(container_context_t * CC, elem_t * root, elem_t * subject)
+void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 {
 	elem_t *pattern_acts, *nextpattern_act, *elem, *psubj, *pattr;
     context_t *C = CC->context;
@@ -136,7 +136,7 @@ void pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 
 		// FIXME - contents from pattern ??
 
-		if ((pattern_r(CC, subject->u.list.first, psubj->u.list.first)) == SUCCESS) {
+		if ((je_pattern_r(CC, subject->u.list.first, psubj->u.list.first)) == SUCCESS) {
 			// insert matched attrubutes, contents,
 			// and then the subject again
 			

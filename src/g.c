@@ -23,8 +23,8 @@ static context_t context;  // the input context
 static void intr(int s)
 {
     NOTUSED(s);
-    g_persist_snapshot(&context);
-    g_persist_close(&context);
+    je_persist_snapshot(&context);
+    je_persist_close(&context);
     exit (EXIT_FAILURE);
 }
 
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
     context.argv = argv;
 
     emit_start_parse(&context);
-    g_parse(&context, NULL);
+    je_parse(&context, NULL);
     emit_end_parse(&context);
 
 	exit(EXIT_SUCCESS);

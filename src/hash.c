@@ -64,7 +64,7 @@ static char b64[64] = {
     'Q','R','S','T','U','V','W','X','Y','Z','6','7','8','9','_',',',
 };
 
-void base64(char hashname[], unsigned long *phash)
+void je_base64(char hashname[], unsigned long *phash)
 {
     int i;
     unsigned long hash;
@@ -77,7 +77,7 @@ void base64(char hashname[], unsigned long *phash)
     hashname[i] = '\0';
 }
 
-void hash_list(unsigned long *hash, elem_t *list)
+void je_hash_list(unsigned long *hash, elem_t *list)
 {
     assert(sizeof(long) == 8);
     assert(list);
@@ -86,7 +86,7 @@ void hash_list(unsigned long *hash, elem_t *list)
     hash_list_r(hash, list);
 }
 
-elem_t *hash_bucket(context_t * C, unsigned long hash)
+elem_t *je_hash_bucket(context_t * C, unsigned long hash)
 {
     elem_t *elem, **next;
 

@@ -13,7 +13,7 @@
 
 static char template[] = {'g','_','X','X','X','X','X','X','\0'};
 
-elem_t * g_persist_open(context_t *C)
+elem_t * je_persist_open(context_t *C)
 {
     elem_t *elem, *name;
     size_t len = 0, slen = 0;
@@ -64,7 +64,7 @@ elem_t * g_persist_open(context_t *C)
 }
 
 // snapshot of temporary files
-void g_persist_snapshot (context_t *C)
+void je_persist_snapshot (context_t *C)
 {
     int i;
     elem_t *elem, *next;
@@ -90,7 +90,7 @@ void g_persist_snapshot (context_t *C)
 }
 
 // cleanup of temporary files
-void g_persist_close (context_t *C)
+void je_persist_close (context_t *C)
 {
     FILE *fp;
     int i;
@@ -112,7 +112,7 @@ void g_persist_close (context_t *C)
                 }
 
                 // reconsitute the filename and unlink
-                base64(outhashname, &(elem->u.hash.hash));
+                je_base64(outhashname, &(elem->u.hash.hash));
                 strcpy(outfilename, C->tempdir);
                 strcat(outfilename, "/");
                 strcat(outfilename, outhashname);

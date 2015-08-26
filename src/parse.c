@@ -19,17 +19,17 @@
 
 // This parser recurses at two levels:
 //
-//     main() -----> g_parse(C) ----> g_parse_r(CC) -| -|  
-//                     ^                ^            |  |
-//                     |                |            |  |
-//                     |                ------<-------  |
-//                     |                                |
-//                     --------------<-------------------
+//     main() -----> je_parse(C) ----> je_parse_r(CC) -| -|  
+//                     ^                 ^             |  |
+//                     |                 |             |  |
+//                     |                 -------<-------  |
+//                     |                                  |
+//                     ---------------<--------------------
 //
-// The inner recursions is through the grammar state_machine at a single
+// The inner recursions are through the grammar state_machine at a single
 // level of containment - maintained in container_context (CC)
 //
-// The outer recursion is through nested containment.
+// The outer recursionsi are through nested containment.
 // The top-level context (C) is available to both and maintains the input state.
 
 static success_t more_rep(container_context_t * CC, unsigned char prop)
@@ -56,7 +56,7 @@ static success_t more_rep(container_context_t * CC, unsigned char prop)
 }
 
 static success_t
-g_parse_r(container_context_t * CC, elem_t * root,
+je_parse_r(container_context_t * CC, elem_t * root,
 	state_t si, unsigned char prop, int nest, int repc)
 {
 	unsigned char nprop;
@@ -94,14 +94,14 @@ g_parse_r(container_context_t * CC, elem_t * root,
 	C->ei = C->insi;	// the char class that ended the last token
 
 	// Whitespace
-	if ((rc = g_parse_whitespace(CC)) == FAIL) {
+	if ((rc = je_parse_whitespace(CC)) == FAIL) {
 		goto done;	// EOF during whitespace
 	}
 
 	// Special character tokens
 	if (si == C->insi) {	// single character terminals matching state_machine expectation
 		C->bi = C->insi;
-		rc = g_parse_token(CC);
+		rc = je_parse_token(CC);
 		C->ei = C->insi;
 		goto done;
 	}
@@ -109,20 +109,20 @@ g_parse_r(container_context_t * CC, elem_t * root,
 	case ACTIVITY:          // Recursion into Contained activity
 		if (C->bi == LBE) {	// if not top-level of containment
 			C->bi = NLL;
-			rc = g_parse(CC->context, &CC->subject);	// recursively process contained ACTIVITY in to its own root
+			rc = je_parse(CC->context, &CC->subject);	// recursively process contained ACTIVITY in to its own root
 			C->bi = C->insi;	// The char class that terminates the ACTIVITY
 			goto done;
 		}
 		break;
 
 	case STRING:            // Strings
-		rc = g_parse_string(CC, &branch);
+		rc = je_parse_string(CC, &branch);
 		C->bi = C->insi;	// the char class that terminates the STRING
 		goto done;
 		break;
 
 	case VSTRING:            // Value Strings
-		rc = g_parse_vstring(CC, &branch);
+		rc = je_parse_vstring(CC, &branch);
 		C->bi = C->insi;	// the char class that terminates the VSTRING
 		goto done;
 		break;
@@ -184,7 +184,7 @@ g_parse_r(container_context_t * CC, elem_t * root,
                                         // offset from the current state.
 
 		if (nprop & ALT) {              // look for ALT
-			if ((rc = g_parse_r(CC, &branch, ni, nprop, nest, 0)) == SUCCESS) {
+			if ((rc = je_parse_r(CC, &branch, ni, nprop, nest, 0)) == SUCCESS) {
 				break;                  // ALT satisfied
 			}
 
@@ -192,19 +192,19 @@ g_parse_r(container_context_t * CC, elem_t * root,
 		} else {                    	// else it is a sequence (or the last ALT, same thing)
 			repc = 0;
 			if (nprop & OPT) {          // OPTional
-				if ((g_parse_r(CC, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
+				if ((je_parse_r(CC, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
 					while (more_rep(CC, nprop) == SUCCESS) {
-						if (g_parse_r(CC, &branch, ni, nprop, nest, repc++) == FAIL) {
+						if (je_parse_r(CC, &branch, ni, nprop, nest, repc++) == FAIL) {
 							break;
 						}
 					}
 				}
 			} else {                	// else not OPTional
-				if ((rc = g_parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
+				if ((rc = je_parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 					break;
 				}
 				while (more_rep(CC, nprop) == SUCCESS) {
-					if ((rc = g_parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
+					if ((rc = je_parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 						break;
 					}
 				}
@@ -221,22 +221,22 @@ g_parse_r(container_context_t * CC, elem_t * root,
             C->verb = si;  // record verb prefix, if not default
             break;
 		case HAT:
-            g_persist_snapshot(C);
+            je_persist_snapshot(C);
             break;
 		case SUBJECT: // subject rewrites before adding branch to root
             branch.state = si;
 
 			// Perform EQL "same as in subject of previous ACT" substitutions
 			// Also classifies ACT as NODE or EDGE based on SUBJECT
-			sameas(CC, &branch);
+			je_sameas(CC, &branch);
 
-            hash_list(&hash, &(CC->subject));   // generate name hash
-            elem = hash_bucket(C, hash);    // save in bucket list 
+            je_hash_list(&hash, &(CC->subject));   // generate name hash
+            elem = je_hash_bucket(C, hash);    // save in bucket list 
 
 			// If this subject is not itself a pattern, then
             // perform pattern matching and insertion if matched
 			if (!(CC->is_pattern = C->has_ast)) {
-				pattern(CC, root, &branch);
+				je_pattern(CC, root, &branch);
 			}
 
 			emit_subject(CC, &branch);      // emit hook for rewritten subject
@@ -260,7 +260,7 @@ g_parse_r(container_context_t * CC, elem_t * root,
 	return rc;
 }
 
-success_t g_parse(context_t * C, elem_t * name)
+success_t je_parse(context_t * C, elem_t * name)
 {
 	container_context_t container_context = { 0 };
 	elem_t root = { 0 };	// the output parse tree
@@ -276,18 +276,18 @@ success_t g_parse(context_t * C, elem_t * name)
     if ((C->containment++) == 0) {  // top container
 
         // gather session info, including starttime for stats
-        g_session(&container_context);   // FIXME - move to g_persis_open() ??
+        je_session(&container_context);   // FIXME - move to je_persis_open() ??
 
         // assemble a name and create temp folder for this nameless top container
         assert (name == NULL);
-        name = g_persist_open(C);
+        name = je_persist_open(C);
     }
     assert (name);
 
-    hash_list(&hash, name);         // hash name (subject "names" can be very long)
-    elem = hash_bucket(C, hash);    // save in bucket list 
+    je_hash_list(&hash, name);         // hash name (subject "names" can be very long)
+    elem = je_hash_bucket(C, hash);    // save in bucket list 
     if (! elem->u.hash.out) {       // open file, if not already open
-        base64(outhashname, &hash);
+        je_base64(outhashname, &hash);
         strcpy(outfilename, C->tempdir);
         strcat(outfilename, "/");
         strcat(outfilename, outhashname);
@@ -302,7 +302,7 @@ success_t g_parse(context_t * C, elem_t * name)
 	C->stat_containercount++;
 
 	emit_start_activity(&container_context);
-	if ((rc = g_parse_r(&container_context, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+	if ((rc = je_parse_r(&container_context, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
 		if (C->insi == NLL) {	// EOF is OK
 			rc = SUCCESS;
 		} else {
@@ -319,16 +319,16 @@ success_t g_parse(context_t * C, elem_t * name)
     if (--(C->containment) == 0) {  // top container
 
         // generate snapshot
-        g_persist_snapshot(C);
+        je_persist_snapshot(C);
 
         // and stats, if wanted     // FIXME - why not keep these in the tempdir so save automatically
         if (C->needstats) {
             // FIXME - need pretty-printer
-            fprintf (stderr, "%s\n", g_session(&container_context));
-            fprintf (stderr, "%s\n", g_stats(&container_context));
+            fprintf (stderr, "%s\n", je_session(&container_context));
+            fprintf (stderr, "%s\n", je_stats(&container_context));
         }
 
-        g_persist_close(C);
+        je_persist_close(C);
     }
     
 	return rc;
