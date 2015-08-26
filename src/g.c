@@ -18,13 +18,13 @@ static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api}
 
 static context_t context;  // the input context
 
+// if interrupted we try to gracefully snapshot the current state 
 static void intr(int s)
 {
-    /* if interrupted we try to gracefully snapshot the current state */
-
     NOTUSED(s);
     g_snapshot(&context);
-    exit (EXIT_SUCCESS);
+    g_cleanup(&context);
+    exit (EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[])

@@ -259,7 +259,7 @@ g_parse_r(container_context_t * CC, elem_t * root,
 	return rc;
 }
 
-// clean up temporary files - save if wanted
+// snapshot of temporary files
 void g_snapshot (context_t *C)
 {
     int i;
@@ -285,21 +285,68 @@ void g_snapshot (context_t *C)
     system("grep . g_*/*");
 }
 
+// cleanup of temporary files
+void g_cleanup (context_t *C)
+{
+    FILE *fp;
+    int i;
+    elem_t *elem, *next;
+    char outhashname[32];
+    // FIXME - hack - Just guessing at the size of the C->tempdir - was sizeof(template)
+    char outfilename[32 + sizeof(outhashname)];
+
+    for (i=0; i<64; i++) {
+        next = C->hash_buckets[i];
+        while(next) {
+            elem = next;
+            next = elem->next;
+            if ((fp = elem->u.hash.out)) {
+
+                // close all open files
+                if (fclose(fp) != 0) {
+                    perror("Error - fclose(): ");
+                    exit(EXIT_FAILURE);
+                }
+
+                // reconsitute the filename and unlink
+                base64(outhashname, &(elem->u.hash.hash));
+                strcpy(outfilename, C->tempdir);
+                strcat(outfilename, "/");
+                strcat(outfilename, outhashname);
+                
+                // rm all output files
+                if (unlink(outfilename) == -1) {
+                    perror("Error - unlink(): ");
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            // return elem to free_elem_list
+            elem->next = C->free_elem_list;
+            C->free_elem_list = elem;
+        }
+    }
+
+    // rmdir the temporary directory
+    if (rmdir(C->tempdir) == -1) {
+        perror("Error - rmdir(): ");
+        exit(EXIT_FAILURE);
+    }
+}
+
 success_t g_parse(context_t * C, elem_t * name)
 {
 	container_context_t container_context = { 0 };
 	elem_t root = { 0 };	// the output parse tree
     elem_t myname = { 0 };
-    elem_t *elem, *next;
-    int i;
+    elem_t *elem;
     size_t len = 0, slen = 0;
-    FILE *fp;
 	success_t rc;
     unsigned long hash;
     char pidbuf[16];
     char template[] = {'g','_','X','X','X','X','X','X','\0'};
     char outhashname[32];
-    char outfilename[sizeof(template) + sizeof(outhashname)];
+    char outfilename[sizeof(template) + 1 + sizeof(outhashname)];
 
 	container_context.context = C;
 
@@ -385,51 +432,20 @@ success_t g_parse(context_t * C, elem_t * name)
 	emit_end_activity(&container_context);
 
     if (--(C->containment) == 0) {  // top container
+
+        // generate snapshot
+        g_snapshot(C);
+
+        // and stats, if wanted
         if (C->needstats) {
             // FIXME - need pretty-printer
             fprintf (stderr, "%s\n", g_session(&container_context));
             fprintf (stderr, "%s\n", g_stats(&container_context));
         }
+
         free_list(C, &myname);
 
-        for (i=0; i<64; i++) {
-            next = C->hash_buckets[i];
-            while(next) {
-                elem = next;
-                next = elem->next;
-                if ((fp = elem->u.hash.out)) {
-  
-                    // close all open files
-                    if (fclose(fp) != 0) {
-                        perror("Error - fclose(): ");
-                        exit(EXIT_FAILURE);
-                    }
-
-                    // reconsitute the filename and unlink
-                    base64(outhashname, &(elem->u.hash.hash));
-                    strcpy(outfilename, C->tempdir);
-                    strcat(outfilename, "/");
-                    strcat(outfilename, outhashname);
-                    
-                    // rm all output files
-                    if (unlink(outfilename) == -1) {
-                        perror("Error - unlink(): ");
-                        exit(EXIT_FAILURE);
-                    }
-                }
-    
-                // return elem to free_elem_list
-                elem->next = C->free_elem_list;
-                C->free_elem_list = elem;
-            }
-        }
-    
-        // rmdir the temporary directory
-        if (rmdir(C->tempdir) == -1) {
-            perror("Error - rmdir(): ");
-            exit(EXIT_FAILURE);
-        }
-
+        g_cleanup(C);
     }
     
 	return rc;
