@@ -220,7 +220,7 @@ g_parse_r(container_context_t * CC, elem_t * root,
             C->verb = si;  // record verb prefix, if not default
             break;
 		case HAT:
-            C->suspend = si;  // record the suspend TERM token
+            g_snapshot(C);
             break;
 		case SUBJECT: // subject rewrites before adding branch to root
             branch.state = si;
