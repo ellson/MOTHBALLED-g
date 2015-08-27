@@ -258,7 +258,7 @@ void je_persist_restore (context_t *C)
                     pglob.gl_pathv[pathc]+len+1);
             exit(EXIT_FAILURE);
         }
-fprintf(stderr,"hash = %lu\n", hash);
+        je_hash_bucket(C, hash); // reinsert into bucket list.
     }
     free(glob_pattern);
     globfree(&pglob);

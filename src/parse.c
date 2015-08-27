@@ -275,7 +275,7 @@ success_t je_parse(context_t * C, elem_t * name)
 
     je_hash_list(&hash, name);         // hash name (subject "names" can be very long)
     elem = je_hash_bucket(C, hash);    // save in bucket list 
-    if (! elem->u.hash.out) {       // open file, if not already open
+    if (! elem->u.hash.out) {          // open file, if not already open
         je_long_to_base64(outhashname, &hash);
         strcpy(outfilename, C->tempdir);
         strcat(outfilename, "/");
