@@ -6,6 +6,7 @@
 #include <zlib.h>
 #include <libtar.h>
 #include <fcntl.h>
+#include <glob.h>
 #include <assert.h>
 
 #include "grammar.h"
@@ -201,10 +202,18 @@ void je_persist_snapshot (context_t *C)
     }
 }
 
+static int glob_err (const char *epath, int eerrno)
+{
+    fprintf(stderr,"Error - glob(): \"%s\" %s\n", epath, strerror(eerrno));
+    return -1;
+}
+
 // restore from snapshot
 void je_persist_restore (context_t *C)
 {
     TAR *pTar;
+    glob_t pglob;
+    int rc;
     char *tarFilename = "g_snapshot.tgz";
 
     if (tar_open(&pTar, tarFilename, &gztype, O_RDONLY, 0600, TAR_GNU) == -1) {
@@ -217,6 +226,20 @@ void je_persist_restore (context_t *C)
     }
     if (tar_close(pTar) == -1) {
         perror("Error - tar_close():");
+        exit(EXIT_FAILURE);
+    }
+    if ((rc = glob(C->tempdir, 0, glob_err, &pglob)) != 0) {
+        switch (rc) {
+        case GLOB_NOSPACE:
+            fprintf(stderr,"Error - glob(): no memory available (GLOB_NOSPACE)");
+            break;
+        case GLOB_ABORTED:
+            fprintf(stderr,"Error - glob(): read error (GLOB_ABORTED)");
+            break;
+        case GLOB_NOMATCH:
+            fprintf(stderr,"Error - glob(): no matches found (GLOB_NOMATCH)");
+            break;
+        }
         exit(EXIT_FAILURE);
     }
 }
