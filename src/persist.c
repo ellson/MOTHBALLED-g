@@ -184,7 +184,7 @@ void je_persist_snapshot (context_t *C)
         }
     }
 
-    if (tar_open(&pTar, tarFilename, &gztype, O_WRONLY | O_CREAT, 0600, TAR_GNU) == -1) {
+    if (tar_open(&pTar, tarFilename, &gztype, O_WRONLY | O_CREAT | O_TRUNC, 0600, TAR_GNU) == -1) {
         perror("Error - tar_open():");
         exit(EXIT_FAILURE);
     }
