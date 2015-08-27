@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <errno.h>
+#include <zlib.h>
 #include <libtar.h>
 #include <fcntl.h>
 #include <assert.h>
@@ -12,6 +14,91 @@
 #include "context.h"
 #include "persist.h"
 #include "hash.h"
+
+#if defined ( _MSC_VER) || defined(__WATCOMC__)
+#include <io.h>
+#ifndef O_ACCMODE
+# define O_ACCMODE 0x0003
+#endif
+#endif
+
+// FIXME - ya global
+gzFile gzf;
+
+static int je_gzopen(const char *pathname, int oflags, ...)
+{
+    char *gzoflags;
+    int fd;
+    mode_t mode;
+    va_list ap;
+
+    // PITA !
+    va_start (ap, oflags);
+    mode = va_arg(ap, mode_t);
+    va_end(ap);
+
+    switch (oflags & O_ACCMODE) {
+    case O_WRONLY:
+        gzoflags = "wb";
+        break;
+    case O_RDONLY:
+        gzoflags = "rb";
+        break;
+    default:
+        case O_RDWR:
+        errno = EINVAL;
+        return -1;
+    }
+
+    fd = open(pathname, oflags, mode);
+
+    if (fd == -1) {
+        return -1;
+    }
+
+#if defined(__BEOS__) && !defined(__ZETA__)  /* no fchmod on BeOS...do pathname instead. */
+    if ((oflags & O_CREAT) && chmod(pathname, mode & 07777)) {
+        return -1;
+    }
+#elif !defined(_WIN32) || defined(__CYGWIN__)
+    if ((oflags & O_CREAT) && fchmod(fd, mode & 07777)) {
+        return -1;
+    }
+#endif
+
+    gzf = gzdopen(fd, gzoflags);
+    if (!gzf) {
+        errno = ENOMEM;
+        return -1;
+    }
+
+    return fd;
+}
+
+static int je_gzclose(int fd)
+{
+    (void) fd; // NOTUSED
+    return gzclose(gzf);
+}
+
+static ssize_t je_gzread(int fd, void* buf, size_t count)
+{
+    (void) fd; // NOTUSED
+    return gzread(gzf, buf, (unsigned int)count);
+}
+
+static ssize_t je_gzwrite(int fd, const void* buf, size_t count)
+{
+    (void) fd; // NOTUSED
+    return gzwrite(gzf, (void*)buf, (unsigned int)count);
+}
+
+tartype_t gztype = { 
+    je_gzopen,
+    je_gzclose,
+    je_gzread,
+    je_gzwrite
+};
 
 elem_t * je_persist_open(context_t *C)
 {
@@ -78,8 +165,8 @@ void je_persist_snapshot (context_t *C)
     elem_t *elem, *next;
     FILE *fp;
     TAR *pTar;
-    char *tarFilename = "g_suspend.tar";
-    char *extractTo = "g_suspend";
+    char *tarFilename = "g_snapshot.tgz";
+    char *extractTo = "g_snapshot";
 
     // flush all open files
     for (i=0; i<64; i++) {
@@ -97,7 +184,7 @@ void je_persist_snapshot (context_t *C)
     }
 
     // snapshot
-    if (tar_open(&pTar, tarFilename, NULL, O_WRONLY | O_CREAT, 0644, TAR_GNU) == -1) {
+    if (tar_open(&pTar, tarFilename, &gztype, O_WRONLY | O_CREAT, 0600, TAR_GNU) == -1) {
         perror("Error - tar_open():");
         exit(EXIT_FAILURE);
     }

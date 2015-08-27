@@ -13,8 +13,6 @@
 #include "persist.h"
 #include "dumpg.h"
 
-#define NOTUSED(var)    (void) var
-
 static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
 
 static context_t context;  // the input context
@@ -22,7 +20,8 @@ static context_t context;  // the input context
 // if interrupted we try to gracefully snapshot the current state 
 static void intr(int s)
 {
-    NOTUSED(s);
+    (void) s; // NOTUSED
+
     je_persist_snapshot(&context);
     je_persist_close(&context);
     exit (EXIT_FAILURE);
