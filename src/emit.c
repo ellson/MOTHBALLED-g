@@ -36,62 +36,62 @@ char char_prop(unsigned char prop, char noprop)
 	return c;
 }
 
-void je_append_token(container_context_t *CC, char **pos, char tok)
+void je_append_token(context_t *C, char **pos, char tok)
 {
     // FIXME - check available buffer space
                         // ignore sep before
     *(*pos)++ = (unsigned char)tok;    // copy token
     **pos = '\0';       // and replace terminating NULL
-    CC->sep = 0;        // no sep required after tokens
+    C->sep = 0;        // no sep required after tokens
 }
 
-void je_append_string(container_context_t *CC, char **pos, char *string)
+void je_append_string(context_t *C, char **pos, char *string)
 {
     int len;
 
     // FIXME - check available buffer space
-    if (CC->sep) {
-        *(*pos)++ = CC->sep; // sep before, if any
+    if (C->sep) {
+        *(*pos)++ = C->sep; // sep before, if any
     }
     len = sprintf(*pos,"%s",string);  // copy string
     if (len < 0) {
         perror("Error - sprintf(): ");
         exit(EXIT_FAILURE);
     }
-    CC->sep = ' ';      // sep required after strings 
+    C->sep = ' ';      // sep required after strings 
     *pos += len;
 }
 
-void je_append_ulong(container_context_t *CC, char **pos, unsigned long integer)
+void je_append_ulong(context_t *C, char **pos, unsigned long integer)
 {
     int len;
 
     // FIXME - check available buffer space
-    if (CC->sep) {
-        *(*pos)++ = CC->sep; // sep before, if any
+    if (C->sep) {
+        *(*pos)++ = C->sep; // sep before, if any
     }
     len = sprintf(*pos,"%lu",integer); // format integer to string
     if (len < 0) {
         perror("Error - sprintf(): ");
         exit(EXIT_FAILURE);
     }
-    CC->sep = ' ';      // sep required after strings
+    C->sep = ' ';      // sep required after strings
     *pos += len;
 }
 
 // special case formatter for runtime
-void je_append_runtime(container_context_t *CC, char **pos, unsigned long run_sec, unsigned long run_ns)
+void je_append_runtime(context_t *C, char **pos, unsigned long run_sec, unsigned long run_ns)
 {
     int len;
 
     // FIXME - check available buffer space
-    if (CC->sep) *(*pos)++ = CC->sep; // sep before, if any
+    if (C->sep) *(*pos)++ = C->sep; // sep before, if any
     len = sprintf(*pos,"%lu.%09lu",run_sec, run_ns);
     if (len < 0) {
         perror("Error - sprintf(): ");
         exit(EXIT_FAILURE);
     }
-    CC->sep = ' ';   // sep required after strings
+    C->sep = ' ';   // sep required after strings
     *pos += len;
 }
 

@@ -273,17 +273,6 @@ success_t je_parse(context_t * C, elem_t * name)
 
 	container_context.context = C;
 
-    if ((C->containment++) == 0) {  // top container
-
-        // gather session info, including starttime for stats
-        je_session(&container_context);   // FIXME - move to je_persist_open() ??
-
-        // assemble a name and create temp folder for this nameless top container
-        assert (name == NULL);
-        name = je_persist_open(C);
-    }
-    assert (name);
-
     je_hash_list(&hash, name);         // hash name (subject "names" can be very long)
     elem = je_hash_bucket(C, hash);    // save in bucket list 
     if (! elem->u.hash.out) {       // open file, if not already open
@@ -316,20 +305,5 @@ success_t je_parse(context_t * C, elem_t * name)
 
 	emit_end_activity(&container_context);
 
-    if (--(C->containment) == 0) {  // top container
-
-        // generate snapshot
-        je_persist_snapshot(C);
-
-        // and stats, if wanted     // FIXME - why not keep these in the tempdir so save automatically
-        if (C->needstats) {
-            // FIXME - need pretty-printer
-            fprintf (stderr, "%s\n", je_session(&container_context));
-            fprintf (stderr, "%s\n", je_stats(&container_context));
-        }
-
-        je_persist_close(C);
-    }
-    
 	return rc;
 }

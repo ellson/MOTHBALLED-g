@@ -41,6 +41,8 @@ struct context_s {		// input_context
 	char in_quote;		// flag set if between "..."
 	char has_quote;		// flag set if STRING contains one or more DQT fragments
 	char needstats;		// flag set if -s on command line
+	char sep;       	// the next separator (either 0, or ' ' if following a STRING that requires a separator.
+                        //   may be ignored if the next character is a token which implicitly separates.)
 	int containment;	// depth of containment
     char template[32];  // place to keep template for mkdtemp()
 	long linecount_at_start;    // activity line count when this file was opened.

@@ -1,9 +1,9 @@
 char *get_name(char *p);
 char char_prop(unsigned char prop, char noprop);
-void je_append_token(container_context_t *CC, char **pos, char tok);
-void je_append_string(container_context_t *CC, char **pos, char *string);
-void je_append_ulong(container_context_t *CC, char **pos, unsigned long integer);
-void je_append_runtime(container_context_t *CC, char **pos, unsigned long run_sec, unsigned long run_ns);
+void je_append_token(context_t *C, char **pos, char tok);
+void je_append_string(context_t *C, char **pos, char *string);
+void je_append_ulong(context_t *C, char **pos, unsigned long integer);
+void je_append_runtime(context_t *C, char **pos, unsigned long run_sec, unsigned long run_ns);
 void print_subject(container_context_t * CC, elem_t * subject);
 void print_attributes(container_context_t * CC, elem_t * attributes);
 void print_error(context_t * CC, state_t si, char *message);

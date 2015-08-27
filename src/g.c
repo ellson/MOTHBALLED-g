@@ -15,7 +15,7 @@
 
 static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
 
-static context_t context;  // the input context
+static context_t context;  // the input context - needs to be global for intr()
 
 // if interrupted we try to gracefully snapshot the current state 
 static void intr(int s)
@@ -29,8 +29,9 @@ static void intr(int s)
 
 int main(int argc, char *argv[])
 {
-	int i, opt, optnum;
+	int i, opt, optnum, needstats = 0;
     emit_t *ep;
+    elem_t *name;
 
     context.progname = argv[0];
 
@@ -75,7 +76,7 @@ int main(int argc, char *argv[])
 
 			break;
 		case 's':
-			context.needstats = 1;
+			needstats = 1;
 			break;
 		default:
 // FIXME - add -T options to usage message
@@ -95,9 +96,27 @@ int main(int argc, char *argv[])
     context.pargc = &argc;
     context.argv = argv;
 
+    // gather session info, including starttime for stats
+    je_session(&context);   // FIXME - move to je_persist_open() ??
+    
+    // assemble a name and create temp folder for this nameless top container
+    name = je_persist_open(&context);
+
     emit_start_parse(&context);
-    je_parse(&context, NULL);
+    je_parse(&context, name);
     emit_end_parse(&context);
+
+    // generate snapshot
+    je_persist_snapshot(&context);
+
+    // and stats, if wanted     // FIXME - why not keep these in the tempdir so save automatically
+    if (needstats) {
+        // FIXME - need pretty-printer
+        fprintf (stderr, "%s\n", je_session(&context));
+        fprintf (stderr, "%s\n", je_stats(&context));
+    }
+
+    je_persist_close(&context);
 
 	exit(EXIT_SUCCESS);
 }
