@@ -1,3 +1,5 @@
+#CC = clang
+
 CFLAGS = -g -O0 -Wall -W -Wextra -pedantic
 #CFLAGS = -DNDEBUG
 

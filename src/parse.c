@@ -267,24 +267,27 @@ success_t je_parse(context_t * C, elem_t * name)
     elem_t *elem;
 	success_t rc;
     unsigned long hash;
-    char outhashname[32];
-    // FIXME - hack - Just guessing at the size of the C->tempdir - was sizeof(template)
-    char outfilename[32 + 1 + sizeof(outhashname)];
+    char *hashname, *filename;
 
 	container_context.context = C;
 
     je_hash_list(&hash, name);         // hash name (subject "names" can be very long)
     elem = je_hash_bucket(C, hash);    // save in bucket list 
     if (! elem->u.hash.out) {          // open file, if not already open
-        je_long_to_base64(outhashname, &hash);
-        strcpy(outfilename, C->tempdir);
-        strcat(outfilename, "/");
-        strcat(outfilename, outhashname);
-        elem->u.hash.out = fopen(outfilename,"a+b"); //open for binary append writes, + read.
+        hashname = je_long_to_base64(&hash);
+        if (! (filename = malloc(strlen(C->tempdir) + 1 + strlen(hashname) + 1))) {
+            perror("Error - malloc(): ");
+            exit(EXIT_FAILURE);
+        }
+        strcpy(filename, C->tempdir);
+        strcat(filename, "/");
+        strcat(filename, hashname);
+        elem->u.hash.out = fopen(filename,"a+b"); //open for binary append writes, + read.
         if (! elem->u.hash.out) {
             perror("Error - fopen(): ");
             exit(EXIT_FAILURE);
         }
+        free(filename);
     }
     container_context.out = elem->u.hash.out;
 

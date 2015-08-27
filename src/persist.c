@@ -270,8 +270,7 @@ void je_persist_close (context_t *C)
     FILE *fp;
     int i;
     elem_t *elem, *next;
-    char outhashname[32];
-    char outfilename[sizeof(C->template) + 1 + sizeof(outhashname)];
+    char *hashname, *filename;
 
     for (i=0; i<64; i++) {
         next = C->hash_buckets[i];
@@ -287,16 +286,21 @@ void je_persist_close (context_t *C)
                 }
 
                 // reconsitute the filename and unlink
-                je_long_to_base64(outhashname, &(elem->u.hash.hash));
-                strcpy(outfilename, C->tempdir);
-                strcat(outfilename, "/");
-                strcat(outfilename, outhashname);
+                hashname = je_long_to_base64(&(elem->u.hash.hash));
+                if (! (filename = malloc(sizeof(C->template) + 1 + sizeof(hashname) + 1))) {
+                    perror("Error - malloc(): ");
+                    exit(EXIT_FAILURE);
+                }
+                strcpy(filename, C->tempdir);
+                strcat(filename, "/");
+                strcat(filename, hashname);
                 
                 // rm all output files
-                if (unlink(outfilename) == -1) {
+                if (unlink(filename) == -1) {
                     perror("Error - unlink(): ");
                     exit(EXIT_FAILURE);
                 }
+                free(filename);
             }
 
             // return elem to free_elem_list

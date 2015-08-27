@@ -78,10 +78,11 @@ static char un_b64[128] = {
      51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1
 };
 
-void je_long_to_base64(char hashname[], unsigned long *phash)
+char *je_long_to_base64(unsigned long *phash)
 {
     int i;
     unsigned long hash;
+    static char hashname[12];   // good until the next call
 
     hash = *phash;
     for (i = 0; i < 11; i++) {
@@ -89,6 +90,7 @@ void je_long_to_base64(char hashname[], unsigned long *phash)
         hash >>= 6;
     }
     hashname[i] = '\0';
+    return &hashname[0];
 }
 
 success_t je_base64_to_long(char *b64string, unsigned long *phash)
