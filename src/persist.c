@@ -213,7 +213,7 @@ void je_persist_restore (context_t *C)
 {
     TAR *pTar;
     glob_t pglob;
-    int rc;
+    int i, rc;
     char *tarFilename = "g_snapshot.tgz";
 
     if (tar_open(&pTar, tarFilename, &gztype, O_RDONLY, 0600, TAR_GNU) == -1) {
@@ -242,6 +242,10 @@ void je_persist_restore (context_t *C)
         }
         exit(EXIT_FAILURE);
     }
+    for (i=0; i < pglob.gl_pathc; i++) {
+        fprintf(stderr, "%s\n", pglob.gl_pathv[i]);
+    }
+    globfree(&pglob);
 }
 
 // cleanup of temporary files
