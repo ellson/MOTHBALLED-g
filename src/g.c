@@ -29,7 +29,7 @@ static void intr(int s)
 
 int main(int argc, char *argv[])
 {
-	int i, opt, optnum, needstats = 0;
+	int i, opt, optnum, needstats = 0, needrestore = 0;
     emit_t *ep;
     elem_t *name;
 
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
     signal(SIGINT, intr);
 
-	while ((opt = getopt(argc, argv, "T:d::g::t::s")) != -1) {
+	while ((opt = getopt(argc, argv, "T:d::g::t::sr")) != -1) {
 		if (optarg)
 			optnum = atoi(optarg);
 		else
@@ -78,6 +78,9 @@ int main(int argc, char *argv[])
 		case 's':
 			needstats = 1;
 			break;
+		case 'r':
+			needrestore = 1;
+			break;
 		default:
 // FIXME - add -T options to usage message
 			fprintf(stderr, "Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", context.progname);
@@ -101,6 +104,10 @@ int main(int argc, char *argv[])
     
     // assemble a name and create temp folder for this nameless top container
     name = je_persist_open(&context);
+
+    if (needrestore) {
+        je_persist_restore(&context);
+    }
 
     emit_start_parse(&context);
     je_parse(&context, name);

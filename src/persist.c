@@ -166,7 +166,7 @@ void je_persist_snapshot (context_t *C)
     FILE *fp;
     TAR *pTar;
     char *tarFilename = "g_snapshot.tgz";
-    char *extractTo = "g_snapshot";
+    char *extractTo = ".";
 
     // flush all open files
     for (i=0; i<64; i++) {
