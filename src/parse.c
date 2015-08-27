@@ -133,7 +133,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
 		//
 		// Because the grammar has no mandatory terminal token for ACTs, the 
 		// only time we can be sure that the old ACT is finished is when there
-		// is enough input stream to determine that a new ACT has sarted.
+		// is enough input stream to determine that a new ACT has started.
 		//
 		// This is not a problem for patterns, since they are not used until they are
 		// matched to a later SUBJECT anyway.  Patterns in the last ACT of input just aren't
@@ -153,16 +153,13 @@ je_parse_r(container_context_t * CC, elem_t * root,
 		} else {
 			C->stat_actcount++;
 		}
-//fprintf(stderr,"verb = %d\n", C->verb);
 
-// FIXME - at this point we have all of the last act.
-//       - decompose node and edge lists
-//       - emit each object with is arrtibutes
-//       - emit each object with its contents (need copy on write reference)
+        // dispatch events for the ACT just finished
+        je_dispatch(CC, root);
 
 		free_list(C, root);	// now we're done with the last ACT
 		                    // and we can really start on the new ACT
-        C->verb = 0;        // initialize verb to default "add"
+        C->verb = 0;        // initialize verb to default "add"   // FIXME - haven't we passed VERB already?
 		C->has_ast = 0;     // maintain a flag for an '*' found anywhere in the subject
 		break;
 	default:
