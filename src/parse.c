@@ -276,7 +276,7 @@ success_t je_parse(context_t * C, elem_t * name)
     if ((C->containment++) == 0) {  // top container
 
         // gather session info, including starttime for stats
-        je_session(&container_context);   // FIXME - move to je_persis_open() ??
+        je_session(&container_context);   // FIXME - move to je_persist_open() ??
 
         // assemble a name and create temp folder for this nameless top container
         assert (name == NULL);

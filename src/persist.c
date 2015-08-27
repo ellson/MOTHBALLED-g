@@ -183,7 +183,6 @@ void je_persist_snapshot (context_t *C)
         }
     }
 
-    // snapshot
     if (tar_open(&pTar, tarFilename, &gztype, O_WRONLY | O_CREAT, 0600, TAR_GNU) == -1) {
         perror("Error - tar_open():");
         exit(EXIT_FAILURE);
@@ -194,6 +193,26 @@ void je_persist_snapshot (context_t *C)
     }
     if (tar_append_eof(pTar) == -1) {
         perror("Error - tar_append_eof():");
+        exit(EXIT_FAILURE);
+    }
+    if (tar_close(pTar) == -1) {
+        perror("Error - tar_close():");
+        exit(EXIT_FAILURE);
+    }
+}
+
+// restore from snapshot
+void je_persist_restore (context_t *C)
+{
+    TAR *pTar;
+    char *tarFilename = "g_snapshot.tgz";
+
+    if (tar_open(&pTar, tarFilename, &gztype, O_RDONLY, 0600, TAR_GNU) == -1) {
+        perror("Error - tar_open():");
+        exit(EXIT_FAILURE);
+    }
+    if (tar_extract_all(pTar, C->tempdir) == -1) {
+        perror("Error - tar_extract_all():");
         exit(EXIT_FAILURE);
     }
     if (tar_close(pTar) == -1) {
