@@ -214,7 +214,9 @@ void je_persist_restore (context_t *C)
     TAR *pTar;
     glob_t pglob;
     int i, rc;
+    size_t len;
     char *tarFilename = "g_snapshot.tgz";
+    char *glob_pattern;
 
     if (tar_open(&pTar, tarFilename, &gztype, O_RDONLY, 0600, TAR_GNU) == -1) {
         perror("Error - tar_open():");
@@ -228,7 +230,14 @@ void je_persist_restore (context_t *C)
         perror("Error - tar_close():");
         exit(EXIT_FAILURE);
     }
-    if ((rc = glob(C->tempdir, 0, glob_err, &pglob)) != 0) {
+    len = strlen(C->tempdir);
+    if ((glob_pattern = malloc(len + 2)) == NULL) {
+        perror("Error - malloc():");
+        exit(EXIT_FAILURE);
+    }
+    strcpy(glob_pattern, C->tempdir);
+    strcat(glob_pattern, "/*");
+    if ((rc = glob(glob_pattern, 0, glob_err, &pglob)) != 0) {
         switch (rc) {
         case GLOB_NOSPACE:
             fprintf(stderr,"Error - glob(): no memory available (GLOB_NOSPACE)");
@@ -243,8 +252,9 @@ void je_persist_restore (context_t *C)
         exit(EXIT_FAILURE);
     }
     for (i=0; i < pglob.gl_pathc; i++) {
-        fprintf(stderr, "%s\n", pglob.gl_pathv[i]);
+        fprintf(stderr, "%s\n", (pglob.gl_pathv[i])+len+1 );
     }
+    free(glob_pattern);
     globfree(&pglob);
 }
 
