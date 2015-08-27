@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include <assert.h>
 
@@ -56,15 +57,28 @@ static void hash_list_r(unsigned long *phash, elem_t *list)
 
 // 64 ascii chars that are safe in filenames
 // each character used only once
-// order doesn't matter
+// must match reverse mapping table
 static char b64[64] = {
-    'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p',
-    'q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5',
-    'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P',
-    'Q','R','S','T','U','V','W','X','Y','Z','6','7','8','9','_',',',
+    '0','1','2','3','4','5','6','7','8','9',
+        'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O',
+    'P','Q','R','S','T','U','V','W','X','Y','Z',
+        'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o',
+    'p','q','r','s','t','u','v','w','x','y','z',
+    ',','_'
 };
 
-void je_base64(char hashname[], unsigned long *phash)
+static char un_b64[128] = {
+     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1,
+      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, -1, -1, -1, -1, -1, -1,
+     -1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+     25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, -1, -1, -1, -1, 63,
+     -1, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+     51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1
+};
+
+void je_long_to_base64(char hashname[], unsigned long *phash)
 {
     int i;
     unsigned long hash;
@@ -75,6 +89,30 @@ void je_base64(char hashname[], unsigned long *phash)
         hash >>= 6;
     }
     hashname[i] = '\0';
+}
+
+success_t je_base64_to_long(char *b64string, unsigned long *phash)
+{
+    unsigned long hash;
+    char c;
+    size_t len;
+
+    if ((len = strlen(b64string)) != 11) {
+        return FAIL;
+    }
+    while (len-- > 0) {
+        c = b64string[len];
+        if (c < 0) {
+            return FAIL;
+        }
+        if ((c = un_b64[(int)c]) < 0) {
+            return FAIL;
+        }
+        hash <<= 6;
+        hash |= c;
+    }
+    *phash = hash;
+    return SUCCESS;
 }
 
 void je_hash_list(unsigned long *hash, elem_t *list)

@@ -213,10 +213,11 @@ void je_persist_restore (context_t *C)
 {
     TAR *pTar;
     glob_t pglob;
-    int i, rc;
-    size_t len;
+    int rc;
+    size_t len, pathc;
     char *tarFilename = "g_snapshot.tgz";
     char *glob_pattern;
+    unsigned long hash;
 
     if (tar_open(&pTar, tarFilename, &gztype, O_RDONLY, 0600, TAR_GNU) == -1) {
         perror("Error - tar_open():");
@@ -251,8 +252,13 @@ void je_persist_restore (context_t *C)
         }
         exit(EXIT_FAILURE);
     }
-    for (i=0; i < pglob.gl_pathc; i++) {
-        fprintf(stderr, "%s\n", (pglob.gl_pathv[i])+len+1 );
+    for (pathc=0; pathc < pglob.gl_pathc; pathc++) {
+        if (je_base64_to_long(pglob.gl_pathv[pathc]+len+1, &hash) == FAIL) {
+            fprintf(stderr, "Error - je_base64_to_long():  invalid base64 name \"%s\"\n",
+                    pglob.gl_pathv[pathc]+len+1);
+            exit(EXIT_FAILURE);
+        }
+fprintf(stderr,"hash = %lu\n", hash);
     }
     free(glob_pattern);
     globfree(&pglob);
@@ -281,7 +287,7 @@ void je_persist_close (context_t *C)
                 }
 
                 // reconsitute the filename and unlink
-                je_base64(outhashname, &(elem->u.hash.hash));
+                je_long_to_base64(outhashname, &(elem->u.hash.hash));
                 strcpy(outfilename, C->tempdir);
                 strcat(outfilename, "/");
                 strcat(outfilename, outhashname);
