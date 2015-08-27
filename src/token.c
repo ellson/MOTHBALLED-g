@@ -319,12 +319,12 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
 				elem = new_frag(C, DQT, len, frag);
 				slen += len;
 			}
-        // In the unquoted portions of VSTRING we allow '/' '\' ':' in addition to the ABC class
+        // In the unquoted portions of VSTRING we allow '/' '\' ':' '?' in addition to the ABC class
         // this allows URIs as values without quoting
-		} else if (C->insi == ABC || C->insi == FSL || C->insi == BSL || C->insi == CLN) {
+		} else if (C->insi == ABC || C->insi == FSL || C->insi == BSL || C->insi == CLN || C->insi == QRY) {
 			frag = C->in;
 			len = 1;
-			while ((insi = char2state[*++(C->in)]) == ABC || insi == FSL || insi == BSL || insi == CLN) {
+			while ((insi = char2state[*++(C->in)]) == ABC || insi == FSL || insi == BSL || insi == CLN || insi == QRY) {
 				len++;
 			}
 			C->insi = insi;
