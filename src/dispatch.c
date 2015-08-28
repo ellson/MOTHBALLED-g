@@ -2,13 +2,7 @@
 #include <time.h>
 #include <assert.h>
 
-#include "grammar.h"
-#include "inbuf.h"
-#include "list.h"
-#include "context.h"
-#include "emit.h"
-
-
+#include "libje_private.h"
 
 // Processes an ACT after sameas and pattern substitutions.
 //

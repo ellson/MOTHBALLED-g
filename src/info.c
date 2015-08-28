@@ -1,16 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <sys/utsname.h>
 #include <pwd.h>
 #include <assert.h>
 
-#include "grammar.h"
-#include "inbuf.h"
-#include "list.h"
-#include "context.h"
-#include "emit.h"
-#include "info.h"
+#include "libje_private.h"
 
 // This code collects info from the environment to:
 //          - populate session info into attributes of a 'g' NODE

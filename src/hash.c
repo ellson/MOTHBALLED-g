@@ -1,13 +1,7 @@
-#include <stdio.h>
 #include <string.h>
-#include <time.h>
 #include <assert.h>
 
-#include "grammar.h"
-#include "inbuf.h"
-#include "list.h"
-#include "context.h"
-#include "hash.h"
+#include "libje_private.h"
 
 #define MSB_LONG (8*(sizeof(long))-1)
 #define SEED 0xA5A5A5A5A5A5A5A5
@@ -22,7 +16,7 @@
 static void hash_list_r(unsigned long *phash, elem_t *list)
 {
 	elem_t *elem;
-	unsigned long hash;
+	unsigned long hash = 0;
 	unsigned char *cp;
     int len;
 
@@ -95,7 +89,7 @@ char *je_long_to_base64(unsigned long *phash)
 
 success_t je_base64_to_long(char *b64string, unsigned long *phash)
 {
-    unsigned long hash;
+    unsigned long hash = 0;
     char c;
     size_t len;
 

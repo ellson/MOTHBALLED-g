@@ -2,11 +2,7 @@
 #include <time.h>
 #include <assert.h>
 
-#include "grammar.h"
-#include "inbuf.h"
-#include "list.h"
-#include "context.h"
-#include "emit.h"
+#include "libje_private.h"
 
 // A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
 // The AST is a wild-card that matches any substring of zero or more 

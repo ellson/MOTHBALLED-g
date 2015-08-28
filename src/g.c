@@ -3,15 +3,7 @@
 #include <signal.h>
 #include <assert.h>
 
-#include "grammar.h"
-#include "inbuf.h"
-#include "list.h"
-#include "context.h"
-#include "emit.h"
-#include "info.h"
-#include "parse.h"
-#include "persist.h"
-#include "dumpg.h"
+#include "libje_private.h"
 
 static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
 

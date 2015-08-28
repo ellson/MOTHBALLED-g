@@ -1,12 +1,7 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
-#include "grammar.h"
-#include "inbuf.h"
-#include "list.h"
-#include "context.h"
-#include "emit.h"
+#include "libje_private.h"
 
 #define OUT stdout
 #define ERR stderr
@@ -60,7 +55,7 @@ static void print_attr(char attr, char *attrid, int *inlist)
 	if (attr) {
 		if ((*inlist)++)
 			putc(' ', OUT);
-		fprintf(OUT, attrid);
+		fprintf(OUT, "%s", attrid);
 	}
 }
 

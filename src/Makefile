@@ -1,12 +1,18 @@
+# clang sort of works:
+#   - In /usr/lb64/ I needed to: ln -s libgcc_s-5.1.1-20150618.so.1 libgcc_s.so
+#   - Needs -Wno-missing-field-initializers because { 0 } initialers don't work on union structs.
 #CC = clang
+#CFLAGS = -g -O0 -Wall -W -Wextra -pedantic -Wno-missing-field-initializers
 
+CC = gcc
 CFLAGS = -g -O0 -Wall -W -Wextra -pedantic
+
 #CFLAGS = -DNDEBUG
 
 LDFLAGS = -ltar -lz
 
 OBJS = grammar.o parse.o persist.o token.o info.o inbuf.o dispatch.o dumpg.o list.o hash.o sameas.o pattern.o emit.o emit_t.o emit_g.o emit_gv.o g.o
-HDRS = grammar.h parse.h persist.h token.h info.h inbuf.h dispatch.h dumpg.h list.h hash.h sameas.h pattern.h emit.h context.h
+HDRS = grammar.h libje_private.h
 
 all: g grammar.svg test_grammar.g test
 

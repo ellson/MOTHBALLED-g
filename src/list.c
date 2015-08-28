@@ -1,13 +1,8 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <assert.h>
 
-#include "grammar.h"
-#include "inbuf.h"
-#include "list.h"
-#include "context.h"
-#include "info.h"
+#include "libje_private.h"
 
 static elem_t *new_elem_sub(context_t * C, elemtype_t type)
 {

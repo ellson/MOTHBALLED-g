@@ -1,21 +1,9 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
 
-#include "grammar.h"
-#include "inbuf.h"
-#include "list.h"
-#include "context.h"
-#include "info.h"
-#include "emit.h"
-#include "persist.h"
-#include "parse.h"
-#include "token.h"
-#include "sameas.h"
-#include "pattern.h"
-#include "hash.h"
+#include "libje_private.h"
 
 // This parser recurses at two levels:
 //

@@ -1,12 +1,6 @@
-#include <stdio.h>
-#include <time.h>
 #include <assert.h>
 
-#include "grammar.h"
-#include "inbuf.h"
-#include "list.h"
-#include "context.h"
-#include "emit.h"
+#include "libje_private.h"
 
 // rewrite list into new list with any EQL elements substituted from oldlist
 static void

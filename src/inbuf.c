@@ -2,11 +2,7 @@
 #include <errno.h>
 #include <assert.h>
 
-#include "grammar.h"
-#include "inbuf.h"
-#include "list.h"
-#include "context.h"
-#include "info.h"
+#include "libje_private.h"
 
 void new_inbuf(context_t *C)
 {

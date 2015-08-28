@@ -1,15 +1,8 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
-#include "grammar.h"
-#include "inbuf.h"
-#include "list.h"
-#include "context.h"
-#include "token.h"
-#include "emit.h"
-#include "info.h"
+#include "libje_private.h"
 
 // fill buffers from input files
 static success_t more_in(context_t * C)

@@ -1,10 +1,6 @@
 #include <stdlib.h>
 
-#include "grammar.h"
-#include "inbuf.h"
-#include "list.h"
-#include "context.h"
-#include "emit.h"
+#include "libje_private.h"
 
 static void api_start_activity(container_context_t * CC)
 {

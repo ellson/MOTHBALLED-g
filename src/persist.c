@@ -1,7 +1,6 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
+#include <stdarg.h>
 #include <errno.h>
 #include <zlib.h>
 #include <libtar.h>
@@ -9,12 +8,7 @@
 #include <glob.h>
 #include <assert.h>
 
-#include "grammar.h"
-#include "inbuf.h"
-#include "list.h"
-#include "context.h"
-#include "persist.h"
-#include "hash.h"
+#include "libje_private.h"
 
 #if defined ( _MSC_VER) || defined(__WATCOMC__)
 #include <io.h>
