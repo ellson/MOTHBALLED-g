@@ -92,11 +92,29 @@ tartype_t gztype = {
 
 elem_t * je_persist_open(context_t *C)
 {
-    elem_t *elem, *name;
-    size_t len = 0, slen = 0;
-    char pidbuf[16];
     int i;
     char *template_init = "/tmp/g_XXXXXX";
+
+    // The top name is simply '^' - like "Dad" (or "Mum", or better: "Parent")
+    // Note that adoption is possible as we never use an actual name.
+
+    // 68 bytes for a 1-byte name - oh well 
+    static elem_t mumfrag = {
+        .next = NULL,
+        .u.frag.inbuf = NULL,
+        .u.frag.frag = (unsigned char *)"^",
+        .v.frag.len = 1,
+        .type = FRAGELEM,
+        .state = ABC
+    };
+    static elem_t Mum = {
+        .next = NULL,
+        .u.list.first = &mumfrag,
+        .u.list.last = &mumfrag,
+        .v.list.refs = 0,
+        .type = LISTELEM,
+        .state = STRING
+    };
 
     // copy template including trailing NULL
     i = 0;
@@ -104,54 +122,14 @@ elem_t * je_persist_open(context_t *C)
         i++;
     }
 
-    name = &(C->myname);
-
-    assert (C->inbuf == NULL);
-    new_inbuf(C);
-
-// FIXME  - top name can be simply '^' - like "Dad" (or "Mum", or better: "Parent")
-// We can, and probably should, always use a generic name,  so that snapshots can be adopted.
-//                 -- think about security implications of this.
-
-// distribution code,  and the dispatching code that promotes noderefs to a common parent, will need better names.
-
-    len = strlen(C->username);
-    elem = new_frag(C, ABC, len, (unsigned char*)C->username);
-    append_list(name, elem);
-    slen += len;
-
-    elem = new_frag(C, ABC, 1, (unsigned char*)"@");
-    append_list(name, elem);
-    slen++;
-
-    len = strlen(C->hostname);
-    elem = new_frag(C, ABC, len, (unsigned char*)C->hostname);
-    append_list(name, elem);
-    slen += len;
-
-    elem = new_frag(C, ABC, 1, (unsigned char*)"_");
-    append_list(name, elem);
-    slen++;
-
-    sprintf(pidbuf,"%u",C->pid);
-    len = strlen(C->hostname);
-    assert (len  < sizeof(pidbuf));
-    elem = new_frag(C, ABC, len, (unsigned char*)pidbuf);
-    append_list(name, elem);
-    slen += len;
-
-    assert (slen < INBUFSIZE);
-
-    C->inbuf = NULL;   // hang on to this inbuf privately for myname
-
-    // make a temporary directory
+    // make a temporary directory (probably based on pid - no semantic significance here
     C->tempdir = mkdtemp(C->template);
     if (!C->tempdir) {
         perror("Error - mkdtemp(): ");
         exit(EXIT_FAILURE);
     }
 
-    return name;
+    return &Mum;
 }
 
 // snapshot of temporary files
@@ -280,6 +258,8 @@ void je_persist_close (context_t *C)
                     exit(EXIT_FAILURE);
                 }
 
+                // FIXME - perhaps we should keep the base64 filenames around?
+ 
                 // reconsitute the filename and unlink
                 hashname = je_long_to_base64(&(elem->u.hash.hash));
                 if (! (filename = malloc(sizeof(C->template) + 1 + sizeof(hashname) + 1))) {
