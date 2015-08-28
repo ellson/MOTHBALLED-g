@@ -81,6 +81,7 @@ int main(int argc, char *argv[])
 
     C = je_initialize();
     C->progname = argv[0];
+    C->out = stdout;
 
 	argv = &argv[optind];
 	argc -= optind;

@@ -77,6 +77,7 @@ struct context_s {		// input_context
 	char **argv;
 	char *filename;		// name of file currently being processed, or "-" for stdin
 	FILE *file;	    	// open file handle for file currently being processed
+	FILE *out;	    	// typically stdout for parser debug outputs
 	inbuf_t *inbuf;		// the active input buffer
 	unsigned char *in;	// next charater to be processed
     char *username;     // set by first call to g_session
@@ -169,10 +170,10 @@ struct emit_s {
 	void (*subject) (container_context_t * CC, elem_t * root);
 	void (*attributes) (container_context_t * CC, elem_t * root);
 
-	void (*sep) (container_context_t * CC);
-	void (*token) (container_context_t * CC, char token);
-	void (*string) (container_context_t * CC, elem_t * branch);
-	void (*frag) (container_context_t * CC, unsigned char len, unsigned char *frag);
+	void (*sep) (context_t * C);
+	void (*token) (context_t * C, char token);
+	void (*string) (context_t * C, elem_t * branch);
+	void (*frag) (context_t * C, unsigned char len, unsigned char *frag);
 	void (*error) (context_t * C, state_t si, char *message);
 };
 
@@ -212,14 +213,14 @@ struct emit_s {
 #define emit_attributes(CC, root) \
     if (emit->attributes) {emit->attributes(CC, root);}
 
-#define emit_sep(CC) \
-    if (emit->sep) {emit->sep(CC);}
-#define emit_token(CC, token) \
-    if (emit->token) {emit->token(CC, token);}
-#define emit_string(CC, branch) \
-    if (emit->string) {emit->string(CC, branch);}
-#define emit_frag(CC, len, frag) \
-    if (emit->frag) {emit->frag(CC, len, frag);}
+#define emit_sep(C) \
+    if (emit->sep) {emit->sep(C);}
+#define emit_token(C, token) \
+    if (emit->token) {emit->token(C, token);}
+#define emit_string(C, branch) \
+    if (emit->string) {emit->string(C, branch);}
+#define emit_frag(C, len, frag) \
+    if (emit->frag) {emit->frag(C, len, frag);}
 #define emit_error(C, si, message) \
     if (emit->error) {emit->error(C, si, message);}
 
@@ -287,10 +288,10 @@ char * je_long_to_base64(unsigned long *phash);
 success_t je_base64_to_long(char *b64string, unsigned long *phash);
 
 // token.c
-success_t je_parse_whitespace(container_context_t * CC);
-success_t je_parse_string(container_context_t * CC, elem_t * fraglist);
-success_t je_parse_vstring(container_context_t * CC, elem_t * fraglist);
-success_t je_parse_token(container_context_t * CC);
+success_t je_parse_whitespace(context_t * C);
+success_t je_parse_string(context_t * C, elem_t * fraglist);
+success_t je_parse_vstring(context_t * C, elem_t * fraglist);
+success_t je_parse_token(context_t * C);
 
 // parse.c
 success_t je_parse(context_t * C, elem_t *name);

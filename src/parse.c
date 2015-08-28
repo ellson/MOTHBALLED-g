@@ -15,10 +15,9 @@
 // The outer recursionsi are through nested containment.
 // The top-level context (C) is available to both and maintains the input state.
 
-static success_t more_rep(container_context_t * CC, unsigned char prop)
+static success_t more_rep(context_t * C, unsigned char prop)
 {
 	state_t ei, bi;
-    context_t *C = CC->context;
 
 	if (!(prop & (REP | SREP)))
 		return FAIL;
@@ -33,7 +32,7 @@ static success_t more_rep(container_context_t * CC, unsigned char prop)
 		return SUCCESS;	// more repetitions, but additional WS sep is optional
 	}
 	if (prop & SREP) {
-		emit_sep(CC);	// sep is non-optional, emit the minimal sep
+		emit_sep(C);	// sep is non-optional, emit the minimal sep
 	}
 	return SUCCESS;		// more repetitions
 }
@@ -77,14 +76,14 @@ je_parse_r(container_context_t * CC, elem_t * root,
 	C->ei = C->insi;	// the char class that ended the last token
 
 	// Whitespace
-	if ((rc = je_parse_whitespace(CC)) == FAIL) {
+	if ((rc = je_parse_whitespace(C)) == FAIL) {
 		goto done;	// EOF during whitespace
 	}
 
 	// Special character tokens
 	if (si == C->insi) {	// single character terminals matching state_machine expectation
 		C->bi = C->insi;
-		rc = je_parse_token(CC);
+		rc = je_parse_token(C);
 		C->ei = C->insi;
 		goto done;
 	}
@@ -99,13 +98,13 @@ je_parse_r(container_context_t * CC, elem_t * root,
 		break;
 
 	case STRING:            // Strings
-		rc = je_parse_string(CC, &branch);
+		rc = je_parse_string(C, &branch);
 		C->bi = C->insi;	// the char class that terminates the STRING
 		goto done;
 		break;
 
 	case VSTRING:            // Value Strings
-		rc = je_parse_vstring(CC, &branch);
+		rc = je_parse_vstring(C, &branch);
 		C->bi = C->insi;	// the char class that terminates the VSTRING
 		goto done;
 		break;
@@ -173,7 +172,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
 			repc = 0;
 			if (nprop & OPT) {          // OPTional
 				if ((je_parse_r(CC, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
-					while (more_rep(CC, nprop) == SUCCESS) {
+					while (more_rep(C, nprop) == SUCCESS) {
 						if (je_parse_r(CC, &branch, ni, nprop, nest, repc++) == FAIL) {
 							break;
 						}
@@ -183,7 +182,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
 				if ((rc = je_parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 					break;
 				}
-				while (more_rep(CC, nprop) == SUCCESS) {
+				while (more_rep(C, nprop) == SUCCESS) {
 					if ((rc = je_parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 						break;
 					}
@@ -251,6 +250,7 @@ success_t je_parse(context_t * C, elem_t * name)
     char *hashname, *filename;
 
 	CC->context = C;
+    C->sep = ' ';
 
     je_hash_list(&hash, name);         // hash name (subject "names" can be very long)
     elem = je_hash_bucket(C, hash);    // save in bucket list 
@@ -282,12 +282,12 @@ success_t je_parse(context_t * C, elem_t * name)
 			emit_error(C, C->state, "Parse error. Last good state was:");
 		}
 	}
+	emit_end_activity(CC);
 
+	free_list(C, &root);
 	free_list(C, &(CC->subject));
 	free_list(C, &(CC->node_pattern_acts));
 	free_list(C, &(CC->edge_pattern_acts));
-
-	emit_end_activity(CC);
 
 	return rc;
 }

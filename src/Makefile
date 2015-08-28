@@ -11,7 +11,7 @@ CFLAGS = -g -O0 -Wall -W -Wextra -pedantic
 
 LDFLAGS = -ltar -lz
 
-OBJS = grammar.o libje.c parse.o persist.o token.o info.o inbuf.o dispatch.o dumpg.o list.o hash.o sameas.o pattern.o emit.o emit_t.o emit_g.o emit_gv.o g.o
+OBJS = grammar.o libje.o parse.o persist.o token.o info.o inbuf.o dispatch.o dumpg.o list.o hash.o sameas.o pattern.o emit.o emit_t.o emit_g.o emit_gv.o g.o
 HDRS = grammar.h libje.h libje_private.h
 
 all: g grammar.svg test_grammar.g test

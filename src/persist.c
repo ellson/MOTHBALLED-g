@@ -109,6 +109,12 @@ elem_t * je_persist_open(context_t *C)
     assert (C->inbuf == NULL);
     new_inbuf(C);
 
+// FIXME  - top name can be simply '^' - like "Dad" (or "Mum", or better: "Parent")
+// We can, and probably should, always use a generic name,  so that snapshots can be adopted.
+//                 -- think about security implications of this.
+
+// distribution code,  and the dispatching code that promotes noderefs to a common parent, will need better names.
+
     len = strlen(C->username);
     elem = new_frag(C, ABC, len, (unsigned char*)C->username);
     append_list(name, elem);

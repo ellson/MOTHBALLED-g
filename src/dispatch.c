@@ -40,13 +40,13 @@ void je_dispatch(container_context_t * CC, elem_t * root)
 
     switch(CC->context->verb) {
     case QRY:
-        fprintf(stdout,"dispatching query\n");
+//        fprintf(stdout,"dispatching query\n");
         break;
     case TLD:
-        fprintf(stdout,"dispatching delete\n");
+//        fprintf(stdout,"dispatching delete\n");
         break;
     default:
-        fprintf(stdout,"dispatching add\n");
+//        fprintf(stdout,"dispatching add\n");
         break;
     }
     print_list(stdout, root, 0, &(C->sep));
