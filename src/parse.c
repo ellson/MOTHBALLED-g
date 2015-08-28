@@ -110,7 +110,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
 		break;
 
 		// the remainder of the switch() is just state initialization and emit hooks;
-	case SUBJECT:
+	case ACT:
 		// This is a bit ugly.
 		//
 		// Because the grammar has no mandatory terminal token for ACTs, the 
@@ -142,6 +142,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
 		free_list(C, root);	// now we're done with the last ACT
 		                    // and we can really start on the new ACT
         C->verb = 0;        // initialize verb to default "add"   // FIXME - haven't we passed VERB already?
+	case SUBJECT:
 		C->has_ast = 0;     // maintain a flag for an '*' found anywhere in the subject
 		break;
 	default:
