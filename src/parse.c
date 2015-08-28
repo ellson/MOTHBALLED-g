@@ -227,7 +227,11 @@ je_parse_r(container_context_t * CC, elem_t * root,
             break;
         }
 		if (branch.u.list.first != NULL || si == EQL) {	// mostly ignore empty lists
-            branch.state = si;
+            if (branch.u.list.first && branch.u.list.first->type != FRAGELEM) {
+                // record state generating this tree
+                // - except for STRINGs which use state for quoting info
+                branch.state = si;
+            }
 			elem = move_list(C, &branch);
 			append_list(root, elem);
 		}

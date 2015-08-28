@@ -1,5 +1,12 @@
 #include "libje_private.h"
 
+static void api_end_activity(container_context_t * CC)
+{
+    // this makes the contents of the tar files a bit more readable.
+	putc('\n', CC->out);
+}
+
+// FIXME - this is for the tar files.  probably shouldn't be a command line option
 emit_t g_api = { "g",
 	/* api_initialize */ NULL,
 	/* api_finalize */ NULL,
@@ -8,7 +15,7 @@ emit_t g_api = { "g",
 	/* api_end_file */ NULL,
 
 	/* api_start_activity */ NULL,
-	/* api_end_activity */ NULL,
+	/* api_end_activity */ api_end_activity,
 
 	/* api_start_act */ NULL,
 	/* api_end_act */ NULL,
@@ -34,6 +41,7 @@ emit_t g_api = { "g",
 
 static void api1_end_activity(container_context_t * CC)
 {
+    // this is for debugging, so goes to context's output
 	putc('\n', CC->context->out);
 }
 
