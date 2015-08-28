@@ -1,7 +1,3 @@
-#include <stdlib.h>
-#include <errno.h>
-#include <assert.h>
-
 #include "libje_private.h"
 
 void new_inbuf(context_t *C)

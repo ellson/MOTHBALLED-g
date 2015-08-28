@@ -1,12 +1,7 @@
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <errno.h>
 #include <zlib.h>
 #include <libtar.h>
 #include <fcntl.h>
 #include <glob.h>
-#include <assert.h>
 
 #include "libje_private.h"
 

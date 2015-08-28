@@ -1,6 +1,3 @@
-#include <stdlib.h>
-#include <assert.h>
-
 #include "libje_private.h"
 
 #define OUT stdout

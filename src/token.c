@@ -1,7 +1,3 @@
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-
 #include "libje_private.h"
 
 // fill buffers from input files

@@ -1,17 +1,15 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <sys/utsname.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <errno.h>
+#include <assert.h>
 
 #include "grammar.h"
-
-typedef struct inbuf_s inbuf_t;
-typedef struct elem_s elem_t;
-typedef struct emit_s emit_t;
-typedef struct context_s context_t;
-typedef struct container_context_s container_context_t;
-typedef struct hashfile_s hashfile_t;
+#include "libje.h"
 
 // sizeof(inbuf_t) = 1<<7  (128 bytes)
 // the size of .buf is sizeof(inbuf_t) less the other bits  (~115 bytes, I think)
@@ -149,8 +147,8 @@ struct container_context_s {	// container_context
 
 struct emit_s {
     char *name;
-	void (*start_parse) (context_t * C);
-	void (*end_parse) (context_t * C);
+	void (*initialize) (context_t * C);
+	void (*finalize) (context_t * C);
 
 	void (*start_file) (context_t * C);
 	void (*end_file) (context_t * C);
@@ -178,10 +176,10 @@ struct emit_s {
 	void (*error) (context_t * C, state_t si, char *message);
 };
 
-#define emit_start_parse(C) \
-    if (emit->start_parse) {emit->start_parse(C);}
-#define emit_end_parse(C) \
-    if (emit->end_parse) {emit->end_parse(C);}
+#define emit_initialize(C) \
+    if (emit->initialize) {emit->initialize(C);}
+#define emit_finalize(C) \
+    if (emit->finalize) {emit->finalize(C);}
 
 #define emit_start_file(C) \
     if (emit->start_file) {emit->start_file(C);}

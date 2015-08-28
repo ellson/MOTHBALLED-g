@@ -1,6 +1,3 @@
-#include <string.h>
-#include <assert.h>
-
 #include "libje_private.h"
 
 #define MSB_LONG (8*(sizeof(long))-1)

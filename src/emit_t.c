@@ -1,5 +1,3 @@
-#include <stdlib.h>
-
 #include "libje_private.h"
 
 static void api_start_activity(container_context_t * CC)
@@ -51,8 +49,8 @@ static void api_end_activity(container_context_t * CC)
 }
 
 emit_t t_api = { "t",
-	/* api_start_parse */ NULL,
-	/* api_end_parse */ NULL,
+	/* api_initialize */ NULL,
+	/* api_finalize */ NULL,
 
 	/* api_start_file */ NULL,
 	/* api_end_file */ NULL,

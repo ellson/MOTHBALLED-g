@@ -1,5 +1,3 @@
-#include <stdlib.h>
-
 #include "libje_private.h"
 
 static void api_end_activity(container_context_t * CC)
@@ -8,8 +6,8 @@ static void api_end_activity(container_context_t * CC)
 }
 
 emit_t g_api = { "g",
-	/* api_start_parse */ NULL,
-	/* api_end_parse */ NULL,
+	/* api_initialize */ NULL,
+	/* api_finalize */ NULL,
 
 	/* api_start_file */ NULL,
 	/* api_end_file */ NULL,
@@ -58,8 +56,8 @@ static void api1_token(container_context_t *CC, char token)
 }
 
 emit_t g1_api = { "g1",
-	/* api_start_parse */ NULL,
-	/* api_end_parse */ NULL,
+	/* api_initialize */ NULL,
+	/* api_finalize */ NULL,
 
 	/* api_start_file */ NULL,
 	/* api_end_file */ NULL,
@@ -97,8 +95,8 @@ static void api2_token(container_context_t * CC, char token)
 }
 
 emit_t g2_api = { "g2",
-	/* api_start_parse */ NULL,
-	/* api_end_parse */ NULL,
+	/* api_initialize */ NULL,
+	/* api_finalize */ NULL,
 
 	/* api_start_file */ NULL,
 	/* api_end_file */ NULL,

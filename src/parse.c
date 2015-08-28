@@ -1,8 +1,3 @@
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <assert.h>
-
 #include "libje_private.h"
 
 // This parser recurses at two levels:
@@ -248,13 +243,14 @@ je_parse_r(container_context_t * CC, elem_t * root,
 success_t je_parse(context_t * C, elem_t * name)
 {
 	container_context_t container_context = { 0 };
+	container_context_t *CC = &container_context;
 	elem_t root = { 0 };	// the output parse tree
     elem_t *elem;
 	success_t rc;
     unsigned long hash;
     char *hashname, *filename;
 
-	container_context.context = C;
+	CC->context = C;
 
     je_hash_list(&hash, name);         // hash name (subject "names" can be very long)
     elem = je_hash_bucket(C, hash);    // save in bucket list 
@@ -274,12 +270,12 @@ success_t je_parse(context_t * C, elem_t * name)
         }
         free(filename);
     }
-    container_context.out = elem->u.hash.out;
+    CC->out = elem->u.hash.out;
 
 	C->stat_containercount++;
 
-	emit_start_activity(&container_context);
-	if ((rc = je_parse_r(&container_context, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+	emit_start_activity(CC);
+	if ((rc = je_parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
 		if (C->insi == NLL) {	// EOF is OK
 			rc = SUCCESS;
 		} else {
@@ -287,11 +283,11 @@ success_t je_parse(context_t * C, elem_t * name)
 		}
 	}
 
-	free_list(C, &container_context.subject);
-	free_list(C, &container_context.node_pattern_acts);
-	free_list(C, &container_context.edge_pattern_acts);
+	free_list(C, &(CC->subject));
+	free_list(C, &(CC->node_pattern_acts));
+	free_list(C, &(CC->edge_pattern_acts));
 
-	emit_end_activity(&container_context);
+	emit_end_activity(CC);
 
 	return rc;
 }

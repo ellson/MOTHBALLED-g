@@ -1,7 +1,3 @@
-#include <stdlib.h>
-#include <errno.h>
-#include <assert.h>
-
 #include "libje_private.h"
 
 static elem_t *new_elem_sub(context_t * C, elemtype_t type)

@@ -1,8 +1,4 @@
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
 #include <pwd.h>
-#include <assert.h>
 
 #include "libje_private.h"
 

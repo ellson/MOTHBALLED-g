@@ -1,21 +1,19 @@
-#include <stdlib.h>
-#include <string.h>
 #include <signal.h>
-#include <assert.h>
 
+// FIXME - should be using only libje.h
 #include "libje_private.h"
 
 static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
 
-static context_t context;  // the input context - needs to be global for intr()
+static context_t *C;  // the input context - needs to be global for intr()
 
 // if interrupted we try to gracefully snapshot the current state 
 static void intr(int s)
 {
     (void) s; // NOTUSED
 
-    je_persist_snapshot(&context);
-    je_persist_close(&context);
+    je_persist_snapshot(C);
+    je_persist_close(C);
     exit (EXIT_FAILURE);
 }
 
@@ -24,8 +22,6 @@ int main(int argc, char *argv[])
 	int i, opt, optnum, needstats = 0, needrestore = 0;
     emit_t *ep;
     elem_t *name;
-
-    context.progname = argv[0];
 
     emit = &g_api;      // default output engine (-Tg)
 
@@ -75,10 +71,16 @@ int main(int argc, char *argv[])
 			break;
 		default:
 // FIXME - add -T options to usage message
-			fprintf(stderr, "Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", context.progname);
+			fprintf(stderr, "Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
 			exit(EXIT_FAILURE);
 		}
 	}
+
+
+// libje usage starts here...
+
+    C = je_initialize();
+    C->progname = argv[0];
 
 	argv = &argv[optind];
 	argc -= optind;
@@ -88,34 +90,34 @@ int main(int argc, char *argv[])
 		argc++;
 	}
 
-    context.pargc = &argc;
-    context.argv = argv;
+    C->pargc = &argc;
+    C->argv = argv;
 
     // gather session info, including starttime for stats
-    je_session(&context);   // FIXME - move to je_persist_open() ??
+    je_session(C);   // FIXME - move to je_persist_open() ??
     
     // assemble a name and create temp folder for this nameless top container
-    name = je_persist_open(&context);
+    name = je_persist_open(C);
 
     if (needrestore) {
-        je_persist_restore(&context);
+        je_persist_restore(C);
     }
 
-    emit_start_parse(&context);
-    je_parse(&context, name);
-    emit_end_parse(&context);
+    // start parsing
+    je_parse(C, name);
 
     // generate snapshot
-    je_persist_snapshot(&context);
+    je_persist_snapshot(C);
 
     // and stats, if wanted     // FIXME - why not keep these in the tempdir so save automatically
     if (needstats) {
         // FIXME - need pretty-printer
-        fprintf (stderr, "%s\n", je_session(&context));
-        fprintf (stderr, "%s\n", je_stats(&context));
+        fprintf (stderr, "%s\n", je_session(C));
+        fprintf (stderr, "%s\n", je_stats(C));
     }
 
-    je_persist_close(&context);
+    je_persist_close(C);
+    je_finalize(C);
 
 	exit(EXIT_SUCCESS);
 }

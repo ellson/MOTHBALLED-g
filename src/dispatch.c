@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <time.h>
-#include <assert.h>
-
 #include "libje_private.h"
 
 // Processes an ACT after sameas and pattern substitutions.

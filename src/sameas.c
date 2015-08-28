@@ -1,5 +1,3 @@
-#include <assert.h>
-
 #include "libje_private.h"
 
 // rewrite list into new list with any EQL elements substituted from oldlist

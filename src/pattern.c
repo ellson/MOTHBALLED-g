@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <time.h>
-#include <assert.h>
-
 #include "libje_private.h"
 
 // A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
