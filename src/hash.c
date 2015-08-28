@@ -1,7 +1,6 @@
 #include "libje_private.h"
 
 #define MSB_LONG (8*(sizeof(long))-1)
-#define SEED 0xA5A5A5A5A5A5A5A5
 
 // Objective:
 //    - produce names suitable for use as filenames
@@ -10,10 +9,15 @@
 //    - minimal cpu cost
 // It is not an objective for this hash to be cryptographic.     
 
+// Hash chosen is the FNV-1a for 64bits   (Ref: http://isthe.com/chongo/tech/comp/fnv/ )
+// The FNV_prime is: 2**40 + 2**8 + 0xb3 = 0x100000001b3 = 1099511628211
+
+#define FNV_INIT  0xcbf29ce484222325
+#define FNV_PRIME 0x100000001b3
+
 static void hash_list_r(unsigned long *phash, elem_t *list)
 {
 	elem_t *elem;
-	unsigned long hash = 0;
 	unsigned char *cp;
     int len;
 
@@ -24,12 +28,12 @@ static void hash_list_r(unsigned long *phash, elem_t *list)
                 cp = elem->u.frag.frag;
                 len = elem->v.frag.len;
                 assert(len > 0);
-                hash = *phash;
                 while (len--) {
-                    // XOR character with hash, then rotate hash left one bit.
-                    hash = ((hash ^ *cp++) << 1) ^ (hash >> MSB_LONG);
+                    // XOR with current character
+                    *phash ^= *cp++;
+                    // multiply by the magic number
+                    *phash *= FNV_PRIME;
                 }
-                *phash = hash;
                 elem = elem->next;
             }
 		    break;
@@ -113,7 +117,7 @@ void je_hash_list(unsigned long *hash, elem_t *list)
     assert(sizeof(long) == 8);
     assert(list);
 
-    *hash = SEED;
+    *hash = FNV_INIT;
     hash_list_r(hash, list);
 }
 
