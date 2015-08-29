@@ -41,5 +41,3 @@ emit_t gv_api = { "gv",
 
 	/* api_error */ print_error
 };
-
-emit_t *emit_gv_api = &gv_api;

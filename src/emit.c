@@ -1,8 +1,24 @@
 #include "libje_private.h"
 
-emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
+static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
+emit_t *emit = &g_api;
 
-char char_prop(unsigned char prop, char noprop)
+success_t je_select_emitter(char *name)
+{
+    size_t i;
+    emit_t *ep;
+
+    for (i = 0; i < sizeof(emitters)/sizeof(emitters[0]); i++) {
+        ep = emitters[i];
+        if (strcmp(name,ep->name) == 0) {
+             emit = ep;
+             return SUCCESS;
+        }
+    }
+    return FAIL;
+}
+
+char je_char_prop(unsigned char prop, char noprop)
 {
 	char c;
 

@@ -6,7 +6,6 @@
 
 #include "libje.h"
 
-static emit_t *emit;  // the output plugin
 static context_t *C;  // the input context - needs to be global for intr()
 
 // if interrupted we try to gracefully snapshot the current state 
@@ -21,11 +20,8 @@ static void intr(int s)
 
 int main(int argc, char *argv[])
 {
-	int i, opt, optnum, needstats = 0, needrestore = 0;
-    emit_t *ep;
+	int opt, optnum, needstats = 0, needrestore = 0;
     elem_t *name;
-
-    emit = emitters[0];      // default output engine (-Tg)
 
     signal(SIGINT, intr);
 
@@ -36,14 +32,7 @@ int main(int argc, char *argv[])
 			optnum = 0;
 		switch (opt) {
         case 'T':
-            for (i = 0; i < SIZEOF_EMITTERS; i++) {
-                if ((ep = je_emit_name_match(optarg, emitters[i]))) 
-                {
-                    emit = ep;
-                    break;
-                }
-            }
-            if (i >= SIZEOF_EMITTERS) {
+            if (je_select_emitter(optarg) == FAIL) {
                 fprintf(stderr, "No back-end found for format: -T%s\n", optarg);
                 exit(EXIT_FAILURE);
             }
@@ -79,27 +68,10 @@ int main(int argc, char *argv[])
 	}
 
 
-// libje usage starts here...
+    // create the top-level context for processing the inputs
+    C = je_initialize(argc, argv, optind);
 
-    C = je_initialize();
-    C->progname = argv[0];
-    C->out = stdout;
-
-	argv = &argv[optind];
-	argc -= optind;
-
-	if (argc == 0) {	// No file args,  default to stdin
-		argv[0] = "-";
-		argc++;
-	}
-
-    C->pargc = &argc;
-    C->argv = argv;
-
-    // gather session info, including starttime for stats
-    je_session(C);   // FIXME - move to je_persist_open() ??
-    
-    // assemble a name and create temp folder for this nameless top container
+    // assemble a name for the top container in the form of a fraglist, and create temp folder for the per-container files
     name = je_persist_open(C);
 
     if (needrestore) {
@@ -112,7 +84,7 @@ int main(int argc, char *argv[])
     // generate snapshot
     je_persist_snapshot(C);
 
-    // and stats, if wanted     // FIXME - why not keep these in the tempdir so save automatically
+    // and stats, if wanted 
     if (needstats) {
         // FIXME - need pretty-printer
         fprintf (stderr, "%s\n", je_session(C));
@@ -120,6 +92,7 @@ int main(int argc, char *argv[])
     }
 
     je_persist_close(C);
+
     je_finalize(C);
 
 	exit(EXIT_SUCCESS);

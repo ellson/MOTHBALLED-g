@@ -1,9 +1,5 @@
 typedef struct context_s context_t;
 typedef struct elem_s elem_t;
-typedef struct emit_s emit_t;
-
-#define SIZEOF_EMITTERS 6
-extern emit_t *emitters[];
 
 typedef enum {
     SUCCESS,
@@ -11,8 +7,11 @@ typedef enum {
 } success_t;
 
 // libje.c
-context_t *je_initialize(void);
+context_t *je_initialize(int argc, char *argv[], int optind);
 void je_finalize(context_t *C);
+
+// emit.c
+success_t je_select_emitter(char *name);
 
 // persist.c
 elem_t * je_persist_open(context_t *C);

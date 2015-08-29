@@ -12,6 +12,7 @@
 #include "libje.h"
 
 typedef struct inbuf_s inbuf_t;
+typedef struct emit_s emit_t;
 typedef struct container_context_s container_context_t;
 typedef struct hashfile_s hashfile_t;
 
@@ -252,8 +253,9 @@ struct emit_s {
 #define SHELL_FRIENDLY_STYLE 1
 
 // emit.c
-char *get_name(char *p);
-char char_prop(unsigned char prop, char noprop);
+extern emit_t *emit;
+extern emit_t g_api, g1_api, g2_api, t_api, t1_api, gv_api;
+char je_char_prop(unsigned char prop, char noprop);
 void je_append_token(context_t *C, char **pos, char tok);
 void je_append_string(context_t *C, char **pos, char *string);
 void je_append_ulong(context_t *C, char **pos, unsigned long integer);

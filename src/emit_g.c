@@ -133,7 +133,3 @@ emit_t g2_api = { "g2",
 
 	/* api_error */ print_error
 };
-
-emit_t *emit_g_api = &g_api;
-emit_t *emit_g_api1 = &g1_api;
-emit_t *emit_g_api2 = &g2_api;

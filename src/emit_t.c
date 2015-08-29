@@ -21,7 +21,7 @@ api_start_state(container_context_t * CC, char class, unsigned char prop, int ne
     FILE *chan = CC->context->out;
 
 	fprintf(chan, "\n   ");
-	putc(char_prop(prop, '.'), chan);
+	putc(je_char_prop(prop, '.'), chan);
 	fprintf(chan, "%4d%4d%4d   ", class, nest, repc);
 	print_len_frag(chan, NAMEP(class));
 }
@@ -132,6 +132,3 @@ emit_t t1_api = { "t1",
 
 	/* api_error */ print_error
 };
-
-emit_t *emit_t_api = &t_api;
-emit_t *emit_t_api1 = &t1_api;
