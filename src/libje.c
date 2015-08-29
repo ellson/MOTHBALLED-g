@@ -1,6 +1,6 @@
 #include "libje_private.h"
 
-context_t *je_initialize(int argc, char *argv[], int optind)
+context_t *je_initialize(int *pargc, char *argv[], int optind)
 {
     context_t *C;
 
@@ -13,14 +13,14 @@ context_t *je_initialize(int argc, char *argv[], int optind)
     C->out = stdout;
 
     argv = &argv[optind];
-    argc -= optind;
+    *pargc -= optind;
 
-    if (argc == 0) {    // No file args,  default to stdin
+    if (*pargc == 0) {    // No file args,  default to stdin
         argv[0] = "-";
-        argc++;
+        *pargc++;
     }
 
-    C->pargc = &argc;
+    C->pargc = pargc;
     C->argv = argv;
 
     // gather session info, including starttime.

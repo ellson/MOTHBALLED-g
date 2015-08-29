@@ -7,7 +7,7 @@ typedef enum {
 } success_t;
 
 // libje.c
-context_t *je_initialize(int argc, char *argv[], int optind);
+context_t *je_initialize(int *argc, char *argv[], int optind);
 void je_finalize(context_t *C);
 
 // emit.c

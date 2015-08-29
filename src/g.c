@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 
 
     // create the top-level context for processing the inputs
-    C = je_initialize(argc, argv, optind);
+    C = je_initialize(&argc, argv, optind);
 
     // assemble a name for the top container in the form of a fraglist, and create temp folder for the per-container files
     name = je_persist_open(C);
