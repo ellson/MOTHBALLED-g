@@ -109,38 +109,8 @@ je_parse_r(container_context_t * CC, elem_t * root,
 		goto done;
 		break;
 
-		// the remainder of the switch() is just state initialization and emit hooks;
+	// the remainder of the switch() is just state initialization
 	case ACT:
-		// This is a bit ugly.
-		//
-		// Because the grammar has no mandatory terminal token for ACTs, the 
-		// only time we can be sure that the old ACT is finished is when there
-		// is enough input stream to determine that a new ACT has started.
-		//
-		// This is not a problem for patterns, since they are not used until they are
-		// matched to a later SUBJECT anyway.  Patterns in the last ACT of input just aren't
-		// useful.
-
-		if (CC->is_pattern) {   // flag was set by SUBJECT in previous ACT
-			                    //  save entire previous ACT in a list of pattern_acts
-			C->stat_patterncount++;
-			elem = ref_list(C, root);
-
-			if (CC->subject_type == NODE) {
-				append_list(&(CC->node_pattern_acts), elem);
-			} else {
-				assert(CC->subject_type == EDGE);
-				append_list(&(CC->edge_pattern_acts), elem);
-			}
-		} else {
-			C->stat_actcount++;
-		}
-
-        // dispatch events for the ACT just finished
-        je_dispatch(CC, root);
-
-		free_list(C, root);	// now we're done with the last ACT
-		                    // and we can really start on the new ACT
         C->verb = 0;        // initialize verb to default "add"
         break;
 	case SUBJECT:
@@ -197,6 +167,27 @@ je_parse_r(container_context_t * CC, elem_t * root,
  done: // State exit processing
 	if (rc == SUCCESS) {
 		switch (si) {
+		case ACT:
+		    if (CC->is_pattern) {   // flag was set by SUBJECT in previous ACT
+			                        //  save entire previous ACT in a list of pattern_acts
+			    C->stat_patterncount++;
+			    elem = ref_list(C, root);
+
+			    if (CC->subject_type == NODE) {
+				    append_list(&(CC->node_pattern_acts), elem);
+			    } else {
+				    assert(CC->subject_type == EDGE);
+				    append_list(&(CC->edge_pattern_acts), elem);
+			    }
+		    } else {
+			    C->stat_actcount++;
+		    }
+
+            // dispatch events for the ACT just finished
+            je_dispatch(CC, &branch);
+
+		    free_list(C, &branch);	// that's all folks.  move on to the next ACT.
+            break;
 		case TLD:
 		case QRY:
             C->verb = si;  // record verb prefix, if not default

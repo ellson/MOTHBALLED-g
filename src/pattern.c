@@ -115,7 +115,9 @@ void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 	while (nextpattern_act) {
 
 		elem = nextpattern_act->u.list.first;
-		assert(elem);
+        if (! elem) {
+            break;
+        }
 		assert((state_t) elem->state == ACT);
 
 		elem = elem->u.list.first;
