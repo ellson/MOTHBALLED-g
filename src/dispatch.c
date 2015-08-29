@@ -32,12 +32,53 @@
 //              their parent, which applies the same rule:
 
 
-void je_dispatch(container_context_t * CC, elem_t * root)
+void je_dispatch_r(container_context_t * CC, elem_t * list, elem_t * attributes, elem_t * nodes)
 {
     context_t *C = CC->context;
+    elem_t *elem, *new;
+    state_t si;
 
-    C->sep = ' ';
+    assert(list->type == (char)LISTELEM);
 
+    elem = list->u.list.first;
+    while (elem) {
+        si = (state_t) elem->state;
+        switch (si) {
+        case ATTRIBUTES:
+            new = ref_list(C, elem);
+            append_list(attributes, new);
+            break;
+        case SUBJECT:
+        case OBJECT:
+        case OBJECT_LIST:
+            je_dispatch_r(CC, elem, attributes, nodes);
+            break;
+        case NODE:
+            new = ref_list(C, elem);
+            append_list(nodes, new);
+            break;
+        case EDGE:
+            break;
+        default:
+            break;
+        }
+        elem = elem->next;
+    }
+}
+
+void je_dispatch(container_context_t * CC, elem_t * list)
+{
+    context_t *C = CC->context;
+//    elem_t *elem;
+    elem_t attributes = { 0 };
+    elem_t nodes = { 0 };
+    
+    assert(list);
+    assert(list->type == (char)LISTELEM);
+
+    je_dispatch_r(CC, list, &attributes, &nodes);
+
+#if 0
     switch(CC->context->verb) {
     case QRY:
         putc('?', stdout);
@@ -49,6 +90,24 @@ void je_dispatch(container_context_t * CC, elem_t * root)
         putc(' ', stdout);
         break;
     }
+
+    C->sep = ' ';
     print_list(stdout, root, 1, &(C->sep));
     putc('\n', stdout);
+#endif
+
+#if 0
+    C->sep = ' ';
+    print_list(stdout, &attributes, 1, &(C->sep));
+    putc('\n', stdout);
+#endif
+
+#if 0
+    C->sep = ' ';
+    print_list(stdout, &nodes, 1, &(C->sep));
+    putc('\n', stdout);
+#endif
+
+    free_list(C, &attributes);
+    free_list(C, &nodes);
 }
