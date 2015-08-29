@@ -32,11 +32,13 @@
 //              their parent, which applies the same rule:
 
 
-void je_dispatch_r(container_context_t * CC, elem_t * list, elem_t * attributes, elem_t * nodes, elem_t * edges)
+int je_dispatch_r(container_context_t * CC, elem_t * list, elem_t * attributes, elem_t * nodes, elem_t * edges)
 {
     context_t *C = CC->context;
     elem_t *elem, *new;
+    elem_t newlist = { 0 };
     state_t si;
+    int more = 0;
 
     assert(list->type == (char)LISTELEM);
 
@@ -58,6 +60,23 @@ void je_dispatch_r(container_context_t * CC, elem_t * list, elem_t * attributes,
             append_list(nodes, new);
             break;
         case EDGE:
+            more = 1;
+            newlist.state = EDGE;
+            while (more) {
+                more = je_dispatch_r(CC, elem, attributes, nodes, &newlist);
+                new = move_list(C, &newlist);
+                append_list(edges, new);
+            }
+            break;
+        case LEG:
+            newlist.state = LEG;
+            more = je_dispatch_r(CC, elem, attributes, nodes, &newlist);
+            new = move_list(C, &newlist);
+            append_list(edges, new);
+            break;
+        case ENDPOINTSET:
+        case ENDPOINT:
+            more = (elem->next)?1:0;
             new = ref_list(C, elem);
             append_list(edges, new);
             break;
@@ -66,6 +85,7 @@ void je_dispatch_r(container_context_t * CC, elem_t * list, elem_t * attributes,
         }
         elem = elem->next;
     }
+    return more;
 }
 
 void je_dispatch(container_context_t * CC, elem_t * list)
@@ -99,24 +119,24 @@ void je_dispatch(container_context_t * CC, elem_t * list)
     putc('\n', stdout);
 #endif
 
-#if 0
-    C->sep = ' ';
-    print_list(stdout, &attributes, 1, &(C->sep));
-    putc('\n', stdout);
-#endif
 
-#if 0
+#if 1
     C->sep = ' ';
     print_list(stdout, &nodes, 1, &(C->sep));
     putc('\n', stdout);
 #endif
 
-#if 0
+#if 1
     C->sep = ' ';
     print_list(stdout, &edges, 1, &(C->sep));
     putc('\n', stdout);
 #endif
 
+#if 1
+    C->sep = ' ';
+    print_list(stdout, &attributes, 1, &(C->sep));
+    putc('\n', stdout);
+#endif
     free_list(C, &attributes);
     free_list(C, &nodes);
     free_list(C, &edges);
