@@ -15,7 +15,7 @@
 // The outer recursionsi are through nested containment.
 // The top-level context (C) is available to both and maintains the input state.
 
-static success_t more_rep(context_t * C, unsigned char prop)
+static success_t je_more_rep(context_t * C, unsigned char prop)
 {
 	state_t ei, bi;
 
@@ -141,7 +141,8 @@ je_parse_r(container_context_t * CC, elem_t * root,
 
 		free_list(C, root);	// now we're done with the last ACT
 		                    // and we can really start on the new ACT
-        C->verb = 0;        // initialize verb to default "add"   // FIXME - haven't we passed VERB already?
+        C->verb = 0;        // initialize verb to default "add"
+        break;
 	case SUBJECT:
 		C->has_ast = 0;     // maintain a flag for an '*' found anywhere in the subject
 		break;
@@ -173,7 +174,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
 			repc = 0;
 			if (nprop & OPT) {          // OPTional
 				if ((je_parse_r(CC, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
-					while (more_rep(C, nprop) == SUCCESS) {
+					while (je_more_rep(C, nprop) == SUCCESS) {
 						if (je_parse_r(CC, &branch, ni, nprop, nest, repc++) == FAIL) {
 							break;
 						}
@@ -183,7 +184,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
 				if ((rc = je_parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 					break;
 				}
-				while (more_rep(C, nprop) == SUCCESS) {
+				while (je_more_rep(C, nprop) == SUCCESS) {
 					if ((rc = je_parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
 						break;
 					}

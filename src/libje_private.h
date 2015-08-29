@@ -11,6 +11,10 @@
 #include "grammar.h"
 #include "libje.h"
 
+typedef struct inbuf_s inbuf_t;
+typedef struct container_context_s container_context_t;
+typedef struct hashfile_s hashfile_t;
+
 // sizeof(inbuf_t) = 1<<7  (128 bytes)
 // the size of .buf is sizeof(inbuf_t) less the other bits  (~115 bytes, I think)
 #define INBUFSIZE ((1<<7) - sizeof(inbuf_t*) - sizeof(int) - sizeof(char))
@@ -242,16 +246,10 @@ struct emit_s {
 #define emit_frag(C, len, frag)
 //
 
-#define SIZEOF_EMITTERS 6
-#define EMITTERS g_api, g1_api, g2_api, t_api, t1_api, gv_api
-extern emit_t EMITTERS;
-extern emit_t *emit;
-
 // FIXME - use an enum for styles
 //       - other styles:    newline per ACT
 //                          newline per sameas() ACT set  (new ACT has no EQL in SUBJECT)
 #define SHELL_FRIENDLY_STYLE 1
-
 
 // emit.c
 char *get_name(char *p);
@@ -267,8 +265,6 @@ void print_error(context_t * CC, state_t si, char *message);
 // inbuf.c
 void new_inbuf(context_t * C);
 void free_inbuf(context_t * C, inbuf_t * inbuf);
-char * je_session(context_t *C);
-char * je_stats(context_t *C);
 
 // list.c
 elem_t *new_hash(context_t * C, unsigned long hash);
@@ -293,9 +289,6 @@ success_t je_parse_string(context_t * C, elem_t * fraglist);
 success_t je_parse_vstring(context_t * C, elem_t * fraglist);
 success_t je_parse_token(context_t * C);
 
-// parse.c
-success_t je_parse(context_t * C, elem_t *name);
-
 // pattern.c
 void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject);
 
@@ -304,14 +297,3 @@ void je_sameas(container_context_t * CC, elem_t * subject);
 
 // dispatch.c
 void je_dispatch(container_context_t * CC, elem_t * root);
-
-// persist.c
-elem_t * je_persist_open(context_t *C);
-void je_persist_snapshot (context_t *C);
-void je_persist_restore (context_t *C);
-void je_persist_close (context_t *C);
-
-// dumpg.c
-void set_sstyle(void);
-void printg(void);
-void dumpg(void);

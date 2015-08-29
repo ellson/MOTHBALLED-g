@@ -1,7 +1,7 @@
 #include "libje_private.h"
 
 // fill buffers from input files
-static success_t more_in(context_t * C)
+static success_t je_more_in(context_t * C)
 {
 	int size;
 
@@ -31,7 +31,7 @@ static success_t more_in(context_t * C)
 				emit_error(C, NLL, "EOF in the middle of a quote string");
 			}
 // FIXME don't close stdin
-// FIXME - stall more more input 
+// FIXME - stall for more more input   (inotify events ?)
 			fclose(C->file);	// then close it and indicate no active input file
 			C->file = NULL;
 			emit_end_file(C);
@@ -91,7 +91,7 @@ static success_t je_parse_comment(context_t * C)
 	rc = SUCCESS;
 	je_parse_comment_fragment(C);	// eat comment
 	while (C->insi == NLL) {	// end_of_buffer, or EOF, during comment
-		if ((rc = more_in(C) == FAIL)) {
+		if ((rc = je_more_in(C) == FAIL)) {
 			break;	// EOF
 		}
 		je_parse_comment_fragment(C);	// eat comment
@@ -131,7 +131,7 @@ static success_t je_parse_non_comment(context_t * C)
 	rc = SUCCESS;
 	je_parse_whitespace_fragment(C);	// eat whitespace
 	while (C->insi == NLL) {	// end_of_buffer, or EOF, during whitespace
-		if ((rc = more_in(C) == FAIL)) {
+		if ((rc = je_more_in(C) == FAIL)) {
 			break;	// EOF
 		}
 		je_parse_whitespace_fragment(C);	// eat all remaining leading whitespace
@@ -241,7 +241,7 @@ success_t je_parse_string(context_t * C, elem_t * fraglist)
 	C->has_quote = 0;
 	slen = je_parse_string_fragment(C, fraglist);	// leading string
 	while (C->insi == NLL) {	// end_of_buffer, or EOF, during whitespace
-		if ((more_in(C) == FAIL)) {
+		if ((je_more_in(C) == FAIL)) {
 			break;	// EOF
 		}
 		if ((len = je_parse_string_fragment(C, fraglist)) == 0) {
@@ -349,7 +349,7 @@ success_t je_parse_vstring(context_t * C, elem_t * fraglist)
 	C->has_quote = 0;
 	slen = je_parse_vstring_fragment(C, fraglist);	// leading string
 	while (C->insi == NLL) {	// end_of_buffer, or EOF, during whitespace
-		if ((more_in(C) == FAIL)) {
+		if ((je_more_in(C) == FAIL)) {
 			break;	// EOF
 		}
 		if ((len = je_parse_vstring_fragment(C, fraglist)) == 0) {

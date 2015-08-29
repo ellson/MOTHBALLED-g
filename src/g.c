@@ -1,10 +1,12 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <signal.h>
 
-// FIXME - should be using only libje.h
-#include "libje_private.h"
+#include "libje.h"
 
-static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
-
+static emit_t *emit;  // the output plugin
 static context_t *C;  // the input context - needs to be global for intr()
 
 // if interrupted we try to gracefully snapshot the current state 
@@ -23,7 +25,7 @@ int main(int argc, char *argv[])
     emit_t *ep;
     elem_t *name;
 
-    emit = &g_api;      // default output engine (-Tg)
+    emit = emitters[0];      // default output engine (-Tg)
 
     signal(SIGINT, intr);
 
@@ -35,8 +37,8 @@ int main(int argc, char *argv[])
 		switch (opt) {
         case 'T':
             for (i = 0; i < SIZEOF_EMITTERS; i++) {
-                ep = emitters[i];
-                if (strcmp(optarg, ep->name) == 0) {
+                if ((ep = je_emit_name_match(optarg, emitters[i]))) 
+                {
                     emit = ep;
                     break;
                 }

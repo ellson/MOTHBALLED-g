@@ -9,6 +9,7 @@ context_t *je_initialize(void)
         exit(EXIT_FAILURE);
     }
 
+    
     emit_initialize(C);
     return C;
 }

@@ -368,11 +368,6 @@ extern char state_machine[];
 extern unsigned char state_props[];
 extern char state_token[];
 
-typedef enum {
-	SUCCESS,
-	FAIL
-} success_t;
-
 #define sizeof_state_machine $((++indx))
 
 extern unsigned char *NAMEP(int si);
