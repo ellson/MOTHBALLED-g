@@ -32,11 +32,56 @@
 //              their parent, which applies the same rule:
 
 
-int je_dispatch_r(container_context_t * CC, elem_t * list, elem_t * attributes, elem_t * nodes, elem_t * edges)
+// this function expands ENDPOINTSETs
+void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
 {
-    context_t *C = CC->context;
-    elem_t *elem, *new;
+    elem_t newedge = { 0 };
+    elem_t *epsetlast, *ep, *new;
+
+    if (leg) {
+        ep = leg->u.list.first;
+        while(ep) {
+
+            // keep track of last
+            epsetlast = epset->u.list.last;
+
+            // append the next ep for this leg
+            new = ref_list(C, ep);    // FIXME - this is a temp list - can we do this without refcounting? Would it save much?
+            append_list(epset, new);
+            
+            // recursively process the rest of the legs
+            je_expand_r(C, epset, leg->next, edges);
+
+            // remove this leg's new ep from epset
+            epset->u.list.last = epsetlast;
+            free_list(C, new);        // FIXME - this is a temp list - can we do this without refcounting?
+
+            // and iterate to next ep for this leg
+            ep = ep->next;
+        }
+    }
+    else {
+        // if no more legs, then we can create a new edge with the current epset
+        // FIXME - need to create ACT with VERB, SUBJECT EDGE, and ATTRIBUTES.
+        newedge.state = EDGE;
+        ep = epset->u.list.first;
+        while (ep) {
+            new = ref_list(C, ep);
+            append_list(&newedge, new);
+            ep = ep->next;
+        }
+        // and append the new simplified edge to the result
+        new = move_list(C, &newedge);
+        append_list(edges, new);
+    }
+}
+
+// this function expands OBJECT_LISTS, and through use of je_expand_r(), ENDPOINTSETs
+int je_dispatch_r(context_t * C, elem_t * list, elem_t * attributes, elem_t * nodes, elem_t * edges)
+{
+    elem_t *elem, *new, *leg, *epset;
     elem_t newlist = { 0 };
+    elem_t newepset = { 0 };
     state_t si;
     int more = 0;
 
@@ -53,32 +98,28 @@ int je_dispatch_r(container_context_t * CC, elem_t * list, elem_t * attributes, 
         case SUBJECT:
         case OBJECT:
         case OBJECT_LIST:
-            je_dispatch_r(CC, elem, attributes, nodes, edges);
+            je_dispatch_r(C, elem, attributes, nodes, edges);
             break;
         case NODE:
             new = ref_list(C, elem);
             append_list(nodes, new);
             break;
         case EDGE:
-            more = 1;
-            newlist.state = EDGE;
-            while (more) {
-                more = je_dispatch_r(CC, elem, attributes, nodes, &newlist);
-                new = move_list(C, &newlist);
-                append_list(edges, new);
+            // build a leg list with endpointsets for each leg
+            for (leg = elem->u.list.first; leg; leg = leg->next) {
+                epset = leg->u.list.first;
+                new = ref_list(C, epset);
+                if ((state_t)epset->state == ENDPOINT) { // put singletons into lists too
+                    newepset.state = ENDPOINTSET;
+                    append_list(&newepset, new);
+                    new = move_list(C, &newepset);
+                }
+                append_list(&newlist, new);
+                // FIXME induce all nodes....
             }
-            break;
-        case LEG:
-            newlist.state = LEG;
-            more = je_dispatch_r(CC, elem, attributes, nodes, &newlist);
-            new = move_list(C, &newlist);
-            append_list(edges, new);
-            break;
-        case ENDPOINTSET:
-        case ENDPOINT:
-            more = (elem->next)?1:0;
-            new = ref_list(C, elem);
-            append_list(edges, new);
+            // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to result
+            je_expand_r(C, &newepset, newlist.u.list.first, edges);
+            free_list(C, &newlist);
             break;
         default:
             break;
@@ -99,10 +140,10 @@ void je_dispatch(container_context_t * CC, elem_t * list)
     assert(list);
     assert(list->type == (char)LISTELEM);
 
-    je_dispatch_r(CC, list, &attributes, &nodes, &edges);
+    je_dispatch_r(C, list, &attributes, &nodes, &edges);
 
 #if 0
-    switch(CC->context->verb) {
+    switch(C->verb) {
     case QRY:
         putc('?', stdout);
         break;
@@ -113,12 +154,7 @@ void je_dispatch(container_context_t * CC, elem_t * list)
         putc(' ', stdout);
         break;
     }
-
-    C->sep = ' ';
-    print_list(stdout, root, 1, &(C->sep));
-    putc('\n', stdout);
 #endif
-
 
 #if 1
     C->sep = ' ';
