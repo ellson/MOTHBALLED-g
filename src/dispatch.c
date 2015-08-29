@@ -32,7 +32,7 @@
 //              their parent, which applies the same rule:
 
 
-void je_dispatch_r(container_context_t * CC, elem_t * list, elem_t * attributes, elem_t * nodes)
+void je_dispatch_r(container_context_t * CC, elem_t * list, elem_t * attributes, elem_t * nodes, elem_t * edges)
 {
     context_t *C = CC->context;
     elem_t *elem, *new;
@@ -51,13 +51,15 @@ void je_dispatch_r(container_context_t * CC, elem_t * list, elem_t * attributes,
         case SUBJECT:
         case OBJECT:
         case OBJECT_LIST:
-            je_dispatch_r(CC, elem, attributes, nodes);
+            je_dispatch_r(CC, elem, attributes, nodes, edges);
             break;
         case NODE:
             new = ref_list(C, elem);
             append_list(nodes, new);
             break;
         case EDGE:
+            new = ref_list(C, elem);
+            append_list(edges, new);
             break;
         default:
             break;
@@ -72,11 +74,12 @@ void je_dispatch(container_context_t * CC, elem_t * list)
 //    elem_t *elem;
     elem_t attributes = { 0 };
     elem_t nodes = { 0 };
+    elem_t edges = { 0 };
     
     assert(list);
     assert(list->type == (char)LISTELEM);
 
-    je_dispatch_r(CC, list, &attributes, &nodes);
+    je_dispatch_r(CC, list, &attributes, &nodes, &edges);
 
 #if 0
     switch(CC->context->verb) {
@@ -108,6 +111,13 @@ void je_dispatch(container_context_t * CC, elem_t * list)
     putc('\n', stdout);
 #endif
 
+#if 0
+    C->sep = ' ';
+    print_list(stdout, &edges, 1, &(C->sep));
+    putc('\n', stdout);
+#endif
+
     free_list(C, &attributes);
     free_list(C, &nodes);
+    free_list(C, &edges);
 }

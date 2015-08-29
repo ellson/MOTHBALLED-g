@@ -2,8 +2,7 @@
 
 // rewrite list into new list with any EQL elements substituted from oldlist
 static void
-je_sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold,
-	 elem_t * newlist)
+je_sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold, elem_t * newlist)
 {
 	elem_t *elem, *new, *nextoldelem = NULL;
 	elem_t object = { 0 };
