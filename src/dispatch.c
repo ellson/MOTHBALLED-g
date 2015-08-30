@@ -118,30 +118,26 @@ int je_dispatch_r(context_t * C, elem_t * list, elem_t * attributes, elem_t * no
 
                 // induce all sibling nodes....
                 assert((state_t)new->state == ENDPOINTSET);
-
                 ep = new->u.list.first;
                 while(ep) {
                     assert((state_t)ep->state == ENDPOINT);                    
-                    if (ep->u.list.first->state == SIBLING) {
+                    switch (ep->u.list.first->state) {
+                    case SIBLING:
                         new = ref_list(C, ep->u.list.first);
                         append_list(nodes, new);
                         // FIXME - induce CHILDren in this node's container
-                    }
-                    else if (ep->u.list.first->state == COUSIN) {
+                        break;
+                    case COUSIN:
                         // FIXME - route to ancestors
-                    }
-                    else {
+                        break;
+                    default:
                         assert(0);  // shouldn't happen
+                        break;
                     }
-#if 0
-                    C->sep = ' ';
-                    print_list(stdout, ep, 0, &(C->sep));
-                    putc('\n', stdout);
-#endif
                     ep = ep->next;
                 }
             }
-            // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to result
+            // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
             je_expand_r(C, &newepset, newlist.u.list.first, edges);
             free_list(C, &newlist);
             break;
@@ -153,6 +149,21 @@ int je_dispatch_r(context_t * C, elem_t * list, elem_t * attributes, elem_t * no
     return more;
 }
 
+static void je_assemble_act(context_t *C, elem_t *elem, elem_t *attributes, elem_t *list)
+{
+    elem_t act = { 0 };
+    elem_t *new;
+
+    switch(C->verb) {
+    case QRY:
+    case TLD:
+
+        break;
+    default:
+        break;
+    }
+}
+
 void je_dispatch(container_context_t * CC, elem_t * list)
 {
     context_t *C = CC->context;
@@ -160,25 +171,44 @@ void je_dispatch(container_context_t * CC, elem_t * list)
     elem_t attributes = { 0 };
     elem_t nodes = { 0 };
     elem_t edges = { 0 };
+    elem_t *elem;
     
     assert(list);
     assert(list->type == (char)LISTELEM);
 
     je_dispatch_r(C, list, &attributes, &nodes, &edges);
 
-#if 0
-    switch(C->verb) {
-    case QRY:
-        putc('?', stdout);
+// if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
+// else if EDGE ACT ... for each NODE, generate new ACT: verb node
+//                      for each EDGE, generate new ACT: verb edge attributes
+
+    switch (CC->subject_type) {
+    case NODE:
+        elem = nodes.u.list.first;
+        while (elem) {
+            je_assemble_act(C,elem,&attributes,list);
+            elem = elem->next;
+        }
         break;
-    case TLD:
-        putc('~', stdout);
+    case EDGE:
+        elem = nodes.u.list.first;
+        while (elem) {
+            je_assemble_act(C,elem,NULL,list);
+            elem = elem->next;
+        }
+        elem = edges.u.list.first;
+        while (elem) {
+            je_assemble_act(C,elem,&attributes,list);
+            elem = elem->next;
+        }
         break;
     default:
-        putc(' ', stdout);
+        assert(0);  // shouldn't happen
         break;
     }
-#endif
+
+
+
 
 #if 1
     C->sep = ' ';
