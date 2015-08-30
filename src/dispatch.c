@@ -174,6 +174,7 @@ static void je_dispatch_r(context_t * C, elem_t * list, elem_t * attributes, ele
 static void je_assemble_act(context_t *C, elem_t *elem, elem_t *attributes, elem_t *list)
 {
     elem_t act = { 0 };
+    elem_t verb = { 0 };
     elem_t *new;
 
     act.state = ACT;
@@ -181,7 +182,9 @@ static void je_assemble_act(context_t *C, elem_t *elem, elem_t *attributes, elem
     switch(C->verb) {
     case QRY:
     case TLD:
-        // FIXME - create elem with state QRY or TLD, append_list(&act...
+        verb.state = C->verb;
+        new = move_list(C, &verb);
+        append_list(&act, new);
         break;
     default:
         break;
@@ -264,7 +267,7 @@ void je_dispatch(container_context_t * CC, elem_t * list)
     putc('\n', stdout);
 #endif
 
-#if 1
+#if 0
     C->sep = ' ';
     print_list(stdout, list, 0, &(C->sep));
     putc('\n', stdout);
