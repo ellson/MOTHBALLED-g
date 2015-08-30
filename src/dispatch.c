@@ -79,7 +79,7 @@ void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
 // this function expands OBJECT_LISTS, and through use of je_expand_r(), ENDPOINTSETs
 int je_dispatch_r(context_t * C, elem_t * list, elem_t * attributes, elem_t * nodes, elem_t * edges)
 {
-    elem_t *elem, *new, *leg, *epset;
+    elem_t *elem, *new, *leg, *epset, *ep;
     elem_t newlist = { 0 };
     elem_t newepset = { 0 };
     state_t si;
@@ -115,7 +115,31 @@ int je_dispatch_r(context_t * C, elem_t * list, elem_t * attributes, elem_t * no
                     new = move_list(C, &newepset);
                 }
                 append_list(&newlist, new);
-                // FIXME induce all nodes....
+
+                // induce all sibling nodes....
+                assert((state_t)new->state == ENDPOINTSET);
+
+                ep = new->u.list.first;
+                while(ep) {
+                    assert((state_t)ep->state == ENDPOINT);                    
+                    if (ep->u.list.first->state == SIBLING) {
+                        new = ref_list(C, ep->u.list.first);
+                        append_list(nodes, new);
+                        // FIXME - induce CHILDren in this node's container
+                    }
+                    else if (ep->u.list.first->state == COUSIN) {
+                        // FIXME - route to ancestors
+                    }
+                    else {
+                        assert(0);  // shouldn't happen
+                    }
+#if 0
+                    C->sep = ' ';
+                    print_list(stdout, ep, 0, &(C->sep));
+                    putc('\n', stdout);
+#endif
+                    ep = ep->next;
+                }
             }
             // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to result
             je_expand_r(C, &newepset, newlist.u.list.first, edges);
@@ -158,19 +182,19 @@ void je_dispatch(container_context_t * CC, elem_t * list)
 
 #if 1
     C->sep = ' ';
-    print_list(stdout, &nodes, 1, &(C->sep));
+    print_list(stdout, &nodes, 0, &(C->sep));
     putc('\n', stdout);
 #endif
 
 #if 1
     C->sep = ' ';
-    print_list(stdout, &edges, 1, &(C->sep));
+    print_list(stdout, &edges, 0, &(C->sep));
     putc('\n', stdout);
 #endif
 
 #if 1
     C->sep = ' ';
-    print_list(stdout, &attributes, 1, &(C->sep));
+    print_list(stdout, &attributes, 0, &(C->sep));
     putc('\n', stdout);
 #endif
     free_list(C, &attributes);
