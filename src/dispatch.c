@@ -62,7 +62,6 @@ static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
     }
     else {
         // if no more legs, then we can create a new edge with the current epset
-        // FIXME - need to create ACT with VERB, SUBJECT EDGE, and ATTRIBUTES.
         newedge.state = EDGE;
         ep = epset->u.list.first;
         while (ep) {
@@ -128,7 +127,7 @@ static void je_expand(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
 // this function expands OBJECT_LISTS of NODES or EDGES, and then expands ENPOINTSETS in EDGES
 static void je_dispatch_r(context_t * C, elem_t * list, elem_t * attributes, elem_t * nodes, elem_t * edges)
 {
-    elem_t *elem, *new;
+    elem_t *elem, *new, *object;
     state_t si;
 
     assert(list->type == (char)LISTELEM);
@@ -142,9 +141,21 @@ static void je_dispatch_r(context_t * C, elem_t * list, elem_t * attributes, ele
             append_list(attributes, new);
             break;
         case SUBJECT:
-        case OBJECT:
-        case OBJECT_LIST:
-            je_dispatch_r(C, elem, attributes, nodes, edges);
+            object = elem->u.list.first;
+            if ((state_t)object->state == OBJECT) {
+                je_dispatch_r(C, object, attributes, nodes, edges);
+            }
+            else if ((state_t)object->state == OBJECT_LIST) {
+                object = object->u.list.first;
+                assert((state_t)object->state == OBJECT);
+                while(object) {
+                    je_dispatch_r(C, object, attributes, nodes, edges);
+                    object = object->next;
+                }
+            }
+            else {
+                assert(0); //should never get here
+            }
             break;
         case NODE:
             new = ref_list(C, elem);
@@ -165,20 +176,30 @@ static void je_assemble_act(context_t *C, elem_t *elem, elem_t *attributes, elem
     elem_t act = { 0 };
     elem_t *new;
 
+    act.state = ACT;
+
     switch(C->verb) {
     case QRY:
     case TLD:
-
+        // FIXME - create elem with state QRY or TLD, append_list(&act...
         break;
     default:
         break;
     }
+    new = ref_list(C, elem);
+    append_list(&act, new);
+    if (attributes && attributes->u.list.first) {
+        new = ref_list(C, attributes->u.list.first);
+        append_list(&act, new);
+    }
+
+    new = move_list(C, &act);
+    append_list(list, new);
 }
 
 void je_dispatch(container_context_t * CC, elem_t * list)
 {
     context_t *C = CC->context;
-//    elem_t *elem;
     elem_t attributes = { 0 };
     elem_t nodes = { 0 };
     elem_t edges = { 0 };
@@ -187,16 +208,19 @@ void je_dispatch(container_context_t * CC, elem_t * list)
     assert(list);
     assert(list->type == (char)LISTELEM);
 
+    // expand OBJECT_LIST and ENDPOINTSETS
     je_dispatch_r(C, list, &attributes, &nodes, &edges);
 
-// if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
-// else if EDGE ACT ... for each NODE, generate new ACT: verb node
-//                      for each EDGE, generate new ACT: verb edge attributes
+    // if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
+    // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
+    //                      for each EDGE, generate new ACT: verb edge attributes
 
+    free_list(C, list);  // free old ACT to be replace by these new expanded ACTS
     switch (CC->subject_type) {
     case NODE:
         elem = nodes.u.list.first;
         while (elem) {
+            assert ((state_t)elem->state == NODE);
             je_assemble_act(C,elem,&attributes,list);
             elem = elem->next;
         }
@@ -204,6 +228,7 @@ void je_dispatch(container_context_t * CC, elem_t * list)
     case EDGE:
         elem = nodes.u.list.first;
         while (elem) {
+            // FIXME - may have nattributes on LEG
             je_assemble_act(C,elem,NULL,list);
             elem = elem->next;
         }
@@ -221,23 +246,30 @@ void je_dispatch(container_context_t * CC, elem_t * list)
 
 
 
-#if 1
+#if 0
     C->sep = ' ';
     print_list(stdout, &nodes, 0, &(C->sep));
     putc('\n', stdout);
 #endif
 
-#if 1
+#if 0
     C->sep = ' ';
     print_list(stdout, &edges, 0, &(C->sep));
     putc('\n', stdout);
 #endif
 
-#if 1
+#if 0
     C->sep = ' ';
     print_list(stdout, &attributes, 0, &(C->sep));
     putc('\n', stdout);
 #endif
+
+#if 1
+    C->sep = ' ';
+    print_list(stdout, list, 0, &(C->sep));
+    putc('\n', stdout);
+#endif
+
     free_list(C, &attributes);
     free_list(C, &nodes);
     free_list(C, &edges);

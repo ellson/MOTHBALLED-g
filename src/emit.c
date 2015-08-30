@@ -1,7 +1,8 @@
 #include "libje_private.h"
 
 static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
-emit_t *emit = &g_api;
+static emit_t null_api = { 0 };
+emit_t *emit = &null_api;
 
 success_t je_select_emitter(char *name)
 {
