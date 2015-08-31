@@ -181,11 +181,21 @@ static void emit_list_r(context_t *C, FILE *chan, elem_t * list)
 	state_t liststate;
 
 	assert(list);
+	liststate = (state_t) list->state;
 	if (! (elem = list->u.list.first)) {
+		switch (liststate) {
+		case QRY:
+            je_emit_token(C, chan, '?');
+			break;
+		case TLD:
+            je_emit_token(C, chan, '~');
+			break;
+		default:
+		    break;
+		}
 		return;
 	}
 	type = (elemtype_t) elem->type;
-	liststate = (state_t) list->state;
 	switch (type) {
 	case FRAGELEM:
         print_frags(chan, liststate, elem, &(C->sep));
