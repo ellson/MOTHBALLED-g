@@ -115,6 +115,10 @@ je_parse_r(container_context_t * CC, elem_t * root,
         break;
 	case SUBJECT:
 		C->has_ast = 0;     // maintain a flag for an '*' found anywhere in the subject
+		C->has_cousin = 0;  // maintain a flag for any NODEREF to COUSIN (requiring involvement of ancestors)
+		break;
+	case COUSIN:
+		C->has_cousin = 1;  // maintain a flag for any NODEREF to COUSIN (requiring involvement of ancestors)
 		break;
 	default:
 		break;

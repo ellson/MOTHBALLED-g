@@ -98,6 +98,7 @@ struct context_s {		// input_context
                                                     // '?' is "query"
 	state_t state;		// last state entered
 	char has_ast;		// flag set if an '*' is found in a STRING
+	char has_cousin;	// flag set if a COUSIN is found in any EDGE of the ACT (forward EDGE to ancestors for processing)
 	char in_quote;		// flag set if between "..."
 	char has_quote;		// flag set if STRING contains one or more DQT fragments
 	char needstats;		// flag set if -s on command line

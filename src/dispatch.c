@@ -229,6 +229,12 @@ void je_dispatch(container_context_t * CC, elem_t * list)
         }
         break;
     case EDGE:
+if (C->has_cousin) {
+    fprintf(stdout,"\nEDGE has COUSIN");
+}
+#if 0
+else {
+#endif
         elem = nodes.u.list.first;
         while (elem) {
             // FIXME - may have nattributes on LEG
@@ -240,6 +246,9 @@ void je_dispatch(container_context_t * CC, elem_t * list)
             je_assemble_act(C,elem,&attributes,list);
             elem = elem->next;
         }
+#if 0
+}
+#endif
         break;
     default:
         assert(0);  // shouldn't happen
@@ -267,7 +276,7 @@ void je_dispatch(container_context_t * CC, elem_t * list)
     putc('\n', stdout);
 #endif
 
-#if 0
+#if 1
     C->sep = ' ';
     print_list(stdout, list, 0, &(C->sep));
     putc('\n', stdout);
