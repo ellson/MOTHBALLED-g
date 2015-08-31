@@ -88,7 +88,7 @@ emit_t t_api = { "t",
 
 	/* api_frag */ NULL,
 
-	/* api_error */ print_error
+	/* api_error */ je_emit_error
 };
 
 static void api1_act(container_context_t * CC, elem_t * tree)
@@ -130,5 +130,5 @@ emit_t t1_api = { "t1",
 
 	/* api_frag */ NULL,
 
-	/* api_error */ print_error
+	/* api_error */ je_emit_error
 };

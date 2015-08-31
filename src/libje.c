@@ -17,7 +17,7 @@ context_t *je_initialize(int *pargc, char *argv[], int optind)
 
     if (*pargc == 0) {    // No file args,  default to stdin
         argv[0] = "-";
-        *pargc++;
+        *pargc = 1;
     }
 
     C->pargc = pargc;

@@ -253,7 +253,7 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep)
 	type = (elemtype_t) (elem->type);
 	switch (type) {
 	case FRAGELEM:
-        print_frags(chan,list->state,elem,sep);
+        print_frags(chan, list->state, elem, sep);
 		break;
 	case LISTELEM:
 		cnt = 0;
