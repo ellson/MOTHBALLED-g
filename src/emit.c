@@ -15,7 +15,7 @@ static void api_list(container_context_t * CC, elem_t *list)
     je_emit_list(C, CC->out, list);
 }
 
-// this is default emitter used for writing to the files-per-container
+// this is default emitter used for writing to the file-per-container
 // stored in the temp directory
 static emit_t null_api = { "g",
 	/* api_initialize */ NULL,
@@ -36,9 +36,9 @@ static emit_t null_api = { "g",
 	/* api_start_state */ NULL,
 	/* api_end_state */ NULL,
 
-	/* api_act */ NULL,
-	/* api_subject */ api_list,
-	/* api_attributes */ api_list,
+	/* api_act */ api_list,
+	/* api_subject */ NULL,
+	/* api_attributes */ NULL,
 
 	/* api_sep */ NULL,
 	/* api_token */ NULL,
@@ -149,7 +149,7 @@ void je_append_runtime(context_t *C, char **pos, unsigned long run_sec, unsigned
     *pos += len;
 }
 
-static void emit_token(context_t *C, FILE *chan, char tok)
+static void je_emit_token(context_t *C, FILE *chan, char tok)
 {
     if (C->style == SHELL_FRIENDLY_STYLE) {
         putc('\n', chan);
@@ -161,7 +161,7 @@ static void emit_token(context_t *C, FILE *chan, char tok)
     C->sep = 0;
 }
 
-static void emit_close_token(context_t *C, FILE *chan, char tok)
+static void je_emit_close_token(context_t *C, FILE *chan, char tok)
 {
     if (C->style == SHELL_FRIENDLY_STYLE) {
         putc('\n', chan);
@@ -196,20 +196,20 @@ static void emit_list_r(context_t *C, FILE *chan, elem_t * list)
 			if (cnt++ == 0) {
 				switch (liststate) {
 				case EDGE:
-                    emit_token(C, chan, '<');
+                    je_emit_token(C, chan, '<');
 					break;
 				case OBJECT_LIST:
 				case ENDPOINTSET:
-                    emit_token(C, chan, '(');
+                    je_emit_token(C, chan, '(');
 					break;
 				case ATTRIBUTES:
-                    emit_token(C, chan, '[');
+                    je_emit_token(C, chan, '[');
 					break;
 				case CONTAINER:
-                    emit_token(C, chan, '{');
+                    je_emit_token(C, chan, '{');
 					break;
 				case VALASSIGN:
-                    emit_token(C, chan, '=');
+                    je_emit_token(C, chan, '=');
                     break;
 				default:
 					break;
@@ -220,17 +220,17 @@ static void emit_list_r(context_t *C, FILE *chan, elem_t * list)
 		}
 		switch (liststate) {
 		case EDGE:
-            emit_close_token(C, chan, '>');
+            je_emit_close_token(C, chan, '>');
 			break;
 		case OBJECT_LIST:
 		case ENDPOINTSET:
-            emit_close_token(C, chan, ')');
+            je_emit_close_token(C, chan, ')');
 			break;
 		case ATTRIBUTES:
-            emit_close_token(C, chan, ']');
+            je_emit_close_token(C, chan, ']');
 			break;
 		case CONTAINER:
-            emit_close_token(C, chan, '}');
+            je_emit_close_token(C, chan, '}');
 			break;
 		default:
 			break;
@@ -244,7 +244,7 @@ static void emit_list_r(context_t *C, FILE *chan, elem_t * list)
 
 void je_emit_list(context_t * C, FILE * chan, elem_t * list)
 {
-	assert(subject);
+	assert(list);
 	emit_list_r(C, chan, list->u.list.first);
 }
 

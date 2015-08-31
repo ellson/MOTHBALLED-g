@@ -2,19 +2,19 @@
 
 static void api_start_activity(container_context_t * CC)
 {
-	fprintf(CC->out, "graph {\n");
+	fprintf(CC->context->out, "graph {\n");
 }
 
 static void api_end_activity(container_context_t * CC)
 {
-	fprintf(CC->out, "\n}\n");
+	fprintf(CC->context->out, "\n}\n");
 }
 
 static void api_list(container_context_t * CC, elem_t *list)
 {
     context_t *C = CC->context;
 
-    je_emit_list(C, CC->context->out, list);
+    je_emit_list(C, C->out, list);
 }
 
 emit_t gv_api = { "gv",

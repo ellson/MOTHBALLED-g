@@ -1,15 +1,40 @@
 #include "libje_private.h"
 
-static void api_end_activity(container_context_t * CC)
-{
-	putc('\n', CC->context->out);
-}
-
-static void api_list(container_context_t * CC, elem_t *list)
+static void api_start_activity(container_context_t * CC)
 {
     context_t *C = CC->context;
 
-	je_emit_list(C, CC->context->out, list);
+    if (C->containment != 0) {
+        putc('{', C->out);
+    }
+}
+
+static void api_end_activity(container_context_t * CC)
+{
+    context_t *C = CC->context;
+
+    if (C->containment != 0) {
+        putc('}', C->out);
+    }
+    else {
+	    putc('\n', C->out);
+    }
+}
+
+static void api_subject(container_context_t * CC, elem_t *list)
+{
+    context_t *C = CC->context;
+
+	je_emit_list(C, C->out, list);
+}
+
+static void api_attributes(container_context_t * CC, elem_t *list)
+{
+    context_t *C = CC->context;
+
+    putc('[', C->out);
+	je_emit_list(C, C->out, list);
+    putc(']', C->out);
 }
 
 emit_t g_api = { "g",
@@ -19,7 +44,7 @@ emit_t g_api = { "g",
 	/* api_start_file */ NULL,
 	/* api_end_file */ NULL,
 
-	/* api_start_activity */ NULL,
+	/* api_start_activity */ api_start_activity,
 	/* api_end_activity */ api_end_activity,
 
 	/* api_start_act */ NULL,
@@ -32,8 +57,8 @@ emit_t g_api = { "g",
 	/* api_end_state */ NULL,
 
 	/* api_act */ NULL,
-	/* api_subject */ api_list,
-	/* api_attributes */ api_list,
+	/* api_subject */ api_subject,
+	/* api_attributes */ api_attributes,
 
 	/* api_sep */ NULL,
 	/* api_token */ NULL,
@@ -43,6 +68,15 @@ emit_t g_api = { "g",
 
 	/* api_error */ je_emit_error
 };
+
+static void api1_end_activity(container_context_t * CC)
+{
+    context_t *C = CC->context;
+
+    if (C->containment == 0) {
+	    putc('\n', C->out);
+    }
+}
 
 static void api1_sep(context_t * C)
 {
@@ -70,7 +104,7 @@ emit_t g1_api = { "g1",
 	/* api_end_file */ NULL,
 
 	/* api_start_activity */ NULL,
-	/* api_end_activity */ api_end_activity,
+	/* api_end_activity */ api1_end_activity,
 
 	/* api_start_act */ NULL,
 	/* api_end_act */ NULL,
@@ -94,6 +128,11 @@ emit_t g1_api = { "g1",
 	/* api_error */ je_emit_error
 };
 
+static void api2_end_activity(container_context_t * CC)
+{
+	putc('\n', CC->context->out);
+}
+
 static void api2_token(context_t * C, char token)
 {
 	putc('\n', C->out);
@@ -109,7 +148,7 @@ emit_t g2_api = { "g2",
 	/* api_end_file */ NULL,
 
 	/* api_start_activity */ NULL,
-	/* api_end_activity */ api_end_activity,
+	/* api_end_activity */ api2_end_activity,
 
 	/* api_start_act */ NULL,
 	/* api_end_act */ NULL,

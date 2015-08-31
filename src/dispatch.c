@@ -229,34 +229,28 @@ void je_dispatch(container_context_t * CC, elem_t * list)
         }
         break;
     case EDGE:
-if (C->has_cousin) {
-    fprintf(stdout,"\nEDGE has COUSIN");
-}
-#if 0
-else {
-#endif
-        elem = nodes.u.list.first;
-        while (elem) {
-            // FIXME - may have nattributes on LEG
-            je_assemble_act(C,elem,NULL,list);
-            elem = elem->next;
+        if (C->has_cousin) {
+            // FIXME - deal with edges that require help from ancestors
+            fprintf(stdout,"EDGE has COUSIN\n");
         }
-        elem = edges.u.list.first;
-        while (elem) {
-            je_assemble_act(C,elem,&attributes,list);
-            elem = elem->next;
+        else {
+                elem = nodes.u.list.first;
+                while (elem) {
+                    // FIXME - may have nattributes on LEG
+                    je_assemble_act(C,elem,NULL,list);
+                    elem = elem->next;
+                }
+                elem = edges.u.list.first;
+                while (elem) {
+                    je_assemble_act(C,elem,&attributes,list);
+                    elem = elem->next;
+                }
         }
-#if 0
-}
-#endif
         break;
     default:
         assert(0);  // shouldn't happen
         break;
     }
-
-
-
 
 #if 0
     C->sep = ' ';
@@ -276,7 +270,7 @@ else {
     putc('\n', stdout);
 #endif
 
-#if 1
+#if 0
     C->sep = ' ';
     print_list(stdout, list, 0, &(C->sep));
     putc('\n', stdout);

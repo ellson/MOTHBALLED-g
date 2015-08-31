@@ -118,7 +118,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
 		C->has_cousin = 0;  // maintain a flag for any NODEREF to COUSIN (requiring involvement of ancestors)
 		break;
 	case COUSIN:
-		C->has_cousin = 1;  // maintain a flag for any NODEREF to COUSIN (requiring involvement of ancestors)
+		C->has_cousin = 0;  // maintain a flag for any NODEREF to COUSIN (requiring involvement of ancestors)
 		break;
 	default:
 		break;
@@ -185,12 +185,13 @@ je_parse_r(container_context_t * CC, elem_t * root,
 			    }
 		    } else {
 			    C->stat_actcount++;
+
+                // dispatch events for the ACT just finished
+                je_dispatch(CC, &branch);
+
+			    emit_act(CC, &branch);  // emit hook for rewritten act
+		        free_list(C, &branch);	// that's all folks.  move on to the next ACT.
 		    }
-
-            // dispatch events for the ACT just finished
-            je_dispatch(CC, &branch);
-
-		    free_list(C, &branch);	// that's all folks.  move on to the next ACT.
             break;
 		case TLD:
 		case QRY:
@@ -218,7 +219,9 @@ je_parse_r(container_context_t * CC, elem_t * root,
 			emit_subject(CC, &branch);      // emit hook for rewritten subject
 			break;
 		case ATTRIBUTES:
+            C->sep = 0;
 			emit_attributes(CC, &branch);   // emit hook for attributes
+            C->sep = 0;
 			break;
         default:
             break;
@@ -251,7 +254,6 @@ success_t je_parse(context_t * C, elem_t * name)
     char *hashname, *filename;
 
 	CC->context = C;
-    C->sep = ' ';
 
     je_hash_list(&hash, name);         // hash name (subject "names" can be very long)
     elem = je_hash_bucket(C, hash);    // save in bucket list 
@@ -273,9 +275,10 @@ success_t je_parse(context_t * C, elem_t * name)
     }
     CC->out = elem->u.hash.out;
 
-	C->stat_containercount++;
-
 	emit_start_activity(CC);
+    C->sep = 0;
+    C->containment++;
+	C->stat_containercount++;
 	if ((rc = je_parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
 		if (C->insi == NLL) {	// EOF is OK
 			rc = SUCCESS;
@@ -283,6 +286,8 @@ success_t je_parse(context_t * C, elem_t * name)
 			emit_error(C, C->state, "Parse error. Last good state was:");
 		}
 	}
+    C->containment--;
+    C->sep = 0;
 	emit_end_activity(CC);
 
 	free_list(C, &root);
