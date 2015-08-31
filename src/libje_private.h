@@ -76,6 +76,12 @@ struct hashfile_s {
     long hash;
 };
 
+// emit styles
+typedef enum {
+	MINIMUM_SPACE_STYLE = 0,
+	SHELL_FRIENDLY_STYLE = 1
+} style_t;
+
 struct context_s {		// input_context
 	char *progname;		// name of program
 	int *pargc;	    	// remaining filenames from command line
@@ -103,6 +109,8 @@ struct context_s {		// input_context
 	char has_quote;		// flag set if STRING contains one or more DQT fragments
 	char needstats;		// flag set if -s on command line
 	char sep;       	// the next separator (either 0, or ' ' if following a STRING that requires a separator.
+                        //   may be ignored if the next character is a token which implicitly separates.)
+    style_t style;      // spacing style in emitted outputs
                         //   may be ignored if the next character is a token which implicitly separates.)
 	int containment;	// depth of containment
     char template[32];  // place to keep template for mkdtemp()
@@ -143,9 +151,6 @@ struct container_context_s {	// container_context
                         //   and to check that it is not a mix of NODE(s) and EDGE(s).
 	elem_t node_pattern_acts;	// complete ACTs from whenever the NODE subject contains an "*"
 	elem_t edge_pattern_acts;	// complete ACTs from whenever the EDGE subject contains an "*"
-	char sep;       	// the next separator (either 0, or ' ' if following a STRING that requires a separator.
-                        //   may be ignored if the next character is a token which implicitly separates.)
-    char style;         // normal or SHELL_FRIENDLY  // FIXME use enum with additional styles
 	FILE *out;	    	// the output file for this container
 
 	// FIXME  - place for fork header for layout process...
@@ -246,12 +251,6 @@ struct emit_s {
 
 #undef emit_frag
 #define emit_frag(C, len, frag)
-//
-
-// FIXME - use an enum for styles
-//       - other styles:    newline per ACT
-//                          newline per sameas() ACT set  (new ACT has no EQL in SUBJECT)
-#define SHELL_FRIENDLY_STYLE 1
 
 // emit.c
 extern emit_t *emit;
@@ -261,9 +260,8 @@ void je_append_token(context_t *C, char **pos, char tok);
 void je_append_string(context_t *C, char **pos, char *string);
 void je_append_ulong(context_t *C, char **pos, unsigned long integer);
 void je_append_runtime(context_t *C, char **pos, unsigned long run_sec, unsigned long run_ns);
-void print_subject(container_context_t * CC, elem_t * subject);
-void print_attributes(container_context_t * CC, elem_t * attributes);
-void print_error(context_t * CC, state_t si, char *message);
+void je_emit_list(context_t * C, FILE * chan, elem_t * subject);
+void je_emit_error(context_t * CC, state_t si, char *message);
 
 // inbuf.c
 void new_inbuf(context_t * C);

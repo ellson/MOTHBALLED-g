@@ -2,11 +2,16 @@
 
 static void api_end_activity(container_context_t * CC)
 {
-    // this makes the contents of the tar files a bit more readable.
-	putc('\n', CC->out);
+	putc('\n', CC->context->out);
 }
 
-// FIXME - this is for the tar files.  probably shouldn't be a command line option
+static void api_list(container_context_t * CC, elem_t *list)
+{
+    context_t *C = CC->context;
+
+	je_emit_list(C, CC->context->out, list);
+}
+
 emit_t g_api = { "g",
 	/* api_initialize */ NULL,
 	/* api_finalize */ NULL,
@@ -27,8 +32,8 @@ emit_t g_api = { "g",
 	/* api_end_state */ NULL,
 
 	/* api_act */ NULL,
-	/* api_subject */ print_subject,
-	/* api_attributes */ print_attributes,
+	/* api_subject */ api_list,
+	/* api_attributes */ api_list,
 
 	/* api_sep */ NULL,
 	/* api_token */ NULL,
@@ -36,14 +41,8 @@ emit_t g_api = { "g",
 
 	/* api_frag */ NULL,
 
-	/* api_error */ print_error
+	/* api_error */ je_emit_error
 };
-
-static void api1_end_activity(container_context_t * CC)
-{
-    // this is for debugging, so goes to context's output
-	putc('\n', CC->context->out);
-}
 
 static void api1_sep(context_t * C)
 {
@@ -71,7 +70,7 @@ emit_t g1_api = { "g1",
 	/* api_end_file */ NULL,
 
 	/* api_start_activity */ NULL,
-	/* api_end_activity */ api1_end_activity,
+	/* api_end_activity */ api_end_activity,
 
 	/* api_start_act */ NULL,
 	/* api_end_act */ NULL,
@@ -92,7 +91,7 @@ emit_t g1_api = { "g1",
 
 	/* api_frag */ NULL,
 
-	/* api_error */ print_error
+	/* api_error */ je_emit_error
 };
 
 static void api2_token(context_t * C, char token)
@@ -110,7 +109,7 @@ emit_t g2_api = { "g2",
 	/* api_end_file */ NULL,
 
 	/* api_start_activity */ NULL,
-	/* api_end_activity */ api1_end_activity,
+	/* api_end_activity */ api_end_activity,
 
 	/* api_start_act */ NULL,
 	/* api_end_act */ NULL,
@@ -131,5 +130,5 @@ emit_t g2_api = { "g2",
 
 	/* api_frag */ NULL,
 
-	/* api_error */ print_error
+	/* api_error */ je_emit_error
 };

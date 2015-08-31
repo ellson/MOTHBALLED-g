@@ -10,6 +10,13 @@ static void api_end_activity(container_context_t * CC)
 	fprintf(CC->out, "\n}\n");
 }
 
+static void api_list(container_context_t * CC, elem_t *list)
+{
+    context_t *C = CC->context;
+
+    je_emit_list(C, CC->context->out, list);
+}
+
 emit_t gv_api = { "gv",
 	/* api_initialize */ NULL,
 	/* api_finalize */ NULL,
@@ -30,8 +37,8 @@ emit_t gv_api = { "gv",
 	/* api_end_state */ NULL,
 
 	/* api_act */ NULL,
-	/* api_subject */ print_subject,
-	/* api_attributes */ print_attributes,
+	/* api_subject */ api_list,
+	/* api_attributes */ api_list,
 
 	/* api_sep */ NULL,
 	/* api_token */ NULL,
@@ -39,5 +46,5 @@ emit_t gv_api = { "gv",
 
 	/* api_frag */ NULL,
 
-	/* api_error */ print_error
+	/* api_error */ je_emit_error
 };

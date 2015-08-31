@@ -1,7 +1,54 @@
 #include "libje_private.h"
 
 static emit_t *emitters[] = {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
-static emit_t null_api = { 0 };
+
+// this makes the contents of the tar files a bit more readable.
+static void api_end_activity(container_context_t * CC)
+{
+	putc('\n', CC->out);
+}
+
+static void api_list(container_context_t * CC, elem_t *list)
+{
+    context_t *C = CC->context;
+
+    je_emit_list(C, CC->out, list);
+}
+
+// this is default emitter used for writing to the files-per-container
+// stored in the temp directory
+static emit_t null_api = { "g",
+	/* api_initialize */ NULL,
+	/* api_finalize */ NULL,
+
+	/* api_start_file */ NULL,
+	/* api_end_file */ NULL,
+
+	/* api_start_activity */ NULL,
+	/* api_end_activity */ api_end_activity,
+
+	/* api_start_act */ NULL,
+	/* api_end_act */ NULL,
+
+	/* api_start_subject */ NULL,
+	/* api_end_subject */ NULL,
+
+	/* api_start_state */ NULL,
+	/* api_end_state */ NULL,
+
+	/* api_act */ NULL,
+	/* api_subject */ api_list,
+	/* api_attributes */ api_list,
+
+	/* api_sep */ NULL,
+	/* api_token */ NULL,
+	/* api_string */ NULL,
+
+	/* api_frag */ NULL,
+
+	/* api_error */ je_emit_error
+};
+
 emit_t *emit = &null_api;
 
 success_t je_select_emitter(char *name)
@@ -102,31 +149,31 @@ void je_append_runtime(context_t *C, char **pos, unsigned long run_sec, unsigned
     *pos += len;
 }
 
-static void put_token(container_context_t *CC, char tok)
+static void emit_token(context_t *C, FILE *chan, char tok)
 {
-    if (CC->style == SHELL_FRIENDLY_STYLE) {
-        putc('\n', CC->out);
-        putc(tok, CC->out);
-        putc(' ', CC->out);
+    if (C->style == SHELL_FRIENDLY_STYLE) {
+        putc('\n', chan);
+        putc(tok, chan);
+        putc(' ', chan);
     } else {
-        putc(tok, CC->out);
+        putc(tok, chan);
     }
-    CC->sep = 0;
+    C->sep = 0;
 }
 
-static void put_close_token(container_context_t *CC, char tok)
+static void emit_close_token(context_t *C, FILE *chan, char tok)
 {
-    if (CC->style == SHELL_FRIENDLY_STYLE) {
-        putc('\n', CC->out);
-        putc(tok, CC->out);
-        putc('\n', CC->out);
+    if (C->style == SHELL_FRIENDLY_STYLE) {
+        putc('\n', chan);
+        putc(tok, chan);
+        putc('\n', chan);
     } else {
-        putc(tok, CC->out);
+        putc(tok, chan);
     }
-    CC->sep = 0;
+    C->sep = 0;
 }
 
-static void print_list_r(container_context_t *CC, elem_t * list)
+static void emit_list_r(context_t *C, FILE *chan, elem_t * list)
 {
 	elem_t *elem;
 	elemtype_t type;
@@ -141,7 +188,7 @@ static void print_list_r(container_context_t *CC, elem_t * list)
 	liststate = (state_t) list->state;
 	switch (type) {
 	case FRAGELEM:
-        print_frags(CC->out,liststate,elem,&(CC->sep));
+        print_frags(chan, liststate, elem, &(C->sep));
 		break;
 	case LISTELEM:
 		cnt = 0;
@@ -149,41 +196,41 @@ static void print_list_r(container_context_t *CC, elem_t * list)
 			if (cnt++ == 0) {
 				switch (liststate) {
 				case EDGE:
-                    put_token(CC, '<');
+                    emit_token(C, chan, '<');
 					break;
 				case OBJECT_LIST:
 				case ENDPOINTSET:
-                    put_token(CC, '(');
+                    emit_token(C, chan, '(');
 					break;
 				case ATTRIBUTES:
-                    put_token(CC, '[');
+                    emit_token(C, chan, '[');
 					break;
 				case CONTAINER:
-                    put_token(CC, '{');
+                    emit_token(C, chan, '{');
 					break;
 				case VALASSIGN:
-                    put_token(CC, '=');
+                    emit_token(C, chan, '=');
                     break;
 				default:
 					break;
 				}
 			}
-			print_list_r(CC, elem);	// recurse
+			emit_list_r(C, chan, elem);	// recurse
 			elem = elem->next;
 		}
 		switch (liststate) {
 		case EDGE:
-            put_close_token(CC, '>');
+            emit_close_token(C, chan, '>');
 			break;
 		case OBJECT_LIST:
 		case ENDPOINTSET:
-            put_close_token(CC, ')');
+            emit_close_token(C, chan, ')');
 			break;
 		case ATTRIBUTES:
-            put_close_token(CC, ']');
+            emit_close_token(C, chan, ']');
 			break;
 		case CONTAINER:
-            put_close_token(CC, '}');
+            emit_close_token(C, chan, '}');
 			break;
 		default:
 			break;
@@ -195,23 +242,13 @@ static void print_list_r(container_context_t *CC, elem_t * list)
 	}
 }
 
-void print_subject(container_context_t * CC, elem_t * subject)
+void je_emit_list(context_t * C, FILE * chan, elem_t * list)
 {
 	assert(subject);
-	assert((state_t)subject->state == SUBJECT);
-
-	print_list_r(CC, subject->u.list.first);
+	emit_list_r(C, chan, list->u.list.first);
 }
 
-void print_attributes(container_context_t * CC, elem_t * attributes)
-{
-    if (attributes) {
-	    assert((state_t)attributes->state == ATTRIBUTES);
-	    print_list_r(CC, attributes);
-    }
-}
-
-void print_error(context_t * C, state_t si, char *message)
+void je_emit_error(context_t * C, state_t si, char *message)
 {
 	unsigned char *p, c;
 
