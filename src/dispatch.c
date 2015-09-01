@@ -270,7 +270,7 @@ void je_dispatch(container_context_t * CC, elem_t * list)
     putc('\n', stdout);
 #endif
 
-#if 0
+#if 1
     C->sep = ' ';
     print_list(stdout, list, 0, &(C->sep));
     putc('\n', stdout);
