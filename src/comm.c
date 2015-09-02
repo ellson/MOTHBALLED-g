@@ -44,3 +44,41 @@
 // Fram another host's net/ :
 //          B/graph/b
 //          B/session   
+
+
+
+///////////////////////// rethink .. may be inconsistent with above
+
+// parser makes no assumption about existence or consistency of edges to nodes outside of the current host.
+// To be dealt with by a (any) external proces that does have visibility across all hosts refenced by an edge.
+// (An "annealer")
+
+
+// parser writes "COUSIN" refs to local "ref" container....   makes no attempt at 
+// communication.
+
+
+// communication, status updates, edge reconciliation,  is the resposibility of another process:
+// a  "viewer" or "annealer" 
+
+// An annealer has write access to all nodes in the edge to be reconciled.
+// An annealer can reconcile a distributed edge
+//             - induce nodes in referenced hosts
+//             - add reverse edge reference in referenced host
+//                        - failure causes "broken" status to be added to originator
+//                        - success updates all ends with "success" status, with timestamp in local times
+// Annealing should be repeated at intervals
+//             - default interval
+//             - interval controlled by edge property
+
+// Transfer of state
+//      - state is carried by reconciled edge
+//      - does the reconciliation process transfer state between connected nodes?
+//          - or maybe, edge provides a state-transfer method that is triggered by the annealing process?
+
+
+// state transfer method, stored in leg's external reference for edge: 
+// leg = func(leg[*])  (where leg[*] refers to the connected nodes)
+
+// The legs in each host can have their own functions.
+
