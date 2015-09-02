@@ -1,5 +1,3 @@
-#include <pwd.h>
-
 #include "libje_private.h"
 
 // This code collects info from the environment to:

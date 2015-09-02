@@ -5,6 +5,7 @@
 #include <sys/utsname.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <pwd.h>
 #include <errno.h>
 #include <assert.h>
 
