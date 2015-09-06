@@ -1,13 +1,16 @@
 # The g language is for describing graphs of nodes and edges.
 
 # The g language is unusual in that there are no keywords in the language; only
-# key characters.  The key characters (and a few character pairs) are all
-# non-alpanumeric.  Consequently, strings only need quoting if they contain
-# whitespace, or special characters.
+# key characters.  The key characters are all non-alpanumeric.  Consequently, strings
+# Jonly need quoting if they contain whitespace, or any of the few key characters.
 
-# Numbers are not used by the language, and so numbers (integer, decimal,
-# or signed) are all legal strings without quoting.  (Attibute values can
+# Numbers are not used by the language, and so numbers (integer, decimal, signed
+# or unsigned) are all legal strings without quoting.  (Attibute values can
 # be interpreted as numbers later; they are just treated as strings by the parser.)
+
+# Value strings (used in attribute=value) are even more relaxed in the characters allowed
+# without quoting.  Value strings can be unquoted URLs or file paths.  
+# (In unquted portions of VSTRINGs the key characters lose their special meaning: ':' '/' '\' '?')
 
 # The definitive grammar is defined in src/grammar.g  which is maintained in git.
 # During the build process, the files:
@@ -16,14 +19,12 @@
 # 	src/grammar.ebnf
 # are all produced from:
 # 	src/grammar.g
-#
 # This document is not definitative as it is a manually annotated
 # copy of src/grammar.ebnf, which is itself a derivative product.
-#
-# Note that the language g is defined in the language g.
-#
-# The executable is able to describe its grammar from its internal tables
-# using:
+
+# Note that the language "g" is defined using language "g".
+
+# The executable is able to describe its grammar from its internal tables # using:
 # 	 ./g -d >t.g
 # which should be identical to the src/grammar.g stored in git.
 
@@ -33,8 +34,6 @@
 #          * indicates a term that can be repeated zero or more times
 #          _ indicates that a separator (typically whitespace) is
 #            required between repetitions. 
-
-
 
 
 # g is intended for incremental, streaming graph applications. The stream,
@@ -49,10 +48,10 @@
 
      ACTIVITY ::= ATTRIBUTES? _ACT+
 
-# Each ACT is an insertion, modification or deletion of some graph
+# Each ACT is an insertion, modification, deletion of some graph
 # object or objects with (optional) attributes and contents.
 
-          ACT ::= ACTION? SUBJECT ATTRIBUTES? CONTAINER? TERM?
+          ACT ::= VERB? SUBJECT ATTRIBUTES? CONTAINER? TERM?
 
 # Any SUBJECT can have ATTRIBUTES ana/ord CONTENTS which are to be
 # added (or deleted) from the OBJECT(s) specified by the <subject>
@@ -67,12 +66,13 @@
 # There is no CONTAINER for the top ACTIVITY, so its properties must be
 # provided by the external environment, such as from the command line.
 
-# The default ACTION is to add non-existant, or modify existant, object or objects.
-# A HAT (i.e, a '^') signals deletion of an object or objects.
+# The default VERB is to add non-existant, or to modify existant, object or objects.
+# A TLD (i.e, a '"') signals deletion of an object or objects.
 
-       ACTION ::= HAT
+       VERB ::= TLD
+              | QRY
 
-# The SUBJECT of an ACTION is either a single OBJECT,
+# The SUBJECT of an ACT is either a single OBJECT,
 # or an OBJECT_LIST (containing OBJECTS all of the same type:  NODE or EDGE)
 
       SUBJECT ::= OBJECT
@@ -102,7 +102,7 @@
     CONTAINER ::= LBE ACTIVITY? RBE
 
 # The TERM is mostly optional since it is rarely needed.
-# It serves two purposes:
+# Using SCN (i.e. ';') serves two purposes:
 #    1) for people that like to end statements with a terminator.
 #    2) for when a stream of ACTs stop, to indicate that the
 #       last ACT is finished. Normally in a stream, an ACT is adequately
@@ -110,8 +110,13 @@
 #       stream is stopped the last ACT can get stuck, waiting for ATTRIBUTES
 #       or CONTAINER.  Think of TERM like a "flush" operator.
 # An <EOF> condition on the input stream is implicitly a TERM.
+#
+# The second form of TERM is the snaphot operator, HAT (i.e. '^') which 
+# causes the local interpreter's state to be saved to a file which can be restored from the
+# command line in the event that the local interpreted needs to be restarted.
 
          TERM ::= SCN
+                | HAT
 
 # A NODE is minimally an OBJECT with a name.
 # The namespace of the NODEID is the parent CONTAINER
@@ -160,12 +165,13 @@
 # 		<= b>[m=n]
 # 		<= c>[p=q]
 
-# Notice that an ENDPOINTSET, such as the similar:
+# Notice that an ENDPOINTSET, which at first glance might seem equivalent to a set of sameas edges:
 #               <longname (a b c)> [x=y] 
-# can take only one set of attributes.   It is equivalent to:
+# can take only one set of attributes.   So it is equivalent to:
 #               <longname a>[x=y]
 #               <longname b>[x=y]
 #               <longname c>[x=y]
+# i.e. a set of edges al with the same ettributes.
 
      ENDPOINT ::= COUSIN
                 | SIBLING
@@ -190,9 +196,9 @@
 #
 #              sister
 #              brother/neice
-#              ^/^/uncle
-#              ^/^/uncle/cousin
-#              ^/^/uncle/cousin/kid
+#              ^/uncle
+#              ^/uncle/cousin
+#              ^/uncle/cousin/kid
 
 # Single NODEs can usefully represent sets or classes of identical things, like a
 # deck of cards,  or line-cards in a telephony switch or multiplexer.
@@ -208,7 +214,7 @@
 #              foobar`1:w
 
 # If PORT is not provided then it defaults to the center of the shape,
-# with the line representing the EDGE clipped back to the boundary of the shape.
+# (with the line representing the EDGE typically clipped back to the boundary of the shape).
 
 # Note: a PORT used in isolation as an ENPOIINT refers the inside place of the
 # port on the parent CONTAINER.  For NODE CONTAINER it uses the same PORTID
@@ -216,7 +222,7 @@
 # of the parent EDGE by means of a 1-based index, left to right.
 #
 # In this example,  legs "b" and "c" are connected via "hub", but "a" is not connected.
-# Note that EDGE contents can be reused without knowlege of the LEG names in the parent.
+# Note that EDGE contents can be reused without knowlege of the connected-NODE names in the parent.
 #
 #              <a b c> { < :2 hub > < :3 hub > }
 
@@ -238,40 +244,48 @@
 # FIXME - need more details on patterns
 
 # STRINGs can use various quoting and escape mechanisms to contain any
-# character withou special meaning
+# character without special meaning
 
 # FIXME - details of various quoting schemes
 
         VALUE ::= VSTRING
 
-# VSTRING are like STRING, but allow additional characters '/' '\' ':'
+# VSTRING are like STRING, but allow additional characters '/' '\' ':' '?'
 # which allows URLs and file paths as VALUES without quoting.  Also VSTRING supports
-# additional quoting mechanisms (FIXME - not yet implemented - will include HTML-like).
+# additional quoting mechanisms s
+# FIXME - not yet implemented - will include HTML-like.
 
-          BIN ::= '0x01'|'0x02'|'0x03'|'0x04'|'0x05'|'0x06'|'0x07'|'0x08'|'0x0b'|'0x0c'
-                | '0x0e'|'0x0f'|'0x10'|'0x11'|'0x12'|'0x13'|'0x14'|'0x15'|'0x16'|'0x17'
-                | '0x18'|'0x19'|'0x1a'|'0x1b'|'0x1c'|'0x1d'|'0x1e'|'0x1f'|'0x7f'
+# STRINGs and VSTRINGs can be arbitrary concatenations of double-quoted and unquoted substrings, e.g.
+#          abc" "def
+#          "abc"" "def
+#          "abc ""def"
+# are all equivalent to:
+#          "abc def"
+
+# non-special characters, can be used in STRINGs or VSTRINGs without quoting
           ABC ::= '!'|'$'|'%'|'&'|'''|'+'|','|'-'|'.'|'0'
-                | '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'?'
-                | '@'|'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'
-                | 'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'
-                | 'T'|'U'|'V'|'W'|'X'|'Y'|'Z'|'_'|'a'|'b'
-                | 'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'
-                | 'm'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'
-                | 'w'|'x'|'y'|'z'|'|'|'~'|'0x80'|'0x81'|'0x82'|'0x83'
-                | '0x84'|'0x85'|'0x86'|'0x87'|'0x88'|'0x89'|'0x8a'|'0x8b'|'0x8c'|'0x8d'
-                | '0x8e'|'0x8f'|'0x90'|'0x91'|'0x92'|'0x93'|'0x94'|'0x95'|'0x96'|'0x97'
-                | '0x98'|'0x99'|'0x9a'|'0x9b'|'0x9c'|'0x9d'|'0x9e'|'0x9f'|'0xa0'|'0xa1'
-                | '0xa2'|'0xa3'|'0xa4'|'0xa5'|'0xa6'|'0xa7'|'0xa8'|'0xa9'|'0xaa'|'0xab'
-                | '0xac'|'0xad'|'0xae'|'0xaf'|'0xb0'|'0xb1'|'0xb2'|'0xb3'|'0xb4'|'0xb5'
-                | '0xb6'|'0xb7'|'0xb8'|'0xb9'|'0xba'|'0xbb'|'0xbc'|'0xbd'|'0xbe'|'0xbf'
-                | '0xc0'|'0xc1'|'0xc2'|'0xc3'|'0xc4'|'0xc5'|'0xc6'|'0xc7'|'0xc8'|'0xc9'
-                | '0xca'|'0xcb'|'0xcc'|'0xcd'|'0xce'|'0xcf'|'0xd0'|'0xd1'|'0xd2'|'0xd3'
-                | '0xd4'|'0xd5'|'0xd6'|'0xd7'|'0xd8'|'0xd9'|'0xda'|'0xdb'|'0xdc'|'0xdd'
-                | '0xde'|'0xdf'|'0xe0'|'0xe1'|'0xe2'|'0xe3'|'0xe4'|'0xe5'|'0xe6'|'0xe7'
-                | '0xe8'|'0xe9'|'0xea'|'0xeb'|'0xec'|'0xed'|'0xee'|'0xef'|'0xf0'|'0xf1'
-                | '0xf2'|'0xf3'|'0xf4'|'0xf5'|'0xf6'|'0xf7'|'0xf8'|'0xf9'|'0xfa'|'0xfb'
-                | '0xfc'|'0xfd'|'0xfe'|'0xff'
+                | '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'@'
+                | 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'
+                | 'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'
+                | 'U'|'V'|'W'|'X'|'Y'|'Z'|'_'|'a'|'b'|'c'
+                | 'd'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'
+                | 'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'
+                | 'x'|'y'|'z'|'|'|'0x80'|'0x81'|'0x82'|'0x83'|'0x84'|'0x85'
+                | '0x86'|'0x87'|'0x88'|'0x89'|'0x8a'|'0x8b'|'0x8c'|'0x8d'|'0x8e'|'0x8f'
+                | '0x90'|'0x91'|'0x92'|'0x93'|'0x94'|'0x95'|'0x96'|'0x97'|'0x98'|'0x99'
+                | '0x9a'|'0x9b'|'0x9c'|'0x9d'|'0x9e'|'0x9f'|'0xa0'|'0xa1'|'0xa2'|'0xa3'
+                | '0xa4'|'0xa5'|'0xa6'|'0xa7'|'0xa8'|'0xa9'|'0xaa'|'0xab'|'0xac'|'0xad'
+                | '0xae'|'0xaf'|'0xb0'|'0xb1'|'0xb2'|'0xb3'|'0xb4'|'0xb5'|'0xb6'|'0xb7'
+                | '0xb8'|'0xb9'|'0xba'|'0xbb'|'0xbc'|'0xbd'|'0xbe'|'0xbf'|'0xc0'|'0xc1'
+                | '0xc2'|'0xc3'|'0xc4'|'0xc5'|'0xc6'|'0xc7'|'0xc8'|'0xc9'|'0xca'|'0xcb'
+                | '0xcc'|'0xcd'|'0xce'|'0xcf'|'0xd0'|'0xd1'|'0xd2'|'0xd3'|'0xd4'|'0xd5'
+                | '0xd6'|'0xd7'|'0xd8'|'0xd9'|'0xda'|'0xdb'|'0xdc'|'0xdd'|'0xde'|'0xdf'
+                | '0xe0'|'0xe1'|'0xe2'|'0xe3'|'0xe4'|'0xe5'|'0xe6'|'0xe7'|'0xe8'|'0xe9'
+                | '0xea'|'0xeb'|'0xec'|'0xed'|'0xee'|'0xef'|'0xf0'|'0xf1'|'0xf2'|'0xf3'
+                | '0xf4'|'0xf5'|'0xf6'|'0xf7'|'0xf8'|'0xf9'|'0xfa'|'0xfb'|'0xfc'|'0xfd'
+                | '0xfe'|'0xff'
+
+# remaining characters are special and require some form of quoting in STRINGs
            WS ::= '0x09'|'0x0a'|'0x0d'|'0x20'
           LBR ::= '['
           RBR ::= ']'
@@ -283,13 +297,32 @@
           RAN ::= '>'
           HAT ::= '^'
           EQL ::= '='
-          CLN ::= ':'
           SCN ::= ';'
           TIC ::= '`'
-          DQT ::= '"'
-          FSL ::= '/'
-          BSL ::= '\'
-          OCT ::= '#'
           AST ::= '*'
+          OCT ::= '#'
+          DQT ::= '"'
+          BSL ::= '\'
+          FSL ::= '/'
+          CLN ::= ':'
+          QRY ::= '?'
+
+# characters that require a binary-transparent quoting  (FIXME - not yet available)
+          BIN ::= '0x01'|'0x02'|'0x03'|'0x04'|'0x05'|'0x06'|'0x07'|'0x08'|'0x0b'|'0x0c'
+                | '0x0e'|'0x0f'|'0x10'|'0x11'|'0x12'|'0x13'|'0x14'|'0x15'|'0x16'|'0x17'
+                | '0x18'|'0x19'|'0x1a'|'0x1b'|'0x1c'|'0x1d'|'0x1e'|'0x1f'|'0x7f'
           NLL ::= '0x00'
+
+# VSTRINGs have the same quoting rules as STRINGs except that the following additional characters
+# are not-special (i,e, like ABC) in unquoted portions of VSTRINGs.
+          BSL ::= '\'
+          FSL ::= '/'
+          CLN ::= ':'
+          QRY ::= '?'
+# but note that BSL retains its special meaning as an escape character in any double-quoted portions of VSTRINGs.
+
+# characters that require '\' escape in double-quoted portions of strings
+          DQT ::= '"'
+          BSL ::= '\'
+
 
