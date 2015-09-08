@@ -5,12 +5,22 @@ static emit_t *emitters[] =
 
 static void api_act(container_context_t * CC, elem_t *list)
 {
-    je_emit_list(CC->context, CC->out, list);
+    context_t *C = CC->context;
+    elem_t *elem;
+
+    // after dispatch() there can be mutiple ACTs in the list
+    elem = list->u.list.first;
+    while (elem) {
+        C->sep = 0;         // suppress space before (because preceded by BOF or NL)
+        je_emit_list(CC->context, CC->out, elem);
+        putc('\n', CC->out);   // NL after
+        elem = elem->next;
+    }
 }
 
 // this is default emitter used for writing to the file-per-container
 // stored in the temp directory
-static emit_t null_api = { "g",
+static emit_t null_api = { "null",
 	/* api_initialize */ NULL,
 	/* api_finalize */ NULL,
 
@@ -167,7 +177,7 @@ static void je_emit_close_token(context_t *C, FILE *chan, char tok)
     C->sep = 0;
 }
 
-static void je_emit_list_r(context_t *C, FILE *chan, elem_t * list)
+void je_emit_list(context_t *C, FILE *chan, elem_t * list)
 {
 	elem_t *elem;
 	elemtype_t type;
@@ -215,11 +225,14 @@ static void je_emit_list_r(context_t *C, FILE *chan, elem_t * list)
 				case VALASSIGN:
                     je_emit_token(C, chan, '=');
                     break;
+		        case CHILD:
+                    je_emit_token(C, chan, '/');
+			        break;
 				default:
 					break;
 				}
 			}
-			je_emit_list_r(C, chan, elem);	// recurse
+			je_emit_list(C, chan, elem);	// recurse
 			elem = elem->next;
 		}
 		switch (liststate) {
@@ -244,21 +257,6 @@ static void je_emit_list_r(context_t *C, FILE *chan, elem_t * list)
         assert(0);  // should not be here
 		break;
 	}
-}
-
-void je_emit_list(context_t * C, FILE * chan, elem_t * list)
-{
-    elem_t * elem;
-
-	assert(list);
-
-    elem = list->u.list.first;
-    while (elem) {
-        C->sep = 0;
-	    je_emit_list_r(C, chan, elem);
-        putc('\n', chan);
-        elem = elem->next;
-    }
 }
 
 void je_emit_error(context_t * C, state_t si, char *message)
