@@ -5,6 +5,7 @@ static void api_start_activity(container_context_t * CC)
     context_t *C = CC->context;
     FILE *chan = C->out;
 
+    C->sep = 0;
 	if (C->containment == 0) {
 		fprintf(chan, "// |-- on entry, '|' alt, '.' one, '?' zero or one, '*' zero or more, '+' one or more\n");
 		fprintf(chan, "// |-- on exit, '0' success, '1' fail\n");
@@ -55,8 +56,10 @@ api_end_state(container_context_t * CC, char class, success_t rc, int nest, int 
 
 static void api_end_activity(container_context_t * CC)
 {
-    FILE *chan = CC->context->out;
+    context_t *C = CC->context;
+    FILE *chan = C->out;
 
+    C->sep = 0;
 	putc('\n', chan);
 }
 

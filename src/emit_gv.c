@@ -2,12 +2,18 @@
 
 static void api_start_activity(container_context_t * CC)
 {
-	fprintf(CC->context->out, "graph {\n");
+    context_t *C = CC->context;
+
+    C->sep = 0;
+	fprintf(C->out, "graph {\n");
 }
 
 static void api_end_activity(container_context_t * CC)
 {
-	fprintf(CC->context->out, "\n}\n");
+    context_t *C = CC->context;
+
+    C->sep = 0;
+	fprintf(C->out, "\n}\n");
 }
 
 static void api_list(container_context_t * CC, elem_t *list)

@@ -3,18 +3,34 @@
 static emit_t *emitters[] =
     {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
 
+// this suppresses leading space before first node
+static void api_start_activity(container_context_t * CC)
+{
+	CC->context->sep = 0;
+}
+
 // this makes the contents of the tar files a bit more readable.
 static void api_end_activity(container_context_t * CC)
 {
+#if 1
+    (void) CC; // NOTUSED
+#else
 	putc('\n', CC->out);
+#endif
 }
 
 static void api_act(container_context_t * CC, elem_t *list)
 {
-    context_t *C = CC->context;
+    je_emit_list(CC->context, CC->out, list);
 
-    CC->context->sep = ' ';    // FIXME - overkill
-    je_emit_list(C, CC->out, list);
+#if 1
+    // newline after each act for readability
+
+    // FIXME - doesn't work for case of multiple ACTs in a single "list"
+    //            that occur when dispatch() expands OBJECT_LISTS or ENDPOINTSETS.
+    putc('\n', CC->out);
+    CC->context->sep = 0;
+#endif
 }
 
 // this is default emitter used for writing to the file-per-container
@@ -26,7 +42,7 @@ static emit_t null_api = { "g",
 	/* api_start_file */ NULL,
 	/* api_end_file */ NULL,
 
-	/* api_start_activity */ NULL,
+	/* api_start_activity */ api_start_activity,
 	/* api_end_activity */ api_end_activity,
 
 	/* api_start_act */ NULL,

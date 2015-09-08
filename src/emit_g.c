@@ -4,6 +4,7 @@ static void api_start_activity(container_context_t * CC)
 {
     context_t *C = CC->context;
 
+    C->sep = 0;
     if (C->containment != 0) {
         putc('{', C->out);
     }
@@ -13,6 +14,7 @@ static void api_end_activity(container_context_t * CC)
 {
     context_t *C = CC->context;
 
+    C->sep = 0;
     if (C->containment != 0) {
         putc('}', C->out);
     }
@@ -33,8 +35,10 @@ static void api_attributes(container_context_t * CC, elem_t *list)
     context_t *C = CC->context;
 
     putc('[', C->out);
+    C->sep = 0;
 	je_emit_list(C, C->out, list);
     putc(']', C->out);
+    C->sep = 0;
 }
 
 emit_t g_api = { "g",

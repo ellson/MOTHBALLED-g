@@ -33,6 +33,7 @@ static success_t je_more_rep(context_t * C, unsigned char prop)
 	}
 	if (prop & SREP) {
 		emit_sep(C);	// sep is non-optional, emit the minimal sep
+                        //    .. when low-level emit hook is used.
 	}
 	return SUCCESS;		// more repetitions
 }
@@ -219,9 +220,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
 			emit_subject(CC, &branch);      // emit hook for rewritten subject
 			break;
 		case ATTRIBUTES:
-            C->sep = 0;
 			emit_attributes(CC, &branch);   // emit hook for attributes
-            C->sep = 0;
 			break;
         default:
             break;
@@ -276,7 +275,6 @@ success_t je_parse(context_t * C, elem_t * name)
     CC->out = elem->u.hash.out;
 
 	emit_start_activity(CC);
-    C->sep = 0;
     C->containment++;
 	C->stat_containercount++;
 	if ((rc = je_parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
@@ -287,7 +285,6 @@ success_t je_parse(context_t * C, elem_t * name)
 		}
 	}
     C->containment--;
-    C->sep = 0;
 	emit_end_activity(CC);
 
 	free_list(C, &root);
