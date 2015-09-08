@@ -2,6 +2,9 @@
 
 // Processes an ACT after sameas and pattern substitutions.
 //
+
+// FIXME - description needs updating
+
 // - expand OBJECT_LIST
 //    - expand ENDPOINT_SETs
 //       - promote ENDPOINTS to common ancestor
@@ -30,7 +33,6 @@
 //              If there still ^/ left, then the process
 //              is repeated, sending it though the nameless channel to
 //              their parent, which applies the same rule:
-
 
 // this function expands ENDPOINTSETs
 static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
@@ -240,6 +242,7 @@ void je_dispatch(container_context_t * CC, elem_t * list)
                     je_assemble_act(C,elem,NULL,list);
                     elem = elem->next;
                 }
+
                 elem = edges.u.list.first;
                 while (elem) {
                     je_assemble_act(C,elem,&attributes,list);
@@ -251,30 +254,6 @@ void je_dispatch(container_context_t * CC, elem_t * list)
         assert(0);  // shouldn't happen
         break;
     }
-
-#if 0
-    C->sep = ' ';
-    print_list(stdout, &nodes, 0, &(C->sep));
-    putc('\n', stdout);
-#endif
-
-#if 0
-    C->sep = ' ';
-    print_list(stdout, &edges, 0, &(C->sep));
-    putc('\n', stdout);
-#endif
-
-#if 0
-    C->sep = ' ';
-    print_list(stdout, &attributes, 0, &(C->sep));
-    putc('\n', stdout);
-#endif
-
-#if 1
-    C->sep = ' ';
-    print_list(stdout, list, 0, &(C->sep));
-    putc('\n', stdout);
-#endif
 
     free_list(C, &attributes);
     free_list(C, &nodes);

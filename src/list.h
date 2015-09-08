@@ -5,6 +5,9 @@ typedef enum {
 	HASHELEM = 2
 } elemtype_t;
 
+// Print a list (tree) -  used for debugging
+#define P(L) {C->sep = ' ';print_list(stdout, L, 0, &(C->sep));putc('\n', stdout);}
+
 struct elem_s {
 	elem_t *next;
 	union {

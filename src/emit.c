@@ -9,10 +9,11 @@ static void api_end_activity(container_context_t * CC)
 	putc('\n', CC->out);
 }
 
-static void api_list(container_context_t * CC, elem_t *list)
+static void api_act(container_context_t * CC, elem_t *list)
 {
     context_t *C = CC->context;
 
+    CC->context->sep = ' ';    // FIXME - overkill
     je_emit_list(C, CC->out, list);
 }
 
@@ -37,7 +38,7 @@ static emit_t null_api = { "g",
 	/* api_start_state */ NULL,
 	/* api_end_state */ NULL,
 
-	/* api_act */ api_list,
+	/* api_act */ api_act,
 	/* api_subject */ NULL,
 	/* api_attributes */ NULL,
 
@@ -256,8 +257,15 @@ static void je_emit_list_r(context_t *C, FILE *chan, elem_t * list)
 
 void je_emit_list(context_t * C, FILE * chan, elem_t * list)
 {
+    elem_t * elem;
+
 	assert(list);
-	je_emit_list_r(C, chan, list->u.list.first);
+
+    elem = list->u.list.first;
+    while (elem) {
+	    je_emit_list_r(C, chan, elem);
+        elem = elem->next;
+    }
 }
 
 void je_emit_error(context_t * C, state_t si, char *message)
