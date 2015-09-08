@@ -192,6 +192,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
 
 			    emit_act(CC, &branch);  // emit hook for rewritten act
 		        free_list(C, &branch);	// that's all folks.  move on to the next ACT.
+                //  (other than patterns and initial ATTRIBUTES, nothing is accumulated at the ACTIVITY level)
 		    }
             break;
 		case TLD:
