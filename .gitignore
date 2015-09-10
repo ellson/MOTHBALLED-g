@@ -8,8 +8,15 @@ INSTALL
 config.*
 configure
 Makefile
-autom4te.cache/
 aclocal.m4
+compile
+depcomp
+install-sh
+libtool
+ltmain.sh
+missing
+stamp-h1
 m4/
+autom4te.cache/
 src/.deps/
 src/.libs/
