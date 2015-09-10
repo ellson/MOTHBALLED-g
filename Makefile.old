@@ -11,7 +11,7 @@ g.tgz: g
 
 .PHONY: g
 g:
-	( cd src; make )
+	( cd src; make -f Makefile.old )
 
 clean:
 	rm -f index.html
