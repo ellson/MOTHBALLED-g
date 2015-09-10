@@ -1,0 +1,79 @@
+Name:    g
+Summary: Graph Tool
+Version: 0.1
+
+Release: 1
+Group:   Applications/Multimedia
+License: EPL
+Source0: g-0.1.tar.gz
+
+BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+BuildRequires: zlib-devel libtar-devel
+BuildRequires: /bin/bash
+
+#-- main g rpm ------------------------------------------------
+%description
+A collection of tools for the manipulation and layout
+of graphs (as in nodes and edges, not as in bar-charts).
+
+%files
+%defattr(-,root,root,-)
+%if 0%{?SEPARATE_LICENSE}
+%license COPYING
+%endif
+%doc COPYING AUTHORS ChangeLog NEWS README
+%{_bindir}/g
+%exclude %{_bindir}/g_static
+%{_libdir}/libje.so.*
+
+%package devel
+Group:          Development/Libraries
+Summary:        Development package for g
+Requires:       %{name}-libs = %{version}-%{release}, pkgconfig
+
+%description devel
+A collection of tools for the manipulation and layout
+of graphs (as in nodes and edges, not as in bar-charts).
+This package contains development files for g.
+
+%files devel
+%defattr(-,root,root,-)
+# %{_includedir}/libje.h
+%{_libdir}/libje.so
+#%{_mandir}/man3/libje.3.*
+#%{_libdir}/pkgconfig/libje.pc
+
+#-- building --------------------------------------------------
+
+%prep
+%setup -q
+
+%build
+# XXX ix86 only used to have -ffast-math, let's use everywhere
+%{expand: %%define optflags %{optflags} -ffast-math}
+
+%configure 
+        
+make %{?_smp_mflags}
+
+%install
+rm -rf %{buildroot} __doc
+make DESTDIR=%{buildroot} \
+        docdir=%{buildroot}%{_docdir}/%{name} \
+        pkgconfigdir=%{_libdir}/pkgconfig \
+        install
+find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
+#cp -a %{buildroot}%{_datadir}/%{name}/doc __doc
+#rm -rf %{buildroot}%{_datadir}/%{name}/doc
+
+%check
+
+%clean
+rm -rf %{buildroot}
+
+#-- changelog --------------------------------------------------
+
+%changelog
+* Wed Sep 09 2015 John Ellson <john.ellson@comcast.net>
+- release g-0.1
