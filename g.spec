@@ -39,8 +39,9 @@ This package contains development files for g.
 
 %files devel
 %defattr(-,root,root,-)
-# %{_includedir}/libje.h
+%{_includedir}/libje.h
 %{_libdir}/libje.so
+%{_libdir}/libje.a
 #%{_mandir}/man3/libje.3.*
 #%{_libdir}/pkgconfig/libje.pc
 

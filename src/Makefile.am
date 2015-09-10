@@ -5,19 +5,8 @@ LIBJE_VERSION="0:0:0"
 pdfdir = $(pkgdatadir)/doc/pdf
 pkgconfigdir = $(libdir)/pkgconfig
 
-pkginclude_HEADERS =\
-	context.h \
-	dispatch.h \
-	emit.h \
-	grammar.h \
-	hash.h \
-	inbuf.h \
-	libje.h \
-	libje_private.h \
-	list.h \
-	pattern.h \
-	sameas.h \
-	token.h
+include_HEADERS = \
+	libje.h
 
 noinst_HEADERS = \
 	context.h \
