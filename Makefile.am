@@ -6,3 +6,6 @@ SUBDIRS = src
 rpm: dist
 	rpmbuild -ta g-@VERSION@.tar.gz
 
+
+EXTRA_DIST = g.spec
+

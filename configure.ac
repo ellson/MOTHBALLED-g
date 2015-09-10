@@ -12,8 +12,8 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
 # Checks for libraries.
-AC_CHECK_LIB([tar], [main], [TAR_LIBS="-lm"])
-AC_CHECK_LIB([z], [main], [Z_LIBS=="-lz"])
+AC_CHECK_LIB([tar], [main])
+AC_CHECK_LIB([z], [main])
 
 # Checks for header files.
 AC_CHECK_HEADERS([ \

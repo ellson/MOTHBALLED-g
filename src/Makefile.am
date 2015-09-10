@@ -5,8 +5,6 @@ LIBJE_VERSION="0:0:0"
 pdfdir = $(pkgdatadir)/doc/pdf
 pkgconfigdir = $(libdir)/pkgconfig
 
-LIBS = $(TAR_LIBS) $(Z_LIBS)
-
 pkginclude_HEADERS =\
 	context.h \
 	dispatch.h \
@@ -34,6 +32,7 @@ noinst_HEADERS = \
 	sameas.h \
 	token.h
 
+noinst_LTLIBRARIES = libje_C.la
 lib_LTLIBRARIES = libje.la
 #pkgconfig_DATA = libje.pc
 
@@ -56,7 +55,7 @@ libje_C_la_SOURCES = \
 	emit_g.c \
 	emit_gv.c 
 
-libje_C_la_LIBADD = $(LIBS)
+libje_C_la_LIBADD =
 
 libje_la_LDFLAGS = -version-info $(LIBJE_VERSION) -no-undefined
 libje_la_SOURCES = $(libje_C_la_SOURCES)
@@ -69,11 +68,11 @@ bin_PROGRAMS = g g_static
 
 g_SOURCES = g.c
 g_CPPFLAGS = 
-g_LDADD = libje.la $(LIBS)
+g_LDADD = libje.la @LIBS@
 
-g_static_SOURCES = dot.c dot_builtins.c
+g_static_SOURCES = g.c
 g_static_CPPFLAGS = 
-g_static_LDADD = libje_C.la $(LIBS)
+g_static_LDADD = libje_C.la @LIBS@
 
 grammar.c: grammar.h
 
@@ -86,6 +85,7 @@ g.1.pdf: $(srcdir)/g.1
 libje.3.pdf: $(srcdir)/libje.3
 	    - $(GROFF) -Tps -man $(srcdir)/libje.3 | $(PS2PDF) - - >libje.3.pdf
 
-EXTRA_DIST = g.1 g.1.pdf libje.3 libje.3.pdf gacc.sh grammar.g
+#EXTRA_DIST = g.1 g.1.pdf libje.3 libje.3.pdf gacc.sh grammar.g
+EXTRA_DIST = gacc.sh grammar.g
 
 DISTCLEANFILES = g.1.pdf libje.3.pdf
