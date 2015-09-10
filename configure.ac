@@ -2,8 +2,46 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([g], [0.1], [john.ellson@comcast.net])
-AC_CONFIG_SRCDIR([src/pattern.h])
+
+# set:
+#   g_version_major
+#   g_version_minor
+#   g_version_micro
+#   g_collection
+#   g_version_date
+#   g_version_commit
+m4_include(./version.m4)
+
+AC_INIT([g], [g_version_major().g_version_minor().g_version_micro()], [john.ellson@comcast.net])
+
+G_VERSION_MAJOR=g_version_major()
+G_VERSION_MINOR=g_version_minor()
+G_VERSION_MICRO=g_version_micro()
+
+#NB: "stable" or "development"
+G_COLLECTION=g_collection()
+
+#NB: date/time of last commit - or "0"
+G_VERSION_DATE=g_version_date()
+
+#NB: git commit hash of last commit
+G_VERSION_COMMIT=g_version_commit()
+
+G_SOURCES=g/$G_COLLECTION/SOURCES
+
+AC_SUBST([G_VERSION_MAJOR])
+AC_SUBST([G_VERSION_MINOR])
+AC_SUBST([G_VERSION_MICRO])
+AC_SUBST([G_VERSION_DATE])
+AC_SUBST([G_VERSION_COMMIT])
+AC_SUBST([G_COLLECTION])
+AC_SUBST([G_SOURCES])
+
+dnl ===========================================================================
+
+AC_CONFIG_SRCDIR([configure.ac])
+AC_CONFIG_AUX_DIR([config])
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
@@ -53,6 +91,7 @@ AC_CHECK_PROG(GROFF,groff,groff,false)
 
 
 AC_CONFIG_FILES([Makefile \
+                 g.spec \
                  src/Makefile \
 ])
 AC_OUTPUT
