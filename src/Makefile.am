@@ -56,9 +56,9 @@ libje_C_la_SOURCES = \
 	emit_g.c \
 	emit_gv.c 
 
-libje_C_la_LIBADD = 
+libje_C_la_LIBADD =
 
-libje_la_LDFLAGS = -version-info $(GVC_VERSION) -no-undefined
+libje_la_LDFLAGS = -version-info $(LIBJE_VERSION)
 libje_la_SOURCES = $(libje_C_la_SOURCES)
 libje_la_LIBADD = $(libje_C_la_LIBADD) 
 
@@ -69,11 +69,11 @@ bin_PROGRAMS = g g_static
 
 g_SOURCES = g.c
 g_CPPFLAGS = 
-g_LDADD = libje.la
+g_LDADD = libje.la $(LIBS)
 
 g_static_SOURCES = dot.c dot_builtins.c
 g_static_CPPFLAGS = 
-g_static_LDADD = libje_C.la
+g_static_LDADD = libje_C.la $(LIBS)
 
 grammar.c: grammar.h
 

@@ -12,24 +12,22 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
 # Checks for libraries.
-# FIXME: Replace `main' with a function in `-ltar':
-AC_CHECK_LIB([tar], [main])
-# FIXME: Replace `main' with a function in `-lz':
-AC_CHECK_LIB([z], [main])
+AC_CHECK_LIB([tar], [main], [TAR_LIBS="-lm"])
+AC_CHECK_LIB([z], [main], [Z_LIBS=="-lz"])
 
 # Checks for header files.
-AC_CHECK_HEADERS([
-    stdio.h
-    stdlib.h
-    string.h
-    time.h
-    sys/utsname.h
-    sys/types.h
-    unistd.h
-    pwd.h
-    errno.h
-    assert.h
-    fcntl.h
+AC_CHECK_HEADERS([ \
+    stdio.h \
+    stdlib.h \
+    string.h \
+    time.h \
+    sys/utsname.h \
+    sys/types.h \
+    unistd.h \
+    pwd.h \
+    errno.h \
+    assert.h \
+    fcntl.h \
 ])
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -42,13 +40,19 @@ AC_TYPE_UID_T
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_MALLOC
-AC_CHECK_FUNCS([
-    clock_gettime
-    strerror
-    uname
+AC_CHECK_FUNCS([ \
+    clock_gettime \
+    strerror \
+    uname \
 ])
 
-AC_CONFIG_FILES([Makefile
-                 src/Makefile
+AC_CONFIG_MACRO_DIR([m4])
+AM_INIT_AUTOMAKE([no-define])
+AC_PROG_LIBTOOL
+AC_CHECK_PROG(GROFF,groff,groff,false)
+
+
+AC_CONFIG_FILES([Makefile \
+                 src/Makefile \
 ])
 AC_OUTPUT
