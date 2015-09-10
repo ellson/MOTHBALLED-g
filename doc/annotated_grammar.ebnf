@@ -326,3 +326,8 @@
           BSL ::= '\'
 
 
+# Any line beginning with an OCT (i.e. '#') , upto end-of-line
+# ('0x0a' and/or '0x0d') is treated as a comment string, and ignored.
+# If you wish to use cpp to process #include directives, for example,
+# then a line beginning with "#//" will be treated as a comment by cpp as well.
+

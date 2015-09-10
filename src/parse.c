@@ -12,7 +12,7 @@
 // The inner recursions are through the grammar state_machine at a single
 // level of containment - maintained in container_context (CC)
 //
-// The outer recursionsi are through nested containment.
+// The outer recursions are through nested containment.
 // The top-level context (C) is available to both and maintains the input state.
 
 static success_t je_more_rep(context_t * C, unsigned char prop)
