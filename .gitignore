@@ -1,5 +1,6 @@
 g-*.tar.gz
 src/g_static
+*~
 *.o
 *.in
 *.lo
