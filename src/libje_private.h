@@ -10,6 +10,13 @@
 #include <errno.h>
 #include <assert.h>
 
+// include local configuration
+ # include "config.h"
+
+#if ! defined(HAVE_CLOCK_GETTIME)
+#include <sys/time.h>
+#endif
+
 // include public interface
 #include "libje.h"
 

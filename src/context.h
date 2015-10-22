@@ -50,7 +50,11 @@ struct context_s {		// input_context
     long stat_elemmalloc;
     long stat_elemmax;
     long stat_elemnow;
+#if defined(HAVE_CLOCK_GETTIME)
 	struct timespec uptime; // seconds since boot, also used as the starttime fpr runtime calculations
+#else
+	struct timeval uptime; // seconds since boot, also used as the starttime fpr runtime calculations
+#endif
     pid_t pid;
 };
 

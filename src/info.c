@@ -24,8 +24,13 @@ char * je_session(context_t *C)
     static char *pos = &buf[0];  // NB. static. This initalization happens only once
     static struct passwd *pw;
     static struct utsname unamebuf;
-	static struct timespec starttime;
     static uid_t uid;
+#if defined(HAVE_CLOCK_GETTIME)
+	static struct timespec starttime;
+#else
+    static struct timeval starttime;
+#endif
+
 
     if (pos != &buf[0]) { // have we been here before?
         return buf;
@@ -63,8 +68,9 @@ char * je_session(context_t *C)
     je_append_token   (C, &pos, '=');
     je_append_string  (C, &pos, C->hostname);
 
+#if defined(HAVE_CLOCK_GETTIME)
 	if (clock_gettime(CLOCK_BOOTTIME, &(C->uptime)) != 0) {
-        perror("Errror - clock_gettime(): ");
+        perror("Error - clock_gettime(): ");
         exit(EXIT_FAILURE);
     }
     je_append_string  (C, &pos, "uptime");
@@ -72,12 +78,32 @@ char * je_session(context_t *C)
     je_append_ulong   (C, &pos, C->uptime.tv_sec);
 
 	if (clock_gettime(CLOCK_REALTIME, &starttime) != 0) {
-        perror("Errror - clock_gettime(): ");
+        perror("Error - clock_gettime(): ");
         exit(EXIT_FAILURE);
     }
     je_append_string  (C, &pos, "starttime");
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, starttime.tv_sec);
+#else
+
+// FIXME -- needed for OS/X - incomplete....  -  how to get uptime?
+
+	if (gettimeofday(&(C->uptime), NULL) != 0) {
+        perror("Error - gettimeofday(): ");
+        exit(EXIT_FAILURE);
+    }
+    je_append_string  (C, &pos, "uptime");
+    je_append_token   (C, &pos, '=');
+    je_append_ulong   (C, &pos, C->uptime.tv_sec);
+
+	if (gettimeofday(&starttime, NULL) != 0) {
+        perror("Error - gettimeofday(): ");
+        exit(EXIT_FAILURE);
+    }
+    je_append_string  (C, &pos, "starttime");
+    je_append_token   (C, &pos, '=');
+    je_append_ulong   (C, &pos, starttime.tv_sec);
+#endif
 
     je_append_token   (C, &pos, ']');
 
@@ -88,24 +114,41 @@ char * je_session(context_t *C)
 
 #define STATS_BUF_SIZE 2048
 #define TEN9 1000000000
+#define TEN3 1000
 
 char * je_stats(context_t *C)
 {
     static char buf[STATS_BUF_SIZE];
 
     char *pos = &buf[0];  // NB non-static.  stats are updated and re-formatted on each call
+#if defined(HAVE_CLOCK_GETTIME)
 	struct timespec nowtime;
+#else
+	struct timeval nowtime;
+#endif
 	long runtime;    // runtime in nano-seconds
 
     je_append_string  (C, &pos, "stats");
     je_append_token   (C, &pos, '[');
 
+#if defined(HAVE_CLOCK_GETTIME)
 	if (clock_gettime(CLOCK_BOOTTIME, &nowtime) != 0) {
-        perror("Errror - clock_gettime(): ");
+        perror("Error - clock_gettime(): ");
         exit(EXIT_FAILURE);
     }
 	runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_nsec)
             - ((unsigned long)(C->uptime.tv_sec) * TEN9 + (unsigned long)(C->uptime.tv_nsec));
+#else
+ 
+// FIXME -- needed for OS/X - incomplete....  -  how to get uptime?
+
+	if (gettimeofday(&nowtime, NULL) != 0) {
+        perror("Error - gettimeofday(): ");
+        exit(EXIT_FAILURE);
+    }
+	runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_usec) * TEN3
+            - ((unsigned long)(C->uptime.tv_sec) * TEN9 + (unsigned long)(C->uptime.tv_usec) * TEN3);
+#endif
 
     je_append_string  (C, &pos, "runtime");
     je_append_token   (C, &pos, '=');
