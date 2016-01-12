@@ -1,3 +1,5 @@
+/* vim:set shiftwidth=4 ts=8 expandtab: */
+
 struct context_s {		// input_context
 	char *progname;		// name of program
 	int *pargc;	    	// remaining filenames from command line

@@ -1,8 +1,11 @@
+/* vim:set shiftwidth=4 ts=8 expandtab: */
+
 struct hashfile_s {
     hashfile_t *next;
     FILE *out;
     long hash;
 };
+
 
 elem_t * je_hash_bucket(context_t * C, unsigned long hash);
 void je_hash_list(unsigned long *hash, elem_t *list);

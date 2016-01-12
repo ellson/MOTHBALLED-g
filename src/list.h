@@ -1,3 +1,5 @@
+/* vim:set shiftwidth=4 ts=8 expandtab: */
+
 typedef enum {
 	LISTELEM = 0, // must be 0 for static or calloc allocation of list headers
 	FRAGELEM = 1,

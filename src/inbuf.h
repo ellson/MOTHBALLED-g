@@ -1,3 +1,5 @@
+/* vim:set shiftwidth=4 ts=8 expandtab: */
+
 // sizeof(inbuf_t) = 1<<7  (128 bytes)
 // the size of .buf is sizeof(inbuf_t) less the other bits  (~115 bytes, I think)
 #define INBUFSIZE ((1<<7) - sizeof(inbuf_t*) - sizeof(int) - sizeof(char))

@@ -1,3 +1,5 @@
+/* vim:set shiftwidth=4 ts=8 expandtab: */
+
 #include "libje_private.h"
 
 // rewrite list into new list with any EQL elements substituted from oldlist

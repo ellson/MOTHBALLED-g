@@ -1,3 +1,4 @@
+/* vim:set shiftwidth=4 ts=8 expandtab: */
 
 //   Some rough ideas on comm model
 

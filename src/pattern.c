@@ -1,3 +1,5 @@
+/* vim:set shiftwidth=4 ts=8 expandtab: */
+
 #include "libje_private.h"
 
 // A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
