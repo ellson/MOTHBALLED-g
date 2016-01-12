@@ -1,3 +1,5 @@
+/* vim:set shiftwidth=4 ts=8 expandtab: */
+
 #include "libje_private.h"
 
 context_t *je_initialize(int *pargc, char *argv[], int optind)

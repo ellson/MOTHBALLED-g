@@ -1,3 +1,5 @@
+/* vim:set shiftwidth=4 ts=8 expandtab: */
+
 // emit styles
 typedef enum {
 	MINIMUM_SPACE_STYLE = 0,

@@ -66,6 +66,7 @@ AC_CHECK_HEADERS([ \
     errno.h \
     assert.h \
     fcntl.h \
+    libtar.h \
 ])
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -89,6 +90,22 @@ AM_INIT_AUTOMAKE([no-define])
 AC_PROG_LIBTOOL
 AC_CHECK_PROG(GROFF,groff,groff,false)
 
+# check for pkgconfig
+PKG_PROG_PKG_CONFIG
+
+AC_PREFIX_DEFAULT([/usr/local])
+if test "x${prefix}" = "xNONE"; then
+    prefix=${ac_default_prefix}
+    AC_SUBST([prefix])
+fi
+
+# automatically check for other dependencies in $prefix first
+    if test "x${prefix}" != "x/usr"; then
+        CPPFLAGS="$CPPFLAGS -I${prefix}/include"
+        LDFLAGS="$LDFLAGS -L${prefix}/lib"
+        PKG_CONFIG_PATH="$prefix/lib/pkgconfig$PATHSEPARATOR$PKG_CONFIG_PATH"
+        export PKG_CONFIG_PATH
+fi
 
 AC_CONFIG_FILES([Makefile \
                  g.spec \

@@ -1,3 +1,5 @@
+/* vim:set shiftwidth=4 ts=8 expandtab: */
+
 typedef struct context_s context_t;
 typedef struct elem_s elem_t;
 

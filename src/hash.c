@@ -1,3 +1,5 @@
+/* vim:set shiftwidth=4 ts=8 expandtab: */
+
 #include "libje_private.h"
 
 #define MSB_LONG (8*(sizeof(long))-1)
