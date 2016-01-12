@@ -13,7 +13,7 @@
 #endif
 
 // FIXME - ya global
-gzFile gzf;
+static gzFile gzf;
 
 static int je_gzopen(const char *pathname, int oflags, ...)
 {
