@@ -1,6 +1,5 @@
-// LISTELEM must = 0 for static or calloc allocation of list headers
 typedef enum {
-	LISTELEM = 0,
+	LISTELEM = 0, // must be 0 for static or calloc allocation of list headers
 	FRAGELEM = 1,
 	HASHELEM = 2
 } elemtype_t;

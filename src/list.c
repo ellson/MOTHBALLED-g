@@ -120,7 +120,8 @@ elem_t *ref_list(context_t * C, elem_t * list)
 	return elem;
 }
 
-// append elem to the end of the list so that the elem becomes the new u.list.last
+// append elem to the end of the list so that the elem becomes
+//     the new u.list.last
 void append_list(elem_t * list, elem_t * elem)
 {
 	assert(list->type == (char)LISTELEM);
