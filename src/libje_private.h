@@ -37,3 +37,4 @@ typedef struct hashfile_s hashfile_t;
 #include "pattern.h"
 #include "sameas.h"
 #include "dispatch.h"
+#include "expand_edge.h"

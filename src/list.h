@@ -15,7 +15,7 @@ struct elem_s {
 			elem_t *last;	// for append
 		} list;
 		struct {
-			inbuf_t *inbuf;	// inbuf containing frag
+			inbuf_t *inbuf;	// inbuf containing frag - for memory management
 			unsigned char *frag;	// point to beginning of frag
 		} frag;
 		struct {
