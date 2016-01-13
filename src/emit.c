@@ -23,35 +23,35 @@ static void api_act(container_context_t * CC, elem_t *list)
 // this is default emitter used for writing to the file-per-container
 // stored in the temp directory
 static emit_t null_api = { "null",
-	/* api_initialize */ NULL,
-	/* api_finalize */ NULL,
+    /* api_initialize */ NULL,
+    /* api_finalize */ NULL,
 
-	/* api_start_file */ NULL,
-	/* api_end_file */ NULL,
+    /* api_start_file */ NULL,
+    /* api_end_file */ NULL,
 
-	/* api_start_activity */ NULL,
-	/* api_end_activity */ NULL,
+    /* api_start_activity */ NULL,
+    /* api_end_activity */ NULL,
 
-	/* api_start_act */ NULL,
-	/* api_end_act */ NULL,
+    /* api_start_act */ NULL,
+    /* api_end_act */ NULL,
 
-	/* api_start_subject */ NULL,
-	/* api_end_subject */ NULL,
+    /* api_start_subject */ NULL,
+    /* api_end_subject */ NULL,
 
-	/* api_start_state */ NULL,
-	/* api_end_state */ NULL,
+    /* api_start_state */ NULL,
+    /* api_end_state */ NULL,
 
-	/* api_act */ api_act,
-	/* api_subject */ NULL,
-	/* api_attributes */ NULL,
+    /* api_act */ api_act,
+    /* api_subject */ NULL,
+    /* api_attributes */ NULL,
 
-	/* api_sep */ NULL,
-	/* api_token */ NULL,
-	/* api_string */ NULL,
+    /* api_sep */ NULL,
+    /* api_token */ NULL,
+    /* api_string */ NULL,
 
-	/* api_frag */ NULL,
+    /* api_frag */ NULL,
 
-	/* api_error */ je_emit_error
+    /* api_error */ je_emit_error
 };
 
 emit_t *emit = &null_api;
@@ -73,26 +73,26 @@ success_t je_select_emitter(char *name)
 
 char je_char_prop(unsigned char prop, char noprop)
 {
-	char c;
+    char c;
 
-	if (prop & ALT) {
-		c = '|';
-	} else {
-		if (prop & OPT) {
-			if (prop & (SREP | REP)) {
-				c = '*';
-			} else {
-				c = '?';
-			}
-		} else {
-			if (prop & (SREP | REP)) {
-				c = '+';
-			} else {
-				c = noprop;
-			}
-		}
-	}
-	return c;
+    if (prop & ALT) {
+        c = '|';
+    } else {
+        if (prop & OPT) {
+            if (prop & (SREP | REP)) {
+                c = '*';
+            } else {
+                c = '?';
+            }
+        } else {
+            if (prop & (SREP | REP)) {
+                c = '+';
+            } else {
+                c = noprop;
+            }
+        }
+    }
+    return c;
 }
 
 void je_append_token(context_t *C, char **pos, char tok)
@@ -181,103 +181,103 @@ static void je_emit_close_token(context_t *C, FILE *chan, char tok)
 
 void je_emit_list(context_t *C, FILE *chan, elem_t * list)
 {
-	elem_t *elem;
-	elemtype_t type;
-	int cnt;
-	state_t liststate;
+    elem_t *elem;
+    elemtype_t type;
+    int cnt;
+    state_t liststate;
 
-	assert(list);
-	liststate = (state_t) list->state;
-	if (! (elem = list->u.list.first)) {
-		switch (liststate) {
-		case QRY:
+    assert(list);
+    liststate = (state_t) list->state;
+    if (! (elem = list->u.list.first)) {
+        switch (liststate) {
+        case QRY:
             je_emit_token(C, chan, '?');
-			break;
-		case TLD:
+            break;
+        case TLD:
             je_emit_token(C, chan, '~');
-			break;
-		default:
-		    break;
-		}
-		return;
-	}
-	type = (elemtype_t) elem->type;
-	switch (type) {
-	case FRAGELEM:
+            break;
+        default:
+            break;
+        }
+        return;
+    }
+    type = (elemtype_t) elem->type;
+    switch (type) {
+    case FRAGELEM:
         print_frags(chan, liststate, elem, &(C->sep));
-		break;
-	case LISTELEM:
-		cnt = 0;
-		while (elem) {
-			if (cnt++ == 0) {
-				switch (liststate) {
-				case EDGE:
+        break;
+    case LISTELEM:
+        cnt = 0;
+        while (elem) {
+            if (cnt++ == 0) {
+                switch (liststate) {
+                case EDGE:
                     je_emit_token(C, chan, '<');
-					break;
-				case OBJECT_LIST:
-				case ENDPOINTSET:
+                    break;
+                case OBJECT_LIST:
+                case ENDPOINTSET:
                     je_emit_token(C, chan, '(');
-					break;
-				case ATTRIBUTES:
+                    break;
+                case ATTRIBUTES:
                     je_emit_token(C, chan, '[');
-					break;
-				case CONTAINER:
+                    break;
+                case CONTAINER:
                     je_emit_token(C, chan, '{');
-					break;
-				case VALASSIGN:
+                    break;
+                case VALASSIGN:
                     je_emit_token(C, chan, '=');
                     break;
-		        case CHILD:
+                case CHILD:
                     je_emit_token(C, chan, '/');
-			        break;
-				default:
-					break;
-				}
-			}
-			je_emit_list(C, chan, elem);	// recurse
-			elem = elem->next;
-		}
-		switch (liststate) {
-		case EDGE:
+                    break;
+                default:
+                    break;
+                }
+            }
+            je_emit_list(C, chan, elem);    // recurse
+            elem = elem->next;
+        }
+        switch (liststate) {
+        case EDGE:
             je_emit_close_token(C, chan, '>');
-			break;
-		case OBJECT_LIST:
-		case ENDPOINTSET:
+            break;
+        case OBJECT_LIST:
+        case ENDPOINTSET:
             je_emit_close_token(C, chan, ')');
-			break;
-		case ATTRIBUTES:
+            break;
+        case ATTRIBUTES:
             je_emit_close_token(C, chan, ']');
-			break;
-		case CONTAINER:
+            break;
+        case CONTAINER:
             je_emit_close_token(C, chan, '}');
-			break;
-		default:
-			break;
-		}
-		break;
-	case HASHELEM:
+            break;
+        default:
+            break;
+        }
+        break;
+    case HASHELEM:
         assert(0);  // should not be here
-		break;
-	}
+        break;
+    }
 }
 
 void je_emit_error(context_t * C, state_t si, char *message)
 {
-	unsigned char *p, c;
+    unsigned char *p, c;
 
-	fprintf(stderr, "Error: %s ", message);
-	print_len_frag(stderr, NAMEP(si));
-	fprintf(stderr, "\n	  in \"%s\" line: %ld just before: \"",
-		C->filename, (C->stat_lfcount ?
+    fprintf(stderr, "Error: %s ", message);
+    print_len_frag(stderr, NAMEP(si));
+    fprintf(stderr, "\n      in \"%s\" line: %ld just before: \"",
+        C->filename, (C->stat_lfcount ?
             C->stat_lfcount :
             C->stat_crcount) - C->linecount_at_start + 1);
-	p = C->in;
-	while ((c = *p++)) {
-		if (c == '\n' || c == '\r') {
-			break;
+    p = C->in;
+    while ((c = *p++)) {
+        if (c == '\n' || c == '\r') {
+            break;
         }
-		putc(c, stderr);
-	}
-	fprintf(stderr, "\"\n");
-	exit(EXIT_FAILURE);
+        putc(c, stderr);
+    }
+    fprintf(stderr, "\"\n");
+    exit(EXIT_FAILURE);
 }

@@ -1,44 +1,44 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 typedef enum {
-	LISTELEM = 0, // must be 0 for static or calloc allocation of list headers
-	FRAGELEM = 1,
-	HASHELEM = 2
+    LISTELEM = 0, // must be 0 for static or calloc allocation of list headers
+    FRAGELEM = 1,
+    HASHELEM = 2
 } elemtype_t;
 
 // Print a list (tree) -  used for debugging
 #define P(L) {C->sep = ' ';print_list(stdout, L, 0, &(C->sep));putc('\n', stdout);}
 
 struct elem_s {
-	elem_t *next;
-	union {
-		struct {
-			elem_t *first;	// for push, pop, and forward walk
-			elem_t *last;	// for append
-		} list;
-		struct {
-			inbuf_t *inbuf;	// inbuf containing frag - for memory management
-			unsigned char *frag;	// point to beginning of frag
-		} frag;
-		struct {
-			unsigned long hash; // hash value
-			FILE *out;      // file handle, or NULL if not opened yet.
-		} hash;
-	} u;
-	// FIXME -- There must be a better way ?
-	//          If these "ref" or "len" ints are included in the above union{}, then
-	//          the size of elem_t increases from 32 to 40 bytes.
-	union {
-		struct {
-			int refs;	// reference count
-		} list;
-		struct {
-			int len;	// length of frag
-		} frag;
-	} v;
-	// FIXME -- can't store type as elemtype_t, or state as state_t, or it would assume ints.
-	char type;		// LISTELEM or FRAGELEM
-	char state;		// state_machine state that generated this list
+    elem_t *next;
+    union {
+        struct {
+            elem_t *first;    // for push, pop, and forward walk
+            elem_t *last;    // for append
+        } list;
+        struct {
+            inbuf_t *inbuf;    // inbuf containing frag - for memory management
+            unsigned char *frag;    // point to beginning of frag
+        } frag;
+        struct {
+            unsigned long hash; // hash value
+            FILE *out;      // file handle, or NULL if not opened yet.
+        } hash;
+    } u;
+    // FIXME -- There must be a better way ?
+    //          If these "ref" or "len" ints are included in the above union{}, then
+    //          the size of elem_t increases from 32 to 40 bytes.
+    union {
+        struct {
+            int refs;    // reference count
+        } list;
+        struct {
+            int len;    // length of frag
+        } frag;
+    } v;
+    // FIXME -- can't store type as elemtype_t, or state as state_t, or it would assume ints.
+    char type;        // LISTELEM or FRAGELEM
+    char state;        // state_machine state that generated this list
 };
 
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))

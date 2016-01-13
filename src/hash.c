@@ -19,13 +19,13 @@
 
 static void hash_list_r(unsigned long *phash, elem_t *list)
 {
-	elem_t *elem;
-	unsigned char *cp;
+    elem_t *elem;
+    unsigned char *cp;
     int len;
 
-	if ((elem = list->u.list.first)) {
-	    switch ((elemtype_t) elem->type) {
-	    case FRAGELEM:
+    if ((elem = list->u.list.first)) {
+        switch ((elemtype_t) elem->type) {
+        case FRAGELEM:
             while (elem) {
                 cp = elem->u.frag.frag;
                 len = elem->v.frag.len;
@@ -38,18 +38,18 @@ static void hash_list_r(unsigned long *phash, elem_t *list)
                 }
                 elem = elem->next;
             }
-		    break;
-	    case LISTELEM:
-		    while (elem) {
-			    hash_list_r(phash, elem);	// recurse
-			    elem = elem->next;
-		    }
-		    break;
-	    case HASHELEM:
-		    assert(0);  // should not be here
             break;
-	    }
-	}
+        case LISTELEM:
+            while (elem) {
+                hash_list_r(phash, elem);    // recurse
+                elem = elem->next;
+            }
+            break;
+        case HASHELEM:
+            assert(0);  // should not be here
+            break;
+        }
+    }
 }
 
 // 64 ascii chars that are safe in filenames

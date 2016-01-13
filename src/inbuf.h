@@ -6,10 +6,10 @@
 #define INBUFALLOCNUM 128
 
 struct inbuf_s {
-	inbuf_t *next;
-	int refs;
-	unsigned char buf[INBUFSIZE];
-	unsigned char end_of_buf;	// maintain a '\0' here 
+    inbuf_t *next;
+    int refs;
+    unsigned char buf[INBUFSIZE];
+    unsigned char end_of_buf;    // maintain a '\0' here 
 };
 
 void new_inbuf(context_t * C);

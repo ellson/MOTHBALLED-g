@@ -28,7 +28,7 @@ char * je_session(context_t *C)
     static struct utsname unamebuf;
     static uid_t uid;
 #if defined(HAVE_CLOCK_GETTIME)
-	static struct timespec starttime;
+    static struct timespec starttime;
 #else
     static struct timeval starttime;
 #endif
@@ -71,7 +71,7 @@ char * je_session(context_t *C)
     je_append_string  (C, &pos, C->hostname);
 
 #if defined(HAVE_CLOCK_GETTIME)
-	if (clock_gettime(CLOCK_BOOTTIME, &(C->uptime)) != 0) {
+    if (clock_gettime(CLOCK_BOOTTIME, &(C->uptime)) != 0) {
         perror("Error - clock_gettime(): ");
         exit(EXIT_FAILURE);
     }
@@ -79,7 +79,7 @@ char * je_session(context_t *C)
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, C->uptime.tv_sec);
 
-	if (clock_gettime(CLOCK_REALTIME, &starttime) != 0) {
+    if (clock_gettime(CLOCK_REALTIME, &starttime) != 0) {
         perror("Error - clock_gettime(): ");
         exit(EXIT_FAILURE);
     }
@@ -90,7 +90,7 @@ char * je_session(context_t *C)
 
 // FIXME -- needed for OS/X - incomplete....  -  how to get uptime?
 
-	if (gettimeofday(&(C->uptime), NULL) != 0) {
+    if (gettimeofday(&(C->uptime), NULL) != 0) {
         perror("Error - gettimeofday(): ");
         exit(EXIT_FAILURE);
     }
@@ -98,7 +98,7 @@ char * je_session(context_t *C)
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, C->uptime.tv_sec);
 
-	if (gettimeofday(&starttime, NULL) != 0) {
+    if (gettimeofday(&starttime, NULL) != 0) {
         perror("Error - gettimeofday(): ");
         exit(EXIT_FAILURE);
     }
@@ -124,31 +124,31 @@ char * je_stats(context_t *C)
 
     char *pos = &buf[0];  // NB non-static.  stats are updated and re-formatted on each call
 #if defined(HAVE_CLOCK_GETTIME)
-	struct timespec nowtime;
+    struct timespec nowtime;
 #else
-	struct timeval nowtime;
+    struct timeval nowtime;
 #endif
-	long runtime;    // runtime in nano-seconds
+    long runtime;    // runtime in nano-seconds
 
     je_append_string  (C, &pos, "stats");
     je_append_token   (C, &pos, '[');
 
 #if defined(HAVE_CLOCK_GETTIME)
-	if (clock_gettime(CLOCK_BOOTTIME, &nowtime) != 0) {
+    if (clock_gettime(CLOCK_BOOTTIME, &nowtime) != 0) {
         perror("Error - clock_gettime(): ");
         exit(EXIT_FAILURE);
     }
-	runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_nsec)
+    runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_nsec)
             - ((unsigned long)(C->uptime.tv_sec) * TEN9 + (unsigned long)(C->uptime.tv_nsec));
 #else
  
 // FIXME -- needed for OS/X - incomplete....  -  how to get uptime?
 
-	if (gettimeofday(&nowtime, NULL) != 0) {
+    if (gettimeofday(&nowtime, NULL) != 0) {
         perror("Error - gettimeofday(): ");
         exit(EXIT_FAILURE);
     }
-	runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_usec) * TEN3
+    runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_usec) * TEN3
             - ((unsigned long)(C->uptime.tv_sec) * TEN9 + (unsigned long)(C->uptime.tv_usec) * TEN3);
 #endif
 

@@ -2,39 +2,39 @@
 
 // emit styles
 typedef enum {
-	MINIMUM_SPACE_STYLE = 0,
-	SHELL_FRIENDLY_STYLE = 1
+    MINIMUM_SPACE_STYLE = 0,
+    SHELL_FRIENDLY_STYLE = 1
 } style_t;
 
 struct emit_s {
     char *name;
-	void (*initialize) (context_t * C);
-	void (*finalize) (context_t * C);
+    void (*initialize) (context_t * C);
+    void (*finalize) (context_t * C);
 
-	void (*start_file) (context_t * C);
-	void (*end_file) (context_t * C);
+    void (*start_file) (context_t * C);
+    void (*end_file) (context_t * C);
 
-	void (*start_activity) (container_context_t * CC);
-	void (*end_activity) (container_context_t * CC);
+    void (*start_activity) (container_context_t * CC);
+    void (*end_activity) (container_context_t * CC);
 
-	void (*start_act) (container_context_t * CC);
-	void (*end_act) (container_context_t * CC);
+    void (*start_act) (container_context_t * CC);
+    void (*end_act) (container_context_t * CC);
 
-	void (*start_subject) (container_context_t * CC);
-	void (*end_subject) (container_context_t * CC);
+    void (*start_subject) (container_context_t * CC);
+    void (*end_subject) (container_context_t * CC);
 
-	void (*start_state) (container_context_t * CC, char class, unsigned char prop, int nest, int repc);
-	void (*end_state) (container_context_t * CC, char class, success_t rc, int nest, int repc);
+    void (*start_state) (container_context_t * CC, char class, unsigned char prop, int nest, int repc);
+    void (*end_state) (container_context_t * CC, char class, success_t rc, int nest, int repc);
 
-	void (*act) (container_context_t * CC, elem_t * root);
-	void (*subject) (container_context_t * CC, elem_t * root);
-	void (*attributes) (container_context_t * CC, elem_t * root);
+    void (*act) (container_context_t * CC, elem_t * root);
+    void (*subject) (container_context_t * CC, elem_t * root);
+    void (*attributes) (container_context_t * CC, elem_t * root);
 
-	void (*sep) (context_t * C);
-	void (*token) (context_t * C, char token);
-	void (*string) (context_t * C, elem_t * branch);
-	void (*frag) (context_t * C, unsigned char len, unsigned char *frag);
-	void (*error) (context_t * C, state_t si, char *message);
+    void (*sep) (context_t * C);
+    void (*token) (context_t * C, char token);
+    void (*string) (context_t * C, elem_t * branch);
+    void (*frag) (context_t * C, unsigned char len, unsigned char *frag);
+    void (*error) (context_t * C, state_t si, char *message);
 };
 
 #define emit_initialize(C) \
