@@ -18,10 +18,4 @@ a
 
 <(a b) c>
 <(= d) c>
-
-#<= d>
-# FIXME - '=' matching an epset
-#       - could reject as form doesn't match..
-#	- better would be to accept and expand:
-#		<a d><b d>
-
+<= d>

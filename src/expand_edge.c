@@ -39,11 +39,17 @@ void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
             case COUSIN:
                 // FIXME - route to ancestors
                 break;
+            case ENDPOINT:
+                // FIXME  - if we're going to induce nodes or route to ancestor, then
+                //     this has to be broken down further.
+                // this case occurs if '=' matches an epset
+                //     <(a b) c>
+                //     <= d>
+                new = ref_list(C, ep->u.list.first);
+                append_list(nodes, new);
+                break;
             default:
                 assert(0);  // shouldn't happen  
-                                // but does if '=' matches an epset
-                                //     <(a b) c>
-                                //     <= d>
                 break;
             }
             ep = ep->next;

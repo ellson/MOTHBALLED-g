@@ -1,0 +1,18 @@
+1) sameas produces wrong result when "=" matches an ENPOINTSET
+
+e.g.: 
+	<(a b) c>
+	<= d>
+
+produces:
+	
+	a
+	b
+	c
+	<a c>
+	<b c>
+	a
+	d
+	<a d>
+
+also, perhaps nodes introduces with "=" don't require further nod induction
