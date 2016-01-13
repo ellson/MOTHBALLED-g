@@ -1,6 +1,8 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 #include "libje_private.h"
+static success_t
+je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern);
 
 // A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
 // The AST is a wild-card that matches any substring of zero or more 
@@ -22,9 +24,76 @@
 // A SUBJECT is matched if all its pattern and non-pattern STRINGS
 // match, after pattern substitution.
 
-// ENDPOINTSETs are not expanded in patterns, or in SUBJECTss
-// before pattern matching.
+// ENDPOINTSETs are not expanded in patterns, or in SUBJECTs
+// before pattern matching. (i.e. the form of ENDPOINTSETS must be the same for a match to occur)
 
+
+// Look for pattern match(es) to the current subject (segregated
+// into NODE and EDGE patterns).
+// For each match, append a (refcounted copy) of the current
+// subject, followed by (refcounted) copies of the ATTRIBUTES
+// and CONTAINER from the pattern.  Finally return for the current
+// subject to be appended with its own ATTRIBUTES and CONTENTS.
+void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
+{
+    elem_t *pattern_acts, *nextpattern_act, *elem, *psubj, *pattr;
+    context_t *C = CC->context;
+
+    assert(root);
+    assert(subject);
+    assert((state_t) subject->state == SUBJECT);
+
+    if (CC->subject_type == NODE) {
+        pattern_acts = &(CC->node_pattern_acts);
+    } else {
+        assert(CC->subject_type == EDGE);
+        pattern_acts = &(CC->edge_pattern_acts);
+    }
+
+    // iterate over available patterns
+    nextpattern_act = pattern_acts->u.list.first;
+    while (nextpattern_act) {
+
+        elem = nextpattern_act->u.list.first;
+        if (! elem) {
+            break;
+        }
+        assert((state_t) elem->state == ACT);
+
+        elem = elem->u.list.first;
+        psubj = elem;
+        assert(psubj);
+        assert((state_t) psubj->state == SUBJECT);
+
+        elem = elem->next;
+        pattr = elem;
+
+        // FIXME - contents from pattern ??
+
+        if ((je_pattern_r(CC, subject->u.list.first, psubj->u.list.first)) == SUCCESS) {
+            // insert matched attrubutes, contents,
+            // and then the subject again
+            
+            elem = ref_list(C, subject);
+            append_list(root, elem);
+            emit_subject(CC, subject);
+
+            if (pattr && (state_t)pattr->state == ATTRIBUTES) {
+                elem = ref_list(C, pattr);
+                append_list(root, elem);
+                emit_attributes(CC, pattr);
+            }
+
+            // FIXME -- contents
+
+            C->stat_patternmatches++;
+        }
+
+        nextpattern_act = nextpattern_act->next;
+    }
+}
+
+// attempt to match one pattern to a subject
 static success_t
 je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 {
@@ -90,67 +159,4 @@ je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
         p_elem = p_elem->next;
     }
     return SUCCESS;
-}
-
-// Look for pattern match(es) to the current subject (segregated
-// into NODE and EDGE patterns).
-// For each match, append a (refcounted copy) of the current
-// subject, followed by (refcounted) copies of the ATTRIBUTES
-// and CONTAINER from the pattern.  Finally return for the current
-// subject to be appended with its own ATTRIBUTES and CONTENTS.
-void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
-{
-    elem_t *pattern_acts, *nextpattern_act, *elem, *psubj, *pattr;
-    context_t *C = CC->context;
-
-    assert(root);
-    assert(subject);
-    assert((state_t) subject->state == SUBJECT);
-
-    if (CC->subject_type == NODE) {
-        pattern_acts = &(CC->node_pattern_acts);
-    } else {
-        assert(CC->subject_type == EDGE);
-        pattern_acts = &(CC->edge_pattern_acts);
-    }
-    nextpattern_act = pattern_acts->u.list.first;
-    while (nextpattern_act) {
-
-        elem = nextpattern_act->u.list.first;
-        if (! elem) {
-            break;
-        }
-        assert((state_t) elem->state == ACT);
-
-        elem = elem->u.list.first;
-        psubj = elem;
-        assert(psubj);
-        assert((state_t) psubj->state == SUBJECT);
-
-        elem = elem->next;
-        pattr = elem;
-
-        // FIXME - contents from pattern ??
-
-        if ((je_pattern_r(CC, subject->u.list.first, psubj->u.list.first)) == SUCCESS) {
-            // insert matched attrubutes, contents,
-            // and then the subject again
-            
-            elem = ref_list(C, subject);
-            append_list(root, elem);
-            emit_subject(CC, subject);
-
-            if (pattr && (state_t)pattr->state == ATTRIBUTES) {
-                elem = ref_list(C, pattr);
-                append_list(root, elem);
-                emit_attributes(CC, pattr);
-            }
-
-            // FIXME -- contents
-
-            C->stat_patternmatches++;
-        }
-
-        nextpattern_act = nextpattern_act->next;
-    }
 }

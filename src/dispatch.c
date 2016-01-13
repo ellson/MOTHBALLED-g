@@ -1,6 +1,8 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 #include "libje_private.h"
+static void je_dispatch_r(context_t * C, elem_t * list, elem_t * attributes, elem_t * nodes, elem_t * edges);
+static void je_assemble_act(context_t *C, elem_t *elem, elem_t *attributes, elem_t *list);
 
 // Processes an ACT after sameas and pattern substitutions.
 //
@@ -35,83 +37,6 @@
 //              If there still ^/ left, then the process
 //              is repeated, sending it though the nameless channel to
 //              their parent, which applies the same rule:
-
-// this function expands OBJECT_LISTS of NODES or EDGES, and then expands ENPOINTSETS in EDGES
-static void je_dispatch_r(context_t * C, elem_t * list, elem_t * attributes, elem_t * nodes, elem_t * edges)
-{
-    elem_t *elem, *new, *object;
-    state_t si;
-
-    assert(list->type == (char)LISTELEM);
-
-    elem = list->u.list.first;
-    while (elem) {
-        si = (state_t) elem->state;
-        switch (si) {
-        case ATTRIBUTES:
-            new = ref_list(C, elem);
-            append_list(attributes, new);
-            break;
-        case SUBJECT:
-            object = elem->u.list.first;
-            if ((state_t)object->state == OBJECT) {
-                je_dispatch_r(C, object, attributes, nodes, edges);
-            }
-            else if ((state_t)object->state == OBJECT_LIST) {
-                object = object->u.list.first;
-                assert((state_t)object->state == OBJECT);
-                while(object) {
-                    je_dispatch_r(C, object, attributes, nodes, edges);
-                    object = object->next;
-                }
-            }
-            else {
-                assert(0); //should never get here
-            }
-            break;
-        case NODE:
-            new = ref_list(C, elem);
-            append_list(nodes, new);
-            break;
-        case EDGE:
-            je_expand_edge(C, elem, nodes, edges);
-            break;
-        default:
-            break;
-        }
-        elem = elem->next;
-    }
-}
-
-static void je_assemble_act(context_t *C, elem_t *elem, elem_t *attributes, elem_t *list)
-{
-    elem_t act = { 0 };
-    elem_t verb = { 0 };
-    elem_t *new;
-
-    act.state = ACT;
-
-    switch(C->verb) {
-    case QRY:
-    case TLD:
-        verb.state = C->verb;
-        new = move_list(C, &verb);
-        append_list(&act, new);
-        break;
-    default:
-        break;
-    }
-    new = ref_list(C, elem);
-    append_list(&act, new);
-    if (attributes && attributes->u.list.first) {
-        new = ref_list(C, attributes->u.list.first);
-        append_list(&act, new);
-    }
-
-    new = move_list(C, &act);
-    append_list(list, new);
-}
-
 void je_dispatch(container_context_t * CC, elem_t * list)
 {
     context_t *C = CC->context;
@@ -169,3 +94,82 @@ void je_dispatch(container_context_t * CC, elem_t * list)
     free_list(C, &nodes);
     free_list(C, &edges);
 }
+
+// this function expands OBJECT_LISTS of NODES or EDGES, and then expands ENPOINTSETS in EDGES
+static void je_dispatch_r(context_t * C, elem_t * list, elem_t * attributes, elem_t * nodes, elem_t * edges)
+{
+    elem_t *elem, *new, *object;
+    state_t si;
+
+    assert(list->type == (char)LISTELEM);
+
+    elem = list->u.list.first;
+    while (elem) {
+        si = (state_t) elem->state;
+        switch (si) {
+        case ATTRIBUTES:
+            new = ref_list(C, elem);
+            append_list(attributes, new);
+            break;
+        case SUBJECT:
+            object = elem->u.list.first;
+            switch ((state_t)object->state) {
+            case OBJECT:
+                je_dispatch_r(C, object, attributes, nodes, edges);
+                break;
+            case OBJECT_LIST:
+                object = object->u.list.first;
+                assert((state_t)object->state == OBJECT);
+                while(object) {
+                    je_dispatch_r(C, object, attributes, nodes, edges);
+                    object = object->next;
+                }
+                break;
+            default:
+                assert(0); //should never get here
+                break;
+            }
+            break;
+        case NODE:
+            new = ref_list(C, elem);
+            append_list(nodes, new);
+            break;
+        case EDGE:
+            je_expand_edge(C, elem, nodes, edges);
+            break;
+        default:
+            break;
+        }
+        elem = elem->next;
+    }
+}
+
+static void je_assemble_act(context_t *C, elem_t *elem, elem_t *attributes, elem_t *list)
+{
+    elem_t act = { 0 };
+    elem_t verb = { 0 };
+    elem_t *new;
+
+    act.state = ACT;
+
+    switch(C->verb) {
+    case QRY:
+    case TLD:
+        verb.state = C->verb;
+        new = move_list(C, &verb);
+        append_list(&act, new);
+        break;
+    default:
+        break;
+    }
+    new = ref_list(C, elem);
+    append_list(&act, new);
+    if (attributes && attributes->u.list.first) {
+        new = ref_list(C, attributes->u.list.first);
+        append_list(&act, new);
+    }
+
+    new = move_list(C, &act);
+    append_list(list, new);
+}
+

@@ -1,6 +1,10 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 #include "libje_private.h"
+static success_t
+je_parse_r(container_context_t * CC, elem_t * root,
+    state_t si, unsigned char prop, int nest, int repc);
+static success_t je_more_rep(context_t * C, unsigned char prop);
 
 // This parser recurses at two levels:
 //
@@ -17,29 +21,60 @@
 // The outer recursions are through nested containment.
 // The top-level context (C) is available to both and maintains the input state.
 
-static success_t je_more_rep(context_t * C, unsigned char prop)
+success_t je_parse(context_t * C, elem_t * name)
 {
-    state_t ei, bi;
+    container_context_t container_context = { 0 };
+    container_context_t *CC = &container_context;
+    elem_t root = { 0 };    // the output parse tree
+    elem_t *elem;
+    success_t rc;
+    unsigned long hash;
+    char *hashname, *filename;
 
-    if (!(prop & (REP | SREP)))
-        return FAIL;
+    CC->context = C;
 
-    ei = C->ei;
-    if (ei == RPN || ei == RAN || ei == RBR || ei == RBE) {
-        return FAIL;    // no more repetitions
+    je_hash_list(&hash, name);         // hash name (subject "names" can be very long)
+    elem = je_hash_bucket(C, hash);    // save in bucket list 
+    if (! elem->u.hash.out) {          // open file, if not already open
+        hashname = je_long_to_base64(&hash);
+        if (! (filename = malloc(strlen(C->tempdir) + 1 + strlen(hashname) + 1))) {
+            perror("Error - malloc(): ");
+            exit(EXIT_FAILURE);
+        }
+        strcpy(filename, C->tempdir);
+        strcat(filename, "/");
+        strcat(filename, hashname);
+        elem->u.hash.out = fopen(filename,"a+b"); //open for binary append writes, + read.
+        if (! elem->u.hash.out) {
+            perror("Error - fopen(): ");
+            exit(EXIT_FAILURE);
+        }
+        free(filename);
     }
-    bi = C->bi;
-    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE
-        || (ei != ABC && ei != AST && ei != DQT)) {
-        return SUCCESS;    // more repetitions, but additional WS sep is optional
+    CC->out = elem->u.hash.out;
+
+    emit_start_activity(CC);
+    C->containment++;
+    C->stat_containercount++;
+    if ((rc = je_parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+        if (C->insi == NLL) {    // EOF is OK
+            rc = SUCCESS;
+        } else {
+            emit_error(C, C->state, "Parse error. Last good state was:");
+        }
     }
-    if (prop & SREP) {
-        emit_sep(C);    // sep is non-optional, emit the minimal sep
-                        //    .. when low-level emit hook is used.
-    }
-    return SUCCESS;        // more repetitions
+    C->containment--;
+    emit_end_activity(CC);
+
+    free_list(C, &root);
+    free_list(C, &(CC->subject));
+    free_list(C, &(CC->node_pattern_acts));
+    free_list(C, &(CC->edge_pattern_acts));
+
+    return rc;
 }
 
+// recurse through state-machine at a single level of containment
 static success_t
 je_parse_r(container_context_t * CC, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc)
@@ -245,55 +280,26 @@ je_parse_r(container_context_t * CC, elem_t * root,
     return rc;
 }
 
-success_t je_parse(context_t * C, elem_t * name)
+// test for more repetitions, emit a separator only if mandated
+static success_t je_more_rep(context_t * C, unsigned char prop)
 {
-    container_context_t container_context = { 0 };
-    container_context_t *CC = &container_context;
-    elem_t root = { 0 };    // the output parse tree
-    elem_t *elem;
-    success_t rc;
-    unsigned long hash;
-    char *hashname, *filename;
+    state_t ei, bi;
 
-    CC->context = C;
+    if (!(prop & (REP | SREP)))
+        return FAIL;
 
-    je_hash_list(&hash, name);         // hash name (subject "names" can be very long)
-    elem = je_hash_bucket(C, hash);    // save in bucket list 
-    if (! elem->u.hash.out) {          // open file, if not already open
-        hashname = je_long_to_base64(&hash);
-        if (! (filename = malloc(strlen(C->tempdir) + 1 + strlen(hashname) + 1))) {
-            perror("Error - malloc(): ");
-            exit(EXIT_FAILURE);
-        }
-        strcpy(filename, C->tempdir);
-        strcat(filename, "/");
-        strcat(filename, hashname);
-        elem->u.hash.out = fopen(filename,"a+b"); //open for binary append writes, + read.
-        if (! elem->u.hash.out) {
-            perror("Error - fopen(): ");
-            exit(EXIT_FAILURE);
-        }
-        free(filename);
+    ei = C->ei;
+    if (ei == RPN || ei == RAN || ei == RBR || ei == RBE) {
+        return FAIL;    // no more repetitions
     }
-    CC->out = elem->u.hash.out;
-
-    emit_start_activity(CC);
-    C->containment++;
-    C->stat_containercount++;
-    if ((rc = je_parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
-        if (C->insi == NLL) {    // EOF is OK
-            rc = SUCCESS;
-        } else {
-            emit_error(C, C->state, "Parse error. Last good state was:");
-        }
+    bi = C->bi;
+    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE
+        || (ei != ABC && ei != AST && ei != DQT)) {
+        return SUCCESS;    // more repetitions, but additional WS sep is optional
     }
-    C->containment--;
-    emit_end_activity(CC);
-
-    free_list(C, &root);
-    free_list(C, &(CC->subject));
-    free_list(C, &(CC->node_pattern_acts));
-    free_list(C, &(CC->edge_pattern_acts));
-
-    return rc;
+    if (prop & SREP) {
+        emit_sep(C);    // sep is non-optional, emit the minimal sep
+                        //    .. when low-level emit hook is used.
+    }
+    return SUCCESS;        // more repetitions
 }

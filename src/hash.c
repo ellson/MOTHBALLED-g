@@ -1,6 +1,7 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 #include "libje_private.h"
+static void hash_list_r(unsigned long *phash, elem_t *list);
 
 #define MSB_LONG (8*(sizeof(long))-1)
 
@@ -16,6 +17,15 @@
 
 #define FNV_INIT  0xcbf29ce484222325
 #define FNV_PRIME 0x100000001b3
+
+void je_hash_list(unsigned long *hash, elem_t *list)
+{
+    assert(sizeof(long) == 8);
+    assert(list);
+
+    *hash = FNV_INIT;
+    hash_list_r(hash, list);
+}
 
 static void hash_list_r(unsigned long *phash, elem_t *list)
 {
@@ -56,14 +66,13 @@ static void hash_list_r(unsigned long *phash, elem_t *list)
 // each character used only once
 // must match reverse mapping table
 static char b64[64] = {
-    '0','1','2','3','4','5','6','7','8','9',
-        'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O',
-    'P','Q','R','S','T','U','V','W','X','Y','Z',
-        'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o',
-    'p','q','r','s','t','u','v','w','x','y','z',
-    ',','_'
+    '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F',
+    'G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V',
+    'W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l',
+    'm','n','o','p','q','r','s','t','u','v','w','x','y','z',',','_'
 };
 
+// reverse mapping
 static char un_b64[128] = {
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -112,15 +121,6 @@ success_t je_base64_to_long(char *b64string, unsigned long *phash)
     }
     *phash = hash;
     return SUCCESS;
-}
-
-void je_hash_list(unsigned long *hash, elem_t *list)
-{
-    assert(sizeof(long) == 8);
-    assert(list);
-
-    *hash = FNV_INIT;
-    hash_list_r(hash, list);
 }
 
 elem_t *je_hash_bucket(context_t * C, unsigned long hash)
