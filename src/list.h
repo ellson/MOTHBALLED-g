@@ -30,10 +30,10 @@ struct elem_s {
     //          the size of elem_t increases from 32 to 40 bytes.
     union {
         struct {
-            int refs;    // reference count
+            unsigned int refs;    // reference count
         } list;
         struct {
-            int len;    // length of frag
+            unsigned int len;    // length of frag
         } frag;
     } v;
     // FIXME -- can't store type as elemtype_t, or state as state_t, or it would assume ints.
@@ -45,7 +45,7 @@ struct elem_s {
 #define LISTALLOCNUM 512
 
 elem_t *new_hash(context_t * C, unsigned long hash);
-elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag);
+elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag);
 elem_t *move_list(context_t * C, elem_t * list);
 elem_t *ref_list(context_t * C, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);

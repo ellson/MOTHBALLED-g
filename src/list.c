@@ -7,6 +7,10 @@
  *
  * elem_t are allocated in blocks and maintained in a free_elem_t list.
  * Freeing an elem_t actually means returning to this list.
+ *
+ * @param C the top-level context in which all lists are managed
+ * @param type one of: LISTELEM, FRAGELEM, HASHELEM
+ * @return a new intialized elem_t
  */
 static elem_t *new_elem_sub(context_t * C, elemtype_t type)
 {
@@ -32,7 +36,7 @@ static elem_t *new_elem_sub(context_t * C, elemtype_t type)
 
     }
     elem = C->free_elem_list;    // use first elem from free_elem_list
-    C->free_elem_list = elem->next;    // update list to point to next available
+    C->free_elem_list = elem->next; // update list to point to next available
 
     elem->type = (char)type;    // init the new elem
     elem->next = NULL;
@@ -45,10 +49,17 @@ static elem_t *new_elem_sub(context_t * C, elemtype_t type)
 }
 
 /**
- * Return a pointer to an elem_t which holds a string fragment (start address and length)
- * The element is memory managed without caller involvement.
+ * Return a pointer to an elem_t which holds a string fragment
+ * (start address and length).
+ * The elem_t is memory managed without caller involvement.
+ *
+ * @param C the top-level context in which all lists are managed
+ * @param state a one character value stored with the elem, no internal meaning
+ * @param len fragment length
+ * @param frag pointer to first character of contiguous fragment on len chars
+ * @return a new intialized elem_t
  */
-elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag)
+elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag)
 {
     elem_t *elem;
 
@@ -69,9 +80,14 @@ elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag)
 }
 
 /**
- * Return a pointer to an elem_t which holds a hashname (suitable for use as a filename)
+ * Return a pointer to an elem_t which holds a hashname
+ * (suitable for use as a filename)
  * The element is memory managed without caller involvement.
  * The FILE* in the elem_t is initialized to NULL
+ *
+ * @param C the top-level context in which all lists are managed
+ * @param hash a long containing a hash value
+ * @return a new intialized elem_t
  */
 elem_t *new_hash(context_t * C, unsigned long hash)
 {
@@ -94,6 +110,10 @@ elem_t *new_hash(context_t * C, unsigned long hash)
  * The ref count in the first elem is not updated for this clone, so
  * this function must only be used by move_list() or ref_list(), which
  * make appropriate fixes to the ref counts.
+ *
+ * @param C the top-level context in which all lists are managed
+ * @param list a header to a list to be cloned
+ * @return a new intialized elem_t
  */
 static elem_t *clone_list(context_t * C, elem_t * list)
 {
@@ -119,6 +139,10 @@ static elem_t *clone_list(context_t * C, elem_t * list)
  * in the first elem_t, so no need to deref.
  *
  * Clean up the old list header so it no longer references the list elems.
+ *
+ * @param C the top-level context in which all lists are managed
+ * @param list a header to a list to be moved
+ * @return a new intialized elem_t which is now the header of the moved list
  */
 elem_t *move_list(context_t * C, elem_t * list)
 {
@@ -138,7 +162,12 @@ elem_t *move_list(context_t * C, elem_t * list)
  * Implement as a clone_list with a ref count adjustment
  *
  * If there is a first elem and if it is a LISTELEM, then
- * increment the first elem's ref count.  (NB, not the ref_count in this new elem_t)
+ * increment the first elem's ref count.  (NB, not the ref_count in this
+ * new elem_t)
+ *
+ * @param C the top-level context in which all lists are managed
+ * @param list a header to a list to be referenced
+ * @return a new intialized elem_t which is now also a header of the referenced list
  */
 elem_t *ref_list(context_t * C, elem_t * list)
 {
@@ -157,6 +186,9 @@ elem_t *ref_list(context_t * C, elem_t * list)
  *
  *  The reference count in the appended element is incremented
  *  to account for the new reference from the old tail elem_t
+ *
+ * @param list the header of the list to be appended
+ * @param elem the element to be appended (must be a LISTELEM)
  */
 void append_list(elem_t * list, elem_t * elem)
 {
@@ -178,11 +210,17 @@ void append_list(elem_t * list, elem_t * elem)
  * Free the list contents, but not the list header.
  * This function can be used on statically or callstack allocated list headers.
  *  
- * If it is a list of lists, then the refence count to the first elem_t is decremented and the elements are freed only if the references are  zero.
+ * If it is a list of lists, then the refence count in the first elem_t is
+ * decremented and the elements are freed only if the references are  zero.
  *
- * If it is a list of fragments, then the reference count is to the fragment's inbuf is decremented and the inbuf freed if there are no more fragments in use.
+ * If it is a list of fragments, then the reference count to the fragments'
+ * inbufs are decremented and the inbuf freed if there are no more fragments
+ * in use.
  *
  * Lists of hashes are not allowed to be freed.
+ *
+ * @param C the top-level context in which all lists are managed
+ * @param list a header to the list to be freed.
  */
 void free_list(context_t * C, elem_t * list)
 {
@@ -208,7 +246,7 @@ void free_list(context_t * C, elem_t * list)
             if (--(elem->v.list.refs) > 0) {
                 goto done;    // stop at any point with additional refs
             }
-            free_list(C, elem);    // recursively free lists that have no references
+            free_list(C, elem); // recursively free lists that have no references
             break;
         case HASHELEM:
             assert(0);  // should not be here
@@ -228,10 +266,18 @@ void free_list(context_t * C, elem_t * list)
     // clean up emptied list
     list->u.list.first = NULL;
     list->u.list.last = NULL;
-    // Note: ref count of header is not modified
+    // Note: ref count of the header is not modified.
+    // It may be still referenced, even though it is now empty.
 }
 
-static void print_one_frag(FILE * chan, unsigned char len, unsigned char *frag)
+/**
+ * Print a single fragment of len contiguous characters.
+ *
+ * @param chan output FILE*
+ * @param len number of contiguous characters to be output
+ * @param frag pointer to the first character in the fragment
+ */
+static void print_one_frag(FILE * chan, unsigned int len, unsigned char *frag)
 {
     while (len--) {
         putc(*frag++, chan);
@@ -240,6 +286,9 @@ static void print_one_frag(FILE * chan, unsigned char len, unsigned char *frag)
 
 /**
  * Print a len_frag (an 8bit length, followed by that number of characters)
+ *
+ * @param chan output FILE*
+ * @param len_frag an 8bit length, followed by that number of characters
  */
 int print_len_frag(FILE * chan, unsigned char *len_frag)
 {
@@ -251,9 +300,15 @@ int print_len_frag(FILE * chan, unsigned char *len_frag)
 }
 
 /**
- * conditionaly print a separator
- * followed by the concanation of fragments in the list 
- * The string is quoted if necessary to comply with g syntax
+ * Conditionaly print a separator followed by the concatenation of
+ * fragments in the list.
+ * The composite string is quoted as necessary to comply with g syntax
+ * (although not necessarily in the same way as in the original input).
+ *
+ * @param chan output FILE*
+ * @param liststate an indicator if the string is to be quoted
+ * @param elem the first frag of the fragllist
+ * @param sep if not NULL then a character to be printed first
  */
 void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
 {
@@ -299,6 +354,11 @@ void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
  * and indentation
  *
  * If non-negative initial indent, each nested list is printed at an incremented indent
+ *
+ * @param chan output FILE*
+ * @param list the header of a fraglist, or a list (maybe nested)  of fraglists
+ * @param indent if not -ve, then the initial indent
+ * @param sep if not NULL then a character to be printed first
  */
 void print_list(FILE * chan, elem_t * list, int indent, char *sep)
 {
