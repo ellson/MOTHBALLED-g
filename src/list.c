@@ -2,6 +2,12 @@
 
 #include "libje_private.h"
 
+/**
+ * Private function to manage the allocation an elem_t
+ *
+ * elem_t are allocated in blocks and maintained in a free_elem_t list.
+ * Freeing an elem_t actually means returning to this list.
+ */
 static elem_t *new_elem_sub(context_t * C, elemtype_t type)
 {
     elem_t *elem, *next;
@@ -40,7 +46,7 @@ static elem_t *new_elem_sub(context_t * C, elemtype_t type)
 
 /**
  * Return a pointer to an elem_t which holds a string fragment (start address and length)
- * The element is reference counted and memory managed without caller involvement.
+ * The element is memory managed without caller involvement.
  */
 elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag)
 {
@@ -64,7 +70,7 @@ elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag)
 
 /**
  * Return a pointer to an elem_t which holds a hashname (suitable for use as a filename)
- * The element is reference counted and memory managed without caller involvement.
+ * The element is memory managed without caller involvement.
  * The FILE* in the elem_t is initialized to NULL
  */
 elem_t *new_hash(context_t * C, unsigned long hash)
@@ -79,9 +85,16 @@ elem_t *new_hash(context_t * C, unsigned long hash)
     return elem;
 }
 
-// clone_list -  clone a list header to a new elem
-//  -- ref count in first elem is not updated
-//     so this function is only for use by move_list() or ref_list()
+/**
+ * Private function to clone a list header to a new elem.
+ *
+ * The old list header is not modified, so could have been be statically or
+ * dynamically created.
+ *
+ * The ref count in the first elem is not updated for this clone, so
+ * this function must only be used by move_list() or ref_list(), which
+ * make appropriate fixes to the ref counts.
+ */
 static elem_t *clone_list(context_t * C, elem_t * list)
 {
     elem_t *elem;
@@ -102,8 +115,8 @@ static elem_t *clone_list(context_t * C, elem_t * list)
  * Typically used to move a list from a call stack header into an elem_t header
  * so the list can be in a lists of lists.
  *
- * Implemented using clone_list.
- * Clone_list didn't increase ref count in original list header, so no need to deref.
+ * Implemented using clone_list. Clone_list didn't increase the ref count
+ * in the first elem_t, so no need to deref.
  *
  * Clean up the old list header so it no longer references the list elems.
  */
