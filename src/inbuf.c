@@ -1,5 +1,12 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <sys/types.h>
+#include <errno.h>
+#include <assert.h>
+
 #include "libje_private.h"
 
 void new_inbuf(context_t *C)

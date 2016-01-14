@@ -1,6 +1,12 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#include <stdio.h>
+#include <time.h>
+#include <sys/types.h>
+#include <assert.h>
+
 #include "libje_private.h"
+
 static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges);
 
 // this function expands and dispatches EDGEs

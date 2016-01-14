@@ -1,6 +1,15 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <sys/types.h>
+#include <errno.h>
+#include <assert.h>
+
 #include "libje_private.h"
+
 static success_t
 je_parse_r(container_context_t * CC, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc);

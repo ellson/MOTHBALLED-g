@@ -1,6 +1,13 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include <sys/types.h>
+#include <assert.h>
+
 #include "libje_private.h"
+
 static void hash_list_r(unsigned long *phash, elem_t *list);
 
 #define MSB_LONG (8*(sizeof(long))-1)

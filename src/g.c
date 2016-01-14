@@ -5,6 +5,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <time.h>
+#include <sys/types.h>
 
 #include "libje.h"
 

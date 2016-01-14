@@ -1,6 +1,12 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#include <stdio.h>
+#include <time.h>
+#include <sys/types.h>
+#include <assert.h>
+
 #include "libje_private.h"
+
 static void je_dispatch_r(context_t * C, elem_t * list, elem_t * attributes, elem_t * nodes, elem_t * edges);
 static void je_assemble_act(context_t *C, elem_t *elem, elem_t *attributes, elem_t *list);
 

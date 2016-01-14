@@ -1,5 +1,11 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <sys/types.h>
+#include <errno.h>
+
 #include "libje_private.h"
 
 context_t *je_initialize(int *pargc, char *argv[], int optind)

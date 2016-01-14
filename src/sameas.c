@@ -1,6 +1,12 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#include <stdio.h>
+#include <time.h>
+#include <sys/types.h>
+#include <assert.h>
+
 #include "libje_private.h"
+
 static void je_sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold, elem_t * newlist);
 
 //     rewrite subject into a newsubject
