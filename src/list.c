@@ -38,6 +38,10 @@ static elem_t *new_elem_sub(context_t * C, elemtype_t type)
     return elem;
 }
 
+/**
+ * Return a pointer to an elem_t which holds a string fragment (start address and length)
+ * The element is reference counted and memory managed without caller involvement.
+ */
 elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag)
 {
     elem_t *elem;
@@ -58,6 +62,11 @@ elem_t *new_frag(context_t * C, char state, int len, unsigned char *frag)
     return elem;
 }
 
+/**
+ * Return a pointer to an elem_t which holds a hashname (suitable for use as a filename)
+ * The element is reference counted and memory managed without caller involvement.
+ * The FILE* in the elem_t is initialized to NULL
+ */
 elem_t *new_hash(context_t * C, unsigned long hash)
 {
     elem_t *elem;
@@ -88,11 +97,16 @@ static elem_t *clone_list(context_t * C, elem_t * list)
     return elem;
 }
 
-// move_list - move a list to a new elem
-//     implemented using clone_list
-//         clone_list didn't increase ref count in first elem,
-//         so no need to deref.
-//     clean up the old list header so it no longer references the list elems.
+/**
+ * Move a list to a new elem.
+ * Typically used to move a list from a call stack header into an elem_t header
+ * so the list can be in a lists of lists.
+ *
+ * Implemented using clone_list.
+ * Clone_list didn't increase ref count in original list header, so no need to deref.
+ *
+ * Clean up the old list header so it no longer references the list elems.
+ */
 elem_t *move_list(context_t * C, elem_t * list)
 {
     elem_t *elem;
@@ -106,10 +120,13 @@ elem_t *move_list(context_t * C, elem_t * list)
     return elem;
 }
 
-// ref_list - reference a list from a new elem
-//     implement as a clone_list with a ref count adjustment
-//     if there is a first elem and if it is a LISTELEM, then
-//           increment the first elems ref count.  (NB, not this new elem)
+/**
+ * Reference a list from a new elem_t.
+ * Implement as a clone_list with a ref count adjustment
+ *
+ * If there is a first elem and if it is a LISTELEM, then
+ * increment the first elem's ref count.  (NB, not the ref_count in this new elem_t)
+ */
 elem_t *ref_list(context_t * C, elem_t * list)
 {
     elem_t *elem;
@@ -122,8 +139,12 @@ elem_t *ref_list(context_t * C, elem_t * list)
     return elem;
 }
 
-// append elem to the end of the list so that the elem becomes
-//     the new u.list.last
+/**
+ *  Append a list elem_t to the end of the list of lists.
+ *
+ *  The reference count in the appended element is incremented
+ *  to account for the new reference from the old tail elem_t
+ */
 void append_list(elem_t * list, elem_t * elem)
 {
     assert(list->type == (char)LISTELEM);
@@ -140,8 +161,16 @@ void append_list(elem_t * list, elem_t * elem)
     }
 }
 
-// free the list contents, but not the list header.
-// ( this function can be used on statically or stack allocated list headers )
+/**
+ * Free the list contents, but not the list header.
+ * This function can be used on statically or callstack allocated list headers.
+ *  
+ * If it is a list of lists, then the refence count to the first elem_t is decremented and the elements are freed only if the references are  zero.
+ *
+ * If it is a list of fragments, then the reference count is to the fragment's inbuf is decremented and the inbuf freed if there are no more fragments in use.
+ *
+ * Lists of hashes are not allowed to be freed.
+ */
 void free_list(context_t * C, elem_t * list)
 {
     elem_t *elem, *next;
@@ -196,6 +225,9 @@ static void print_one_frag(FILE * chan, unsigned char len, unsigned char *frag)
     }
 }
 
+/**
+ * Print a len_frag (an 8bit length, followed by that number of characters)
+ */
 int print_len_frag(FILE * chan, unsigned char *len_frag)
 {
     unsigned char len;
@@ -205,6 +237,11 @@ int print_len_frag(FILE * chan, unsigned char *len_frag)
     return len;
 }
 
+/**
+ * conditionaly print a separator
+ * followed by the concanation of fragments in the list 
+ * The string is quoted if necessary to comply with g syntax
+ */
 void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
 {
     unsigned char *frag;
@@ -243,6 +280,13 @@ void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
     *sep = ' ';
 }
 
+/**
+ * Print a simple fragment list (a string)
+ * or print a list of strings (recursively), with appropriate separators
+ * and indentation
+ *
+ * If non-negative initial indent, each nested list is printed at an incremented indent
+ */
 void print_list(FILE * chan, elem_t * list, int indent, char *sep)
 {
     elem_t *elem;
