@@ -14,7 +14,6 @@
 #endif
 #endif
 
-// FIXME - ya global
 static gzFile gzf;
 
 static int je_gzopen(const char *pathname, int oflags, ...)
@@ -85,7 +84,7 @@ static ssize_t je_gzwrite(int fd, const void* buf, size_t count)
     return gzwrite(gzf, (void*)buf, (unsigned int)count);
 }
 
-tartype_t gztype = { 
+static tartype_t gztype = { 
     je_gzopen,
     je_gzclose,
     je_gzread,
