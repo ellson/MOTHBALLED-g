@@ -110,5 +110,6 @@ fi
 AC_CONFIG_FILES([Makefile \
                  g.spec \
                  src/Makefile \
+                 Doxyfile \
 ])
 AC_OUTPUT
