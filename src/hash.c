@@ -11,20 +11,24 @@
 static void hash_list_r(unsigned long *phash, elem_t *list);
 
 #define MSB_LONG (8*(sizeof(long))-1)
-
-// Objective:
-//    - produce names suitable for use as filenames
-//    - hash all the frags from all the strings from a tree of elem_t
-//      into a hashname that has ~0 chance of collision
-//    - minimal cpu cost
-// It is not an objective for this hash to be cryptographic.     
-
-// Hash chosen is the FNV-1a for 64bits   (Ref: http://isthe.com/chongo/tech/comp/fnv/ )
-// The FNV_prime is: 2**40 + 2**8 + 0xb3 = 0x100000001b3 = 1099511628211
-
 #define FNV_INIT  0xcbf29ce484222325
 #define FNV_PRIME 0x100000001b3
 
+/**
+ * Objective:
+ *    - produce names suitable for use as filenames
+ *    - hash all the frags from all the strings from a tree of elem_t
+ *      into a hashname that has ~0 chance of collision
+ *    - minimal cpu cost
+ * It is not an objective for this hash to be cryptographic.     
+ *
+ * Hash chosen is the FNV-1a for 64bits
+ * (Ref: http://isthe.com/chongo/tech/comp/fnv/ )
+ * The FNV_prime is: 2**40 + 2**8 + 0xb3 = 0x100000001b3 = 1099511628211
+ *
+ * @param hash palace for resulting hash
+ * @param list - fraglist or list of fraglist to be hashed
+ */
 void je_hash_list(unsigned long *hash, elem_t *list)
 {
     assert(sizeof(long) == 8);
@@ -34,7 +38,14 @@ void je_hash_list(unsigned long *hash, elem_t *list)
     hash_list_r(hash, list);
 }
 
-static void hash_list_r(unsigned long *phash, elem_t *list)
+/**
+ * Recursive hash function building on a previously initialezed or
+ * partially accumulated has result.
+ *
+ * @param hash palace for resulting hash
+ * @param list - fraglist or list of fraglist to be hashed
+ */
+static void hash_list_r(unsigned long *hash, elem_t *list)
 {
     elem_t *elem;
     unsigned char *cp;
@@ -49,16 +60,16 @@ static void hash_list_r(unsigned long *phash, elem_t *list)
                 assert(len > 0);
                 while (len--) {
                     // XOR with current character
-                    *phash ^= *cp++;
+                    *hash ^= *cp++;
                     // multiply by the magic number
-                    *phash *= FNV_PRIME;
+                    *hash *= FNV_PRIME;
                 }
                 elem = elem->next;
             }
             break;
         case LISTELEM:
             while (elem) {
-                hash_list_r(phash, elem);    // recurse
+                hash_list_r(hash, elem);    // recurse
                 elem = elem->next;
             }
             break;
@@ -91,24 +102,35 @@ static char un_b64[128] = {
      51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1
 };
 
-char *je_long_to_base64(unsigned long *phash)
+/**
+ * Encode a hash to 11 char+NUL printable base64 (suitable for filename).
+ *
+ * @param b64string result (caller-provided 12 character buffer for result)
+ * @param hash = 64bit integer to be hashed
+ */
+void je_long_to_base64(char b64string[], unsigned long *hash)
 {
     int i;
-    unsigned long hash;
-    static char hashname[12];   // good until the next call
+    unsigned long h = *hash;
+    char *p = b64string;
 
-    hash = *phash;
     for (i = 0; i < 11; i++) {
-        hashname[i] = b64[(hash & 0x3F)];
-        hash >>= 6;
+        *p++ = b64[(h & 0x3F)];
+        h >>= 6;
     }
-    hashname[i] = '\0';
-    return &hashname[0];
+    *p = '\0';
 }
 
-success_t je_base64_to_long(char *b64string, unsigned long *phash)
+/**
+ * Decode base64 string to a hash value
+ *
+ * @param b64string 
+ * @param hash result
+ * @return success/fail
+ */
+success_t je_base64_to_long(char b64string[], unsigned long *hash)
 {
-    unsigned long hash = 0;
+    unsigned long h = 0;
     char c;
     size_t len;
 
@@ -123,13 +145,19 @@ success_t je_base64_to_long(char *b64string, unsigned long *phash)
         if ((c = un_b64[(int)c]) < 0) {
             return FAIL;
         }
-        hash <<= 6;
-        hash |= c;
+        h <<= 6;
+        h |= c;
     }
-    *phash = hash;
+    *hash = h;
     return SUCCESS;
 }
 
+/**
+ * no idea - check later FIXME
+ *
+ * @param hash
+ * @return a list element
+ */
 elem_t *je_hash_bucket(context_t * C, unsigned long hash)
 {
     elem_t *elem, **next;

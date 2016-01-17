@@ -38,14 +38,14 @@ success_t je_parse(context_t * C, elem_t * name)
     elem_t *elem;
     success_t rc;
     unsigned long hash;
-    char *hashname, *filename;
+    char hashname[12], *filename;
 
     CC->context = C;
 
     je_hash_list(&hash, name);         // hash name (subject "names" can be very long)
     elem = je_hash_bucket(C, hash);    // save in bucket list 
     if (! elem->u.hash.out) {          // open file, if not already open
-        hashname = je_long_to_base64(&hash);
+        je_long_to_base64(hashname, &hash);
         if (! (filename = malloc(strlen(C->tempdir) + 1 + strlen(hashname) + 1))) {
             perror("Error - malloc(): ");
             exit(EXIT_FAILURE);

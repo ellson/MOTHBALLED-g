@@ -23,6 +23,14 @@
 
 static gzFile gzf;
 
+/**
+ * open a gz compressed file
+ *
+ * @param pathname
+ * @param oflags
+ * @param VARARGS
+ * @return filedescriptor, or -1=fail
+ */
 static int je_gzopen(const char *pathname, int oflags, ...)
 {
     char *gzoflags;
@@ -73,24 +81,47 @@ static int je_gzopen(const char *pathname, int oflags, ...)
     return fd;
 }
 
+/**
+ * close a gz compressed file
+ *
+ * @param fd (but not used - uses gzf global instead)
+ * @return -1 = fail
+ */
 static int je_gzclose(int fd)
 {
     (void) fd; // NOTUSED
     return gzclose(gzf);
 }
 
+/**
+ * read from a gz compressed file
+ * 
+ * @param fd  open file descriptor (not used - uses gzf global instead)
+ * @param buf caller provided buffer pointer to next available pos 
+ * @param count available space
+ * @return characters read into buffer 
+ */
 static ssize_t je_gzread(int fd, void* buf, size_t count)
 {
     (void) fd; // NOTUSED
     return gzread(gzf, buf, (unsigned int)count);
 }
 
+/**
+ * write to a gz compressed file
+ * 
+ * @param fd  open file descriptor (not used - uses gzf global instead)
+ * @param buf caller provided buffer pointer to next pos 
+ * @param count available for write
+ * @return characters written
+ */
 static ssize_t je_gzwrite(int fd, const void* buf, size_t count)
 {
     (void) fd; // NOTUSED
     return gzwrite(gzf, (void*)buf, (unsigned int)count);
 }
 
+// discipline
 static tartype_t gztype = { 
     je_gzopen,
     je_gzclose,
@@ -98,6 +129,12 @@ static tartype_t gztype = {
     je_gzwrite
 };
 
+/**
+ * open a gz compressed tar file for a set of per-container graphs
+ *
+ * @param C context
+ * @return list of containers ??
+ */
 elem_t * je_persist_open(context_t *C)
 {
     int i;
@@ -183,13 +220,24 @@ void je_persist_snapshot (context_t *C)
     }
 }
 
+/**
+ * error handler for glob errors
+ *
+ * @param epath 
+ * @param eerrno
+ * @return -1 fail
+ */
 static int glob_err (const char *epath, int eerrno)
 {
     fprintf(stderr,"Error - glob(): \"%s\" %s\n", epath, strerror(eerrno));
     return -1;
 }
 
-// restore from snapshot
+/**
+ * restore from snapshot
+ * 
+ * @param C context
+ */
 void je_persist_restore (context_t *C)
 {
     TAR *pTar;
@@ -245,13 +293,17 @@ void je_persist_restore (context_t *C)
     globfree(&pglob);
 }
 
-// cleanup of temporary files
+/**
+ * close snapshot storage - cleanup of temporary files
+ *
+ * @param C context
+ */
 void je_persist_close (context_t *C)
 {
     FILE *fp;
     int i;
     elem_t *elem, *next;
-    char *hashname, *filename;
+    char hashname[12], *filename;
 
     for (i=0; i<64; i++) {
         next = C->hash_buckets[i];
@@ -269,7 +321,7 @@ void je_persist_close (context_t *C)
                 // FIXME - perhaps we should keep the base64 filenames around?
  
                 // reconsitute the filename and unlink
-                hashname = je_long_to_base64(&(elem->u.hash.hash));
+                je_long_to_base64(hashname, &(elem->u.hash.hash));
                 if (! (filename = malloc(sizeof(C->template) + 1 + sizeof(hashname) + 1))) {
                     perror("Error - malloc(): ");
                     exit(EXIT_FAILURE);

@@ -9,6 +9,11 @@
 
 #include "libje_private.h"
 
+/**
+ * allocate an inbuf for g input (takes from freelist if possible)
+ *
+ * @param C context
+ */
 void new_inbuf(context_t *C)
 {
     inbuf_t *inbuf, *next;
@@ -46,7 +51,12 @@ void new_inbuf(context_t *C)
     C->inbuf = inbuf;
 }
 
-// free an inbuf (probably not the currently active one in C->inbuf)
+/**
+ * free an inbuf (not really freed, maintains freelist for reuse)
+ *
+ * @param C context
+ * @param inbuf
+ */
 void free_inbuf(context_t *C, inbuf_t * inbuf)
 {
     assert(inbuf);

@@ -9,10 +9,16 @@
 
 static void je_sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold, elem_t * newlist);
 
-//     rewrite subject into a newsubject
-//     compare subject with oldsubject
-//     substitue EQL in newsubject from corresponding member of oldsubject (or error if old not available)
-//     replace subject and oldsubject with newsubject
+/**
+ * rewrite subject into a newsubject
+ * compare subject with oldsubject
+ * substitue EQL in newsubject from corresponding member of
+ *   oldsubject (or error if old not available)
+ *      replace subject and oldsubject with newsubject
+ *
+ * @param cC container context
+ * @param subjest a subject tree from the parser (may be multiple object with same attributes)
+ */
 void je_sameas(container_context_t * CC, elem_t * subject)
 {
     elem_t *newsubject, *oldsubject, *nextold;
@@ -40,7 +46,14 @@ void je_sameas(container_context_t * CC, elem_t * subject)
     *subject = *newsubject; //    to also save as the rewritten current subject
 }
 
-// rewrite list into new list with any EQL elements substituted from oldlist
+/**
+ * rewrite list into new list with any EQL elements substituted from oldlist
+ *
+ * @param CC container context
+ * @param list
+ * @param nextold
+ * @param mewlist
+ */
 static void je_sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold, elem_t * newlist)
 {
     elem_t *elem, *new, *nextoldelem = NULL;
