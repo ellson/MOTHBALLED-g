@@ -8,6 +8,14 @@
 
 #include "libje_private.h"
 
+/**
+ * initiaze context and process file args
+ *
+ * @param pargc
+ * @param argv
+ * @param optind
+ * @return context
+ */
 context_t *je_initialize(int *pargc, char *argv[], int optind)
 {
     context_t *C;
@@ -39,6 +47,11 @@ context_t *je_initialize(int *pargc, char *argv[], int optind)
     return C;
 }
 
+/**
+ * finalize and free context
+ *
+ * @param C context
+ */
 void je_finalize(context_t *C)
 {
    emit_finalize(C);

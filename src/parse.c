@@ -15,20 +15,28 @@ je_parse_r(container_context_t * CC, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc);
 static success_t je_more_rep(context_t * C, unsigned char prop);
 
-// This parser recurses at two levels:
-//
-//     main() -----> je_parse(C) ----> je_parse_r(CC) -| -|  
-//                     ^                 ^             |  |
-//                     |                 |             |  |
-//                     |                 -------<-------  |
-//                     |                                  |
-//                     ---------------<--------------------
-//
-// The inner recursions are through the grammar state_machine at a single
-// level of containment - maintained in container_context (CC)
-//
-// The outer recursions are through nested containment.
-// The top-level context (C) is available to both and maintains the input state.
+/**
+ * parse G syntax input
+ *
+ * This parser recurses at two levels:
+ *
+ *     main() -----> je_parse(C) ----> je_parse_r(CC) -| -|  
+ *                     ^                 ^             |  |
+ *                     |                 |             |  |
+ *                     |                 -------<-------  |
+ *                     |                                  |
+ *                     ---------------<--------------------
+ *
+ * The inner recursions are through the grammar state_machine at a single
+ * level of containment - maintained in container_context (CC)
+ *
+ * The outer recursions are through nested containment.
+ * The top-level context (C) is available to both and maintains the input state.
+ *
+ * @param C context
+ * @param name
+ * @return success/fail
+ */
 
 success_t je_parse(context_t * C, elem_t * name)
 {
@@ -42,7 +50,7 @@ success_t je_parse(context_t * C, elem_t * name)
 
     CC->context = C;
 
-    je_hash_list(&hash, name);         // hash name (subject "names" can be very long)
+    je_hash_list(&hash, name); // hash name (subject "names" can be very long)
     elem = je_hash_bucket(C, hash);    // save in bucket list 
     if (! elem->u.hash.out) {          // open file, if not already open
         je_long_to_base64(hashname, &hash);
@@ -83,7 +91,13 @@ success_t je_parse(context_t * C, elem_t * name)
     return rc;
 }
 
-// recurse through state-machine at a single level of containment
+/** 
+ * recurse through state-machine at a single level of containment
+ *
+ *  @param CC container context
+ *  @[aram root of parsed tree
+ *  @return success/fail
+ */
 static success_t
 je_parse_r(container_context_t * CC, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc)
@@ -289,7 +303,13 @@ je_parse_r(container_context_t * CC, elem_t * root,
     return rc;
 }
 
-// test for more repetitions, emit a separator only if mandated
+/**
+ * test for more repetitions, emit a separator only if mandated
+ *
+ * @param C context
+ * @param prop properties from grammar
+ * @return success = more, fail - no more
+ */
 static success_t je_more_rep(context_t * C, unsigned char prop)
 {
     state_t ei, bi;

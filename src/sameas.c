@@ -16,8 +16,8 @@ static void je_sameas_r(container_context_t * CC, elem_t * list, elem_t ** nexto
  *   oldsubject (or error if old not available)
  *      replace subject and oldsubject with newsubject
  *
- * @param cC container context
- * @param subjest a subject tree from the parser (may be multiple object with same attributes)
+ * @param CC container context
+ * @param subject a subject tree from the parser (may be multiple object with same attributes)
  */
 void je_sameas(container_context_t * CC, elem_t * subject)
 {
@@ -111,6 +111,10 @@ static void je_sameas_r(container_context_t * CC, elem_t * list, elem_t ** nexto
             if (*nextold) {
                 new = ref_list(C, *nextold);
                 append_list(newlist, new);
+
+#if 0
+print_list(stderr, new, 0, NULL);
+#endif
 
                 *nextold = (*nextold)->next;
 

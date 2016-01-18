@@ -9,7 +9,14 @@
 
 static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges);
 
-// this function expands and dispatches EDGEs
+/**
+ * this function expands and dispatches EDGEs
+ * 
+ * @param C context
+ * @param elem - tree representing edge(s)
+ * @param nodes - resulting nodes
+ * @param edges - resulting simple edges
+ */
 void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
 {
     elem_t *leg, *epset, *ep, *new;
@@ -66,9 +73,16 @@ void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
     je_expand_r(C, &newepset, newlist.u.list.first, edges);
     free_list(C, &newlist);
 }
-// this function expands ENDPOINTSETs
-// expands edges like:    <(a b) c>
-// into:                  <a c><b c>
+/**
+ * this function expands ENDPOINTSETs
+ * expands edges like:    <(a b) c>
+ * into:                  <a c><b c>
+ *
+ * @param C context
+ * @param epset
+ * @param leg
+ * @param edges
+ */
 static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
 {
     elem_t newedge = { 0 };

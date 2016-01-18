@@ -427,6 +427,12 @@ cat ${ifn}.token  >>$ofc
 #cat ${ifn}.agaws >>$ofc
 
 cat >>$ofc  <<EOF
+/** 
+ * obtain the string name of the state, for introspection
+ *
+ * @param si state index
+ * @return pointer to len+chars array from state_names
+ */
 unsigned char *NAMEP(int si) {
     while (state_machine[si]) si++;
     return state_names + 2*state_props[si];

@@ -8,7 +8,12 @@
 
 #include "libje_private.h"
 
-// fill buffers from input files
+/**
+ * fill buffers from input files
+ *
+ * @param C context
+ * @return success/fail
+ */
 static success_t je_more_in(context_t * C)
 {
     int size;
@@ -77,7 +82,11 @@ static success_t je_more_in(context_t * C)
     return SUCCESS;
 }
 
-// consume comment fagmentxs
+/**
+ * consume comment fagments
+ *
+ * @param C context
+ */
 static void je_parse_comment_fragment(context_t * C)
 {
     unsigned char *in, c;
@@ -91,7 +100,12 @@ static void je_parse_comment_fragment(context_t * C)
     C->in = in;
 }
 
-// consume all comment up to next token, or EOF
+/**
+ * consume all comment up to next token, or EOF
+ *
+ * @param C context
+ * @return success/fail
+ */
 static success_t je_parse_comment(context_t * C)
 {
     success_t rc;
@@ -107,7 +121,11 @@ static success_t je_parse_comment(context_t * C)
     return rc;
 }
 
-// consume whitespace fagments
+/**
+ * consume whitespace fagments
+ *
+ * @ C context
+ */
 static void je_parse_whitespace_fragment(context_t * C)
 {
     unsigned char *in, c;
@@ -131,7 +149,12 @@ static void je_parse_whitespace_fragment(context_t * C)
     }
 }
 
-// consume all non-comment whitespace up to next token, or EOF
+/**
+ * consume all non-comment whitespace up to next token, or EOF
+ *
+ * @param C context
+ * @return success/fail
+ */
 static success_t je_parse_non_comment(context_t * C)
 {
     success_t rc;
@@ -147,7 +170,12 @@ static success_t je_parse_non_comment(context_t * C)
     return rc;
 }
 
-// consume all whitespace or comments up to next token, or EOF
+/**
+ * consume all whitespace or comments up to next token, or EOF
+ *
+ * @param C context
+ * @return success/fail
+ */
 success_t je_parse_whitespace(context_t * C)
 {
     success_t rc;
@@ -169,7 +197,13 @@ success_t je_parse_whitespace(context_t * C)
     return rc;
 }
 
-// load STRING fragments
+/**
+ * load STRING fragments
+ *
+ * @param C context
+ * @param fraglist - list of frags constituting a string
+ * @return length of string
+ */
 static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
 {
     unsigned char *frag;
@@ -241,7 +275,14 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
     return slen;
 }
 
-// collect fragments to form a STRING token
+/**
+ * collect fragments to form a STRING token
+ *
+ * @param C context
+ * @param fraglist
+ * @return success/fail
+ */
+ 
 success_t je_parse_string(context_t * C, elem_t * fraglist)
 {
     int len, slen;
@@ -270,10 +311,15 @@ success_t je_parse_string(context_t * C, elem_t * fraglist)
     return FAIL;
 }
 
-// load VSTRING fragments
-//
-// FIXME - add support for additonal quoting formats  (HTML-like, ...)
-//
+/**
+ * load VSTRING fragments
+ *
+ * FIXME - add support for additonal quoting formats  (HTML-like, ...)
+ *
+ * @param C context
+ * @param fraglist
+ * @return length of string
+ */
 static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
 {
     unsigned char *frag;
@@ -358,7 +404,13 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
     return slen;
 }
 
-// collect fragments to form a VSTRING token
+/**
+ * collect fragments to form a VSTRING token
+ *
+ * @param C context
+ * @param fraglist
+ * @return success/fail
+ */
 success_t je_parse_vstring(context_t * C, elem_t * fraglist)
 {
     int len, slen;
@@ -387,7 +439,12 @@ success_t je_parse_vstring(context_t * C, elem_t * fraglist)
     return FAIL;
 }
 
-// process single character tokens
+/**
+ * process single character tokens
+ *
+ * @param C context
+ * @return success/fail
+ */
 success_t je_parse_token(context_t * C)
 {
     char token;

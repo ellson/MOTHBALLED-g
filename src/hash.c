@@ -8,7 +8,7 @@
 
 #include "libje_private.h"
 
-static void hash_list_r(unsigned long *phash, elem_t *list);
+static void hash_list_r(unsigned long *hash, elem_t *list);
 
 #define MSB_LONG (8*(sizeof(long))-1)
 #define FNV_INIT  0xcbf29ce484222325
@@ -26,7 +26,7 @@ static void hash_list_r(unsigned long *phash, elem_t *list);
  * (Ref: http://isthe.com/chongo/tech/comp/fnv/ )
  * The FNV_prime is: 2**40 + 2**8 + 0xb3 = 0x100000001b3 = 1099511628211
  *
- * @param hash palace for resulting hash
+ * @param hash place for resulting hash
  * @param list - fraglist or list of fraglist to be hashed
  */
 void je_hash_list(unsigned long *hash, elem_t *list)
@@ -108,7 +108,7 @@ static char un_b64[128] = {
  * @param b64string result (caller-provided 12 character buffer for result)
  * @param hash = 64bit integer to be hashed
  */
-void je_long_to_base64(char b64string[], unsigned long *hash)
+void je_long_to_base64(char b64string[], const unsigned long *hash)
 {
     int i;
     unsigned long h = *hash;
@@ -128,7 +128,7 @@ void je_long_to_base64(char b64string[], unsigned long *hash)
  * @param hash result
  * @return success/fail
  */
-success_t je_base64_to_long(char b64string[], unsigned long *hash)
+success_t je_base64_to_long(const char b64string[], unsigned long *hash)
 {
     unsigned long h = 0;
     char c;
@@ -155,6 +155,7 @@ success_t je_base64_to_long(char b64string[], unsigned long *hash)
 /**
  * no idea - check later FIXME
  *
+ * @param C context
  * @param hash
  * @return a list element
  */
