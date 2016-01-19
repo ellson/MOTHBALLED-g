@@ -321,6 +321,7 @@ void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
     unsigned char *frag;
     int len;
 
+    assert(sep);
     if (*sep) {
         putc(*sep, chan);
     }

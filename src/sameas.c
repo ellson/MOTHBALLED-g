@@ -7,7 +7,7 @@
 
 #include "libje_private.h"
 
-static void je_sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold, elem_t * newlist);
+static void je_sameas_r(container_context_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist);
 
 /**
  * rewrite subject into a newsubject
@@ -47,23 +47,32 @@ void je_sameas(container_context_t * CC, elem_t * subject)
 }
 
 /**
- * rewrite list into new list with any EQL elements substituted from oldlist
+ * rewrite subject into newlist with any EQL elements substituted from oldlist
  *
  * @param CC container context
- * @param list
+ * @param subject
  * @param nextold
  * @param mewlist
  */
-static void je_sameas_r(container_context_t * CC, elem_t * list, elem_t ** nextold, elem_t * newlist)
+static void je_sameas_r(container_context_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {
     elem_t *elem, *new, *nextoldelem = NULL;
     elem_t object = { 0 };
     state_t si;
     context_t * C = CC->context;
 
-    assert(list->type == (char)LISTELEM);
+    assert(subject->type == (char)LISTELEM);
 
-    elem = list->u.list.first;
+    elem = subject->u.list.first;
+#if 0
+if (*nextold) {
+    C->sep = ' ';
+    print_list(stderr, *nextold, 0, &(C->sep));
+    fprintf(stderr,"\n");
+    print_list(stderr, elem, 0, &(C->sep));
+    fprintf(stderr,"\n\n");
+}    
+#endif
     while (elem) {
         si = (state_t) elem->state;
         switch (si) {
@@ -111,13 +120,7 @@ static void je_sameas_r(container_context_t * CC, elem_t * list, elem_t ** nexto
             if (*nextold) {
                 new = ref_list(C, *nextold);
                 append_list(newlist, new);
-
-#if 0
-print_list(stderr, new, 0, NULL);
-#endif
-
                 *nextold = (*nextold)->next;
-
                 C->stat_sameas++;
             } else {
                 emit_error(CC->context, si, "No corresponding object found for same-as substitution");
