@@ -1,4 +1,4 @@
-1) sameas produces wrong result when "=" matches an ENPOINTSET
+FIXED 1) sameas produces wrong result when "=" matches an ENPOINTSET
 
 e.g.: 
 	<(a b) c>
@@ -16,3 +16,8 @@ produces:
 	<a d>
 
 also, perhaps nodes introduces with "=" don't require further nod induction
+
+
+2) Some grammar elements are purely for syntax construction and have no representation by themselves:
+	OBJECT, LEG, ENDPOINT, .... (particularly elements of lists)
+these are consuming elem_t storage, and presumably extra processing.   Can they be eliminated?

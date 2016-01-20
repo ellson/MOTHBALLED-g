@@ -158,6 +158,7 @@ static void je_assemble_act(context_t *C, elem_t *elem, elem_t *attributes, elem
 
     act.state = ACT;
 
+    // verb
     switch(C->verb) {
     case QRY:
     case TLD:
@@ -168,12 +169,18 @@ static void je_assemble_act(context_t *C, elem_t *elem, elem_t *attributes, elem
     default:
         break;
     }
+
+    // subject
     new = ref_list(C, elem);
     append_list(&act, new);
+
+    // attributes
     if (attributes && attributes->u.list.first) {
         new = ref_list(C, attributes->u.list.first);
         append_list(&act, new);
     }
+
+    // no container ever because contains are in their own streams
 
     new = move_list(C, &act);
     append_list(list, new);

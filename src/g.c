@@ -65,6 +65,11 @@ int main(int argc, char *argv[])
             needrestore = 1;
             break;
         default:
+// FIXME no -g or -t support any more ??
+// FIXME need something like -p  (print primary content)
+// FIXME need something like -P "name" (print content of "name")
+// FIXME "name" should allow full subject string, or "hashname"
+// FIXME need something like -i (print tree index of container "hashname" and "SUBJECT")
 // FIXME - add -T options to usage message
             fprintf(stderr, "Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
             exit(EXIT_FAILURE);
@@ -84,6 +89,10 @@ int main(int argc, char *argv[])
 
     // start parsing
     je_parse(C, name);
+
+//  FIXME - do -i processing here so can index resored per-parsed graphs
+//  FIXME - allow multiple -p in loop
+//  FIXME - do -p / -P processing here so can print resored per-parsed graphs
 
     // generate snapshot
     je_persist_snapshot(C);
