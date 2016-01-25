@@ -21,3 +21,7 @@ also, perhaps nodes introduces with "=" don't require further nod induction
 2) Some grammar elements are purely for syntax construction and have no representation by themselves:
 	OBJECT, LEG, ENDPOINT, .... (particularly elements of lists)
 these are consuming elem_t storage, and presumably extra processing.   Can they be eliminated?
+
+3) quoted string around pattern not getting through ..
+	"abc"*"xyz"
+

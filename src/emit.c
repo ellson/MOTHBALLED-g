@@ -24,6 +24,11 @@ static void api_act(container_context_t * CC, elem_t *list)
         C->sep = 0;         // suppress space before (because preceded by BOF or NL)
         je_emit_list(CC->context, CC->out, elem);
         putc('\n', CC->out);   // NL after
+
+        C->sep = 0;         // suppress space before (because preceded by BOF or NL)
+        je_emit_list(CC->context, stdout, elem);
+        putc('\n', stdout);   // NL after
+
         elem = elem->next;
     }
 }
