@@ -25,3 +25,8 @@ these are consuming elem_t storage, and presumably extra processing.   Can they 
 3) quoted string around pattern not getting through ..
 	"abc"*"xyz"
 
+
+4) only three characters require BSL escapes ..   BSL in fron of any other character should be ignored.
+
+
+

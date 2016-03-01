@@ -316,7 +316,7 @@ Extra grammar:  Comments in the form of "# ... EOL" are skipped over by the pars
 
 	        Strings can be concatenations of quoted and unquoted character sequences.
 		for example:       abc"d e f"ghi"j\\\\k"
-		is equivalent to:  "abcd e fghij\\k"
+		is equivalent to:  "abcd e fghij\\\\k"
 
 		-  Unquoted characters are any listed in the ABC terminal above, and also
 		   AST (see "Patterns" below).
