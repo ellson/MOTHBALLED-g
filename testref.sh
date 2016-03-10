@@ -40,9 +40,13 @@ $( cat $REF.rc )
 
 EOF
 else
-    if cmp $REF.res $OUT.res; then
-        echo "test matches reference"
-    else
+    if ! cmp $REF.res $OUT.res; then
+        cat <<EOF
+    COMMAND
+    =======
+$( cat $REF.cmd )
+
+EOF
         diff $REF.out $OUT.out
         diff $REF.err $OUT.err
         diff $REF.rc $OUT.rc
