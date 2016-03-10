@@ -8,11 +8,18 @@ src/g_static
 INSTALL
 version.m4
 aclocal.m4
+compile
 configure
 config.cache
+config.guess
 config.h
 config.log
 config.status
+config.sub
+depcomp
+install-sh
+ltmain.sh
+missing
 Makefile
 g.spec
 libtool
@@ -24,3 +31,6 @@ src/.deps/
 src/.libs/
 Doxyfile
 doxygen/
+
+
+

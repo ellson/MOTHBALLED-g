@@ -1,0 +1,27 @@
+a
+b
+<a b>
+c
+d
+e
+f
+<c e>
+<c f>
+<d e>
+<d f>
+g
+h
+i
+j
+k
+l
+m
+n
+<g i>[style=spline]
+<g j>[style=spline]
+<h i>[style=spline]
+<h j>[style=spline]
+<k m>[style=spline]
+<k n>[style=spline]
+<l m>[style=spline]
+<l n>[style=spline]
