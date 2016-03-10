@@ -40,15 +40,24 @@ $( cat $REF.rc )
 
 EOF
 else
-    if ! cmp $REF.res $OUT.res; then
+    if ! cmp -s $REF.res $OUT.res; then
         cat <<EOF
     COMMAND
     =======
 $( cat $REF.cmd )
 
+    STDOUT
+    ======
+    $( diff $REF.out $OUT.out )
+
+    STDERR
+    ======
+    $( diff $REF.err $OUT.err )
+
+    RC
+    ==
+    $( diff $REF.rc $OUT.rc )
+
 EOF
-        diff $REF.out $OUT.out
-        diff $REF.err $OUT.err
-        diff $REF.rc $OUT.rc
     fi
 fi
