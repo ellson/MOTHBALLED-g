@@ -42,7 +42,7 @@ je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern);
 // subject to be appended with its own ATTRIBUTES and CONTENTS.
 void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 {
-    elem_t *pattern_acts, *nextpattern_act, *elem, *psubj, *pattr;
+    elem_t *pattern_acts, *pact, *elem, *psubj, *pattr;
     context_t *C = CC->context;
 
     assert(root);
@@ -62,13 +62,10 @@ void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 #endif
 
     // iterate over available patterns
-    for ( nextpattern_act = pattern_acts->u.list.first;
-          nextpattern_act;
-          nextpattern_act = nextpattern_act->next) {
+    for ( pact = pattern_acts->u.list.first; pact; pact = pact->next) {
+        assert((state_t) pact->state == ACT);
 
-        assert((state_t) nextpattern_act->state == ACT);
-
-        psubj = nextpattern_act->u.list.first;
+        psubj = pact->u.list.first;
         assert(psubj);
         assert((state_t) psubj->state == SUBJECT);
 
