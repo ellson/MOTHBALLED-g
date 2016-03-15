@@ -236,10 +236,15 @@ je_parse_r(container_context_t * CC, elem_t * root,
             if (CC->is_pattern) {   // flag was set by SUBJECT in previous ACT
                                     //  save entire previous ACT in a list of pattern_acts
                 C->stat_patterncount++;
-                elem = ref_list(C, root);
+                elem = move_list(C, &branch);
 
                 if (CC->subject_type == NODE) {
                     append_list(&(CC->node_pattern_acts), elem);
+#if 0
+print_list(stdout, &(CC->node_pattern_acts), -1, &(C->sep));
+putc('\n', stdout);
+#endif
+
                 } else {
                     assert(CC->subject_type == EDGE);
                     append_list(&(CC->edge_pattern_acts), elem);

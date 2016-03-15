@@ -56,23 +56,23 @@ void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
         pattern_acts = &(CC->edge_pattern_acts);
     }
 
+#if 0
+    print_list(stdout, pattern_acts, -1, &(C->sep));
+    putc('\n', stdout);
+#endif
+
     // iterate over available patterns
-    nextpattern_act = pattern_acts->u.list.first;
-    while (nextpattern_act) {
+    for ( nextpattern_act = pattern_acts->u.list.first;
+          nextpattern_act;
+          nextpattern_act = nextpattern_act->next) {
 
-        elem = nextpattern_act->u.list.first;
-        if (! elem) {
-            break;
-        }
-        assert((state_t) elem->state == ACT);
+        assert((state_t) nextpattern_act->state == ACT);
 
-        elem = elem->u.list.first;
-        psubj = elem;
+        psubj = nextpattern_act->u.list.first;
         assert(psubj);
         assert((state_t) psubj->state == SUBJECT);
 
-        elem = elem->next;
-        pattr = elem;
+        pattr = psubj->next;
 
         // FIXME - contents from pattern ??
 
@@ -94,8 +94,6 @@ void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 
             C->stat_patternmatches++;
         }
-
-        nextpattern_act = nextpattern_act->next;
     }
 }
 
