@@ -9,7 +9,7 @@
 
 #include "libje_private.h"
 
-// jump table for a available emitters 
+// jump table for available emitters 
 static emit_t *emitters[] =
     {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
 
