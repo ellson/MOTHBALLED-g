@@ -57,14 +57,16 @@ void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
     }
 
 #if 0
-    print_list(stdout, pattern_acts, -1, &(C->sep));
-    putc('\n', stdout);
+P(pattern_acts);
 #endif
 
     // iterate over available patterns
     for ( pact = pattern_acts->u.list.first; pact; pact = pact->next) {
         assert((state_t) pact->state == ACT);
 
+#if 0
+P(pact);
+#endif
         psubj = pact->u.list.first;
         assert(psubj);
         assert((state_t) psubj->state == SUBJECT);
@@ -77,11 +79,17 @@ void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
             // insert matched attrubutes, contents,
             // and then the subject again
             
+#if 0
+P(subject);
+#endif
             elem = ref_list(C, subject);
             append_list(root, elem);
             emit_subject(CC, subject);
 
             if (pattr && (state_t)pattr->state == ATTRIBUTES) {
+#if 0
+P(pattr);
+#endif
                 elem = ref_list(C, pattr);
                 append_list(root, elem);
                 emit_attributes(CC, pattr);
@@ -92,6 +100,9 @@ void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
             C->stat_patternmatches++;
         }
     }
+#if 0
+P(root);
+#endif
 }
 
 // attempt to match one pattern to a subject

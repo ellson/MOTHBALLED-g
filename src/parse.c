@@ -241,8 +241,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
                 if (CC->subject_type == NODE) {
                     append_list(&(CC->node_pattern_acts), elem);
 #if 0
-print_list(stdout, &(CC->node_pattern_acts), -1, &(C->sep));
-putc('\n', stdout);
+P(&(CC->node_pattern_acts));
 #endif
 
                 } else {
@@ -252,13 +251,18 @@ putc('\n', stdout);
             } else {
                 C->stat_actcount++;
 
-                // dispatch events for the ACT just finished
-                je_dispatch(CC, &branch);
+                elem = move_list(C, &branch);
+                append_list(root, elem);
+#if 0
+P(root);
+#endif
 
-// and this is where we actually emit the fully processed act!
-                emit_act(CC, &branch);  // emit hook for rewritten act
-                free_list(C, &branch);    // that's all folks.  move on to the next ACT.
-                //  (other than patterns and initial ATTRIBUTES, nothing is accumulated at the ACTIVITY level)
+                // dispatch events for the ACT just finished
+// FIXME                je_dispatch(CC, root);
+// and this is where we actually emit the fully processed acts!
+//  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
+                emit_act(CC, root);  // emit hook for rewritten act
+                free_list(C, root);  // that's all folks.  move on to the next ACT.
             }
             break;
         case TLD:
@@ -277,12 +281,18 @@ putc('\n', stdout);
 
             je_hash_list(&hash, &(CC->subject));   // generate name hash
             elem = je_hash_bucket(C, hash);    // save in bucket list 
+#if 0
+P(root)
+#endif
 
             // If this subject is not itself a pattern, then
             // perform pattern matching and insertion if matched
             if (!(CC->is_pattern = C->has_ast)) {
                 je_pattern(CC, root, &branch);
             }
+#if 0
+P(root)
+#endif
 
             emit_subject(CC, &branch);      // emit hook for rewritten subject
             break;
