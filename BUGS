@@ -15,13 +15,23 @@ produces:
 	d
 	<a d>
 
-also, perhaps nodes introduces with "=" don't require further nod induction
+2) also, perhaps nodes introduced with "=" don't require further node induction
 
-
-2) Some grammar elements are purely for syntax construction and have no representation by themselves:
+3) Some grammar elements are purely for syntax construction and have no representation by themselves:
 	OBJECT, LEG, ENDPOINT, .... (particularly elements of lists)
 these are consuming elem_t storage, and presumably extra processing.   Can they be eliminated?
 
-3) quoted string around pattern not getting through ..
+4) quoted string around pattern not getting through
 	"abc"*"xyz"
+
+   patterns not working at all!
+
+5) command line rework ...
+	-a [<file>]         ... read archive at init.  <file> defaults to g_archive.tgz
+	-A [<file>]         ... write archive on exit.  <file> defaults to g_archive.tgz
+	-p [<file>]         ... print main_container on exit.  <file> defaults to "-"  (i.e. stdout)
+	-P <name> [<file>]  ... print named container on exit.  <name> can be full name, or namehash
+        -i [<file>]         ... print index of hashname to full name. <file> defaults to "-"  (i.e. stdout)
+        -d [level]          ... print debugging info to stdout
+	-s                  ... print stats to stdout
 
