@@ -42,7 +42,7 @@ je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern);
 // subject to be appended with its own ATTRIBUTES and CONTENTS.
 void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 {
-    elem_t *pattern_acts, *nextpattern_act, *elem, *psubj, *pattr;
+    elem_t *pattern_acts, *pact, *elem, *psubj, *pattr;
     context_t *C = CC->context;
 
     assert(root);
@@ -56,23 +56,20 @@ void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
         pattern_acts = &(CC->edge_pattern_acts);
     }
 
+#if 0
+    print_list(stdout, pattern_acts, -1, &(C->sep));
+    putc('\n', stdout);
+#endif
+
     // iterate over available patterns
-    nextpattern_act = pattern_acts->u.list.first;
-    while (nextpattern_act) {
+    for ( pact = pattern_acts->u.list.first; pact; pact = pact->next) {
+        assert((state_t) pact->state == ACT);
 
-        elem = nextpattern_act->u.list.first;
-        if (! elem) {
-            break;
-        }
-        assert((state_t) elem->state == ACT);
-
-        elem = elem->u.list.first;
-        psubj = elem;
+        psubj = pact->u.list.first;
         assert(psubj);
         assert((state_t) psubj->state == SUBJECT);
 
-        elem = elem->next;
-        pattr = elem;
+        pattr = psubj->next;
 
         // FIXME - contents from pattern ??
 
@@ -94,8 +91,6 @@ void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 
             C->stat_patternmatches++;
         }
-
-        nextpattern_act = nextpattern_act->next;
     }
 }
 

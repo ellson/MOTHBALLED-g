@@ -10,5 +10,13 @@ rpm: dist
 doxygen:
 	doxygen
 
+.PHONY: test
+test:
+	-for f in tests/*g; do ./testdiff.sh src/g $$f; done
+
+.PHONY: testref
+testref:
+	-for f in tests/*g; do ./testref.sh src/g $$f; done
+
 EXTRA_DIST = g.spec g.spec.in autogen.sh
 

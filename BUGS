@@ -35,3 +35,5 @@ these are consuming elem_t storage, and presumably extra processing.   Can they 
         -d [level]          ... print debugging info to stdout
 	-s                  ... print stats to stdout
 
+6) only three characters require BSL escapes ..   BSL in fron of any other character should be ignored.
+
