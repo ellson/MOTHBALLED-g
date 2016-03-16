@@ -79,19 +79,10 @@ P(pact);
             // insert matched attrubutes, contents,
             // and then the subject again
             
-#if 0
-P(subject);
-#endif
-            elem = ref_list(C, subject);
-            append_list(root, elem);
+            append_list(root, ref_list(C, subject));
             emit_subject(CC, subject);
-
             if (pattr && (state_t)pattr->state == ATTRIBUTES) {
-#if 0
-P(pattr);
-#endif
-                elem = ref_list(C, pattr);
-                append_list(root, elem);
+                append_list(root, ref_list(C, pattr));
                 emit_attributes(CC, pattr);
             }
 

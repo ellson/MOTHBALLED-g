@@ -1,30 +1,32 @@
-FIXED 1) sameas produces wrong result when "=" matches an ENPOINTSET
+#1) sameas produces wrong result when "=" matches an ENPOINTSET
+#
+#e.g.: 
+#	<(a b) c>
+#	<= d>
+#
+#produces:
+#	
+#	a
+#	b
+#	c
+#	<a c>
+#	<b c>
+#	a
+#	d
+#	<a d>
 
-e.g.: 
-	<(a b) c>
-	<= d>
+#4) quoted string around pattern not getting through
+#	"abc"*"xyz"
+#
+#   patterns not working at all!
 
-produces:
-	
-	a
-	b
-	c
-	<a c>
-	<b c>
-	a
-	d
-	<a d>
+################################################################
 
-2) also, perhaps nodes introduced with "=" don't require further node induction
+2) nodes introduced with "=" don't require further node induction
 
 3) Some grammar elements are purely for syntax construction and have no representation by themselves:
 	OBJECT, LEG, ENDPOINT, .... (particularly elements of lists)
 these are consuming elem_t storage, and presumably extra processing.   Can they be eliminated?
-
-4) quoted string around pattern not getting through
-	"abc"*"xyz"
-
-   patterns not working at all!
 
 5) command line rework ...
 	-a [<file>]         ... read archive at init.  <file> defaults to g_archive.tgz
@@ -35,5 +37,13 @@ these are consuming elem_t storage, and presumably extra processing.   Can they 
         -d [level]          ... print debugging info to stdout
 	-s                  ... print stats to stdout
 
-6) only three characters require BSL escapes ..   BSL in fron of any other character should be ignored.
+6) only three characters require BSL escapes ..   BSL in front of any other character should be ignored.
 
+7) some kind of pattern / comment interaction issue causing non-matching act to be repeated
+
+	"abc"*"xyz"
+	"a"
+produces:
+	"a" "a"
+
+	

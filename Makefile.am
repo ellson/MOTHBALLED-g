@@ -1,4 +1,5 @@
 ACLOCAL_AMFLAGS = -I m4
+CFLAGS = -O0 -Wall -g
 
 SUBDIRS = src
 

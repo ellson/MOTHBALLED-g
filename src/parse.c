@@ -236,23 +236,16 @@ je_parse_r(container_context_t * CC, elem_t * root,
             if (CC->is_pattern) {   // flag was set by SUBJECT in previous ACT
                                     //  save entire previous ACT in a list of pattern_acts
                 C->stat_patterncount++;
-                elem = move_list(C, &branch);
-
                 if (CC->subject_type == NODE) {
-                    append_list(&(CC->node_pattern_acts), elem);
-#if 0
-P(&(CC->node_pattern_acts));
-#endif
+                    append_list(&(CC->node_pattern_acts), move_list(C, &branch));
 
                 } else {
                     assert(CC->subject_type == EDGE);
-                    append_list(&(CC->edge_pattern_acts), elem);
+                    append_list(&(CC->edge_pattern_acts), move_list(C, &branch));
                 }
             } else {
                 C->stat_actcount++;
-
-                elem = move_list(C, &branch);
-                append_list(root, elem);
+                append_list(root, move_list(C, &branch));
 #if 0
 P(root);
 #endif
@@ -308,8 +301,7 @@ P(root)
                 // - except for STRINGs which use state for quoting info
                 branch.state = si;
             }
-            elem = move_list(C, &branch);
-            append_list(root, elem);
+            append_list(root, move_list(C, &branch));
         }
     }
     nest--;
