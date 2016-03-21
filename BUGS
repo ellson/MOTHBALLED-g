@@ -20,6 +20,19 @@
 #
 #   patterns not working at all!
 
+#8) some kind of pattern / comment interaction issue causing non-matching act to be repeated
+#
+#	"ab"*
+#	"a"
+#produces:
+#	"a" "a"
+#
+#also
+#	ab*
+#	a
+#produces
+#	a a
+
 ################################################################
 
 2) nodes introduced with "=" don't require further node induction
@@ -39,11 +52,7 @@ these are consuming elem_t storage, and presumably extra processing.   Can they 
 
 6) only three characters require BSL escapes ..   BSL in front of any other character should be ignored.
 
-7) some kind of pattern / comment interaction issue causing non-matching act to be repeated
+7) quoted strings that don't really need quoting should be emitted unquoted (maybe?)
 
-	"abc"*"xyz"
-	"a"
-produces:
-	"a" "a"
-
+9) pattern substitution should merge act in output (first subject, merged attributes and container)
 	

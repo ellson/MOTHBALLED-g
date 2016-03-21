@@ -10,36 +10,43 @@
 static success_t
 je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern);
 
-// A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
-// The AST is a wild-card that matches any substring of zero or more 
-// characters at that position.
-//
-// An indivual STRING may have no more that one AST, but multiple
-// STRING in the SUBJECT may have AST
-//
-// The following are valid pattern STRING:
-//      *       // This and the next require only prefix matching
-//      abcd*
-//
-//      ab*ef   // FIXME - this and the next require suffix matching - not yet implemented
-//      *cdef
-//
-// and all of these patterns will match
-//      abcdef
-
-// A SUBJECT is matched if all its pattern and non-pattern STRINGS
-// match, after pattern substitution.
-
-// ENDPOINTSETs are not expanded in patterns, or in SUBJECTs
-// before pattern matching. (i.e. the form of ENDPOINTSETS must be the same for a match to occur)
-
-
-// Look for pattern match(es) to the current subject (segregated
-// into NODE and EDGE patterns).
-// For each match, append a (refcounted copy) of the current
-// subject, followed by (refcounted) copies of the ATTRIBUTES
-// and CONTAINER from the pattern.  Finally return for the current
-// subject to be appended with its own ATTRIBUTES and CONTENTS.
+/*
+ * A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
+ * The AST is a wild-card that matches any substring of zero or more 
+ * characters at that position.
+ *
+ * An indivual STRING may have no more that one AST, but multiple
+ * STRING in the SUBJECT may have AST
+ *
+ * The following are valid pattern STRING:
+ *      *       // This and the next require only prefix matching
+ *      abcd*
+ *
+ *      ab*ef   // FIXME - this and the next require suffix matching - not yet implemented
+ *      *cdef
+ *
+ * and all of these patterns will match
+ *      abcdef
+ * 
+ * A SUBJECT is matched if all its pattern and non-pattern STRINGS
+ * match, after pattern substitution.
+ * 
+ * ENDPOINTSETs are not expanded in patterns, or in SUBJECTs
+ * before pattern matching. (i.e. the form of ENDPOINTSETS must be the same for a match to occur)
+ */ 
+ 
+/**
+ * Look for pattern match(es) to the current subject (segregated
+ * into NODE and EDGE patterns).
+ * For each match, append a (refcounted copy) of the current
+ * subject, followed by (refcounted) copies of the ATTRIBUTES
+ * and CONTAINER from the pattern.  Finally return for the current
+ * subject to be appended with its own ATTRIBUTES and CONTENTS.
+ *
+ * @param CC container_context
+ * @param root of the output tree
+ * @param subject to be checked for pattern matches
+ */
 void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 {
     elem_t *pattern_acts, *pact, *elem, *psubj, *pattr;
@@ -96,7 +103,14 @@ P(root);
 #endif
 }
 
-// attempt to match one pattern to a subject
+/**
+ * attempt to match one pattern to a subject
+ *
+ * @param CC container_context
+ * @param subject 
+ * @param pattern 
+ * @return success/fail 
+ */
 static success_t
 je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
 {
@@ -112,6 +126,8 @@ je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
         }
         ts_elem = s_elem;
         tp_elem = p_elem;
+        s_len = 0;
+        p_len = 0;
         if ((elemtype_t) (s_elem->type) == LISTELEM) {
             if (ts_elem->state != tp_elem->state) {
                 return FAIL;    // no match if the state structure is different,  e.g. OBJECT vs. OBJECT_LIST
@@ -127,8 +143,6 @@ je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
                 return FAIL;
             }
         } else {    // FRAGELEM
-            s_len = 0;
-            p_len = 0;
             while (ts_elem && tp_elem) {
                 // the fragmentation is not necessarily
                 // the same so manage ts_elem and tp_elem
@@ -150,13 +164,16 @@ je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
                 if (*p_cp == '*') {    // reached an '*' in the pattern
                     //    - prefix match completed
                     //    FIXME - no support here for suffix matching
-                    break;    // so its a match 
+                    break;
                 }
                 if (*s_cp++ != *p_cp++) {    // test if chars match
                     return FAIL;    // else, no match
                 }
             }
             // all matched so far, move on to test the next STRING
+        }
+        if (p_len) {  //must match the entire pattern
+                return FAIL;
         }
         s_elem = s_elem->next;
         p_elem = p_elem->next;

@@ -95,7 +95,7 @@ success_t je_parse(context_t * C, elem_t * name)
  * recurse through state-machine at a single level of containment
  *
  *  @param CC container context
- *  @[aram root of parsed tree
+ *  @param root of parsed tree
  *  @return success/fail
  */
 static success_t
@@ -245,16 +245,21 @@ je_parse_r(container_context_t * CC, elem_t * root,
                 }
             } else {
                 C->stat_actcount++;
+#if 0
+P(&branch);
+#endif
                 append_list(root, move_list(C, &branch));
 #if 0
-P(root);
+P(&branch);
 #endif
 
                 // dispatch events for the ACT just finished
 // FIXME                je_dispatch(CC, root);
+//
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 emit_act(CC, root);  // emit hook for rewritten act
+
                 free_list(C, root);  // that's all folks.  move on to the next ACT.
             }
             break;
