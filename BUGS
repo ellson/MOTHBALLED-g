@@ -35,24 +35,34 @@
 
 ################################################################
 
-2) nodes introduced with "=" don't require further node induction
+2) ENHANCEMENT nodes introduced with "=" don't require further node induction
 
-3) Some grammar elements are purely for syntax construction and have no representation by themselves:
+3) ENHANCEMENT Some grammar elements are purely for syntax construction and have no representation by themselves:
 	OBJECT, LEG, ENDPOINT, .... (particularly elements of lists)
 these are consuming elem_t storage, and presumably extra processing.   Can they be eliminated?
 
-5) command line rework ...
+5) ENHANCEMENT command line rework ...
 	-a [<file>]         ... read archive at init.  <file> defaults to g_archive.tgz
 	-A [<file>]         ... write archive on exit.  <file> defaults to g_archive.tgz
 	-p [<file>]         ... print main_container on exit.  <file> defaults to "-"  (i.e. stdout)
-	-P <name> [<file>]  ... print named container on exit.  <name> can be full name, or namehash
+	-P <name> [<file>]  ... print named container on exit.  <name> can be full name (i.e. subject), or namehash
         -i [<file>]         ... print index of hashname to full name. <file> defaults to "-"  (i.e. stdout)
         -d [level]          ... print debugging info to stdout
 	-s                  ... print stats to stdout
 
-6) only three characters require BSL escapes ..   BSL in front of any other character should be ignored.
+6) ENHANCEMENT only three characters require BSL escapes ..  BSL, DQT and NLL, and only inside DQT strings
+BSL in front of any other character in DQT strings should be ignored and elided in output.
+BSL outside DQT strings are literal BSLs
 
-7) quoted strings that don't really need quoting should be emitted unquoted (maybe?)
+7) MINOR quoted strings that don't really need quoting should be emitted unquoted.
+Without this canonicalization,  a pattern like a* will fail to match "a"
 
-9) pattern substitution should merge act in output (first subject, merged attributes and container)
+9) ENHANCEMENT pattern substitution should merge act in output (first subject, merged attributes and container)
+
+10) FIXME processing and storage of pattern contents (can these contain further patterns?)
+11) FIXME merging of pattern contents when matching
+
+12) when to introduce and object DB ?
+
+
 	
