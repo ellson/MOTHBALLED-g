@@ -1,0 +1,26 @@
+What is the persistence model ?
+
+
+   - there is a lot of redundancy after parsing
+
+   - need to merge and store into in-memory attribut/value db
+
+   - persistence by writing from store in g format ...
+
+    - separate components
+        container
+            attributes values
+            stats
+            node patterns
+                attribues values
+                container index
+            edge patterns
+                attribues values
+                container index
+            nodes
+                attribues values
+                container index
+            edges
+                attribues values
+                container index
+

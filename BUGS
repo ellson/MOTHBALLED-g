@@ -65,4 +65,11 @@ Without this canonicalization,  a pattern like a* will fail to match "a"
 12) when to introduce and object DB ?
 
 
+13) the error message for when an input file is not found should be less obscure
+    g (master)$ src/g comments.g
+Error: fopen fail ACTIVITY
+      in "comments.g" line: 1 just before: ""
+
+
+
 	
