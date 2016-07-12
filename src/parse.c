@@ -254,8 +254,8 @@ P(&branch);
 #endif
 
                 // dispatch events for the ACT just finished
-// FIXME                je_dispatch(CC, root);
-//
+                je_dispatch(CC, root);
+
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 emit_act(CC, root);  // emit hook for rewritten act

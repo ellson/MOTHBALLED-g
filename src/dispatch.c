@@ -61,10 +61,6 @@ void je_dispatch(container_context_t * CC, elem_t * list)
     assert(list);
     assert(list->type == (char)LISTELEM);
 
-#if 0
-P(list)
-#endif
-
     // expand OBJECT_LIST and ENDPOINTSETS
     je_dispatch_r(C, list, &attributes, &nodes, &edges);
 
@@ -132,6 +128,9 @@ static void je_dispatch_r(context_t * C, elem_t * list, elem_t * attributes, ele
     while (elem) {
         si = (state_t) elem->state;
         switch (si) {
+        case ACT:
+            je_dispatch_r(C, elem, attributes, nodes, edges);
+            break;
         case ATTRIBUTES:
             new = ref_list(C, elem);
             append_list(attributes, new);
