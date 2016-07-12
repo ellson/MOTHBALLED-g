@@ -112,10 +112,10 @@ void je_dispatch(container_context_t * CC, elem_t * plist)
  * This function expands OBJECT_LISTS of NODES or EDGES, and then expands ENPOINTSETS in EDGES
  *
  * @param C context
- * @param list   -- object-list
- * @param attributes
- * @param nodes
- * @param edges
+ * @param plist   -- object-list
+ * @param pattributes
+ * @param pnodes
+ * @param pedges
  */
 static void je_dispatch_r(context_t * C, elem_t * plist, elem_t * pattributes, elem_t * pnodes, elem_t * pedges)
 {
