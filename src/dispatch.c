@@ -168,6 +168,14 @@ static void je_dispatch_r(context_t * C, elem_t * plist, elem_t * pattributes, e
     }
 }
 
+/**
+ * This function reassembles ACTS with no containment  -- FIXME improve on this
+ *
+ * @param C context
+ * @param pelem   -- node or edge object
+ * @param pattributes
+ * @param plist - output ACT
+ */
 static void je_assemble_act(context_t *C, elem_t *pelem, elem_t *pattributes, elem_t *plist)
 {
     elem_t act = { 0 };
