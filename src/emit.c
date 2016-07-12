@@ -13,6 +13,8 @@
 static emit_t *emitters[] =
     {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
 
+static void je_gvrender_list(context_t *C, FILE *chan, elem_t * list);
+
 static void api_act(container_context_t * CC, elem_t *list)
 {
     context_t *C = CC->context;
@@ -21,13 +23,21 @@ static void api_act(container_context_t * CC, elem_t *list)
     // after dispatch() there can be mutiple ACTs in the list
     elem = list->u.list.first;
     while (elem) {
+#if 0
+        // render through libcgraph to svg
+        je_gvrender_list(CC->context, stdout, elem);
+        putc('\n', stdout);   // NL after
+#endif
+
         C->sep = 0;         // suppress space before (because preceded by BOF or NL)
+        // emit in g format
         je_emit_list(CC->context, CC->out, elem);
         putc('\n', CC->out);   // NL after
 
         C->sep = 0;         // suppress space before (because preceded by BOF or NL)
         je_emit_list(CC->context, stdout, elem);
         putc('\n', stdout);   // NL after
+
 
         elem = elem->next;
     }
@@ -190,6 +200,93 @@ static void je_emit_close_token(context_t *C, FILE *chan, char tok)
         putc(tok, chan);
     }
     C->sep = 0;
+}
+
+void je_gvrender_list(context_t *C, FILE *chan, elem_t * list)
+{
+    elem_t *elem;
+    elemtype_t type;
+    int cnt;
+    state_t liststate;
+
+    assert(list);
+    liststate = (state_t) list->state;
+    if (! (elem = list->u.list.first)) {
+        switch (liststate) {
+        case QRY:
+//            je_emit_token(C, chan, '?');
+            break;
+        case TLD:
+//            je_emit_token(C, chan, '~');
+            break;
+        default:
+            break;
+        }
+        return;
+    }
+    type = (elemtype_t) elem->type;
+    switch (type) {
+    case FRAGELEM:
+//        print_frags(chan, liststate, elem, &(C->sep));
+        C->sep = 0;         // suppress space before (because preceded by BOF or NL)
+        fprintf(chan, "addnode: ");
+        print_frags(chan, liststate, elem, &(C->sep));
+        putc('\n',chan);
+        break;
+    case LISTELEM:
+        cnt = 0;
+        while (elem) {
+            if (cnt++ == 0) {
+                switch (liststate) {
+                case EDGE:
+                   fprintf(chan, "addedge: \n");
+//                    je_emit_token(C, chan, '<');
+                    break;
+                case OBJECT_LIST:
+                case ENDPOINTSET:
+//                    je_emit_token(C, chan, '(');
+                    break;
+                case ATTRIBUTES:
+//                    je_emit_token(C, chan, '[');
+                    break;
+                case CONTAINER:
+//                    je_emit_token(C, chan, '{');
+                    break;
+                case VALASSIGN:
+//                    je_emit_token(C, chan, '=');
+                    break;
+                case CHILD:
+//                    je_emit_token(C, chan, '/');
+                    break;
+                default:
+                    break;
+                }
+            }
+            je_gvrender_list(C, chan, elem);    // recurse
+            elem = elem->next;
+        }
+        switch (liststate) {
+        case EDGE:
+//            je_emit_close_token(C, chan, '>');
+            break;
+        case OBJECT_LIST:
+        case ENDPOINTSET:
+//            je_emit_close_token(C, chan, ')');
+            break;
+        case ATTRIBUTES:
+//            je_emit_close_token(C, chan, ']');
+            break;
+        case CONTAINER:
+//            je_emit_close_token(C, chan, '}');
+            break;
+        default:
+            break;
+        }
+        break;
+    case HASHELEM:
+        assert(0);  // should not be here
+        break;
+    }
 }
 
 void je_emit_list(context_t *C, FILE *chan, elem_t * list)
