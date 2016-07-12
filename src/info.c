@@ -44,10 +44,17 @@ char * je_session(context_t *C)
     static struct passwd *pw;
     static struct utsname unamebuf;
     static uid_t uid;
-#if defined(HAVE_CLOCK_GETTIME)
+#ifdef HAVE_SYSINFO
+    // Y2038-safe - ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    static struct sysinfo starttime;
+#else
+#ifdef HAVE_CLOCK_GETTIME
+    // Y2038-unsafe
     static struct timespec starttime;
 #else
+    // Y2038-unsafe
     static struct timeval starttime;
+#endif
 #endif
 
     if (pos != &buf[0]) { // have we been here before?
@@ -86,7 +93,27 @@ char * je_session(context_t *C)
     je_append_token   (C, &pos, '=');
     je_append_string  (C, &pos, C->hostname);
 
+#if defined(HAVE_SYSINFO)
+    // Y2038-safe - ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    if (sysinfo(&(C->uptime)) != 0) {
+        perror("Error - sysinfo(): ");
+        exit(EXIT_FAILURE);
+    }
+    je_append_string  (C, &pos, "uptime");
+    je_append_token   (C, &pos, '=');
+    je_append_ulong   (C, &pos, C->uptime.uptime);
+
+    if (sysinfo(&starttime) != 0) {
+        perror("Error - sysinfo(): ");
+        exit(EXIT_FAILURE);
+    }
+    je_append_string  (C, &pos, "starttime");    // FIXME - need Y2038-safe ns from epoch
+    je_append_token   (C, &pos, '=');
+    je_append_ulong   (C, &pos, C->uptime.uptime);
+
+#else
 #if defined(HAVE_CLOCK_GETTIME)
+    // Y2038-unsafe
     if (clock_gettime(CLOCK_BOOTTIME, &(C->uptime)) != 0) {
         perror("Error - clock_gettime(): ");
         exit(EXIT_FAILURE);
@@ -103,9 +130,7 @@ char * je_session(context_t *C)
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, starttime.tv_sec);
 #else
-
-// FIXME -- needed for OS/X - incomplete....  -  how to get uptime?
-
+    // Y2038-unsafe
     if (gettimeofday(&(C->uptime), NULL) != 0) {
         perror("Error - gettimeofday(): ");
         exit(EXIT_FAILURE);
@@ -121,6 +146,7 @@ char * je_session(context_t *C)
     je_append_string  (C, &pos, "starttime");
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, starttime.tv_sec);
+#endif
 #endif
 
     je_append_token   (C, &pos, ']');
@@ -145,17 +171,35 @@ char * je_stats(context_t *C)
     static char buf[STATS_BUF_SIZE];
 
     char *pos = &buf[0];  // NB non-static.  stats are updated and re-formatted on each call
-#if defined(HAVE_CLOCK_GETTIME)
+#ifdef HAVE_SYSINFO
+    // Y2038-safe - ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    struct sysinfo nowtime;    // FIXME - need Y2038-safe ns from epoch
+
+#else
+#ifdef HAVE_CLOCK_GETTIME
+    // Y2038-unsafe
     struct timespec nowtime;
 #else
+    // Y2038-unsafe
     struct timeval nowtime;
 #endif
-    long runtime;    // runtime in nano-seconds
+#endif
+    long runtime;    // runtime in seconds
 
     je_append_string  (C, &pos, "stats");
     je_append_token   (C, &pos, '[');
 
+#ifdef HAVE_SYSINFO
+    // Y2038-safe - ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    if (sysinfo(&nowtime) != 0) {
+        perror("Error - sysinfo(): ");
+        exit(EXIT_FAILURE);
+    }
+    runtime = (nowtime.uptime - C->uptime.uptime)*TEN9;  //FIXME - only 1sec resolution
+
+#else
 #if defined(HAVE_CLOCK_GETTIME)
+    // Y2038-unsafe
     if (clock_gettime(CLOCK_BOOTTIME, &nowtime) != 0) {
         perror("Error - clock_gettime(): ");
         exit(EXIT_FAILURE);
@@ -163,15 +207,14 @@ char * je_stats(context_t *C)
     runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_nsec)
             - ((unsigned long)(C->uptime.tv_sec) * TEN9 + (unsigned long)(C->uptime.tv_nsec));
 #else
- 
-// FIXME -- needed for OS/X - incomplete....  -  how to get uptime?
-
+    // Y2038-unsafe
     if (gettimeofday(&nowtime, NULL) != 0) {
         perror("Error - gettimeofday(): ");
         exit(EXIT_FAILURE);
     }
     runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_usec) * TEN3
             - ((unsigned long)(C->uptime.tv_sec) * TEN9 + (unsigned long)(C->uptime.tv_usec) * TEN3);
+#endif
 #endif
 
     je_append_string  (C, &pos, "runtime");
@@ -192,6 +235,7 @@ char * je_stats(context_t *C)
 
     je_append_string  (C, &pos, "acts_per_second");
     je_append_token   (C, &pos, '=');
+    if (runtime <= TEN9) runtime = TEN9;  //avoid zero divides
     je_append_ulong   (C, &pos, C->stat_actcount*TEN9/runtime);
 
     je_append_string  (C, &pos, "sameas");

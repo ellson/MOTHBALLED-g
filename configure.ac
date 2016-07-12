@@ -61,6 +61,7 @@ AC_CHECK_HEADERS([ \
     time.h \
     sys/utsname.h \
     sys/types.h \
+    sys/sysinfo.h \
     unistd.h \
     pwd.h \
     errno.h \
@@ -81,6 +82,7 @@ AC_FUNC_ERROR_AT_LINE
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([ \
     clock_gettime \
+    sysinfo \
     strerror \
     uname \
 ])

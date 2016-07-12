@@ -3,8 +3,12 @@
 // include local configuration
 #include "config.h"
 
+#ifdef HAVE_SYSINFO
+#include <sys/sysinfo.h>
+#else
 #ifndef HAVE_CLOCK_GETTIME
 #include <sys/time.h>
+#endif
 #endif
 
 // include public interface
