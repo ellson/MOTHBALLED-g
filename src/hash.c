@@ -22,6 +22,8 @@ static void hash_list_r(unsigned long *hash, elem_t *list);
  *    - minimal cpu cost
  * It is not an objective for this hash to be cryptographic.     
  *
+ * The resulting hashes are 64bits which can be represented in 11 filename-safe characters.
+ *
  * Hash chosen is the FNV-1a for 64bits
  * (Ref: http://isthe.com/chongo/tech/comp/fnv/ )
  * The FNV_prime is: 2**40 + 2**8 + 0xb3 = 0x100000001b3 = 1099511628211
@@ -153,7 +155,10 @@ success_t je_base64_to_long(const char b64string[], unsigned long *hash)
 }
 
 /**
- * no idea - check later FIXME
+ * Store the hash in a bucket-list
+ *
+ * Internally the 64bit hashes are stored in 64 hash-buckets, each containing a list of hashes.
+ * The least-significant 6 bits of the 64bit hashes are used to index to the hash-bucket.
  *
  * @param C context
  * @param hash
