@@ -200,6 +200,9 @@ void je_persist_snapshot (context_t *C)
                 }
             }
         }
+        //
+        // FIXME - hash the content of the files, create hardlinks to the content hash
+        //
     }
 
     if (tar_open(&pTar, tarFilename, &gztype, O_WRONLY | O_CREAT | O_TRUNC, 0600, TAR_GNU) == -1) {
