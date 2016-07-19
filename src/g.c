@@ -90,9 +90,9 @@ int main(int argc, char *argv[])
     // start parsing
     je_parse(C, name);
 
-//  FIXME - do -i processing here so can index resored per-parsed graphs
+//  FIXME - do -i processing here so can index restored pre-parsed graphs
 //  FIXME - allow multiple -p in loop
-//  FIXME - do -p / -P processing here so can print resored per-parsed graphs
+//  FIXME - do -p / -P processing here so can print resored pre-parsed graphs
 
     // generate snapshot
     je_persist_snapshot(C);
