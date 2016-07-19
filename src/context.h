@@ -53,17 +53,14 @@
     long stat_elemmax;
     long stat_elemnow;
 
-#if defined(HAVE_SYSINFO)
-    // Y2038-safe - ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    struct sysinfo uptime;      // contains seconds since boot, also used as the starttime for runtime calculations
-#else
 #if defined(HAVE_CLOCK_GETTIME)
-    // Y2038-unsafe
-    struct timespec uptime;     // seconds since boot, also used as the starttime for runtime calculations
+    // Y2038-unsafe struct - but should be ok for uptime
+    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    struct timespec uptime;     // time with subsec resolution since boot, used as the base for runtime calculations
 #else
-    // Y2038-unsafe
-    struct timeval uptime;      // seconds since boot, also used as the starttime for runtime calculations
-#endif
+    // Y2038-unsafe struct - but should be ok for uptime
+    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    struct timeval uptime;      // time with subsec resolution since boot, used as the base for runtime calculations
 #endif
     pid_t pid;
 };
