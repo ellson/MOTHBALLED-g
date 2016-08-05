@@ -3,7 +3,6 @@
 ##
 
 
-
 open tempfile for write
 
 write g acts
@@ -14,29 +13,25 @@ close tempfile
     generate contenthash
     if contenthash exists
 	rm tempfile
-	if namehash exists
-            error if not a link
-            get oldcontenthash from namehash->oldcontenthash
-            rm namehash
-	    if oldcontenthash != contenthash
-                decrement refcount to oldcontenthash
-		if refount == 0
-		    remove oldcontenthash
-		    remove all derivative of oldcontenthash
-		fi
-	    fi
-	fi
+	remove namehash
     else
 	mv tempfile contenthash
-	if namehash exists
-            error if not a link
-            get oldcontenthash from namehash->oldcontenthash (ls -i namehash; find . -inum <inode>)
-	    rm namehash
-            decrement refcount to oldcontenthash
-	    if refount == 0
-		remove oldcontenthash
-		remove all derivative of oldcontenthash
-	    fi
-	fi
+        error if not a link
+        remove namehash
     fi
     ln contenthash namehash
+
+
+remove namehash  -- remove link, decrement links, delete if zero refs
+    if namehash exists
+        error if not a link
+        get oldcontenthash from namehash->oldcontenthash
+        rm namehash
+        if oldcontenthash != contenthash
+            decrement refcount to oldcontenthash
+            if refount == 0
+                remove oldcontenthash
+                remove all derivative of oldcontenthash
+            fi
+        fi
+    fi
