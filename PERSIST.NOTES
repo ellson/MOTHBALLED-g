@@ -29,3 +29,18 @@ close tempfile
         fi
     fi
     ln contenthash namehash
+
+
+
+- stat() will give the inode of a namehash, and the number of hardlinks
+
+- if all the contenthash are in one directory,  then searching with readdir() can find
+  the contenthash from the inode
+          - expensive ... every close where a namehash already exists require and iteration of all
+		contents directory entries  (i.e. thru number of different containers)
+
+
+        names/namehash files
+	contents/contenthash files   << hardlinked from namehash files
+	derivatives/contenthash deivative files
+            
