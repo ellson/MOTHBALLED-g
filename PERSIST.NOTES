@@ -18,7 +18,7 @@ close tempfile
     fi
     if namehash exists
         error if not a link
-        get oldcontenthash from namehash->oldcontenthash
+        get oldcontenthash from namehash->oldcontenthash (ls -i namehash; find . -inum <inum>)
         rm namehash
         if oldcontenthash != contenthash
             decrement refcount to oldcontenthash
