@@ -9,20 +9,13 @@ write g acts
 
 close tempfile
     convert to canonical form
-    generate namehash
     generate contenthash
+    generate namehash
     if contenthash exists
 	rm tempfile
-	remove namehash
     else
 	mv tempfile contenthash
-        error if not a link
-        remove namehash
     fi
-    ln contenthash namehash
-
-
-remove namehash  -- remove link, decrement links, delete if zero refs
     if namehash exists
         error if not a link
         get oldcontenthash from namehash->oldcontenthash
@@ -30,8 +23,9 @@ remove namehash  -- remove link, decrement links, delete if zero refs
         if oldcontenthash != contenthash
             decrement refcount to oldcontenthash
             if refount == 0
-                remove oldcontenthash
-                remove all derivative of oldcontenthash
+                rm oldcontenthash
+                rm all derivatives of oldcontenthash
             fi
         fi
     fi
+    ln contenthash namehash
