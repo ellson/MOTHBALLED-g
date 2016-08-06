@@ -10,38 +10,42 @@
 
 /**
  * Encode a byte array to a NUL terminated printable base64 string,
- * (suitable for filename).
+ * suitable for use as filename.
  *
- * NB.  Non-std character set and does not pad with '='
+ * NB.  c.v standard base64:
+ *        - Non-std character set ('_' instead of '/')
+ *        - Does not pad with '=' when ic%3 != 0 
+ *                      - byes assumed 0 which is encoded as '0'
  *
- * @param *buf - caller provided buffer for NUL terminated result
- * @param buf_len - size of buf provided for result 
- *      - buf will not be overrun, but result will be truncated if too small
- *      - to avoid trucation, buf_len = (data_len+2)/3))*4)+1;
- * @param data - input data byte array
- * @param data_len - number of bytes of data
+ * @param *ip - pointer to input data byte array
+ * @param ic  - number of bytes of idata
+ * @param *op - pointer to caller provided buffer for NUL terminated result
+ * @param oc  - size of buffer provided for result 
+ *      - buffer will not be overrun, but result will be truncated if too small
+ *      - to avoid trucation, oc = (ic+2)/3))*4)+1;
  */
-void je_base64(char *buf, const int buf_len, const unsigned char *data, const int data_len)
+void je_base64(unsigned char *ip, size_t ic, char *op, size_t oc)
 {
     // 64 ascii chars that are safe in filenames
     const static char b64[] =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+_";
-    int i, j;
     uint32_t d;
-    int len=buf_len-1; /* leave room for NUL terminator */
-    char *p = buf;
 
-    for (i = 0; i < data_len; ) {
-      d = (uint32_t)data[i++];
-      if (i < data_len) d |= ((uint32_t)data[i++])<<8;
-      if (i < data_len) d |= ((uint32_t)data[i++])<<16;
-      for (j = len/4?4:len; j--;) {
-          *p++ = b64[(d & 0x3F)];
-          d >>= 6;
-      }
-      len -= 4;
+    if (!op || !oc || !ip || !ic) return;
+
+    oc--; // leave room for NUL
+    while (ic-- && oc--) {
+      // input 1 to 3 bytes each with 8-bits of value
+                d  = ((uint32_t)*ip++) << 16;
+      if (ic) { d |= ((uint32_t)*ip++) <<  8; ic--; }
+      if (ic) { d |=  (uint32_t)*ip++       ; ic--; }
+      // output 1 to 4 chars each representing 6-bits of value
+                *op++ = b64[(d >> 18 & 0x3F)]; oc--;
+      if (oc) { *op++ = b64[(d >> 12 & 0x3F)]; oc--; }
+      if (oc) { *op++ = b64[(d >>  6 & 0x3F)]; oc--; }
+      if (oc) { *op++ = b64[(d       & 0x3F)]; }
     }
-    *p = '\0';
+    *op = '\0';   
 }
 
 
@@ -94,7 +98,7 @@ int main(int arc, char *argv[])
 
     char buf[64];
 
-    je_base64(buf, sizeof(buf), digest, digest_len);
+    je_base64(digest, digest_len, buf, sizeof(buf));
 
     fprintf(stdout, "%s\n", buf);
 
