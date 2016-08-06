@@ -14,8 +14,7 @@
  *
  * NB.  c.v standard base64:
  *        - Non-std character set ('_' instead of '/')
- *        - Does not pad with '=' when ic%3 != 0 
- *                      - byes assumed 0 which is encoded as '0'
+ *        - Does not pad with '='
  *
  * @param *ip - pointer to input data byte array
  * @param ic  - number of bytes of idata
@@ -30,20 +29,21 @@ void je_base64(unsigned char *ip, size_t ic, char *op, size_t oc)
     const static char b64[] =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+_";
     uint32_t d;
+    int pad1=0, pad2=0;
 
     if (!op || !oc || !ip || !ic) return;
 
     oc--; // leave room for NUL
     while (ic-- && oc--) {
-      // input 1 to 3 bytes each with 8-bits of value
-                d  = ((uint32_t)*ip++) << 16;
-      if (ic) { d |= ((uint32_t)*ip++) <<  8; ic--; }
-      if (ic) { d |=  (uint32_t)*ip++       ; ic--; }
-      // output 1 to 4 chars each representing 6-bits of value
-                *op++ = b64[(d >> 18 & 0x3F)]; oc--;
-      if (oc) { *op++ = b64[(d >> 12 & 0x3F)]; oc--; }
-      if (oc) { *op++ = b64[(d >>  6 & 0x3F)]; oc--; }
-      if (oc) { *op++ = b64[(d       & 0x3F)]; }
+        // input 1 to 3 bytes each with 8-bits of value
+                  d  = ((uint32_t)*ip++) << 16;
+        if (ic) { d |= ((uint32_t)*ip++) <<  8; ic--; } else pad2++;
+        if (ic) { d |=  (uint32_t)*ip++       ; ic--; } else pad1++;
+        // output 1 to 4 chars each representing 6-bits of value
+                           *op++ = b64[(d >> 18 & 0x3F)]; oc--;
+        if (oc)          { *op++ = b64[(d >> 12 & 0x3F)]; oc--; }
+        if (oc && !pad2) { *op++ = b64[(d >>  6 & 0x3F)]; oc--; }
+        if (oc && !pad1) { *op++ = b64[(d       & 0x3F)]; }
     }
     *op = '\0';   
 }
