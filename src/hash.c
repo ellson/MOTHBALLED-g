@@ -41,10 +41,10 @@ void je_hash_list(unsigned long *hash, elem_t *list)
 }
 
 /**
- * Recursive hash function building on a previously initialezed or
- * partially accumulated has result.
+ * Recursive hash function building on a previously initialized or
+ * partially accumulated haahs result.
  *
- * @param hash palace for resulting hash
+ * @param hash place for resulting hash
  * @param list - fraglist or list of fraglist to be hashed
  */
 static void hash_list_r(unsigned long *hash, elem_t *list)
