@@ -27,7 +27,7 @@ void je_sameas(container_context_t * CC, elem_t * subject)
 
     newsubject = &subject_rewrite;
     oldsubject = &(CC->subject);
-    nextold = oldsubject->u.list.first;
+    nextold = oldsubject->first;
 
     assert(subject);
     assert((state_t)subject->state == SUBJECT);
@@ -41,8 +41,8 @@ void je_sameas(container_context_t * CC, elem_t * subject)
 
     newsubject->state = SUBJECT;  
     *oldsubject = *newsubject;    // save the newsubject as oldsubject
-    assert(newsubject->u.list.first);
-    newsubject->u.list.first->count++;    // and increase its reference count
+    assert(newsubject->first);
+    newsubject->first->refs++;    // and increase its reference count
     *subject = *newsubject; //    to also save as the rewritten current subject
 }
 
@@ -63,7 +63,7 @@ static void je_sameas_r(container_context_t * CC, elem_t * subject, elem_t ** ne
 
     assert(subject->type == (char)LISTELEM);
 
-    elem = subject->u.list.first;
+    elem = subject->first;
 #if 0
 if (*nextold) {
     C->sep = ' ';
@@ -94,7 +94,7 @@ if (*nextold) {
                 {
                     // doesn't matter if old is shorter
                     // ... as long as no further substitutions are needed
-                    nextoldelem = (*nextold)->u.list.first;    // in the recursion, iterate over
+                    nextoldelem = (*nextold)->first;    // in the recursion, iterate over
                     // the parts of the NODE or EDGE 
                     *nextold = (*nextold)->next;    // at this level, continue over the NODES or EDGES
                 } else    // else we have no old, just ignore it
@@ -129,7 +129,7 @@ if (*nextold) {
         default:
             if (*nextold) {    // doesn't matter if old is shorter
                 // ... as long as no further substitutions are needed
-                nextoldelem = (*nextold)->u.list.first;    // for the recursion
+                nextoldelem = (*nextold)->first;    // for the recursion
                 *nextold = (*nextold)->next;    // at this level, continue over the elems
             }
             je_sameas_r(CC, elem, &nextoldelem, &object);    // recurse, adding result to a sublist

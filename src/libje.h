@@ -2,7 +2,7 @@
 
 typedef struct context_s context_t;
 typedef struct elem_s elem_t;
-typedef struct list_elem_s list_elem_t;
+//typedef struct list_elem_s list_elem_t;
 typedef struct frag_elem_s frag_elem_t;
 typedef struct hash_elem_s hash_elem_t;
 

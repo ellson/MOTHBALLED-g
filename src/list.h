@@ -9,31 +9,7 @@ typedef enum {
 // Print a list (tree) -  used for debugging
 #define P(L) {C->sep = ' ';print_list(stdout, L, 0, &(C->sep));putc('\n', stdout);}
 
-struct elem_s {
-    elem_t *next;
-    union {
-        struct {
-            elem_t *first;    // for push, pop, and forward walk
-            elem_t *last;    // for append
-        } list;
-        struct {
-            inbuf_t *inbuf;    // inbuf containing frag - for memory management
-            unsigned char *frag;    // point to beginning of frag
-        } frag;
-        struct {
-            unsigned long hash; // hash value
-            FILE *out;      // file handle, or NULL if not opened yet.
-        } hash;
-    } u;
-    // FIXME - would be better if count was in the union as either "len" or "refs"
-    // but doing so results in the size of this struct growing from 32 to 40bytes
-    unsigned int count;    // used for list reference count or fragment string length
-    // FIXME -- can't store type as elemtype_t, or state as state_t, or the commpiler assumes ints.
-    char type;        // LISTELEM, FRAGELEM or HASHELEM
-    char state;        // state_machine state that generated this list
-};
-
-struct list_elem_s {     // castable to elem_s  -- size must match (32bytes)
+struct elem_s {          // castable from frag_elem_s and hash_elem_s -- sizes must match (32bytes)
     elem_t *next;
     elem_t *first;
     elem_t *last;
@@ -43,7 +19,7 @@ struct list_elem_s {     // castable to elem_s  -- size must match (32bytes)
 };
 
 struct frag_elem_s {     // castable to elem_s  -- size must match (32bytes)
-    elem_t *next;
+    frag_elem_t *next;
     inbuf_t *inbuf;      // inbuf containing frag - for memory management
     unsigned char *frag; // pointer to beginning of frag
     unsigned int len;    // length of frag
@@ -52,7 +28,7 @@ struct frag_elem_s {     // castable to elem_s  -- size must match (32bytes)
 };
 
 struct hash_elem_s {     // castable to elem_s  -- size must match (32bytes)
-    elem_t *next;
+    hash_elem_t *next;
     unsigned long hash;  // hash value
     FILE *out;           // file handle, or NULL if not opened yet.
     unsigned int count;  // unused
@@ -63,15 +39,12 @@ struct hash_elem_s {     // castable to elem_s  -- size must match (32bytes)
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
-elem_t *new_hash(context_t * C, unsigned long hash);
-elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag);
+hash_elem_t *new_hash(context_t * C, unsigned long hash);
+frag_elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag);
 elem_t *move_list(context_t * C, elem_t * list);
 elem_t *ref_list(context_t * C, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);
-void append_list_list(list_elem_t * list, list_elem_t * elem);
-void append_frag_list(list_elem_t * list, frag_elem_t * elem);
-void append_hash_list(list_elem_t * list, hash_elem_t * elem);
 void free_list(context_t * C, elem_t * list);
 int print_len_frag(FILE * chan, unsigned char *len_frag);
-void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep);
+void print_frags(FILE * chan, state_t liststate, frag_elem_t * frag_elem, char *sep);
 void print_list(FILE * chan, elem_t * list, int nest, char *sep);

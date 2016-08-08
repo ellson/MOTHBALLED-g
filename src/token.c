@@ -209,7 +209,7 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
     unsigned char *frag;
     state_t insi;
     int slen, len;
-    elem_t *elem;
+    frag_elem_t *frag_elem;
 
     slen = 0;
     while (1) {
@@ -218,7 +218,7 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
                 C->in_quote = 1;
                 frag = C->in;
                 C->insi = char2state[*++(C->in)];
-                elem = new_frag(C, BSL, 1, frag);
+                frag_elem = new_frag(C, BSL, 1, frag);
                 slen++;
             } else if (C->insi == DQT) {
                 C->in_quote = 0;
@@ -241,7 +241,7 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
                     len++;
                 }
                 C->insi = insi;
-                elem = new_frag(C, DQT, len, frag);
+                frag_elem = new_frag(C, DQT, len, frag);
                 slen += len;
             }
         } else if (C->insi == ABC) {
@@ -251,14 +251,14 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
                 len++;
             }
             C->insi = insi;
-            elem = new_frag(C, ABC, len, frag);
+            frag_elem = new_frag(C, ABC, len, frag);
             slen += len;
         } else if (C->insi == AST) {
             C->has_ast = 1;
             frag = C->in;
             while ((C->insi = char2state[*++(C->in)]) == AST) {
             }    // extra '*' ignored
-            elem = new_frag(C, AST, 1, frag);
+            frag_elem = new_frag(C, AST, 1, frag);
             slen++;
         } else if (C->insi == DQT) {
             C->in_quote = 1;
@@ -268,7 +268,7 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
         } else {
             break;
         }
-        append_list(fraglist, elem);
+        append_list(fraglist, (elem_t*)frag_elem);
         emit_frag(C, len, frag);
         C->stat_fragcount++;
     }
@@ -325,7 +325,7 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
     unsigned char *frag;
     state_t insi;
     int slen, len;
-    elem_t *elem;
+    frag_elem_t *frag_elem;
 
     slen = 0;
     while (1) {
@@ -334,7 +334,7 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
                 C->in_quote = 1;
                 frag = C->in;
                 C->insi = char2state[*++(C->in)];
-                elem = new_frag(C, BSL, 1, frag);
+                frag_elem = new_frag(C, BSL, 1, frag);
                 slen++;
             } else if (C->insi == DQT) {
                 C->in_quote = 0;
@@ -357,7 +357,7 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
                     len++;
                 }
                 C->insi = insi;
-                elem = new_frag(C, DQT, len, frag);
+                frag_elem = new_frag(C, DQT, len, frag);
                 slen += len;
             }
         // In the unquoted portions of VSTRING we allow '/' '\' ':' '?'
@@ -378,7 +378,7 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
                 len++;
             }
             C->insi = insi;
-            elem = new_frag(C, ABC, len, frag);
+            frag_elem = new_frag(C, ABC, len, frag);
             slen += len;
 
         // but '*' are still special  (maybe used ias wild card in queries)
@@ -387,7 +387,7 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
             frag = C->in;
             while ((C->insi = char2state[*++(C->in)]) == AST) {
             }    // extra '*' ignored
-            elem = new_frag(C, AST, 1, frag);
+            frag_elem = new_frag(C, AST, 1, frag);
             slen++;
         } else if (C->insi == DQT) {
             C->in_quote = 1;
@@ -397,7 +397,7 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
         } else {
             break;
         }
-        append_list(fraglist, elem);
+        append_list(fraglist, (elem_t*)frag_elem);
         emit_frag(C, len, frag);
         C->stat_fragcount++;
     }

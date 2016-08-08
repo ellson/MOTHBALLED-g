@@ -43,7 +43,7 @@ success_t je_parse(context_t * C, elem_t * name)
     container_context_t container_context = { 0 };
     container_context_t *CC = &container_context;
     elem_t root = { 0 };    // the output parse tree
-    elem_t *elem;
+    hash_elem_t *hash_elem;
     success_t rc;
     unsigned long hash;
     char hashname[12], *filename;
@@ -52,8 +52,8 @@ success_t je_parse(context_t * C, elem_t * name)
 
 //===================================== ikea open ===============
     je_hash_list(&hash, name); // hash name (subject "names" can be very long)
-    elem = je_hash_bucket(C, hash);    // save in bucket list 
-    if (! elem->u.hash.out) {          // open file, if not already open
+    hash_elem = je_hash_bucket(C, hash);    // save in bucket list 
+    if (! hash_elem->out) {          // open file, if not already open
         je_long_to_base64(hashname, &hash);
         if (! (filename = malloc(strlen(C->tempdir) + 1 + strlen(hashname) + 1))) {
             perror("Error - malloc(): ");
@@ -62,14 +62,14 @@ success_t je_parse(context_t * C, elem_t * name)
         strcpy(filename, C->tempdir);
         strcat(filename, "/");
         strcat(filename, hashname);
-        elem->u.hash.out = fopen(filename,"a+b"); //open for binary append writes, + read.
-        if (! elem->u.hash.out) {
+        hash_elem->out = fopen(filename,"a+b"); //open for binary append writes, + read.
+        if (! hash_elem->out) {
             perror("Error - fopen(): ");
             exit(EXIT_FAILURE);
         }
         free(filename);
     }
-    CC->out = elem->u.hash.out;
+    CC->out = hash_elem->out;
 //==============================================================
 
     emit_start_activity(CC);
@@ -109,6 +109,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
     state_t ti, ni;
     success_t rc;
     elem_t *elem;
+    hash_elem_t *hash_elem;
     elem_t branch = { 0 };
     context_t *C = CC->context;
     unsigned long hash;
@@ -280,7 +281,7 @@ P(&branch);
             je_sameas(CC, &branch);
 
             je_hash_list(&hash, &(CC->subject));   // generate name hash
-            elem = je_hash_bucket(C, hash);    // save in bucket list 
+            hash_elem = je_hash_bucket(C, hash);    // save in bucket list 
 #if 0
 P(root)
 #endif
@@ -302,8 +303,8 @@ P(root)
         default:
             break;
         }
-        if (branch.u.list.first != NULL || si == EQL) {    // mostly ignore empty lists
-            if (branch.u.list.first && branch.u.list.first->type != FRAGELEM) {
+        if (branch.first != NULL || si == EQL) {    // mostly ignore empty lists
+            if (branch.first && branch.first->type != FRAGELEM) {
                 // record state generating this tree
                 // - except for STRINGs which use state for quoting info
                 branch.state = si;

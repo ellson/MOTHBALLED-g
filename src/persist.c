@@ -143,20 +143,20 @@ elem_t * je_persist_open(context_t *C)
     // The top name is simply '^' - like "Dad" (or "Mum", or better: "Parent")
     // Note that adoption is possible as we never use an actual name.
 
-    // 68 bytes for a 1-byte name - oh well 
-    static elem_t mumfrag = {
+    // 66 bytes for a 1-byte name - oh well 
+    static frag_elem_t mumfrag = {
         .next = NULL,
-        .u.frag.inbuf = NULL,
-        .u.frag.frag = (unsigned char *)"^",
-        .count = 1, // length
+        .inbuf = NULL,
+        .frag = (unsigned char *)"^",
+        .len = 1,
         .type = FRAGELEM,
         .state = ABC
     };
     static elem_t Mum = {
         .next = NULL,
-        .u.list.first = &mumfrag,
-        .u.list.last = &mumfrag,
-        .count = 0, // references
+        .first = (elem_t*)(&mumfrag),
+        .last = (elem_t*)(&mumfrag),
+        .refs = 0,
         .type = LISTELEM,
         .state = STRING
     };
@@ -181,7 +181,7 @@ elem_t * je_persist_open(context_t *C)
 void je_persist_snapshot (context_t *C)
 {
     int i;
-    elem_t *elem, *next;
+    hash_elem_t *elem, *next;
     FILE *fp;
     TAR *pTar;
     char *tarFilename = "g_snapshot.tgz";
@@ -193,7 +193,7 @@ void je_persist_snapshot (context_t *C)
         while(next) {
             elem = next;
             next = elem->next;
-            if ((fp = elem->u.hash.out)) {
+            if ((fp = elem->out)) {
 //============================= ikea flush ???  ===============
                 if (fflush(fp) != 0) {
                     perror("Error - fflush(): ");
@@ -307,15 +307,16 @@ void je_persist_close (context_t *C)
 {
     FILE *fp;
     int i;
-    elem_t *elem, *next;
+    hash_elem_t *hash_elem, *next;
+    elem_t *elem;
     char hashname[12], *filename;
 
     for (i=0; i<64; i++) {
         next = C->hash_buckets[i];
         while(next) {
-            elem = next;
-            next = elem->next;
-            if ((fp = elem->u.hash.out)) {
+            hash_elem = next;
+            next = hash_elem->next;
+            if ((fp = hash_elem->out)) {
 
 //========================== ikea close ==========================
                 // close all open files
@@ -327,7 +328,7 @@ void je_persist_close (context_t *C)
                 // FIXME - perhaps we should keep the base64 filenames around?
  
                 // reconsitute the filename and unlink
-                je_long_to_base64(hashname, &(elem->u.hash.hash));
+                je_long_to_base64(hashname, &(hash_elem->hash));
                 if (! (filename = malloc(sizeof(C->template) + 1 + sizeof(hashname) + 1))) {
                     perror("Error - malloc(): ");
                     exit(EXIT_FAILURE);
@@ -344,7 +345,8 @@ void je_persist_close (context_t *C)
                 free(filename);
             }
 
-            // return elem to free_elem_list
+            // return hash_elem to free_elem_list
+            elem = (elem_t*)hash_elem;
             elem->next = C->free_elem_list;
             C->free_elem_list = elem;
         }

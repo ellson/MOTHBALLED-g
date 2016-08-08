@@ -68,13 +68,13 @@ P(pattern_acts);
 #endif
 
     // iterate over available patterns
-    for ( pact = pattern_acts->u.list.first; pact; pact = pact->next) {
+    for ( pact = pattern_acts->first; pact; pact = pact->next) {
         assert((state_t) pact->state == ACT);
 
 #if 0
 P(pact);
 #endif
-        psubj = pact->u.list.first;
+        psubj = pact->first;
         assert(psubj);
         assert((state_t) psubj->state == SUBJECT);
 
@@ -82,7 +82,7 @@ P(pact);
 
         // FIXME - contents from pattern ??
 
-        if ((je_pattern_r(CC, subject->u.list.first, psubj->u.list.first)) == SUCCESS) {
+        if ((je_pattern_r(CC, subject->first, psubj->first)) == SUCCESS) {
             // insert matched attrubutes, contents,
             // and then the subject again
             
@@ -118,8 +118,8 @@ je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
     unsigned char *s_cp, *p_cp;
     int s_len, p_len;
 
-    s_elem = subject->u.list.first;
-    p_elem = pattern->u.list.first;
+    s_elem = subject->first;
+    p_elem = pattern->first;
     while (s_elem && p_elem) {
         if (s_elem->type != p_elem->type) {
             return FAIL;    // no match if one has reached FRAGELEMs without the other
@@ -149,14 +149,14 @@ je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
                 // separately
                 if (s_len == 0) {    // if we reached the end
                         // of a subject frag, try the next frag
-                    s_cp = ts_elem->u.frag.frag;
-                    s_len = ts_elem->count;
+                    s_cp = ((frag_elem_t*)ts_elem)->frag;
+                    s_len = ((frag_elem_t*)ts_elem)->len;
                     ts_elem = ts_elem->next;
                 }
                 if (p_len == 0) {    // if we reached the end
                         // of a pattern frag, try the next frag
-                    p_cp = tp_elem->u.frag.frag;
-                    p_len = tp_elem->count;
+                    p_cp = ((frag_elem_t*)tp_elem)->frag;
+                    p_len = ((frag_elem_t*)tp_elem)->len;
                     tp_elem = tp_elem->next;
                 }
                 s_len--;

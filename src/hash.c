@@ -53,12 +53,12 @@ static void hash_list_r(unsigned long *hash, elem_t *list)
     unsigned char *cp;
     int len;
 
-    if ((elem = list->u.list.first)) {
+    if ((elem = list->first)) {
         switch ((elemtype_t) elem->type) {
         case FRAGELEM:
             while (elem) {
-                cp = elem->u.frag.frag;
-                len = elem->count;
+                cp = ((frag_elem_t*)elem)->frag;
+                len = ((frag_elem_t*)elem)->len;
                 assert(len > 0);
                 while (len--) {
                     // XOR with current character
@@ -164,14 +164,14 @@ success_t je_base64_to_long(const char b64string[], unsigned long *hash)
  * @param hash
  * @return a list element
  */
-elem_t *je_hash_bucket(context_t * C, unsigned long hash)
+hash_elem_t *je_hash_bucket(context_t * C, unsigned long hash)
 {
-    elem_t *elem, **next;
+    hash_elem_t *elem, **next;
 
     next = &(C->hash_buckets[(hash & 0x3F)]);
     while(*next) {
         elem  = *next;
-        if (elem->u.hash.hash == hash) {
+        if (elem->hash == hash) {
             return elem;
         }
         next = &(elem->next);

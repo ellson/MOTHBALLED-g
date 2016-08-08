@@ -21,7 +21,7 @@ static void api_act(container_context_t * CC, elem_t *list)
     elem_t *elem;
 
     // after dispatch() there can be mutiple ACTs in the list
-    elem = list->u.list.first;
+    elem = list->first;
     while (elem) {
 #if 0
         // render through libcgraph to svg
@@ -211,7 +211,7 @@ void je_gvrender_list(context_t *C, FILE *chan, elem_t * list)
 
     assert(list);
     liststate = (state_t) list->state;
-    if (! (elem = list->u.list.first)) {
+    if (! (elem = list->first)) {
         switch (liststate) {
         case QRY:
 //            je_emit_token(C, chan, '?');
@@ -230,7 +230,7 @@ void je_gvrender_list(context_t *C, FILE *chan, elem_t * list)
 //        print_frags(chan, liststate, elem, &(C->sep));
         C->sep = 0;         // suppress space before (because preceded by BOF or NL)
         fprintf(chan, "addnode: ");
-        print_frags(chan, liststate, elem, &(C->sep));
+        print_frags(chan, liststate, (frag_elem_t*)elem, &(C->sep));
         putc('\n',chan);
         break;
     case LISTELEM:
@@ -298,7 +298,7 @@ void je_emit_list(context_t *C, FILE *chan, elem_t * list)
 
     assert(list);
     liststate = (state_t) list->state;
-    if (! (elem = list->u.list.first)) {
+    if (! (elem = list->first)) {
         switch (liststate) {
         case QRY:
             je_emit_token(C, chan, '?');
@@ -314,7 +314,7 @@ void je_emit_list(context_t *C, FILE *chan, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-        print_frags(chan, liststate, elem, &(C->sep));
+        print_frags(chan, liststate, (frag_elem_t*)elem, &(C->sep));
         break;
     case LISTELEM:
         cnt = 0;

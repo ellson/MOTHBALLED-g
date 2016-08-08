@@ -15,10 +15,9 @@
  * Freeing an elem_t actually means returning to this list.
  *
  * @param C the top-level context in which all lists are managed
- * @param type one of: LISTELEM, FRAGELEM, HASHELEM
  * @return a new intialized elem_t
  */
-static elem_t *new_elem_sub(context_t * C, elemtype_t type)
+static elem_t *new_elem_sub(context_t * C)
 {
     elem_t *elem, *next;
     int i;
@@ -44,7 +43,7 @@ static elem_t *new_elem_sub(context_t * C, elemtype_t type)
     elem = C->free_elem_list;    // use first elem from free_elem_list
     C->free_elem_list = elem->next; // update list to point to next available
 
-    elem->type = (char)type;    // init the new elem
+//  elem->type = NULL;  // private function, so we can rely on callers to initialize
     elem->next = NULL;
 
     C->stat_elemnow++;        // stats
@@ -65,24 +64,25 @@ static elem_t *new_elem_sub(context_t * C, elemtype_t type)
  * @param frag pointer to first character of contiguous fragment of len chars
  * @return a new intialized elem_t
  */
-elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag)
+frag_elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag)
 {
-    elem_t *elem;
+    frag_elem_t *frag_elem;
 
-    elem = new_elem_sub(C, FRAGELEM);
+    frag_elem = (frag_elem_t*)new_elem_sub(C);
 
     assert(C->inbuf);
     assert(C->inbuf->refs >= 0);
     assert(frag);
     assert(len > 0);
     // complete frag elem initialization
-    elem->u.frag.inbuf = C->inbuf;    // record inbuf for ref counting
-    elem->u.frag.frag = frag;    // pointer to begging of frag
-    elem->count = len;    // length of frag
-    elem->state = state;    // state_machine state that created this frag
+    frag_elem->type = FRAGELEM;    // type
+    frag_elem->inbuf = C->inbuf;    // record inbuf for ref counting
+    frag_elem->frag = frag;    // pointer to begging of frag
+    frag_elem->len = len;    // length of frag
+    frag_elem->state = state;    // state_machine state that created this frag
 
     C->inbuf->refs++;        // increment reference count in inbuf.
-    return elem;
+    return frag_elem;
 }
 
 /**
@@ -95,16 +95,17 @@ elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *fra
  * @param hash a long containing a hash value
  * @return a new intialized elem_t
  */
-elem_t *new_hash(context_t * C, unsigned long hash)
+hash_elem_t *new_hash(context_t * C, unsigned long hash)
 {
-    elem_t *elem;
+    hash_elem_t *hash_elem;
 
-    elem = new_elem_sub(C, HASHELEM);
+    hash_elem = (hash_elem_t*)new_elem_sub(C);
 
     // complete frag elem initialization
-    elem->u.hash.hash = hash;    // the hash value
-    elem->u.hash.out = NULL;    // open later
-    return elem;
+    hash_elem->type = HASHELEM;     // type
+    hash_elem->hash = hash;  // the hash value
+    hash_elem->out = NULL;   // open later
+    return hash_elem;
 }
 
 /**
@@ -127,11 +128,12 @@ static elem_t *clone_list(context_t * C, elem_t * list)
 
     assert(list->type == (char)LISTELEM);
 
-    elem = new_elem_sub(C, LISTELEM);
+    elem = new_elem_sub(C);
 
-    elem->u.list.first = list->u.list.first;    // copy details
-    elem->u.list.last = list->u.list.last;
-    elem->count = 0;
+    elem->type = LISTELEM;         // type
+    elem->first = list->first;     // copy details
+    elem->last = list->last;
+    elem->refs = 0;
     elem->state = list->state;
     return elem;
 }
@@ -156,8 +158,8 @@ elem_t *move_list(context_t * C, elem_t * list)
 
     elem = clone_list(C, list);
 
-    list->u.list.first = NULL;    // reset old header
-    list->u.list.last = NULL;
+    list->first = NULL;    // reset old header
+    list->last = NULL;
     list->state = 0;
 
     return elem;
@@ -181,8 +183,8 @@ elem_t *ref_list(context_t * C, elem_t * list)
 
     elem = clone_list(C, list);
 
-    if (list->u.list.first && list->u.list.first->type == LISTELEM) {
-        list->u.list.first->count++;    // increment ref count
+    if (list->first && list->first->type == LISTELEM) {
+        list->first->refs++;    // increment ref count
     }
     return elem;
 }
@@ -196,34 +198,20 @@ elem_t *ref_list(context_t * C, elem_t * list)
  * @param list the header of the list to be appended
  * @param elem the element to be appended (must be a LISTELEM)
  */
-// FIXME to be made static and private
 void append_list(elem_t * list, elem_t * elem)
 {
     assert(list->type == (char)LISTELEM);
 
-    if (list->u.list.first) {
-        list->u.list.last->next = elem;
+    if (list->first) {
+        list->last->next = elem;
     } else {
-        list->u.list.first = elem;
+        list->first = elem;
     }
-    list->u.list.last = elem;
+    list->last = elem;
     if (elem->type == (char)LISTELEM) {
-        elem->count++;    // increment ref count in appended elem
-        assert(elem->count > 0);
+        elem->refs++; 
+        assert(elem->refs > 0);
     }
-}
-
-void append_list_list(list_elem_t * list, list_elem_t * elem)
-{
-    append_list((elem_t*)list, (elem_t*)elem);
-}
-void append_frag_list(list_elem_t * list, frag_elem_t * elem)
-{
-    append_list((elem_t*)list, (elem_t*)elem);
-}
-void append_hash_list(list_elem_t * list, hash_elem_t * elem)
-{
-    append_list((elem_t*)list, (elem_t*)elem);
 }
 
 /**
@@ -245,25 +233,27 @@ void append_hash_list(list_elem_t * list, hash_elem_t * elem)
 void free_list(context_t * C, elem_t * list)
 {
     elem_t *elem, *next;
+    frag_elem_t *frag_elem;
 
     assert(list);
     assert(list->type == (char)LISTELEM);
 
     // free list of elem, but really just put them back
     // on the elem_freelist (declared at the top of this file)`
-    elem = list->u.list.first;
+    elem = list->first;
     while (elem) {
         next = elem->next;
         switch ((elemtype_t) (elem->type)) {
         case FRAGELEM:
-            assert(elem->u.frag.inbuf->refs > 0);
-            if (--(elem->u.frag.inbuf->refs) == 0) {
-                free_inbuf(C, elem->u.frag.inbuf);
+            frag_elem = (frag_elem_t*) elem;
+            assert(frag_elem->inbuf->refs > 0);
+            if (--(frag_elem->inbuf->refs) == 0) {
+                free_inbuf(C, frag_elem->inbuf);
             }
             break;
         case LISTELEM:
-            assert(elem->count > 0); // refcount > 0
-            if (--(elem->count) > 0) {
+            assert(elem->refs > 0);
+            if (--(elem->refs) > 0) {
                 goto done;    // stop at any point with additional refs
             }
             free_list(C, elem); // recursively free lists that have no references
@@ -284,8 +274,8 @@ void free_list(context_t * C, elem_t * list)
 
  done:
     // clean up emptied list
-    list->u.list.first = NULL;
-    list->u.list.last = NULL;
+    list->first = NULL;
+    list->last = NULL;
     // Note: ref count of the header is not modified.
     // It may be still referenced, even though it is now empty.
 }
@@ -330,7 +320,7 @@ int print_len_frag(FILE * chan, unsigned char *len_frag)
  * @param elem the first frag of the fragllist
  * @param sep if not NULL then a character to be printed first
  */
-void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
+void print_frags(FILE * chan, state_t liststate, frag_elem_t * frag_elem, char *sep)
 {
     unsigned char *frag;
     int len;
@@ -342,14 +332,14 @@ void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
     if (liststate == DQT) {
         putc('"', chan);
     }
-    while (elem) {
-        frag = elem->u.frag.frag;
-        len = elem->count;
+    while (frag_elem) {
+        frag = frag_elem->frag;
+        len = frag_elem->len;
         assert(len > 0);
-        if ((state_t) elem->state == BSL) {
+        if ((state_t) frag_elem->state == BSL) {
             putc('\\', chan);
         }
-        if ((state_t) elem->state == AST) {
+        if ((state_t) frag_elem->state == AST) {
             if (liststate == DQT) {
                 putc('"', chan);
                 putc('*', chan);
@@ -361,7 +351,7 @@ void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
         else {
             print_one_frag(chan, len, frag);
         }
-        elem = elem->next;
+        frag_elem = frag_elem->next;
     }
     if (liststate == DQT) {
         putc('"', chan);
@@ -388,13 +378,13 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep)
     int ind, cnt, width;
 
     assert(list->type == (char)LISTELEM);
-    elem = list->u.list.first;
+    elem = list->first;
     if (!elem)
         return;
     type = (elemtype_t) (elem->type);
     switch (type) {
     case FRAGELEM:
-        print_frags(chan, list->state, elem, sep);
+        print_frags(chan, list->state, (frag_elem_t*)elem, sep);
         break;
     case LISTELEM:
         cnt = 0;
