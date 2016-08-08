@@ -58,7 +58,7 @@ static void hash_list_r(unsigned long *hash, elem_t *list)
         case FRAGELEM:
             while (elem) {
                 cp = elem->u.frag.frag;
-                len = elem->v.frag.len;
+                len = elem->count;
                 assert(len > 0);
                 while (len--) {
                     // XOR with current character

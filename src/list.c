@@ -78,7 +78,7 @@ elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *fra
     // complete frag elem initialization
     elem->u.frag.inbuf = C->inbuf;    // record inbuf for ref counting
     elem->u.frag.frag = frag;    // pointer to begging of frag
-    elem->v.frag.len = len;    // length of frag
+    elem->count = len;    // length of frag
     elem->state = state;    // state_machine state that created this frag
 
     C->inbuf->refs++;        // increment reference count in inbuf.
@@ -131,7 +131,7 @@ static elem_t *clone_list(context_t * C, elem_t * list)
 
     elem->u.list.first = list->u.list.first;    // copy details
     elem->u.list.last = list->u.list.last;
-    elem->v.list.refs = 0;
+    elem->count = 0;
     elem->state = list->state;
     return elem;
 }
@@ -182,7 +182,7 @@ elem_t *ref_list(context_t * C, elem_t * list)
     elem = clone_list(C, list);
 
     if (list->u.list.first && list->u.list.first->type == LISTELEM) {
-        list->u.list.first->v.list.refs++;    // increment ref count
+        list->u.list.first->count++;    // increment ref count
     }
     return elem;
 }
@@ -207,8 +207,8 @@ void append_list(elem_t * list, elem_t * elem)
     }
     list->u.list.last = elem;
     if (elem->type == (char)LISTELEM) {
-        elem->v.list.refs++;    // increment ref count in appended elem
-        assert(elem->v.list.refs > 0);
+        elem->count++;    // increment ref count in appended elem
+        assert(elem->count > 0);
     }
 }
 
@@ -248,8 +248,8 @@ void free_list(context_t * C, elem_t * list)
             }
             break;
         case LISTELEM:
-            assert(elem->v.list.refs > 0);
-            if (--(elem->v.list.refs) > 0) {
+            assert(elem->count > 0); // refcount > 0
+            if (--(elem->count) > 0) {
                 goto done;    // stop at any point with additional refs
             }
             free_list(C, elem); // recursively free lists that have no references
@@ -330,7 +330,7 @@ void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
     }
     while (elem) {
         frag = elem->u.frag.frag;
-        len = elem->v.frag.len;
+        len = elem->count;
         assert(len > 0);
         if ((state_t) elem->state == BSL) {
             putc('\\', chan);

@@ -148,7 +148,7 @@ elem_t * je_persist_open(context_t *C)
         .next = NULL,
         .u.frag.inbuf = NULL,
         .u.frag.frag = (unsigned char *)"^",
-        .v.frag.len = 1,
+        .count = 1, // length
         .type = FRAGELEM,
         .state = ABC
     };
@@ -156,7 +156,7 @@ elem_t * je_persist_open(context_t *C)
         .next = NULL,
         .u.list.first = &mumfrag,
         .u.list.last = &mumfrag,
-        .v.list.refs = 0,
+        .count = 0, // references
         .type = LISTELEM,
         .state = STRING
     };

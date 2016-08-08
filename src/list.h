@@ -25,19 +25,11 @@ struct elem_s {
             FILE *out;      // file handle, or NULL if not opened yet.
         } hash;
     } u;
-    // FIXME -- There must be a better way ?
-    //          If these "ref" or "len" ints are included in the above union{}, then
-    //          the size of elem_t increases from 32 to 40 bytes.
-    union {
-        struct {
-            unsigned int refs;    // reference count
-        } list;
-        struct {
-            unsigned int len;    // length of frag
-        } frag;
-    } v;
-    // FIXME -- can't store type as elemtype_t, or state as state_t, or it would assume ints.
-    char type;        // LISTELEM or FRAGELEM
+    // FIXME - would be better if count was in the union as either "len" or "refs"
+    // but doing so results in the size of this struct growing from 32 to 40bytes
+    unsigned int count;    // used for list reference count or fragment string length
+    // FIXME -- can't store type as elemtype_t, or state as state_t, or the commpiler assumes ints.
+    char type;        // LISTELEM, FRAGELEM or HASHELEM
     char state;        // state_machine state that generated this list
 };
 

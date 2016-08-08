@@ -150,13 +150,13 @@ je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
                 if (s_len == 0) {    // if we reached the end
                         // of a subject frag, try the next frag
                     s_cp = ts_elem->u.frag.frag;
-                    s_len = ts_elem->v.frag.len;
+                    s_len = ts_elem->count;
                     ts_elem = ts_elem->next;
                 }
                 if (p_len == 0) {    // if we reached the end
                         // of a pattern frag, try the next frag
                     p_cp = tp_elem->u.frag.frag;
-                    p_len = tp_elem->v.frag.len;
+                    p_len = tp_elem->count;
                     tp_elem = tp_elem->next;
                 }
                 s_len--;

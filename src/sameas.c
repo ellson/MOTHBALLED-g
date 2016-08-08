@@ -42,7 +42,7 @@ void je_sameas(container_context_t * CC, elem_t * subject)
     newsubject->state = SUBJECT;  
     *oldsubject = *newsubject;    // save the newsubject as oldsubject
     assert(newsubject->u.list.first);
-    newsubject->u.list.first->v.list.refs++;    // and increase its reference count
+    newsubject->u.list.first->count++;    // and increase its reference count
     *subject = *newsubject; //    to also save as the rewritten current subject
 }
 
