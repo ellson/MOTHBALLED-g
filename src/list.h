@@ -33,6 +33,33 @@ struct elem_s {
     char state;        // state_machine state that generated this list
 };
 
+struct list_elem_s {     // castable to elem_s  -- size must match (32bytes)
+    elem_t *next;
+    elem_t *first;
+    elem_t *last;
+    unsigned int refs;
+    char type;           // LISTELEM
+    char state;          // state_machine state that generated this list
+};
+
+struct frag_elem_s {     // castable to elem_s  -- size must match (32bytes)
+    elem_t *next;
+    inbuf_t *inbuf;      // inbuf containing frag - for memory management
+    unsigned char *frag; // pointer to beginning of frag
+    unsigned int len;    // length of frag
+    char type;           // FRAGELEM
+    char state;          // state_machine state that generated this list
+};
+
+struct hash_elem_s {     // castable to elem_s  -- size must match (32bytes)
+    elem_t *next;
+    unsigned long hash;  // hash value
+    FILE *out;           // file handle, or NULL if not opened yet.
+    unsigned int count;  // unused
+    char type;           // HASHELEM
+    char state;          // state_machine state that generated this list
+};
+
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
@@ -41,6 +68,9 @@ elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *fra
 elem_t *move_list(context_t * C, elem_t * list);
 elem_t *ref_list(context_t * C, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);
+void append_list_list(list_elem_t * list, list_elem_t * elem);
+void append_frag_list(list_elem_t * list, frag_elem_t * elem);
+void append_hash_list(list_elem_t * list, hash_elem_t * elem);
 void free_list(context_t * C, elem_t * list);
 int print_len_frag(FILE * chan, unsigned char *len_frag);
 void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep);

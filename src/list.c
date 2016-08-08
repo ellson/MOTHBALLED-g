@@ -196,6 +196,7 @@ elem_t *ref_list(context_t * C, elem_t * list)
  * @param list the header of the list to be appended
  * @param elem the element to be appended (must be a LISTELEM)
  */
+// FIXME to be made static and private
 void append_list(elem_t * list, elem_t * elem)
 {
     assert(list->type == (char)LISTELEM);
@@ -210,6 +211,19 @@ void append_list(elem_t * list, elem_t * elem)
         elem->count++;    // increment ref count in appended elem
         assert(elem->count > 0);
     }
+}
+
+void append_list_list(list_elem_t * list, list_elem_t * elem)
+{
+    append_list((elem_t*)list, (elem_t*)elem);
+}
+void append_frag_list(list_elem_t * list, frag_elem_t * elem)
+{
+    append_list((elem_t*)list, (elem_t*)elem);
+}
+void append_hash_list(list_elem_t * list, hash_elem_t * elem)
+{
+    append_list((elem_t*)list, (elem_t*)elem);
 }
 
 /**
