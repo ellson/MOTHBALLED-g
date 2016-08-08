@@ -62,7 +62,7 @@ static elem_t *new_elem_sub(context_t * C, elemtype_t type)
  * @param C the top-level context in which all lists are managed
  * @param state a one character value stored with the elem, no internal meaning
  * @param len fragment length
- * @param frag pointer to first character of contiguous fragment on len chars
+ * @param frag pointer to first character of contiguous fragment of len chars
  * @return a new intialized elem_t
  */
 elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag)
