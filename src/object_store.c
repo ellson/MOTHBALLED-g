@@ -65,10 +65,11 @@ int main(int arc, char *argv[])
 
 #define handleErrors abort
 
-    EVP_MD_CTX *ctx;
+    EVP_MD_CTX myctx = {0};
+    EVP_MD_CTX *ctx = &myctx;
 
-    if((ctx = EVP_MD_CTX_create()) == NULL)
-        handleErrors();
+//    if((ctx = EVP_MD_CTX_create()) == NULL)
+//        handleErrors();
 
     if(1 != EVP_DigestInit_ex(ctx, EVP_sha1(), NULL))
         handleErrors();
@@ -93,7 +94,7 @@ int main(int arc, char *argv[])
     fprintf(stdout, "%s\n", buf);
 
 
-    EVP_MD_CTX_destroy(ctx);
+//    EVP_MD_CTX_destroy(ctx);
 
     return 0;
 }

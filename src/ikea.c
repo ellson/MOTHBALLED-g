@@ -4,7 +4,8 @@
 #include <inttypes.h>
 #include <openssl/evp.h>
 
-// link with -lcrypto
+#include "libje_private.h"
+
 
 /**
  * ikea.c   (the container store )
@@ -14,20 +15,121 @@
  *
  *        This code maintains each container in a separate file.
  *
- *        The file is hardlinked, a single content file is named by the hash
- *        of the content,  then, possibly multiple, name files a named by the
- *        hash of the name {node, edge, pattern).
+ *        During file write (before the contenthash has been determined),  it is kept in a temp dir.
  *
- *        Separate directories are used for name and content hashes:
+ *        At close (or flush) the file is moved (or copied) to a master content file is named by the hash
+ *        of the content,  then possibly multiple, name files using the hash of the
+ *        name {node, edge, pattern) are hardlinked to the master..
+ *
+ *        Separate directories are used for tempory, name and content hashes:
+ *            - temporary/namehash
  *            - content/contenthash
- *            - name/namehash1
- *            - name/namehash2
- *            - name/namehash3
+ *            - name/namehash
+ *            - name/namehash
+ *            - name/namehash
  *                      ...
+ *
+ *         A container store is a file collection of all the containers from a tree of graph containers
+ *         described by a 'g' file
+ *
+ *         When g is stopped, the container store is archived to a compressed tar file.
+ *         When g is running, the tree is unpacked into a private tree under $HOME/.g/`pid`/              
  */
 
 
+// Forward declarations
+static void base64(unsigned char *ip, size_t ic, char *op, size_t oc);
+static void hash_list_r(unsigned long *hash, elem_t *list);
 
+
+#define handleErrors abort
+
+typdef struct {
+    FILE *fh;
+    EVP_MD_CTX *ctx;
+    char namehash[64];
+    char contenthash[64];
+} ikea_t;
+
+/**
+ * open a named container for write
+ */
+ikea_t* ikea_open( elem_t * name )  
+{
+    ikea_t *ikea;
+
+    assert(name);
+
+// allocate handle
+    if ((ikea = malloc(sizeof(ikea_t))) == NULL)
+        handle_errors()
+
+// init namehash accumulation
+    if((ikea->ctx = EVP_MD_CTX_create()) == NULL)
+        handleErrors();
+    if(1 != EVP_DigestInit_ex(ikea->ctx, EVP_sha1(), NULL))
+        handleErrors();
+
+// while name fragments ...
+//        accumulate namehash
+    hash_list_r(ikea, name);
+
+//    finalize namehash
+
+    unsigned char digest[EVP_MAX_MD_SIZE];
+    unsigned int digest_len = sizeof(digest);
+
+    if(1 != EVP_DigestFinal_ex(ikea->ctx, digest, &digest_len))
+        handleErrors();
+
+//    convert to string suitable for filename
+    char buf[64];
+
+    base64(digest, digest_len, buf, sizeof(buf));
+
+    fprintf(stdout, "%s\n", buf);
+
+//    compose full pathname
+
+
+    if ((ikea->fh = fopen(ikea->namehash,"a+b")) == NULL)
+        handleErrors();
+
+
+
+    // clean up from namehash generation
+    EVP_MD_CTX_destroy(ctx);
+
+
+// init content hash accumulation
+//
+//
+//
+//
+
+// return handle
+    return ikea;
+}
+
+success_t ikea_append(IKEA* ikea, unsigned char *data, size_t data_len)
+{
+    return SUCCESS;
+}
+
+success_t ikea_flush(IKEA* ikea) 
+{
+    // content hash left in allocated IKEA struct.
+    return SUCCESS;
+}
+
+success_t ikea_close(IKEA* ikea) 
+{
+    // content hash left in allocated IKEA struct.
+    return SUCCESS;
+}
+
+
+//================= support functions ====================
 
 /**
  * Encode a byte array to a NUL terminated printable base64 string,
@@ -69,6 +171,51 @@ static void base64(unsigned char *ip, size_t ic, char *op, size_t oc)
     *op = '\0';   
 }
 
+/**
+ * Recursive hash function building on a previously initialized or
+ * partially accumulated haahs result.
+ *
+ * @param hash place for resulting hash
+ * @param list - fraglist or list of fraglist to be hashed
+ */
+static void hash_list_r(unsigned long *hash, elem_t *list)
+{
+    elem_t *elem; 
+    unsigned char *cp;
+    int len;
+
+    if ((elem = list->u.list.first)) {
+        switch ((elemtype_t) elem->type) {
+        case FRAGELEM:
+            while (elem) {
+                cp = elem->u.frag.frag;
+                len = elem->v.frag.len;
+                assert(len > 0);
+                while (len--) {
+                    // XOR with current character
+                    *hash ^= *cp++;
+                    // multiply by the magic number
+                    *hash *= FNV_PRIME;
+                }
+                elem = elem->next;
+            }
+            break;
+        case LISTELEM:
+            while (elem) {
+                hash_list_r(hash, elem);    // recurse
+                elem = elem->next;
+            }
+            break;
+        case HASHELEM:
+            assert(0);  // should not be here
+            break;
+        }
+    }
+}
+:0
+
+
+//===================  test code =================================
 
 int main(int arc, char *argv[])
 { 
@@ -210,31 +357,3 @@ close handle tempfile
 - ok, so using scandir() is likely low cost when compared to generating hashes...
 
 */
-
-typdef struct IKEA {
-    FILE *fh;
-    EVP_MD_CTX *ctx;
-}
-
-
-IKEA* ikea_open( elem_t * name )  
-{
-    return SUCCESS;
-}
-
-success_t ikea_write(IKEA* ikea, unsigned char *data, size_t data_len)
-{
-    return SUCCESS;
-}
-
-success_t ikea_flush(IKEA* ikea) 
-{
-    // content hash left in allocated IKEA struct.
-    return SUCCESS;
-}
-
-success_t ikea_close(IKEA* ikea) 
-{
-    // content hash left in allocated IKEA struct.
-    return SUCCESS;
-}
