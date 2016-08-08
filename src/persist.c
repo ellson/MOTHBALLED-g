@@ -194,10 +194,12 @@ void je_persist_snapshot (context_t *C)
             elem = next;
             next = elem->next;
             if ((fp = elem->u.hash.out)) {
+//============================= ikea flush ???  ===============
                 if (fflush(fp) != 0) {
-                    perror("Error - fclose(): ");
+                    perror("Error - fflush(): ");
                     exit(EXIT_FAILURE);
                 }
+//=======================================================
             }
         }
         //
@@ -315,12 +317,13 @@ void je_persist_close (context_t *C)
             next = elem->next;
             if ((fp = elem->u.hash.out)) {
 
+//========================== ikea close ==========================
                 // close all open files
                 if (fclose(fp) != 0) {
                     perror("Error - fclose(): ");
                     exit(EXIT_FAILURE);
                 }
-
+//================================================================
                 // FIXME - perhaps we should keep the base64 filenames around?
  
                 // reconsitute the filename and unlink

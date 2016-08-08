@@ -2,20 +2,33 @@
 # pseudocode for maintaining shared containers
 ##
 
+open named_object
+    init namehash accumulation
+    while name fragments
+        accumulate namehash
+    finalize namehash
+    convert to string suitable for filename
+    open temp_namehash
 
-open tempfile for write
+    init content hash accumulation
+    return handle
 
-write g acts
+write handle acts
+    write act to temp_namehash
+    accumulate contenthash
 
-close tempfile
-    convert to canonical form
-    generate contenthash
-    generate namehash
+close handle tempfile
+    close temp namehash
+
+    finalize contenthash
+       convert to string suitable for filename
+
     if contenthash exists
-	rm tempfile
+	    rm tempfile
     else
-	mv tempfile contenthash
+	    mv tempfile contenthash
     fi
+
     if namehash exists
         error if not a link
         get oldcontenthash from namehash->oldcontenthash (ls -i namehash; find . -inum <inum>)

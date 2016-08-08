@@ -50,6 +50,7 @@ success_t je_parse(context_t * C, elem_t * name)
 
     CC->context = C;
 
+//===================================== ikea open ===============
     je_hash_list(&hash, name); // hash name (subject "names" can be very long)
     elem = je_hash_bucket(C, hash);    // save in bucket list 
     if (! elem->u.hash.out) {          // open file, if not already open
@@ -69,6 +70,7 @@ success_t je_parse(context_t * C, elem_t * name)
         free(filename);
     }
     CC->out = elem->u.hash.out;
+//==============================================================
 
     emit_start_activity(CC);
     C->containment++;

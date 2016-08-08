@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <inttypes.h>
-#include <openssl/conf.h>
+//#include <openssl/conf.h>
 #include <openssl/evp.h>
-#include <openssl/err.h>
-#include <openssl/bio.h>
+// #include <openssl/err.h>
+//#include <openssl/bio.h>
 
 // link with -lcrypto
 
@@ -23,7 +23,7 @@
  *      - buffer will not be overrun, but result will be truncated if too small
  *      - to avoid trucation, oc = (ic+2)/3))*4)+1;
  */
-void je_base64(unsigned char *ip, size_t ic, char *op, size_t oc)
+static void base64(unsigned char *ip, size_t ic, char *op, size_t oc)
 {
     // 64 ascii chars that are safe in filenames
     const static char b64[] =
@@ -52,13 +52,13 @@ void je_base64(unsigned char *ip, size_t ic, char *op, size_t oc)
 int main(int arc, char *argv[])
 { 
      /* Load the human readable error strings for libcrypto */
-     ERR_load_crypto_strings();
+//     ERR_load_crypto_strings();
 
      /* Load all digest and cipher algorithms */
-     OpenSSL_add_all_algorithms();
+//     OpenSSL_add_all_algorithms();
 
      /* Load config file, and other important initialisation */
-     OPENSSL_config(NULL);
+//     OPENSSL_config(NULL);
 
      /* ... Do some crypto stuff here ... */
 
@@ -86,35 +86,14 @@ int main(int arc, char *argv[])
         handleErrors();
 
 
-    BIO *bio, *b64;
-
-    b64 = BIO_new(BIO_f_base64());
-    bio = BIO_new_fp(stdout, BIO_NOCLOSE);
-    BIO_push(b64, bio);
-    BIO_write(b64, digest, digest_len);
-    BIO_flush(b64);
-
-    BIO_free_all(b64);
-
     char buf[64];
 
-    je_base64(digest, digest_len, buf, sizeof(buf));
+    base64(digest, digest_len, buf, sizeof(buf));
 
     fprintf(stdout, "%s\n", buf);
 
 
-
     EVP_MD_CTX_destroy(ctx);
-
-
-    /* Removes all digests and ciphers */
-    EVP_cleanup();
-
-    /* if you omit the next, a small leak may be left when you make use of the BIO (low level API) for e.g. base64 transformations */
-    CRYPTO_cleanup_all_ex_data();
-
-    /* Remove error strings */
-    ERR_free_strings();
 
     return 0;
 }
