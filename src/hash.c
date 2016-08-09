@@ -85,7 +85,7 @@ static void hash_list_r(unsigned long *hash, elem_t *list)
 // 64 ascii chars that are safe in filenames
 // each character used only once
 // must match reverse mapping table
-static char b64[64] = {
+const static char b64[64] = {
     '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F',
     'G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V',
     'W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l',
@@ -93,7 +93,7 @@ static char b64[64] = {
 };
 
 // reverse mapping
-static char un_b64[128] = {
+const static char un_b64[128] = {
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1,

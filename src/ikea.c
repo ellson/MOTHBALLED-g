@@ -212,7 +212,7 @@ static void hash_list_r(unsigned long *hash, elem_t *list)
         }
     }
 }
-:0
+
 
 
 //===================  test code =================================

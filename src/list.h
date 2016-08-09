@@ -39,12 +39,12 @@ struct hash_elem_s {     // castable to elem_s  -- size must match (32bytes)
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
-hash_elem_t *new_hash(context_t * C, unsigned long hash);
-frag_elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag);
+elem_t *new_hash(context_t * C, unsigned long hash);
+elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag);
 elem_t *move_list(context_t * C, elem_t * list);
 elem_t *ref_list(context_t * C, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);
 void free_list(context_t * C, elem_t * list);
 int print_len_frag(FILE * chan, unsigned char *len_frag);
-void print_frags(FILE * chan, state_t liststate, frag_elem_t * frag_elem, char *sep);
+void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep);
 void print_list(FILE * chan, elem_t * list, int nest, char *sep);

@@ -64,7 +64,7 @@ static elem_t *new_elem_sub(context_t * C)
  * @param frag pointer to first character of contiguous fragment of len chars
  * @return a new intialized elem_t
  */
-frag_elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag)
+elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag)
 {
     frag_elem_t *frag_elem;
 
@@ -82,7 +82,7 @@ frag_elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char
     frag_elem->state = state;    // state_machine state that created this frag
 
     C->inbuf->refs++;        // increment reference count in inbuf.
-    return frag_elem;
+    return (elem_t*)frag_elem;
 }
 
 /**
@@ -95,7 +95,7 @@ frag_elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char
  * @param hash a long containing a hash value
  * @return a new intialized elem_t
  */
-hash_elem_t *new_hash(context_t * C, unsigned long hash)
+elem_t *new_hash(context_t * C, unsigned long hash)
 {
     hash_elem_t *hash_elem;
 
@@ -105,7 +105,7 @@ hash_elem_t *new_hash(context_t * C, unsigned long hash)
     hash_elem->type = HASHELEM;     // type
     hash_elem->hash = hash;  // the hash value
     hash_elem->out = NULL;   // open later
-    return hash_elem;
+    return (elem_t*)hash_elem;
 }
 
 /**
@@ -320,7 +320,7 @@ int print_len_frag(FILE * chan, unsigned char *len_frag)
  * @param elem the first frag of the fragllist
  * @param sep if not NULL then a character to be printed first
  */
-void print_frags(FILE * chan, state_t liststate, frag_elem_t * frag_elem, char *sep)
+void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
 {
     unsigned char *frag;
     int len;
@@ -332,14 +332,17 @@ void print_frags(FILE * chan, state_t liststate, frag_elem_t * frag_elem, char *
     if (liststate == DQT) {
         putc('"', chan);
     }
-    while (frag_elem) {
-        frag = frag_elem->frag;
-        len = frag_elem->len;
+    while (elem) {
+
+        assert(elem->type == FRAGELEM);
+
+        frag = ((frag_elem_t*)elem)->frag;
+        len = ((frag_elem_t*)elem)->len;
         assert(len > 0);
-        if ((state_t) frag_elem->state == BSL) {
+        if ((state_t) elem->state == BSL) {
             putc('\\', chan);
         }
-        if ((state_t) frag_elem->state == AST) {
+        if ((state_t) elem->state == AST) {
             if (liststate == DQT) {
                 putc('"', chan);
                 putc('*', chan);
@@ -351,7 +354,7 @@ void print_frags(FILE * chan, state_t liststate, frag_elem_t * frag_elem, char *
         else {
             print_one_frag(chan, len, frag);
         }
-        frag_elem = frag_elem->next;
+        elem = elem->next;
     }
     if (liststate == DQT) {
         putc('"', chan);
@@ -384,7 +387,7 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep)
     type = (elemtype_t) (elem->type);
     switch (type) {
     case FRAGELEM:
-        print_frags(chan, list->state, (frag_elem_t*)elem, sep);
+        print_frags(chan, list->state, elem, sep);
         break;
     case LISTELEM:
         cnt = 0;

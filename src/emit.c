@@ -227,10 +227,9 @@ void je_gvrender_list(context_t *C, FILE *chan, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-//        print_frags(chan, liststate, elem, &(C->sep));
         C->sep = 0;         // suppress space before (because preceded by BOF or NL)
         fprintf(chan, "addnode: ");
-        print_frags(chan, liststate, (frag_elem_t*)elem, &(C->sep));
+        print_frags(chan, liststate, elem, &(C->sep));
         putc('\n',chan);
         break;
     case LISTELEM:
@@ -314,7 +313,7 @@ void je_emit_list(context_t *C, FILE *chan, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-        print_frags(chan, liststate, (frag_elem_t*)elem, &(C->sep));
+        print_frags(chan, liststate, elem, &(C->sep));
         break;
     case LISTELEM:
         cnt = 0;
