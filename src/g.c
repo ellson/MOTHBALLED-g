@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
         switch (opt) {
         case 'T':
             if (je_select_emitter(optarg) == FAIL)
-                fatal("No back-end found for format: -T%s\n", optarg);
+                fatal_printf("No back-end found for format: -T%s\n", optarg);
             break;
         case 'd':
             switch (optnum) {
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
                 exit(EXIT_SUCCESS);
                 break;
             default:
-                fatal("%s\n", "-d0 = linear walk, -d1 = recursive walk");
+                fatal_printf("%s\n", "-d0 = linear walk, -d1 = recursive walk");
                 break;
             }
 
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 // FIXME "name" should allow full subject string, or "hashname"
 // FIXME need something like -i (print tree index of container "hashname" and "SUBJECT")
 // FIXME - add -T options to usage message
-            fatal("Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
+            fatal_printf("Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
             break;
         }
     }

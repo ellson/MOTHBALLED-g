@@ -169,10 +169,8 @@ elem_t * je_persist_open(context_t *C)
 
     // make a temporary directory (probably based on pid - no semantic significance here
     C->tempdir = mkdtemp(C->template);
-    if (!C->tempdir) {
-        perror("Error - mkdtemp(): ");
-        exit(EXIT_FAILURE);
-    }
+    if (!C->tempdir)
+        fatal_perror("Error - mkdtemp(): ");
 
     return &Mum;
 }
@@ -181,7 +179,7 @@ elem_t * je_persist_open(context_t *C)
 void je_persist_snapshot (context_t *C)
 {
     int i;
-    hash_elem_t *elem, *next;
+    elem_t *elem, *next;
     FILE *fp;
     TAR *pTar;
     char *tarFilename = "g_snapshot.tgz";
@@ -193,12 +191,10 @@ void je_persist_snapshot (context_t *C)
         while(next) {
             elem = next;
             next = elem->next;
-            if ((fp = elem->out)) {
+            if ((fp = ((hash_elem_t*)elem)->out)) {
 //============================= ikea flush ???  ===============
-                if (fflush(fp) != 0) {
-                    perror("Error - fflush(): ");
-                    exit(EXIT_FAILURE);
-                }
+                if (fflush(fp) != 0)
+                    fatal_perror("Error - fflush(): ");
 //=======================================================
             }
         }
@@ -207,22 +203,14 @@ void je_persist_snapshot (context_t *C)
         //
     }
 
-    if (tar_open(&pTar, tarFilename, &gztype, O_WRONLY | O_CREAT | O_TRUNC, 0600, TAR_GNU) == -1) {
-        perror("Error - tar_open():");
-        exit(EXIT_FAILURE);
-    }
-    if (tar_append_tree(pTar, C->tempdir, extractTo) == -1) {
-        perror("Error - tar_append_tree():");
-        exit(EXIT_FAILURE);
-    }
-    if (tar_append_eof(pTar) == -1) {
-        perror("Error - tar_append_eof():");
-        exit(EXIT_FAILURE);
-    }
-    if (tar_close(pTar) == -1) {
-        perror("Error - tar_close():");
-        exit(EXIT_FAILURE);
-    }
+    if (tar_open(&pTar, tarFilename, &gztype, O_WRONLY | O_CREAT | O_TRUNC, 0600, TAR_GNU) == -1)
+        fatal_perror("Error - tar_open():");
+    if (tar_append_tree(pTar, C->tempdir, extractTo) == -1)
+        fatal_perror("Error - tar_append_tree():");
+    if (tar_append_eof(pTar) == -1)
+        fatal_perror("Error - tar_append_eof():");
+    if (tar_close(pTar) == -1)
+        fatal_perror("Error - tar_close():");
 }
 
 /**
@@ -253,23 +241,15 @@ void je_persist_restore (context_t *C)
     char *glob_pattern;
     unsigned long hash;
 
-    if (tar_open(&pTar, tarFilename, &gztype, O_RDONLY, 0600, TAR_GNU) == -1) {
-        perror("Error - tar_open():");
-        exit(EXIT_FAILURE);
-    }
-    if (tar_extract_all(pTar, C->tempdir) == -1) {
-        perror("Error - tar_extract_all():");
-        exit(EXIT_FAILURE);
-    }
-    if (tar_close(pTar) == -1) {
-        perror("Error - tar_close():");
-        exit(EXIT_FAILURE);
-    }
+    if (tar_open(&pTar, tarFilename, &gztype, O_RDONLY, 0600, TAR_GNU) == -1)
+        fatal_perror("Error - tar_open():");
+    if (tar_extract_all(pTar, C->tempdir) == -1)
+        fatal_perror("Error - tar_extract_all():");
+    if (tar_close(pTar) == -1)
+        fatal_perror("Error - tar_close():");
     len = strlen(C->tempdir);
-    if ((glob_pattern = malloc(len + 2)) == NULL) {
-        perror("Error - malloc():");
-        exit(EXIT_FAILURE);
-    }
+    if ((glob_pattern = malloc(len + 2)) == NULL)
+        fatal_perror("Error - malloc():");
     strcpy(glob_pattern, C->tempdir);
     strcat(glob_pattern, "/*");
     if ((rc = glob(glob_pattern, 0, glob_err, &pglob)) != 0) {
@@ -307,56 +287,46 @@ void je_persist_close (context_t *C)
 {
     FILE *fp;
     int i;
-    hash_elem_t *hash_elem, *next;
-    elem_t *elem;
+    elem_t *elem, *next;
     char hashname[12], *filename;
 
     for (i=0; i<64; i++) {
         next = C->hash_buckets[i];
         while(next) {
-            hash_elem = next;
-            next = hash_elem->next;
-            if ((fp = hash_elem->out)) {
+            elem = next;
+            next = elem->next;
+            if ((fp = ((hash_elem_t*)elem)->out)) {
 
 //========================== ikea close ==========================
                 // close all open files
-                if (fclose(fp) != 0) {
-                    perror("Error - fclose(): ");
-                    exit(EXIT_FAILURE);
-                }
+                if (fclose(fp) != 0)
+                    fatal_perror("Error - fclose(): ");
 //================================================================
                 // FIXME - perhaps we should keep the base64 filenames around?
  
                 // reconsitute the filename and unlink
-                je_long_to_base64(hashname, &(hash_elem->hash));
-                if (! (filename = malloc(sizeof(C->template) + 1 + sizeof(hashname) + 1))) {
-                    perror("Error - malloc(): ");
-                    exit(EXIT_FAILURE);
-                }
+                je_long_to_base64(hashname, &(((hash_elem_t*)elem)->hash));
+                if (! (filename = malloc(sizeof(C->template) + 1 + sizeof(hashname) + 1)))
+                    fatal_perror("Error - malloc(): ");
                 strcpy(filename, C->tempdir);
                 strcat(filename, "/");
                 strcat(filename, hashname);
                 
                 // rm all output files
-                if (unlink(filename) == -1) {
-                    perror("Error - unlink(): ");
-                    exit(EXIT_FAILURE);
-                }
+                if (unlink(filename) == -1)
+                    fatal_perror("Error - unlink(): ");
                 free(filename);
             }
 
             // return hash_elem to free_elem_list
-            elem = (elem_t*)hash_elem;
             elem->next = C->free_elem_list;
             C->free_elem_list = elem;
         }
     }
 
     // rmdir the temporary directory
-    if (rmdir(C->tempdir) == -1) {
-        perror("Error - rmdir(): ");
-        exit(EXIT_FAILURE);
-    }
+    if (rmdir(C->tempdir) == -1)
+        fatal_perror("Error - rmdir(): ");
 
     free_list(C, &(C->myname));
 }

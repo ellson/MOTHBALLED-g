@@ -22,10 +22,8 @@ void new_inbuf(context_t *C)
     if (!C->free_inbuf_list) {    // if no inbufs in free_inbuf_list
 
         C->free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbuf_t));
-        if (!C->free_inbuf_list) {
-            perror("Error - malloc(): ");
-            exit(EXIT_FAILURE);
-        }
+        if (!C->free_inbuf_list) 
+            fatal_perror("Error - malloc(): ");
         C->stat_inbufmalloc++;
 
         next = C->free_inbuf_list;    // link the new inbufs into free_inbuf_list

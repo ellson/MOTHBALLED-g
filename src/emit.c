@@ -9,11 +9,14 @@
 
 #include "libje_private.h"
 
+// forward declarations
+#if 0
+static void je_gvrender_list(context_t *C, FILE *chan, elem_t * list);
+#endif
+
 // jump table for available emitters 
 static emit_t *emitters[] =
     {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
-
-static void je_gvrender_list(context_t *C, FILE *chan, elem_t * list);
 
 static void api_act(container_context_t * CC, elem_t *list)
 {
@@ -136,10 +139,8 @@ void je_append_string(context_t *C, char **pos, char *string)
         *(*pos)++ = C->sep; // sep before, if any
     }
     len = sprintf(*pos,"%s",string);  // copy string
-    if (len < 0) {
-        perror("Error - sprintf(): ");
-        exit(EXIT_FAILURE);
-    }
+    if (len < 0)
+        fatal_perror("Error - sprintf(): ");
     C->sep = ' ';      // sep required after strings 
     *pos += len;
 }
@@ -153,10 +154,8 @@ void je_append_ulong(context_t *C, char **pos, unsigned long integer)
         *(*pos)++ = C->sep; // sep before, if any
     }
     len = sprintf(*pos,"%lu",integer); // format integer to string
-    if (len < 0) {
-        perror("Error - sprintf(): ");
-        exit(EXIT_FAILURE);
-    }
+    if (len < 0)
+        fatal_perror("Error - sprintf(): ");
     C->sep = ' ';      // sep required after strings
     *pos += len;
 }
@@ -170,10 +169,8 @@ void je_append_runtime(context_t *C, char **pos,
     // FIXME - check available buffer space
     if (C->sep) *(*pos)++ = C->sep; // sep before, if any
     len = sprintf(*pos,"%lu.%09lu",run_sec, run_ns);
-    if (len < 0) {
-        perror("Error - sprintf(): ");
-        exit(EXIT_FAILURE);
-    }
+    if (len < 0)
+        fatal_perror("Error - sprintf(): ");
     C->sep = ' ';   // sep required after strings
     *pos += len;
 }
@@ -202,7 +199,8 @@ static void je_emit_close_token(context_t *C, FILE *chan, char tok)
     C->sep = 0;
 }
 
-void je_gvrender_list(context_t *C, FILE *chan, elem_t * list)
+#if 0
+static void je_gvrender_list(context_t *C, FILE *chan, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;
@@ -287,6 +285,7 @@ void je_gvrender_list(context_t *C, FILE *chan, elem_t * list)
         break;
     }
 }
+#endif
 
 void je_emit_list(context_t *C, FILE *chan, elem_t * list)
 {

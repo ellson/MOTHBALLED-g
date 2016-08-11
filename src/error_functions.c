@@ -4,7 +4,7 @@
 #include "error_functions.h"
 
 void
-fatal(const char *format, ...)
+fatal_printf(const char *format, ...)
 {
     va_list argList;
 
@@ -12,6 +12,13 @@ fatal(const char *format, ...)
     fprintf(stderr, format, argList);
     va_end(argList);
 
+    exit(EXIT_FAILURE);
+}
+
+void
+fatal_perror(const char *s)
+{
+    perror(s);
     exit(EXIT_FAILURE);
 }
 

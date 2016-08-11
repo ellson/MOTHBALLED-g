@@ -20,10 +20,8 @@ context_t *je_initialize(int *pargc, char *argv[], int optind)
 {
     context_t *C;
 
-    if (! (C = calloc(1, sizeof(context_t)))) {
-        perror("Error - calloc(): ");
-        exit(EXIT_FAILURE);
-    }
+    if (! (C = calloc(1, sizeof(context_t))))
+        fatal_perror("Error - calloc(): ");
 
     C->progname = argv[0];
     C->out = stdout;

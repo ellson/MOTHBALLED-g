@@ -166,18 +166,18 @@ success_t je_base64_to_long(const char b64string[], unsigned long *hash)
  */
 hash_elem_t *je_hash_bucket(context_t * C, unsigned long hash)
 {
-    hash_elem_t *elem, **next;
+    elem_t *elem, **next;
 
     next = &(C->hash_buckets[(hash & 0x3F)]);
     while(*next) {
         elem  = *next;
-        if (elem->hash == hash) {
-            return elem;
+        if (((hash_elem_t*)elem)->hash == hash) {
+            return (hash_elem_t*)elem;
         }
         next = &(elem->next);
     }
     elem = new_hash(C, hash);
     *next = elem;
-    return elem;
+    return (hash_elem_t*)elem;
 }
 

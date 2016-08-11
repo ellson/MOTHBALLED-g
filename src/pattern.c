@@ -49,7 +49,7 @@ je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern);
  */
 void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 {
-    elem_t *pattern_acts, *pact, *elem, *psubj, *pattr;
+    elem_t *pattern_acts, *pact, *psubj, *pattr;
     context_t *C = CC->context;
 
     assert(root);

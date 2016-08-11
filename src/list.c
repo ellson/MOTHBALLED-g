@@ -25,10 +25,8 @@ static elem_t *new_elem_sub(context_t * C)
     if (!C->free_elem_list) {    // if no elems in free_elem_list
 
         C->free_elem_list = malloc(LISTALLOCNUM * size_elem_t);
-        if (!C->free_elem_list) {
-            perror("Error - malloc(): ");
-            exit(EXIT_FAILURE);
-        }
+        if (!C->free_elem_list)
+            fatal_perror("Error - malloc(): ");
         C->stat_elemmalloc++;
 
         next = C->free_elem_list;    // link the new elems into free_elem_list

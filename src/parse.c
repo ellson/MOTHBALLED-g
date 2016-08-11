@@ -55,18 +55,14 @@ success_t je_parse(context_t * C, elem_t * name)
     hash_elem = je_hash_bucket(C, hash);    // save in bucket list 
     if (! hash_elem->out) {          // open file, if not already open
         je_long_to_base64(hashname, &hash);
-        if (! (filename = malloc(strlen(C->tempdir) + 1 + strlen(hashname) + 1))) {
-            perror("Error - malloc(): ");
-            exit(EXIT_FAILURE);
-        }
+        if (! (filename = malloc(strlen(C->tempdir) + 1 + strlen(hashname) + 1)))
+            fatal_perror("Error - malloc(): ");
         strcpy(filename, C->tempdir);
         strcat(filename, "/");
         strcat(filename, hashname);
         hash_elem->out = fopen(filename,"a+b"); //open for binary append writes, + read.
-        if (! hash_elem->out) {
-            perror("Error - fopen(): ");
-            exit(EXIT_FAILURE);
-        }
+        if (! hash_elem->out)
+            fatal_perror("Error - fopen(): ");
         free(filename);
     }
     CC->out = hash_elem->out;
@@ -108,8 +104,6 @@ je_parse_r(container_context_t * CC, elem_t * root,
     char so;        // offset to next state, signed
     state_t ti, ni;
     success_t rc;
-    elem_t *elem;
-    hash_elem_t *hash_elem;
     elem_t branch = { 0 };
     context_t *C = CC->context;
     unsigned long hash;
@@ -281,7 +275,7 @@ P(&branch);
             je_sameas(CC, &branch);
 
             je_hash_list(&hash, &(CC->subject));   // generate name hash
-            hash_elem = je_hash_bucket(C, hash);    // save in bucket list 
+            (void)je_hash_bucket(C, hash);    // save in bucket list 
 #if 0
 P(root)
 #endif
