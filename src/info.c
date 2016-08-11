@@ -70,19 +70,15 @@ char * je_session(context_t *C)
 
     uid = geteuid();
     pw = getpwuid(uid);
-    if (!pw) {
-        perror("Error - getpwuid(): ");
-        exit(EXIT_FAILURE);
-    }
+    if (!pw)
+        fatal_perror("Error - getpwuid(): ");
     C->username = pw->pw_name;
     je_append_string  (C, &pos, "username");
     je_append_token   (C, &pos, '=');
     je_append_string  (C, &pos, C->username);
 
-    if (uname(&unamebuf) != 0) {
-        perror("Error - uname(): ");
-        exit(EXIT_FAILURE);
-    } 
+    if (uname(&unamebuf) != 0)
+        fatal_perror("Error - uname(): ");
     C->hostname = unamebuf.nodename;
     je_append_string  (C, &pos, "hostname");
     je_append_token   (C, &pos, '=');
