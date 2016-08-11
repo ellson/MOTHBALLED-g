@@ -22,6 +22,7 @@ typedef struct hashfile_s hashfile_t;
 
 // private headers
 #include "grammar.h"
+#include "error_functions.h"
 #include "inbuf.h"
 #include "list.h"
 #include "hash.h"

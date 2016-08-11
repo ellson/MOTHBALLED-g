@@ -9,6 +9,7 @@
 #include <sys/types.h>
 
 #include "libje.h"
+#include "error_functions.h"
 
 static context_t *C;  // the input context - needs to be global for intr()
 
@@ -36,10 +37,8 @@ int main(int argc, char *argv[])
             optnum = 0;
         switch (opt) {
         case 'T':
-            if (je_select_emitter(optarg) == FAIL) {
-                fprintf(stderr, "No back-end found for format: -T%s\n", optarg);
-                exit(EXIT_FAILURE);
-            }
+            if (je_select_emitter(optarg) == FAIL)
+                fatal("No back-end found for format: -T%s\n", optarg);
             break;
         case 'd':
             switch (optnum) {
@@ -52,8 +51,7 @@ int main(int argc, char *argv[])
                 exit(EXIT_SUCCESS);
                 break;
             default:
-                fprintf(stderr, "%s\n", "-d0 = linear walk, -d1 = recursive walk");
-                exit(EXIT_FAILURE);
+                fatal("%s\n", "-d0 = linear walk, -d1 = recursive walk");
                 break;
             }
 
@@ -71,8 +69,8 @@ int main(int argc, char *argv[])
 // FIXME "name" should allow full subject string, or "hashname"
 // FIXME need something like -i (print tree index of container "hashname" and "SUBJECT")
 // FIXME - add -T options to usage message
-            fprintf(stderr, "Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
-            exit(EXIT_FAILURE);
+            fatal("Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
+            break;
         }
     }
 
