@@ -18,7 +18,6 @@
 typedef struct inbuf_s inbuf_t;
 typedef struct emit_s emit_t;
 typedef struct container_context_s container_context_t;
-typedef struct hashfile_s hashfile_t;
 
 // private headers
 #include "grammar.h"
