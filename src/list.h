@@ -3,7 +3,8 @@
 typedef enum {
     LISTELEM = 0, // must be 0 for static or calloc allocation of list headers
     FRAGELEM = 1,
-    HASHELEM = 2
+    HASHELEM = 2,
+    HASHNAMEELEM = 3
 } elemtype_t;
 
 // Print a list (tree) -  used for debugging
@@ -36,10 +37,20 @@ struct hash_elem_s {     // castable to elem_s  -- size must match (32bytes)
     char state;          // state_machine state that generated this list
 };
 
+struct hashname_elem_s {     // castable to elem_s  -- size must match (32bytes)
+    hash_elem_t *next;
+    char *hashname;      // a filename constructed from a hash of the subject
+    FILE *out;           // file handle, or NULL if not opened yet.
+    unsigned int count;  // unused
+    char type;           // HASHNAMEELEM
+    char state;          // unused
+};
+
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
 elem_t *new_hash(context_t * C, unsigned long hash);
+elem_t *new_hashname(context_t * C, unsigned char *hash, size_t hash_len);
 elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag);
 elem_t *move_list(context_t * C, elem_t * list);
 elem_t *ref_list(context_t * C, elem_t * list);

@@ -107,6 +107,29 @@ elem_t *new_hash(context_t * C, unsigned long hash)
 }
 
 /**
+ * Return a pointer to an elem_t which holds a hashname
+ * (suitable for use as a filename)
+ * The element is memory managed without caller involvement.
+ * The FILE* in the elem_t is initialized to NULL
+ *
+ * @param C the top-level context in which all lists are managed
+ * @param hash a long containing a hash value
+ * @return a new intialized elem_t
+ */
+elem_t *new_hashname(context_t * C, unsigned char* hash, size_t hash_len)
+{
+    hashname_elem_t *hashname_elem;
+
+    hashname_elem = (hashname_elem_t*)new_elem_sub(C);
+
+    // complete frag elem initialization
+    hashname_elem->type = HASHNAMEELEM;     // type
+    hashname_elem->hashname = hash;  // the hash value  //FIXME do base64 here ?
+    hashname_elem->out = NULL;   // open later
+    return (elem_t*)hashname_elem;
+}
+
+/**
  * Private function to clone a list header to a new elem.
  *
  * The old list header is not modified, so could have been be statically or

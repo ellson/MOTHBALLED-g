@@ -75,7 +75,7 @@ static void hash_list_r(unsigned long *hash, elem_t *list)
                 elem = elem->next;
             }
             break;
-        case HASHELEM:
+        default:
             assert(0);  // should not be here
             break;
         }

@@ -280,7 +280,7 @@ static void je_gvrender_list(context_t *C, FILE *chan, elem_t * list)
             break;
         }
         break;
-    case HASHELEM:
+    default:
         assert(0);  // should not be here
         break;
     }
@@ -363,7 +363,7 @@ void je_emit_list(context_t *C, FILE *chan, elem_t * list)
             break;
         }
         break;
-    case HASHELEM:
+    default:
         assert(0);  // should not be here
         break;
     }
