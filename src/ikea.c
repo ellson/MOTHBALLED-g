@@ -42,18 +42,22 @@
 static void base64(unsigned char *ip, size_t ic, char *op, size_t oc);
 static void hash_list_r(unsigned char *digest, elem_t *list);
 
+typedef struct ikea_s ikea_t;
 
-typedef struct {
+struct ikea_s {
+    ikea_t *next
     FILE *fh;
     EVP_MD_CTX *ctx;
     char namehash[64];
     char contenthash[64];
-} ikea_t;
+};
+
+static ikea_t *bucket_list[64];
 
 /**
  * open a named container for write
  */
-ikea_t* ikea_open( elem_t * name )  
+ikea_t* ikea_open( ikea_t **bucket_list, elem_t * name )  
 {
     ikea_t *ikea;
     unsigned char digest[EVP_MAX_MD_SIZE];
