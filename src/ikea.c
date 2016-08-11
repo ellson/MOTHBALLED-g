@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <openssl/evp.h>
+#include <assert.h>
 
 #include "libje_private.h"
 
@@ -39,12 +40,10 @@
 
 // Forward declarations
 static void base64(unsigned char *ip, size_t ic, char *op, size_t oc);
-static void hash_list_r(unsigned long *hash, elem_t *list);
+static void hash_list_r(unsigned char *digest, elem_t *list);
 
 
-#define handleErrors abort
-
-typdef struct {
+typedef struct {
     FILE *fh;
     EVP_MD_CTX *ctx;
     char namehash[64];
@@ -57,30 +56,30 @@ typdef struct {
 ikea_t* ikea_open( elem_t * name )  
 {
     ikea_t *ikea;
+    unsigned char digest[EVP_MAX_MD_SIZE];
 
     assert(name);
 
 // allocate handle
     if ((ikea = malloc(sizeof(ikea_t))) == NULL)
-        handle_errors()
+        fatal_perror("Error - malloc() ");
 
 // init namehash accumulation
     if((ikea->ctx = EVP_MD_CTX_create()) == NULL)
-        handleErrors();
+        fatal_perror("Error - EVP_MD_CTX_create() ");
     if(1 != EVP_DigestInit_ex(ikea->ctx, EVP_sha1(), NULL))
-        handleErrors();
+        fatal_perror("Error - EVP_DigestInit_ex() ");
 
 // while name fragments ...
 //        accumulate namehash
-    hash_list_r(ikea, name);
+    hash_list_r(digest, name);
 
 //    finalize namehash
 
-    unsigned char digest[EVP_MAX_MD_SIZE];
     unsigned int digest_len = sizeof(digest);
 
     if(1 != EVP_DigestFinal_ex(ikea->ctx, digest, &digest_len))
-        handleErrors();
+        fatal_perror("Error - EVP_DigestFinal_ex() ");
 
 //    convert to string suitable for filename
     char buf[64];
@@ -93,12 +92,11 @@ ikea_t* ikea_open( elem_t * name )
 
 
     if ((ikea->fh = fopen(ikea->namehash,"a+b")) == NULL)
-        handleErrors();
-
+        fatal_perror("Error - fopen() ");
 
 
     // clean up from namehash generation
-    EVP_MD_CTX_destroy(ctx);
+    EVP_MD_CTX_destroy(ikea->ctx);
 
 
 // init content hash accumulation
@@ -111,33 +109,44 @@ ikea_t* ikea_open( elem_t * name )
     return ikea;
 }
 
-success_t ikea_append(IKEA* ikea, unsigned char *data, size_t data_len)
+success_t ikea_append(ikea_t* ikea, unsigned char *data, size_t data_len)
 {
     return SUCCESS;
 }
 
-success_t ikea_flush(IKEA* ikea) 
+success_t ikea_flush(ikea_t* ikea) 
 {
-    // content hash left in allocated IKEA struct.
+    // content hash left in allocated ikea_t struct.
     return SUCCESS;
 }
 
-success_t ikea_close(IKEA* ikea) 
+success_t ikea_close(ikea_t* ikea) 
 {
-    // content hash left in allocated IKEA struct.
+    // content hash left in allocated ikea_t struct.
     return SUCCESS;
 }
 
 
 //================= support functions ====================
 
+// forward mapping
+const static char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+_";
+
+// reverse mapping
+const static char un_b64[128] = {
+     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, -1,
+     52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1,
+     -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+     15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, 63,
+     -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+     41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1
+};
+
 /**
  * Encode a byte array to a NUL terminated printable base64 string,
  * suitable for use as filename.
- *
- * NB.  c.v standard base64:
- *        - Non-std character set ('_' instead of '/')
- *        - Does not pad with '='
  *
  * @param *ip - pointer to input data byte array
  * @param ic  - number of bytes of idata
@@ -149,8 +158,6 @@ success_t ikea_close(IKEA* ikea)
 static void base64(unsigned char *ip, size_t ic, char *op, size_t oc)
 {
     // 64 ascii chars that are safe in filenames
-    const static char b64[] =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+_";
     uint32_t d;
     int pad1=0, pad2=0;
 
@@ -173,36 +180,36 @@ static void base64(unsigned char *ip, size_t ic, char *op, size_t oc)
 
 /**
  * Recursive hash function building on a previously initialized or
- * partially accumulated haahs result.
+ * partially accumulated hash result.
  *
  * @param hash place for resulting hash
  * @param list - fraglist or list of fraglist to be hashed
  */
-static void hash_list_r(unsigned long *hash, elem_t *list)
+static void hash_list_r(unsigned char *digest, elem_t *list)
 {
     elem_t *elem; 
     unsigned char *cp;
     int len;
 
-    if ((elem = list->u.list.first)) {
+    if ((elem = list->first)) {
         switch ((elemtype_t) elem->type) {
         case FRAGELEM:
             while (elem) {
-                cp = elem->u.frag.frag;
-                len = elem->v.frag.len;
+                cp = ((frag_elem_t*)elem)->frag;
+                len = ((frag_elem_t*)elem)->len;
                 assert(len > 0);
                 while (len--) {
                     // XOR with current character
-                    *hash ^= *cp++;
+//                    *hash ^= *cp++;
                     // multiply by the magic number
-                    *hash *= FNV_PRIME;
+//                    *hash *= FNV_PRIME;
                 }
                 elem = elem->next;
             }
             break;
         case LISTELEM:
             while (elem) {
-                hash_list_r(hash, elem);    // recurse
+                hash_list_r(digest, elem);    // recurse
                 elem = elem->next;
             }
             break;
@@ -266,7 +273,7 @@ int main(int arc, char *argv[])
 
     char buf[64];
 
-    je_base64(digest, digest_len, buf, sizeof(buf));
+    base64(digest, digest_len, buf, sizeof(buf));
 
     fprintf(stdout, "%s\n", buf);
 
