@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include "error_functions.h"
+
+#include "fatal.h"
 
 void
 fatal_printf(const char *format, ...)

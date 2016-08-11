@@ -9,7 +9,8 @@
 #include <sys/types.h>
 
 #include "libje.h"
-#include "error_functions.h"
+#include "fatal.h"   // FIXME - so is this public or private?
+                     // or should option processing be in a private function?
 
 static context_t *C;  // the input context - needs to be global for intr()
 

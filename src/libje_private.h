@@ -21,7 +21,7 @@ typedef struct container_context_s container_context_t;
 
 // private headers
 #include "grammar.h"
-#include "error_functions.h"
+#include "fatal.h"
 #include "inbuf.h"
 #include "list.h"
 #include "hash.h"

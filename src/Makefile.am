@@ -9,7 +9,7 @@ include_HEADERS = \
 	libje.h
 
 noinst_HEADERS = \
-	error_functions.h \
+	fatal.h \
 	context.h \
 	dispatch.h \
 	emit.h \
@@ -28,7 +28,7 @@ lib_LTLIBRARIES = libje.la
 #pkgconfig_DATA = libje.pc
 
 libje_C_la_SOURCES = \
-	error_functions.c \
+	fatal.c \
 	grammar.c \
 	libje.c \
 	parse.c \
