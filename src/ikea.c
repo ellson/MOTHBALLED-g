@@ -277,6 +277,20 @@ int main(int arc, char *argv[])
 
     fprintf(stdout, "%s\n", buf);
 
+    
+#if 0
+// b64 table checks
+int i,j;
+
+    for (j=0; j<4; j++) {
+         for (i=0; i<16; i++) {
+              fprintf(stdout,"%2x ", un_b64[(b64[(((j*16)+i)&0x7F)])]);
+         }
+         fprintf(stdout,"\n");
+    }
+#endif
+          
+
 
 
     EVP_MD_CTX_destroy(ctx);
