@@ -43,9 +43,9 @@ struct ikea_s {
     ikea_t *next;
     FILE *fh;
     EVP_MD_CTX ctx;   // context for content hash accumulation
-    char namehash[(((EVP_MAX_MD_SIZE+1)*8/6)+1)]; // big enough for base64 encode largest possible digest, plus \0
-    char contenthash[(((EVP_MAX_MD_SIZE+1)*8/6)+1)]; // big enough for base64 encode largest possible digest, plus \0
-    char mode[4];
+    int mode; // 0=read, 1=write   // FIXME - nice enum?
+    char namehash[(((EVP_MAX_MD_SIZE+1)*8/6)+4+1)]; // big enough for base64 encode largest possible digest, plus a/b/ or tmp/ prefix, plus \0
+    char contenthash[(((EVP_MAX_MD_SIZE+1)*8/6)+4+1)]; // big enough for base64 encode largest possible digest, plus a/b/ or tmp/ prefix, plus \0
 };
 
 // forward mapping
@@ -144,6 +144,7 @@ ikea_t *ikea_open( context_t * C, elem_t * name )
     unsigned char digest[EVP_MAX_MD_SIZE];  // namehash digest 
     unsigned int digest_len = sizeof(digest); 
     char bucket;
+    char s_mode[4];
 
     assert(name);
 
@@ -163,10 +164,7 @@ ikea_t *ikea_open( context_t * C, elem_t * name )
         fatal_perror("Error - EVP_DigestFinal_ex() ");
 
     //  convert to string suitable for filename
-    base64(digest, digest_len, ikea->namehash, sizeof(ikea->namehash));
-
-    // default mode for new files
-    strcpy(ikea->mode,"a+r");
+    base64(digest, digest_len, &(ikea->namehash[4]), (sizeof(ikea->namehash)-4));
 
     //  see if this file already exists in the bucket list
     bucket = un_b64[ikea->namehash[0]];
@@ -191,8 +189,22 @@ ikea_t *ikea_open( context_t * C, elem_t * name )
 //    compose full pathname:   <base>/name/namehash
 
     if (! ikea->fh ) { // if not already open
+
+ 
+
+//FIXME
+//if file exixts
+    strcpy(s_mode,"r");
+//open the file read only
+//defer opening for write,  and digest init, until first write
+//else
+    strcpy(s_mode,"a+r");
+//open  tmp/namehash for write
+//init digest
+//fi
+
         // open the file
-        if ((ikea->fh = fopen(ikea->namehash,ikea->mode)) == NULL)
+        if ((ikea->fh = fopen(ikea->namehash,s_mode)) == NULL)
             fatal_perror("Error - fopen() ");
         // init content hash accumulation
         if (1 != EVP_DigestInit_ex(&(ikea->ctx), EVP_sha1(), NULL))
@@ -207,6 +219,18 @@ ikea_t *ikea_open( context_t * C, elem_t * name )
 
 void ikea_append(ikea_t* ikea, unsigned char *data, size_t data_len)
 {
+
+//FIXME
+//if not open for write
+//    open tmp/namehash for write
+//    init contenthash
+//    copy from old, accumumating contenthash
+//    close old
+//    fh=tmp
+//fi
+
+
+
     if (fwrite(data, data_len, 1, ikea->fh) != data_len)
         fatal_perror("Error - fwrite() ");
     if (1 != EVP_DigestUpdate(&(ikea->ctx), data, data_len))
@@ -234,6 +258,17 @@ void ikea_close(ikea_t* ikea)
     
     // convert to string suitable for filename
     base64(digest, digest_len, ikea->contenthash, sizeof(ikea->contenthash));
+
+//if open for write
+//  if contenthash_file exists
+//       rm temp_namehash -- i.e. the one we just closed
+//  else
+//       mv temp_namehash contenthash
+//       -- unlink any old namehash
+//       -- if last link to oldcontenthash - remove contenthash (by finding inode)
+//  fi
+//  ln contenthash namehash
+//fi
 
 #if 1        
     fprintf(stdout, "%s\n", ikea->contenthash);
