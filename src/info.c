@@ -69,15 +69,14 @@ char * je_session(context_t *C)
     je_append_ulong   (C, &pos, C->pid);
 
     uid = geteuid();
-    pw = getpwuid(uid);
-    if (!pw)
+    if (!(pw = getpwuid(uid)))
         fatal_perror("Error - getpwuid(): ");
     C->username = pw->pw_name;
     je_append_string  (C, &pos, "username");
     je_append_token   (C, &pos, '=');
     je_append_string  (C, &pos, C->username);
 
-    if (uname(&unamebuf) != 0)
+    if (uname(&unamebuf))
         fatal_perror("Error - uname(): ");
     C->hostname = unamebuf.nodename;
     je_append_string  (C, &pos, "hostname");
@@ -87,7 +86,7 @@ char * je_session(context_t *C)
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe function - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (clock_gettime(CLOCK_BOOTTIME, &(C->uptime)) != 0)
+    if (clock_gettime(CLOCK_BOOTTIME, &(C->uptime)))
         fatal_perror("Error - clock_gettime(): ");
     je_append_string  (C, &pos, "uptime");
     je_append_token   (C, &pos, '=');
@@ -95,7 +94,7 @@ char * je_session(context_t *C)
 #else
     // Y2038-unsafe function - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (gettimeofday(&(C->uptime), NULL) != 0)
+    if (gettimeofday(&(C->uptime), NULL))
         fatal_perror("Error - gettimeofday(): ");
     je_append_string  (C, &pos, "uptime");
     je_append_token   (C, &pos, '=');
@@ -105,7 +104,7 @@ char * je_session(context_t *C)
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe function -  FIXME
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (clock_gettime(CLOCK_REALTIME, &starttime) != 0)
+    if (clock_gettime(CLOCK_REALTIME, &starttime))
         fatal_perror("Error - clock_gettime(): ");
     je_append_string  (C, &pos, "starttime");
     je_append_token   (C, &pos, '=');
@@ -113,7 +112,7 @@ char * je_session(context_t *C)
 #else
     // Y2038-unsafe function - FIXME
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (gettimeofday(&starttime, NULL) != 0)
+    if (gettimeofday(&starttime, NULL))
         fatal_perror("Error - gettimeofday(): ");
     je_append_string  (C, &pos, "starttime");
     je_append_token   (C, &pos, '=');
@@ -159,14 +158,14 @@ char * je_stats(context_t *C)
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (clock_gettime(CLOCK_BOOTTIME, &nowtime) != 0)
+    if (clock_gettime(CLOCK_BOOTTIME, &nowtime))
         fatal_perror("Error - clock_gettime(): ");
     runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_nsec)
             - ((unsigned long)(C->uptime.tv_sec) * TEN9 + (unsigned long)(C->uptime.tv_nsec));
 #else
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (gettimeofday(&nowtime, NULL) != 0)
+    if (gettimeofday(&nowtime, NULL))
         fatal_perror("Error - gettimeofday(): ");
     runtime = ((unsigned long)nowtime.tv_sec * TEN9 + (unsigned long)nowtime.tv_usec) * TEN3
             - ((unsigned long)(C->uptime.tv_sec) * TEN9 + (unsigned long)(C->uptime.tv_usec) * TEN3);

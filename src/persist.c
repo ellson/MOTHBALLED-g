@@ -193,7 +193,7 @@ void je_persist_snapshot (context_t *C)
             next = elem->next;
             if ((fp = ((hash_elem_t*)elem)->out)) {
 //============================= ikea flush ???  ===============
-                if (fflush(fp) != 0)
+                if (fflush(fp))
                     fatal_perror("Error - fflush(): ");
 //=======================================================
             }
@@ -204,13 +204,13 @@ void je_persist_snapshot (context_t *C)
     }
 
     if (tar_open(&pTar, tarFilename, &gztype, O_WRONLY | O_CREAT | O_TRUNC, 0600, TAR_GNU) == -1)
-        fatal_perror("Error - tar_open():");
+        fatal_perror("Error - tar_open(): ");
     if (tar_append_tree(pTar, C->tempdir, extractTo) == -1)
-        fatal_perror("Error - tar_append_tree():");
+        fatal_perror("Error - tar_append_tree(): ");
     if (tar_append_eof(pTar) == -1)
-        fatal_perror("Error - tar_append_eof():");
+        fatal_perror("Error - tar_append_eof(): ");
     if (tar_close(pTar) == -1)
-        fatal_perror("Error - tar_close():");
+        fatal_perror("Error - tar_close(): ");
 }
 
 /**
@@ -242,17 +242,17 @@ void je_persist_restore (context_t *C)
     unsigned long hash;
 
     if (tar_open(&pTar, tarFilename, &gztype, O_RDONLY, 0600, TAR_GNU) == -1)
-        fatal_perror("Error - tar_open():");
+        fatal_perror("Error - tar_open(): ");
     if (tar_extract_all(pTar, C->tempdir) == -1)
-        fatal_perror("Error - tar_extract_all():");
+        fatal_perror("Error - tar_extract_all(): ");
     if (tar_close(pTar) == -1)
-        fatal_perror("Error - tar_close():");
+        fatal_perror("Error - tar_close(): ");
     len = strlen(C->tempdir);
     if ((glob_pattern = malloc(len + 2)) == NULL)
-        fatal_perror("Error - malloc():");
+        fatal_perror("Error - malloc(): ");
     strcpy(glob_pattern, C->tempdir);
     strcat(glob_pattern, "/*");
-    if ((rc = glob(glob_pattern, 0, glob_err, &pglob)) != 0) {
+    if ((rc = glob(glob_pattern, 0, glob_err, &pglob))) {
         switch (rc) {
         case GLOB_NOSPACE:
             fprintf(stderr,"Error - glob(): no memory available (GLOB_NOSPACE)");
@@ -299,7 +299,7 @@ void je_persist_close (context_t *C)
 
 //========================== ikea close ==========================
                 // close all open files
-                if (fclose(fp) != 0)
+                if (fclose(fp))
                     fatal_perror("Error - fclose(): ");
 //================================================================
                 // FIXME - perhaps we should keep the base64 filenames around?

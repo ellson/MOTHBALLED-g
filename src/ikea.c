@@ -152,14 +152,14 @@ ikea_t *ikea_open( context_t * C, elem_t * name )
         fatal_perror("Error - calloc() ");
 
     // init namehash accumulation
-    if(1 != EVP_DigestInit_ex(&ctx, EVP_sha1(), NULL))
+    if (1 != EVP_DigestInit_ex(&ctx, EVP_sha1(), NULL))
         fatal_perror("Error - EVP_DigestInit_ex() ");
 
     //  accumulate namehash
     hash_list_r(&ctx, name);
 
     //  finalize namehash
-    if(1 != EVP_DigestFinal_ex(&ctx, digest, &digest_len))
+    if (1 != EVP_DigestFinal_ex(&ctx, digest, &digest_len))
         fatal_perror("Error - EVP_DigestFinal_ex() ");
 
     //  convert to string suitable for filename
@@ -195,7 +195,7 @@ ikea_t *ikea_open( context_t * C, elem_t * name )
         if ((ikea->fh = fopen(ikea->namehash,ikea->mode)) == NULL)
             fatal_perror("Error - fopen() ");
         // init content hash accumulation
-        if(1 != EVP_DigestInit_ex(&(ikea->ctx), EVP_sha1(), NULL))
+        if (1 != EVP_DigestInit_ex(&(ikea->ctx), EVP_sha1(), NULL))
             fatal_perror("Error - EVP_DigestInit_ex() ");
         //    FIXME
         //    log file open:   namehash path name
