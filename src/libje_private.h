@@ -18,6 +18,7 @@
 typedef struct inbuf_s inbuf_t;
 typedef struct emit_s emit_t;
 typedef struct container_context_s container_context_t;
+typedef struct ikea_s ikea_t;
 
 // private headers
 #include "grammar.h"
@@ -25,6 +26,7 @@ typedef struct container_context_s container_context_t;
 #include "inbuf.h"
 #include "list.h"
 #include "hash.h"
+#include "ikea.h"
 #include "emit.h"
 #include "token.h"
 #include "context.h"

@@ -16,6 +16,7 @@ noinst_HEADERS = \
 	expand_edge.h \
 	grammar.h \
 	hash.h \
+	ikea.h \
 	inbuf.h \
 	libje_private.h \
 	list.h \
@@ -34,6 +35,7 @@ libje_C_la_SOURCES = \
 	parse.c \
 	persist.c \
 	token.c \
+	ikea.c \
 	info.c \
 	inbuf.c \
 	dispatch.c \

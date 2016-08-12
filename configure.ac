@@ -50,6 +50,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
 # Checks for libraries.
+AC_CHECK_LIB([crypto], [main])
 AC_CHECK_LIB([tar], [main])
 AC_CHECK_LIB([z], [main])
 

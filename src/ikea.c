@@ -7,7 +7,6 @@
 
 #include "libje_private.h"
 
-
 /**
  * ikea.c   (the container store )
  *
@@ -40,67 +39,60 @@
 
 // Forward declarations
 static void base64(unsigned char *ip, size_t ic, char *op, size_t oc);
-static void hash_list_r(unsigned char *digest, elem_t *list);
-
-typedef struct ikea_s ikea_t;
+static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list);
 
 struct ikea_s {
-    ikea_t *next
+    ikea_t *next;
+    char namehash[(((EVP_MAX_MD_SIZE+1)*8/6)+1)]; // big enough for base64 encode largest possible digest, plus \0
     FILE *fh;
-    EVP_MD_CTX *ctx;
-    char namehash[64];
-    char contenthash[64];
+    EVP_MD_CTX ctx;   // context for content hash accumulation
+    char contenthash[(((EVP_MAX_MD_SIZE+1)*8/6)+1)]; // big enough for base64 encode largest possible digest, plus \0
 };
 
 static ikea_t *bucket_list[64];
 
 /**
- * open a named container for write
+ * open a named container
+ *
+ * if it already exists then it is opened ro then later,
+ *        if written to, copied and reopened a+r before the write
+ * else if it does not exist, then it is opened a+r
  */
 ikea_t* ikea_open( ikea_t **bucket_list, elem_t * name )  
 {
     ikea_t *ikea;
-    unsigned char digest[EVP_MAX_MD_SIZE];
+
+    EVP_MD_CTX ctx = {0}; // context for namehash - don't need to keep around so use stack
+    unsigned char digest[EVP_MAX_MD_SIZE];  // namehash digest 
+    unsigned int digest_len = sizeof(digest); 
 
     assert(name);
 
 // allocate handle
-    if ((ikea = malloc(sizeof(ikea_t))) == NULL)
-        fatal_perror("Error - malloc() ");
+    if ((ikea = calloc(1, sizeof(ikea_t))) == NULL)
+        fatal_perror("Error - calloc() ");
 
 // init namehash accumulation
-    if((ikea->ctx = EVP_MD_CTX_create()) == NULL)
-        fatal_perror("Error - EVP_MD_CTX_create() ");
-    if(1 != EVP_DigestInit_ex(ikea->ctx, EVP_sha1(), NULL))
+    if(1 != EVP_DigestInit_ex(&ctx, EVP_sha1(), NULL))
         fatal_perror("Error - EVP_DigestInit_ex() ");
 
-// while name fragments ...
-//        accumulate namehash
-    hash_list_r(digest, name);
+//  accumulate namehash
+    hash_list_r(&ctx, name);
 
-//    finalize namehash
-
-    unsigned int digest_len = sizeof(digest);
-
-    if(1 != EVP_DigestFinal_ex(ikea->ctx, digest, &digest_len))
+//  finalize namehash
+    if(1 != EVP_DigestFinal_ex(&ctx, digest, &digest_len))
         fatal_perror("Error - EVP_DigestFinal_ex() ");
 
-//    convert to string suitable for filename
-    char buf[64];
+//  convert to string suitable for filename
+    base64(digest, digest_len, ikea->namehash, sizeof(ikea->namehash));
 
-    base64(digest, digest_len, buf, sizeof(buf));
-
-    fprintf(stdout, "%s\n", buf);
+    fprintf(stdout, "%s\n", ikea->namehash);
 
 //    compose full pathname
 
 
-    if ((ikea->fh = fopen(ikea->namehash,"a+b")) == NULL)
-        fatal_perror("Error - fopen() ");
-
-
-    // clean up from namehash generation
-    EVP_MD_CTX_destroy(ikea->ctx);
+ //   if ((ikea->fh = fopen(ikea->namehash,"a+b")) == NULL)
+ //       fatal_perror("Error - fopen() ");
 
 
 // init content hash accumulation
@@ -183,37 +175,27 @@ static void base64(unsigned char *ip, size_t ic, char *op, size_t oc)
 }
 
 /**
- * Recursive hash function building on a previously initialized or
- * partially accumulated hash result.
+ * Recursive hash accumulation of a fraglist, or list of fraglists
  *
- * @param hash place for resulting hash
+ * @param ctx  - hashing context
  * @param list - fraglist or list of fraglist to be hashed
  */
-static void hash_list_r(unsigned char *digest, elem_t *list)
+static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list)
 {
     elem_t *elem; 
-    unsigned char *cp;
-    int len;
 
     if ((elem = list->first)) {
         switch ((elemtype_t) elem->type) {
         case FRAGELEM:
             while (elem) {
-                cp = ((frag_elem_t*)elem)->frag;
-                len = ((frag_elem_t*)elem)->len;
-                assert(len > 0);
-                while (len--) {
-                    // XOR with current character
-//                    *hash ^= *cp++;
-                    // multiply by the magic number
-//                    *hash *= FNV_PRIME;
-                }
+                if (1 != EVP_DigestUpdate(ctx, ((frag_elem_t*)elem)->frag, ((frag_elem_t*)elem)->len))
+                    fatal_perror("Error - EVP_DigestUpdate() ");
                 elem = elem->next;
             }
             break;
         case LISTELEM:
             while (elem) {
-                hash_list_r(digest, elem);    // recurse
+                hash_list_r(ctx, elem);    // recurse
                 elem = elem->next;
             }
             break;
@@ -227,6 +209,8 @@ static void hash_list_r(unsigned char *digest, elem_t *list)
 
 
 //===================  test code =================================
+
+#if 0
 
 int main(int arc, char *argv[])
 { 
@@ -312,6 +296,8 @@ int i,j;
 
     return 0;
 }
+
+#endif
 
 
 /*
