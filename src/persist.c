@@ -185,6 +185,11 @@ void je_persist_snapshot (context_t *C)
     char *tarFilename = "g_snapshot.tgz";
     char *extractTo = ".";
 
+//============================= ikea flush ===============
+
+    ikea_flush_all(C);
+
+//============================= old flush ================
     // flush all open files
     for (i=0; i<64; i++) {
         next = C->hash_buckets[i];
@@ -192,15 +197,11 @@ void je_persist_snapshot (context_t *C)
             elem = next;
             next = elem->next;
             if ((fp = ((hash_elem_t*)elem)->out)) {
-//============================= ikea flush ???  ===============
                 if (fflush(fp))
                     fatal_perror("Error - fflush(): ");
-//=======================================================
             }
         }
-        //
-        // FIXME - hash the content of the files, create hardlinks to the content hash
-        //
+//=======================================================
     }
 
     if (tar_open(&pTar, tarFilename, &gztype, O_WRONLY | O_CREAT | O_TRUNC, 0600, TAR_GNU) == -1)
@@ -290,6 +291,9 @@ void je_persist_close (context_t *C)
     elem_t *elem, *next;
     char hashname[12], *filename;
 
+//========================== ikea close ==========================
+    ikea_close_all(C);
+//========================== old close ===========================
     for (i=0; i<64; i++) {
         next = C->hash_buckets[i];
         while(next) {
@@ -297,11 +301,9 @@ void je_persist_close (context_t *C)
             next = elem->next;
             if ((fp = ((hash_elem_t*)elem)->out)) {
 
-//========================== ikea close ==========================
                 // close all open files
                 if (fclose(fp))
                     fatal_perror("Error - fclose(): ");
-//================================================================
                 // FIXME - perhaps we should keep the base64 filenames around?
  
                 // reconsitute the filename and unlink
@@ -323,6 +325,7 @@ void je_persist_close (context_t *C)
             C->free_elem_list = elem;
         }
     }
+//================================================================
 
     // rmdir the temporary directory
     if (rmdir(C->tempdir) == -1)

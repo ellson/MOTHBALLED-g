@@ -183,7 +183,7 @@ ikea_t *ikea_open( context_t * C, elem_t * name )
         *ikea_open_p = ikea;
     }
 
-#if 0        
+#if 1        
     fprintf(stdout, "%s %2x\n", ikea->namehash, bucket);
 #endif
 
@@ -205,22 +205,22 @@ ikea_t *ikea_open( context_t * C, elem_t * name )
     return ikea;
 }
 
-success_t ikea_append(ikea_t* ikea, unsigned char *data, size_t data_len)
+void ikea_append(ikea_t* ikea, unsigned char *data, size_t data_len)
 {
     if (fwrite(data, data_len, 1, ikea->fh) != data_len)
         fatal_perror("Error - fwrite() ");
     if (1 != EVP_DigestUpdate(&(ikea->ctx), data, data_len))
         fatal_perror("Error - EVP_DigestUpdate() ");
-    return SUCCESS;
 }
 
-success_t ikea_flush(ikea_t* ikea) 
+void ikea_flush(ikea_t* ikea) 
 {
-    // content hash left in allocated ikea_t struct.
-    return SUCCESS;
+    // FIXME - only if open for writing
+    if (fflush(ikea->fh))
+        fatal_perror("Error - fflush() ");
 }
 
-success_t ikea_close(ikea_t* ikea) 
+void ikea_close(ikea_t* ikea) 
 {
     unsigned char digest[EVP_MAX_MD_SIZE];  // contenthash digest 
     unsigned int digest_len = sizeof(digest); 
@@ -235,7 +235,38 @@ success_t ikea_close(ikea_t* ikea)
     // convert to string suitable for filename
     base64(digest, digest_len, ikea->contenthash, sizeof(ikea->contenthash));
 
+#if 1        
+    fprintf(stdout, "%s\n", ikea->contenthash);
+#endif
     // FIXME  // contenthash is left in allocated ikea_t struct.
     // free(ikea);
-    return SUCCESS;
+}
+
+void ikea_flush_all(context_t * C)
+{
+    ikea_t *ikea;
+    int i;
+
+    for (i=0; i<64; i++) {
+        ikea=C->namehash_buckets[i];
+        while(ikea) {
+            ikea_flush(ikea);
+            ikea = ikea->next;
+        }
+    }
+}
+
+void ikea_close_all(context_t * C)
+{
+    ikea_t * ikea, **ikea_p;
+    int i;
+
+    for (i=0; i<64; i++) {
+        ikea_p = &(C->namehash_buckets[i]);
+        while (*ikea_p) {
+            ikea = *ikea_p;
+            *ikea_p = ikea->next;  // get next before freeing this one
+            ikea_close(ikea);  // frees ikea
+        }
+    }
 }
