@@ -1,6 +1,7 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 #include <stdio.h>
+#include <string.h>
 #include <inttypes.h>
 #include <openssl/evp.h>
 #include <assert.h>
@@ -37,98 +38,20 @@
  */
 
 
-// Forward declarations
-static void base64(unsigned char *ip, size_t ic, char *op, size_t oc);
-static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list);
-
+// private struct
 struct ikea_s {
     ikea_t *next;
-    char namehash[(((EVP_MAX_MD_SIZE+1)*8/6)+1)]; // big enough for base64 encode largest possible digest, plus \0
     FILE *fh;
     EVP_MD_CTX ctx;   // context for content hash accumulation
+    char namehash[(((EVP_MAX_MD_SIZE+1)*8/6)+1)]; // big enough for base64 encode largest possible digest, plus \0
     char contenthash[(((EVP_MAX_MD_SIZE+1)*8/6)+1)]; // big enough for base64 encode largest possible digest, plus \0
+    char mode[4];
 };
-
-static ikea_t *bucket_list[64];
-
-/**
- * open a named container
- *
- * if it already exists then it is opened ro then later,
- *        if written to, copied and reopened a+r before the write
- * else if it does not exist, then it is opened a+r
- */
-ikea_t* ikea_open( ikea_t **bucket_list, elem_t * name )  
-{
-    ikea_t *ikea;
-
-    EVP_MD_CTX ctx = {0}; // context for namehash - don't need to keep around so use stack
-    unsigned char digest[EVP_MAX_MD_SIZE];  // namehash digest 
-    unsigned int digest_len = sizeof(digest); 
-
-    assert(name);
-
-// allocate handle
-    if ((ikea = calloc(1, sizeof(ikea_t))) == NULL)
-        fatal_perror("Error - calloc() ");
-
-// init namehash accumulation
-    if(1 != EVP_DigestInit_ex(&ctx, EVP_sha1(), NULL))
-        fatal_perror("Error - EVP_DigestInit_ex() ");
-
-//  accumulate namehash
-    hash_list_r(&ctx, name);
-
-//  finalize namehash
-    if(1 != EVP_DigestFinal_ex(&ctx, digest, &digest_len))
-        fatal_perror("Error - EVP_DigestFinal_ex() ");
-
-//  convert to string suitable for filename
-    base64(digest, digest_len, ikea->namehash, sizeof(ikea->namehash));
-
-    fprintf(stdout, "%s\n", ikea->namehash);
-
-//    compose full pathname
-
-
- //   if ((ikea->fh = fopen(ikea->namehash,"a+b")) == NULL)
- //       fatal_perror("Error - fopen() ");
-
-
-// init content hash accumulation
-//
-//
-//
-//
-
-// return handle
-    return ikea;
-}
-
-success_t ikea_append(ikea_t* ikea, unsigned char *data, size_t data_len)
-{
-    return SUCCESS;
-}
-
-success_t ikea_flush(ikea_t* ikea) 
-{
-    // content hash left in allocated ikea_t struct.
-    return SUCCESS;
-}
-
-success_t ikea_close(ikea_t* ikea) 
-{
-    // content hash left in allocated ikea_t struct.
-    return SUCCESS;
-}
-
-
-//================= support functions ====================
 
 // forward mapping
 const static char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+_";
 
-// reverse mapping
+// reverse base_mapping
 const static char un_b64[128] = {
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -206,165 +129,113 @@ static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list)
     }
 }
 
+/**
+ * open a named container
+ *
+ * if it already exists then it is opened ro then later,
+ *        if written to, copied and reopened a+r before the write
+ * else if it does not exist, then it is opened a+r
+ */
+ikea_t *ikea_open( context_t * C, elem_t * name )  
+{
+    ikea_t *ikea, **ikea_open_p;
 
+    EVP_MD_CTX ctx = {0}; // context for namehash - don't need to keep around so use stack
+    unsigned char digest[EVP_MAX_MD_SIZE];  // namehash digest 
+    unsigned int digest_len = sizeof(digest); 
+    char bucket;
 
-//===================  test code =================================
+    assert(name);
 
-#if 0
+    // allocate handle
+    if ((ikea = calloc(1, sizeof(ikea_t))) == NULL)
+        fatal_perror("Error - calloc() ");
 
-int main(int arc, char *argv[])
-{ 
-     /* Load the human readable error strings for libcrypto */
-//     ERR_load_crypto_strings();
+    // init namehash accumulation
+    if(1 != EVP_DigestInit_ex(&ctx, EVP_sha1(), NULL))
+        fatal_perror("Error - EVP_DigestInit_ex() ");
 
-     /* Load all digest and cipher algorithms */
-//     OpenSSL_add_all_algorithms();
+    //  accumulate namehash
+    hash_list_r(&ctx, name);
 
-     /* Load config file, and other important initialisation */
-//     OPENSSL_config(NULL);
+    //  finalize namehash
+    if(1 != EVP_DigestFinal_ex(&ctx, digest, &digest_len))
+        fatal_perror("Error - EVP_DigestFinal_ex() ");
 
-     /* ... Do some crypto stuff here ... */
+    //  convert to string suitable for filename
+    base64(digest, digest_len, ikea->namehash, sizeof(ikea->namehash));
 
+    // default mode for new files
+    strcpy(ikea->mode,"a+r");
 
-#define handleErrors abort
-
-    EVP_MD_CTX *ctx;
-
-    if((ctx = EVP_MD_CTX_create()) == NULL)
-        handleErrors();
-
-    if(1 != EVP_DigestInit_ex(ctx, EVP_sha1(), NULL))
-        handleErrors();
-
-    if(1 != EVP_DigestUpdate(ctx, "Hello, ", 7))
-        handleErrors();
-
-    if(1 != EVP_DigestUpdate(ctx, "World!\n", 7))
-        handleErrors();
-
-    unsigned char digest[EVP_MAX_MD_SIZE];
-    unsigned int digest_len = sizeof(digest);
-
-    if(1 != EVP_DigestFinal_ex(ctx, digest, &digest_len))
-        handleErrors();
-
-
-//    BIO *bio, *b64;
-
-//    b64 = BIO_new(BIO_f_base64());
-//    bio = BIO_new_fp(stdout, BIO_NOCLOSE);
-//    BIO_push(b64, bio);
-//    BIO_write(b64, digest, digest_len);
-//    BIO_flush(b64);
-//
-//    BIO_free_all(b64);
-
-    char buf[64];
-
-    base64(digest, digest_len, buf, sizeof(buf));
-
-    fprintf(stdout, "%s\n", buf);
-
-    
-#if 0
-// b64 table checks
-int i,j;
-
-    for (j=0; j<4; j++) {
-         for (i=0; i<16; i++) {
-              fprintf(stdout,"%2x ", un_b64[(b64[(((j*16)+i)&0x7F)])]);
-         }
-         fprintf(stdout,"\n");
+    //  see if this file already exists in the bucket list
+    bucket = un_b64[ikea->namehash[0]];
+    ikea_open_p = &(C->namehash_buckets[bucket]);
+    while(*ikea_open_p) {
+        if (strcmp((*ikea_open_p)->namehash, ikea->namehash) == 0)
+            break;
     }
+    if (*ikea_open_p) { // found - use state from bucket_list
+        free (ikea);
+        ikea = *ikea_open_p;
+    }
+    else { // append bucketlist
+        *ikea_open_p = ikea;
+    }
+
+#if 0        
+    fprintf(stdout, "%s %2x\n", ikea->namehash, bucket);
 #endif
-          
 
+//    FIXME
+//    compose full pathname:   <base>/name/namehash
 
+    if (! ikea->fh ) { // if not already open
+        // open the file
+        if ((ikea->fh = fopen(ikea->namehash,ikea->mode)) == NULL)
+            fatal_perror("Error - fopen() ");
+        // init content hash accumulation
+        if(1 != EVP_DigestInit_ex(&(ikea->ctx), EVP_sha1(), NULL))
+            fatal_perror("Error - EVP_DigestInit_ex() ");
+        //    FIXME
+        //    log file open:   namehash path name
+    }
 
-    EVP_MD_CTX_destroy(ctx);
-
-
-    /* Removes all digests and ciphers */
-//    EVP_cleanup();
-
-    /* if you omit the next, a small leak may be left when you make use of the BIO (low level API) for e.g. base64 transformations */
-//:w
-//CRYPTO_cleanup_all_ex_data();
-
-    /* Remove error strings */
-//    ERR_free_strings();
-
-    return 0;
+    // return handle
+    return ikea;
 }
 
-#endif
+success_t ikea_append(ikea_t* ikea, unsigned char *data, size_t data_len)
+{
+    if (fwrite(data, data_len, 1, ikea->fh) != data_len)
+        fatal_perror("Error - fwrite() ");
+    if (1 != EVP_DigestUpdate(&(ikea->ctx), data, data_len))
+        fatal_perror("Error - EVP_DigestUpdate() ");
+    return SUCCESS;
+}
 
+success_t ikea_flush(ikea_t* ikea) 
+{
+    // content hash left in allocated ikea_t struct.
+    return SUCCESS;
+}
 
-/*
- pseudocode for maintaining shared containers
+success_t ikea_close(ikea_t* ikea) 
+{
+    unsigned char digest[EVP_MAX_MD_SIZE];  // contenthash digest 
+    unsigned int digest_len = sizeof(digest); 
 
+    // close file
+    if (fclose(ikea->fh))
+        fatal_perror("Error - fclose() ");
+    // finalize namehash
+    if (1 != EVP_DigestFinal_ex(&(ikea->ctx), digest, &digest_len))
+        fatal_perror("Error - EVP_DigestFinal_ex() ");
+    
+    // convert to string suitable for filename
+    base64(digest, digest_len, ikea->contenthash, sizeof(ikea->contenthash));
 
-open named_object
-    init namehash accumulation
-    while name fragments
-        accumulate namehash
-    finalize namehash
-    convert to string suitable for filename
-    open temp_namehash
-
-    init content hash accumulation
-    return handle
-
-write handle acts
-    write act to temp_namehash
-    accumulate contenthash
-
-close handle tempfile
-    close temp namehash
-
-    finalize contenthash
-       convert to string suitable for filename
-
-    if contenthash exists
-	    rm tempfile
-    else
-	    mv tempfile contenthash
-    fi
-
-    if namehash exists
-        error if not a link
-        get oldcontenthash from namehash->oldcontenthash (ls -i namehash; find . -inum <inum>)
-        rm namehash
-        if oldcontenthash != contenthash
-            decrement refcount to oldcontenthash
-            if refount == 0
-                rm oldcontenthash
-                rm all derivatives of oldcontenthash
-            fi
-        fi
-    fi
-    ln contenthash namehash
-
-
-
-- stat() will give the inode of a namehash, and the number of hardlinks
-
-- if all the contenthash are in one directory,  then searching with readdir() can find
-  the contenthash from the inode
-        - expensive ... every close where a namehash already exists require and iteration of all
-		contents directory entries  (i.e. thru number of different containers)
-
-	-- minimize cost by using scandir()
-     
-
-        names/namehash files
-	contents/contenthash files   << hardlinked from namehash files
-	derivatives/contenthash deivative files
-            
-
-- if softlinks were used instead then would need to implement reference counting outside of the file system
-
-
-- ok, so using scandir() is likely low cost when compared to generating hashes...
-
-*/
+    // FIXME  // contenthash is left in allocated ikea_t struct.
+    // free(ikea);
+    return SUCCESS;
+}

@@ -51,6 +51,13 @@ success_t je_parse(context_t * C, elem_t * name)
     CC->context = C;
 
 //===================================== ikea open ===============
+
+
+    ikea_t *ikea;
+
+    ikea = ikea_open(NULL, name);
+
+// old, to be removed
     je_hash_list(&hash, name); // hash name (subject "names" can be very long)
     hash_elem = je_hash_bucket(C, hash);    // save in bucket list 
     if (! hash_elem->out) {          // open file, if not already open
