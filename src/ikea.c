@@ -203,7 +203,10 @@ void ikea_append(ikea_t* ikea, unsigned char *data, size_t data_len)
     if (! ikea->fh ) { // if not already open
 
 // FIXME
-// compose full pathname:   <base>/temp/namehash
+// compose full pathname: 
+//      <ndir> - un_b64[<namehash[0]>]
+//      <basedir>/<ndir>/namehash.temp
+//      mkdir -p <basedir>/<ndir>
 
  
         ikea->mode = IKEA_WRITE;  // we're opening for write
@@ -253,9 +256,12 @@ void ikea_close(ikea_t* ikea)
 // FIXME
 
 // compose full pathnames:
-//        <base>/temp/namehash
-//        <base>/name/namehash
-//        <base>/cont/contenthash
+//        <basedir>/<ndir>/namehash.temp
+//        <basedir>/<ndir>/namehash.name
+//        (<basedir>/ndir>/ already exists)
+//
+//        <basedir>/<cdir>/contenthash.g
+//        mkdir -p <basedir>/<cdir>
 
 
 //  if contenthash_file exists
