@@ -47,6 +47,17 @@
  *        When g is running, the tree is unpacked into a private tree under $HOME/.g/`pid`/              
  */
 
+
+// public interface
+elem_t * ikea_persist_open(context_t *C);
+ikea_t *ikea_open( context_t * C, elem_t * name );
+void ikea_append(ikea_t* ikea, unsigned char *data, size_t data_len);
+void ikea_flush(ikea_t* ikea);
+void ikea_close(ikea_t* ikea);
+void ikea_persist_snapshot (context_t *C);
+void ikea_persist_restore (context_t *C);
+void ikea_persist_close (context_t *C);
+
 typedef enum {IKEA_READ, IKEA_WRITE} ikea_mode_t;
 
 // private struct
