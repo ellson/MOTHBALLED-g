@@ -19,11 +19,11 @@ void je_finalize(context_t *C);
 // emit.c
 success_t je_select_emitter(char *name);
 
-// persist.c
-elem_t * je_persist_open(context_t *C);
-void je_persist_snapshot (context_t *C);
-void je_persist_restore (context_t *C);
-void je_persist_close (context_t *C);
+// ikea.c
+elem_t * ikea_persist_open(context_t *C);
+void ikea_persist_snapshot (context_t *C);
+void ikea_persist_restore (context_t *C);
+void ikea_persist_close (context_t *C);
 
 // parse.c
 success_t je_parse(context_t * C, elem_t *name);

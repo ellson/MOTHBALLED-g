@@ -33,7 +33,6 @@ libje_C_la_SOURCES = \
 	grammar.c \
 	libje.c \
 	parse.c \
-	persist.c \
 	token.c \
 	ikea.c \
 	info.c \

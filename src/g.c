@@ -19,8 +19,8 @@ static void intr(int s)
 {
     (void) s; // NOTUSED
 
-    je_persist_snapshot(C);
-    je_persist_close(C);
+    ikea_persist_snapshot(C);
+    ikea_persist_close(C);
     exit (EXIT_FAILURE);
 }
 
@@ -80,10 +80,10 @@ int main(int argc, char *argv[])
 
     // assemble a name for the top container in the form of
     // a fraglist, and create temp folder for the per-container files
-    name = je_persist_open(C);
+    name = ikea_persist_open(C);
 
     if (needrestore) {
-        je_persist_restore(C);
+        ikea_persist_restore(C);
     }
 
     // start parsing
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 //  FIXME - do -p / -P processing here so can print resored pre-parsed graphs
 
     // generate snapshot
-    je_persist_snapshot(C);
+    ikea_persist_snapshot(C);
 
     // and stats, if wanted 
     if (needstats) {
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
         fprintf (stderr, "%s\n", je_stats(C));
     }
 
-    je_persist_close(C);
+    ikea_persist_close(C);
     je_finalize(C);
     exit(EXIT_SUCCESS);
 }

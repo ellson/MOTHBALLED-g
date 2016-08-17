@@ -271,7 +271,7 @@ P(&branch);
             C->verb = si;  // record verb prefix, if not default
             break;
         case HAT:
-            je_persist_snapshot(C);
+            ikea_persist_snapshot(C);
             break;
         case SUBJECT: // subject rewrites before adding branch to root
             branch.state = si;
