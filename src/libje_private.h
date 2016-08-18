@@ -18,7 +18,7 @@
 typedef struct inbuf_s inbuf_t;
 typedef struct emit_s emit_t;
 typedef struct container_context_s container_context_t;
-typedef struct ikea_s ikea_t;
+typedef struct ikea_box_s ikea_box_t;
 
 // private headers
 #include "grammar.h"

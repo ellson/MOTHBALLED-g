@@ -53,7 +53,7 @@ success_t je_parse(context_t * C, elem_t * name)
 //===================================== ikea open ===============
 
 
-    ikea_t *ikea;
+    ikea_box_t *ikea;
     ikea = ikea_open(C, name);
 
 // old, to be removed
@@ -271,7 +271,7 @@ P(&branch);
             C->verb = si;  // record verb prefix, if not default
             break;
         case HAT:
-            ikea_persist_snapshot(C);
+            ikea_store_snapshot(C);
             break;
         case SUBJECT: // subject rewrites before adding branch to root
             branch.state = si;
