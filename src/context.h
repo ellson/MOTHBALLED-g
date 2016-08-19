@@ -34,8 +34,9 @@
     char template[32];         // place to keep template for mkdtemp()
     long linecount_at_start;   // activity line count when this file was opened.
     elem_t myname;             // header for a list of components of my name (in the same form as subjects)
-    elem_t *hash_buckets[64];  // 64 buckets of name hashes and FILE*.
-    ikea_box_t *namehash_buckets[64];  // 64 buckets of namehashes
+    ikea_store_t *ikea_store;   // persistency
+    ikea_box_t *namehash_buckets[64];
+    hash_elem_t *hash_buckets[64];  // 64 buckets of name hashes and FILE*.
     long stat_filecount;       // various stats
     long stat_lfcount;
     long stat_crcount;

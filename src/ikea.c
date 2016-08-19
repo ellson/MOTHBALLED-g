@@ -28,20 +28,22 @@
  * ikea.c   (the container store )
  *
  * Objective:  
- *        A container (box)  holds a single graph in a tree of graph containers.
+ *        A container (ikea_box_t)  holds a single flat graph from a tree of graphs described by a 'g' file.
+ *        A store (ikea_store_t) holds the set of containers corresponding to a g file, in a persistent
+ *        tar.gz format.
  *
- *        This code maintains each container in a separate file.
+ *        This code maintains each container in a separate file, but only once in the case that contents
+ *        of multiple containers match.
  *
- *        During file write (before the contenthash has been determined), it is kept in namehash.temp.
+ *        The "contents" of each container are hashed, and used as the file name. This allows
+ *        duplicates to be stoored once.
  *
- *        At close (or flush) the file is moved (or copied) to contenthash.g
- *        where contenthash is the hash of the contents.
- *        Then hardlinked to namehash.name
- *        Possibly multiple, namehash.name will be hardlinked to the same contenthash.g
- *        name {node, edge, pattern) are hardlinked to the master..
+ *        The "name" of each container is that of a graph object; a node or edge.  Names can be complex,
+ *        so names are hashed.   The namehash is hardlinked to the contenthash.  There can be multiple
+ *        namehash to one contenhash.
  *
  *        A container store is a file collection of all the containers from a tree of graph containers
- *        described by a 'g' file
+ *        described by a 'g' file.  Also, in kept in the store are any generated renderings.
  *
  *        When g is stopped, the container store is archived to a compressed tar file.
  *        When g is running, the tree is unpacked into a private tree under $HOME/.g/`pid`/ 
@@ -49,7 +51,11 @@
 
 typedef enum {IKEA_READ, IKEA_WRITE} ikea_mode_t;
 
-// private struct
+// private structs
+struct ikea_store_s {
+    ikea_box_t *namehash_buckets[64];
+    hash_elem_t *hash_buckets[64];  // 64 buckets of name hashes and FILE*.
+};
 struct ikea_box_s {
     ikea_box_t *next;
     FILE *fh;
