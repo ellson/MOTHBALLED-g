@@ -23,6 +23,9 @@ static void api_act(container_context_t * CC, elem_t *list)
     context_t *C = CC->context;
     elem_t *elem;
 
+    if (!CC->out)
+        return;
+
     // after dispatch() there can be mutiple ACTs in the list
     elem = list->first;
     while (elem) {

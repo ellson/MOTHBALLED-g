@@ -50,12 +50,11 @@ success_t je_parse(context_t * C, elem_t * name)
 
     CC->context = C;
 
-//===================================== ikea open ===============
-
-
+#ifdef IKEA
     ikea_box_t *ikea;
     ikea = ikea_box_open(C, name);
-
+#endif
+#if 0
 // old, to be removed
     je_hash_list(&hash, name); // hash name (subject "names" can be very long)
     hash_elem = je_hash_bucket(C, hash);    // save in bucket list 
@@ -73,6 +72,8 @@ success_t je_parse(context_t * C, elem_t * name)
     }
     CC->out = hash_elem->out;
 //==============================================================
+#endif
+CC->out = stdout;
 
     emit_start_activity(CC);
     C->containment++;
@@ -271,7 +272,9 @@ P(&branch);
             C->verb = si;  // record verb prefix, if not default
             break;
         case HAT:
+#ifdef IKEA
             ikea_store_snapshot(C);
+#endif
             break;
         case SUBJECT: // subject rewrites before adding branch to root
             branch.state = si;
