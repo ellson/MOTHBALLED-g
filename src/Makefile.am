@@ -73,6 +73,9 @@ grammar.c: grammar.h
 grammar.h grammar.ebnf grammar.gv: grammar.g gacc.sh
 	./gacc.sh grammar.g
 
+grammar.svg: grammar.gv
+	dot -Tsvg grammar.gv -o grammar.svg
+
 g.1.pdf: $(srcdir)/g.1
 	    - $(GROFF) -Tps -man $(srcdir)/g.1 | $(PS2PDF) - - >g.1.pdf
 
