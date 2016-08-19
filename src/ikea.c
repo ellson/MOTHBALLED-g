@@ -158,12 +158,12 @@ static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list)
  * else it does not exist
  *    add to bucket list, and use
  *
- * fopen is defered until first ikea_append()
- *   (or ikea_read() ??? )
+ * fopen is defered until first ikea_box_append()
+ *   (or ikea_box_read() ??? )
  */
-ikea_box_t *ikea_open( context_t * C, elem_t * name )  
+ikea_box_t *ikea_box_open( context_t * C, elem_t * name )  
 {
-    ikea_box_t *ikea_box, **ikea_open_p;
+    ikea_box_t *ikea_box, **ikea_box_open_p;
 
     EVP_MD_CTX ctx = {0}; // context for namehash 
                           // - don't need to keep around so use stack
@@ -193,17 +193,17 @@ ikea_box_t *ikea_open( context_t * C, elem_t * name )
 
     //  see if this file already exists in the bucket list
     bucket = un_b64[ikea_box->namehash[0]];
-    ikea_open_p = &(C->namehash_buckets[bucket]);
-    while(*ikea_open_p) {
-        if (strcmp((*ikea_open_p)->namehash, ikea_box->namehash) == 0)
+    ikea_box_open_p = &(C->namehash_buckets[bucket]);
+    while(*ikea_box_open_p) {
+        if (strcmp((*ikea_box_open_p)->namehash, ikea_box->namehash) == 0)
             break;
     }
-    if (*ikea_open_p) { // found - use state from bucket_list
+    if (*ikea_box_open_p) { // found - use state from bucket_list
         free (ikea_box);
-        ikea_box = *ikea_open_p;
+        ikea_box = *ikea_box_open_p;
     }
     else { // append bucketlist
-        *ikea_open_p = ikea_box;
+        *ikea_box_open_p = ikea_box;
     }
 
 #if 0        
@@ -215,7 +215,7 @@ ikea_box_t *ikea_open( context_t * C, elem_t * name )
     return ikea_box;
 }
 
-void ikea_append(ikea_box_t* ikea_box, unsigned char *data, size_t data_len)
+void ikea_box_append(ikea_box_t* ikea_box, unsigned char *data, size_t data_len)
 {
     if (ikea_box->fh && ikea_box->mode == IKEA_READ ) { // already open, but for read
         if (fclose(ikea_box->fh))
@@ -245,7 +245,7 @@ void ikea_append(ikea_box_t* ikea_box, unsigned char *data, size_t data_len)
         fatal_perror("Error - EVP_DigestUpdate() ");
 }
 
-void ikea_flush(ikea_box_t* ikea_box) 
+void ikea_box_flush(ikea_box_t* ikea_box) 
 {
     if (ikea_box->fh && ikea_box->mode == IKEA_WRITE) {
         if (fflush(ikea_box->fh))
@@ -253,7 +253,7 @@ void ikea_flush(ikea_box_t* ikea_box)
     }
 }
 
-void ikea_close(ikea_box_t* ikea_box) 
+void ikea_box_close(ikea_box_t* ikea_box) 
 {
     unsigned char digest[EVP_MAX_MD_SIZE];  // contenthash digest 
     unsigned int digest_len = sizeof(digest); 
@@ -474,7 +474,7 @@ void ikea_store_snapshot (context_t *C)
     for (i=0; i<64; i++) {
         ikea_box = C->namehash_buckets[i];
         while(ikea_box) {
-            ikea_flush(ikea_box);
+            ikea_box_flush(ikea_box);
             ikea_box = ikea_box->next;
         }
     }
@@ -589,7 +589,7 @@ void ikea_store_close (context_t *C)
         while (*ikea_box_p) {
             ikea_box = *ikea_box_p;
             *ikea_box_p = ikea_box->next;  // get next before freeing this one
-            ikea_close(ikea_box);  // frees ikea_box
+            ikea_box_close(ikea_box);  // frees ikea_box
         }
     }
 //========================== old close ===========================

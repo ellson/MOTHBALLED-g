@@ -54,7 +54,7 @@ success_t je_parse(context_t * C, elem_t * name)
 
 
     ikea_box_t *ikea;
-    ikea = ikea_open(C, name);
+    ikea = ikea_box_open(C, name);
 
 // old, to be removed
     je_hash_list(&hash, name); // hash name (subject "names" can be very long)

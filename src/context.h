@@ -36,7 +36,7 @@
     elem_t myname;             // header for a list of components of my name (in the same form as subjects)
     ikea_store_t *ikea_store;   // persistency
     ikea_box_t *namehash_buckets[64];
-    hash_elem_t *hash_buckets[64];  // 64 buckets of name hashes and FILE*.
+    elem_t *hash_buckets[64];  // 64 buckets of name hashes and FILE*.
     long stat_filecount;       // various stats
     long stat_lfcount;
     long stat_crcount;
