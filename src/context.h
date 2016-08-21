@@ -80,6 +80,8 @@ struct container_context_s {    // container_context
                                 //   and to check that it is not a mix of NODE(s) and EDGE(s).
     elem_t node_pattern_acts;   // complete ACTs from whenever the NODE subject contains an "*"
     elem_t edge_pattern_acts;   // complete ACTs from whenever the EDGE subject contains an "*"
+
+    ikea_box_t *ikea_box;       // box for these contents
     FILE *out;                  // the output file for this container
 
     // FIXME  - place for fork header for layout process...

@@ -161,9 +161,11 @@ static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list)
  * fopen is defered until first ikea_box_append()
  *   (or ikea_box_read() ??? )
  */
-ikea_box_t *ikea_box_open( context_t * C, elem_t * name )  
+ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_content )
 {
-    ikea_box_t *ikea_box, **ikea_box_open_p;
+    ikea_box_t *ikea_box;
+#if 0
+    ikea_box_t **ikea_box_open_p;
 
     EVP_MD_CTX ctx = {0}; // context for namehash 
                           // - don't need to keep around so use stack
@@ -209,7 +211,10 @@ ikea_box_t *ikea_box_open( context_t * C, elem_t * name )
 #if 0        
     fprintf(stdout, "%s %2x\n", ikea_box->namehash, bucket);
 #endif
+#endif
 
+    if ((ikea_box = calloc(1, sizeof(ikea_box_t))) == NULL)
+        fatal_perror("Error - calloc() ");
 
     // return handle
     return ikea_box;
@@ -417,31 +422,16 @@ static tartype_t gztype = {
  * @param C context
  * @return list of containers ??
  */
-elem_t * ikea_store_open(context_t *C)
+ikea_store_t * ikea_store_open( const char * oldstore )
 {
+    ikea_store_t * ikea_store;
+
+#if 0
     int i;
     char *template_init = "/tmp/g_XXXXXX";
 
     // The top name is simply '^' - like "Dad" (or "Mum", or better: "Parent")
     // Note that adoption is possible as we never use an actual name.
-
-    // 66 bytes for a 1-byte name - oh well 
-    static frag_elem_t mumfrag = {
-        .next = NULL,
-        .inbuf = NULL,
-        .frag = (unsigned char *)"^",
-        .len = 1,
-        .type = FRAGELEM,
-        .state = ABC
-    };
-    static elem_t Mum = {
-        .next = NULL,
-        .first = (elem_t*)(&mumfrag),
-        .last = (elem_t*)(&mumfrag),
-        .refs = 0,
-        .type = LISTELEM,
-        .state = STRING
-    };
 
     // copy template including trailing NULL
     i = 0;
@@ -453,13 +443,18 @@ elem_t * ikea_store_open(context_t *C)
     C->tempdir = mkdtemp(C->template);
     if (!C->tempdir)
         fatal_perror("Error - mkdtemp(): ");
+#endif
 
-    return &Mum;
+    if ((ikea_store = calloc(1, sizeof(ikea_store_t))) == NULL)
+        fatal_perror("Error - calloc() ");
+
+    return ikea_store;
 }
 
 // snapshot of temporary files
-void ikea_store_snapshot (context_t *C)
+void ikea_store_snapshot ( ikea_store_t * ikea_store )
 {
+#if 0
     int i;
     elem_t *elem, *next;
     FILE *fp;
@@ -502,6 +497,7 @@ void ikea_store_snapshot (context_t *C)
         fatal_perror("Error - tar_append_eof(): ");
     if (tar_close(pTar) == -1)
         fatal_perror("Error - tar_close(): ");
+#endif
 }
 
 /**
@@ -522,8 +518,9 @@ static int glob_err (const char *epath, int eerrno)
  * 
  * @param C context
  */
-void ikea_store_restore (context_t *C)
+void ikea_store_restore ( ikea_store_t * ikea_store )
 {
+#if 0
     TAR *pTar;
     glob_t pglob;
     int rc;
@@ -567,6 +564,7 @@ void ikea_store_restore (context_t *C)
     }
     free(glob_pattern);
     globfree(&pglob);
+#endif
 }
 
 /**
@@ -574,8 +572,9 @@ void ikea_store_restore (context_t *C)
  *
  * @param C context
  */
-void ikea_store_close (context_t *C)
+void ikea_store_close ( ikea_store_t * ikea_store )
 {
+#if 0
     FILE *fp;
     int i;
     elem_t *elem, *next;
@@ -631,4 +630,5 @@ void ikea_store_close (context_t *C)
         fatal_perror("Error - rmdir(): ");
 
     free_list(C, &(C->myname));
+#endif
 }

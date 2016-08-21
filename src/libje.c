@@ -41,7 +41,11 @@ context_t *je_initialize(int *pargc, char *argv[], int optind)
     //    subsequent calls to je_session() just reuse the info gathered in this first call.
     je_session(C);
     
+    // create (or reopen) store for the containers
+    C->ikea_store = ikea_store_open( NULL );
+
     emit_initialize(C);
+
     return C;
 }
 
@@ -50,10 +54,17 @@ context_t *je_initialize(int *pargc, char *argv[], int optind)
  *
  * @param C context
  */
-void je_finalize(context_t *C)
+void je_finalize( context_t * C )
 {
    emit_finalize(C);
 
+   ikea_store_close(C->ikea_store);
+
    // free context
    free(C);
+}
+
+void je_interrupt( context_t * C )
+{
+   ikea_store_close(C->ikea_store);
 }

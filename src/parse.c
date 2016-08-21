@@ -49,11 +49,7 @@ success_t je_parse(context_t * C, elem_t * name)
     char hashname[12], *filename;
 
     CC->context = C;
-
-#ifdef IKEA
-    ikea_box_t *ikea;
-    ikea = ikea_box_open(C, name);
-#endif
+    CC->ikea_box = ikea_box_open(C->ikea_store, NULL);
 #if 0
 // old, to be removed
     je_hash_list(&hash, name); // hash name (subject "names" can be very long)
@@ -76,8 +72,8 @@ success_t je_parse(context_t * C, elem_t * name)
 CC->out = stdout;
 
     emit_start_activity(CC);
-    C->containment++;
-    C->stat_containercount++;
+    C->containment++;            // containment nesting level
+    C->stat_containercount++;    // number of containers
     if ((rc = je_parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
         if (C->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
@@ -87,6 +83,8 @@ CC->out = stdout;
     }
     C->containment--;
     emit_end_activity(CC);
+
+    ikea_box_close ( CC->ikea_box );
 
     free_list(C, &root);
     free_list(C, &(CC->subject));
@@ -272,9 +270,7 @@ P(&branch);
             C->verb = si;  // record verb prefix, if not default
             break;
         case HAT:
-#ifdef IKEA
-            ikea_store_snapshot(C);
-#endif
+            ikea_store_snapshot(C->ikea_store);
             break;
         case SUBJECT: // subject rewrites before adding branch to root
             branch.state = si;

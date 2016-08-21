@@ -19,8 +19,8 @@ static void intr(int s)
 {
     (void) s; // NOTUSED
 
-    ikea_store_snapshot(C);
-    ikea_store_close(C);
+    je_interrupt(C);
+
     exit (EXIT_FAILURE);
 }
 
@@ -78,25 +78,15 @@ int main(int argc, char *argv[])
     // create the top-level context for processing the inputs
     C = je_initialize(&argc, argv, optind);
 
-#ifdef IKEA
-    // assemble a name for the top container in the form of
-    // a fraglist, and create temp folder for the per-container files
-    name = ikea_store_open(C);
-
-    if (needrestore) {
-        ikea_store_restore(C);
-    }
-#endif
-
     // start parsing
-    je_parse(C, name);
+    je_parse(C, NULL);
 
+#if 0
 //  FIXME - do -i processing here so can index restored pre-parsed graphs
 //  FIXME - allow multiple -p in loop
 //  FIXME - do -p / -P processing here so can print resored pre-parsed graphs
-#ifdef IKEA
     // generate snapshot
-    ikea_store_snapshot(C);
+    ikea_store_snapshot(C->ikea_store);
 #endif
 
     // and stats, if wanted 
@@ -106,9 +96,7 @@ int main(int argc, char *argv[])
         fprintf (stderr, "%s\n", je_stats(C));
     }
 
-#ifdef IKEA
-    ikea_store_close(C);
-#endif
     je_finalize(C);
+
     exit(EXIT_SUCCESS);
 }
