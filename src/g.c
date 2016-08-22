@@ -64,12 +64,17 @@ int main(int argc, char *argv[])
             needrestore = 1;
             break;
         default:
+
 // FIXME no -g or -t support any more ??
 // FIXME need something like -p  (print primary content)
 // FIXME need something like -P "name" (print content of "name")
 // FIXME "name" should allow full subject string, or "hashname"
 // FIXME need something like -i (print tree index of container "hashname" and "SUBJECT")
 // FIXME - add -T options to usage message
+// FIXME - do -i processing here so can index restored pre-parsed graphs
+// FIXME - allow multiple -p in loop
+// FIXME - do -p / -P processing here so can print resored pre-parsed graphs
+//
             fatal_printf("Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
             break;
         }
@@ -78,16 +83,8 @@ int main(int argc, char *argv[])
     // create the top-level context for processing the inputs
     C = je_initialize(&argc, argv, optind);
 
-    // start parsing
+    // parse the input 
     je_parse(C, NULL);
-
-#if 0
-//  FIXME - do -i processing here so can index restored pre-parsed graphs
-//  FIXME - allow multiple -p in loop
-//  FIXME - do -p / -P processing here so can print resored pre-parsed graphs
-    // generate snapshot
-    ikea_store_snapshot(C->ikea_store);
-#endif
 
     // and stats, if wanted 
     if (needstats) {

@@ -270,7 +270,9 @@ P(&branch);
             C->verb = si;  // record verb prefix, if not default
             break;
         case HAT:
+            // FIXME - close this container's box
             ikea_store_snapshot(C->ikea_store);
+            // FIXME - open appending container for this box.
             break;
         case SUBJECT: // subject rewrites before adding branch to root
             branch.state = si;

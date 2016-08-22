@@ -2,12 +2,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
 #include <openssl/evp.h>
-#include <time.h>
-#include <sys/types.h>
 #include <errno.h>
 #include <zlib.h>
 #include <libtar.h>
@@ -15,7 +10,11 @@
 #include <glob.h>
 #include <assert.h>
 
-#include "libje_private.h"
+#include "ikea.h"
+#include "fatal.h"
+
+static char *tempdir_template="/tmp/g_XXXXXX";
+static char *tempfile_template="/g_XXXXXX";
 
 #if defined ( _MSC_VER) || defined(__WATCOMC__)
 #include <io.h>
@@ -36,35 +35,21 @@
  *        of multiple containers match.
  *
  *        The "contents" of each container are hashed, and used as the file name. This allows
- *        duplicates to be stoored once.
- *
- *        The "name" of each container is that of a graph object; a node or edge.  Names can be complex,
- *        so names are hashed.   The namehash is hardlinked to the contenthash.  There can be multiple
- *        namehash to one contenhash.
- *
- *        A container store is a file collection of all the containers from a tree of graph containers
- *        described by a 'g' file.  Also, in kept in the store are any generated renderings.
+ *        duplicates to be stored just once.
  *
  *        When g is stopped, the container store is archived to a compressed tar file.
- *        When g is running, the tree is unpacked into a private tree under $HOME/.g/`pid`/ 
+ *        When g is running, the tree is unpacked into a private tree.
  */
-
-typedef enum {IKEA_READ, IKEA_WRITE} ikea_mode_t;
 
 // private structs
 struct ikea_store_s {
-    ikea_box_t *namehash_buckets[64];
-    hash_elem_t *hash_buckets[64];  // 64 buckets of name hashes and FILE*.
-    char *tempdir;             // temporary dir for container files
-    char template[32];         // place to keep template for mkdtemp()
+    char tempdir[sizeof(tempdir_template)];     // place to keep tempdir string for mkdtemp() to compose
 };
 struct ikea_box_s {
     ikea_box_t *next;
     FILE *fh;
     EVP_MD_CTX ctx;   // context for content hash accumulation
-    ikea_mode_t mode;
-    char namehash[(((EVP_MAX_MD_SIZE+1)*8/6)+1)];
-        // big enough for base64 encode largest possible digest, plus \0
+    char tempfile[sizeof(tempdir_template)+sizeof(tempfile_template)]; // place to keep template for mkstemp()
 };
 
 // forward b64 mapping table (6-bits of data to 7-bit ASCII)
@@ -117,106 +102,29 @@ static void base64(unsigned char *ip, size_t ic, char *op, size_t oc)
 }
 
 /**
- * Recursive hash accumulation of a fraglist, or list of fraglists
- *
- * @param ctx  - hashing context
- * @param list - fraglist or list of fraglist to be hashed
- */
-static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list)
-{
-    elem_t *elem; 
-    frag_elem_t *fragelem; 
-
-    if ((elem = list->first)) {
-        switch ((elemtype_t) elem->type) {
-        case FRAGELEM:
-            while (elem) {
-                fragelem = (frag_elem_t*) elem;
-                if (1 != EVP_DigestUpdate(ctx, fragelem->frag, fragelem->len))
-                    fatal_perror("Error - EVP_DigestUpdate() ");
-                elem = elem->next;
-            }
-            break;
-        case LISTELEM:
-            while (elem) {
-                hash_list_r(ctx, elem);    // recurse
-                elem = elem->next;
-            }
-            break;
-        default:
-            assert(0);  // should not be here
-            break;
-        }
-    }
-}
-
-/**
- * open a named container
- *
- * compute namehash
- *
- * if it already exists in namehash_bucketlist
- *    use it from bucketlist with its current state
- * else it does not exist
- *    add to bucket list, and use
- *
- * fopen is defered until first ikea_box_append()
- *   (or ikea_box_read() ??? )
+ * open a container
  */
 ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_content )
 {
     ikea_box_t *ikea_box;
-#if 0
-    ikea_box_t **ikea_box_open_p;
+    int fd;
 
-    EVP_MD_CTX ctx = {0}; // context for namehash 
-                          // - don't need to keep around so use stack
-    unsigned char digest[EVP_MAX_MD_SIZE];  // namehash digest 
-    unsigned int digest_len = sizeof(digest); 
-    char bucket;
-
-    assert(name);
-
-    // allocate handle
     if ((ikea_box = calloc(1, sizeof(ikea_box_t))) == NULL)
         fatal_perror("Error - calloc() ");
 
-    // init namehash accumulation
-    if (1 != EVP_DigestInit_ex(&ctx, EVP_sha1(), NULL))
+    // construct temporary file path, in the temporary directory
+    strcpy(ikea_box->tempfile, ikea_store->tempdir);
+    strcat(ikea_box->tempfile, tempfile_template);
+
+    // make a temporary file 
+    if ((fd = mkstemp(ikea_box->tempfile)) == -1)
+        fatal_perror("Error - mkstemp(): ");
+
+    if ((ikea_box->fh = fdopen(fd, "w")) == NULL)
+        fatal_perror("Error - fdopen(): ");
+
+    if (1 != EVP_DigestInit_ex(&(ikea_box->ctx), EVP_sha1(), NULL))
         fatal_perror("Error - EVP_DigestInit_ex() ");
-
-    //  accumulate namehash
-    hash_list_r(&ctx, name);
-
-    //  finalize namehash
-    if (1 != EVP_DigestFinal_ex(&ctx, digest, &digest_len))
-        fatal_perror("Error - EVP_DigestFinal_ex() ");
-
-    //  convert to string suitable for filename
-    base64(digest, digest_len, ikea_box->namehash, sizeof(ikea_box->namehash));
-
-    //  see if this file already exists in the bucket list
-    bucket = un_b64[ikea_box->namehash[0]];
-    ikea_box_open_p = &(C->namehash_buckets[bucket]);
-    while(*ikea_box_open_p) {
-        if (strcmp((*ikea_box_open_p)->namehash, ikea_box->namehash) == 0)
-            break;
-    }
-    if (*ikea_box_open_p) { // found - use state from bucket_list
-        free (ikea_box);
-        ikea_box = *ikea_box_open_p;
-    }
-    else { // append bucketlist
-        *ikea_box_open_p = ikea_box;
-    }
-
-#if 0        
-    fprintf(stdout, "%s %2x\n", ikea_box->namehash, bucket);
-#endif
-#endif
-
-    if ((ikea_box = calloc(1, sizeof(ikea_box_t))) == NULL)
-        fatal_perror("Error - calloc() ");
 
     // return handle
     return ikea_box;
@@ -224,92 +132,35 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
 
 void ikea_box_append(ikea_box_t* ikea_box, unsigned char *data, size_t data_len)
 {
-    if (ikea_box->fh && ikea_box->mode == IKEA_READ ) { // already open, but for read
-        if (fclose(ikea_box->fh))
-            fatal_perror("Error - fclose() ");
-        ikea_box->fh = NULL;
-    }
-    if (! ikea_box->fh ) { // if not already open
-
-// FIXME
-// compose full pathname: 
-//      <ndir> - un_b64[<namehash[0]>]
-//      <basedir>/<ndir>/namehash.temp
-//      mkdir -p <basedir>/<ndir>
-
- 
-        ikea_box->mode = IKEA_WRITE;  // we're opening for write
-        if ((ikea_box->fh = fopen(ikea_box->namehash,"a+r")) == NULL)
-            fatal_perror("Error - fopen() ");
-        // init content hash accumulation
-        if (1 != EVP_DigestInit_ex(&(ikea_box->ctx), EVP_sha1(), NULL))
-            fatal_perror("Error - EVP_DigestInit_ex() ");
-        //    FIXME  - log file open:   namehash path name
-    }
     if (fwrite(data, data_len, 1, ikea_box->fh) != data_len)
         fatal_perror("Error - fwrite() ");
     if (1 != EVP_DigestUpdate(&(ikea_box->ctx), data, data_len))
         fatal_perror("Error - EVP_DigestUpdate() ");
 }
 
-void ikea_box_flush(ikea_box_t* ikea_box) 
-{
-    if (ikea_box->fh && ikea_box->mode == IKEA_WRITE) {
-        if (fflush(ikea_box->fh))
-            fatal_perror("Error - fflush() ");
-    }
-}
-
-void ikea_box_close(ikea_box_t* ikea_box) 
+char * ikea_box_close(ikea_box_t* ikea_box) 
 {
     unsigned char digest[EVP_MAX_MD_SIZE];  // contenthash digest 
     unsigned int digest_len = sizeof(digest); 
-    char contenthash[(((EVP_MAX_MD_SIZE+1)*8/6)+1)];
+    static char contenthash[(((EVP_MAX_MD_SIZE+1)*8/6)+1)];
         // big enough for base64 encode largest possible digest, plus \0
 
-    if (ikea_box->fh) { // if file was ever opened
-        // close file
-        if (fclose(ikea_box->fh))
-            fatal_perror("Error - fclose() ");
-        ikea_box->fh = NULL;
-        if (ikea_box->mode == IKEA_WRITE) { // if it was opened for write
-            // finalize namehash
-            if (1 != EVP_DigestFinal_ex(&(ikea_box->ctx), digest, &digest_len))
-                fatal_perror("Error - EVP_DigestFinal_ex() ");
-            // convert to string suitable for filename
-            base64(digest, digest_len, contenthash, sizeof(contenthash));
-#if 1        
-            fprintf(stdout, "%s\n", contenthash);
-#endif
+    if (fclose(ikea_box->fh))
+        fatal_perror("Error - fclose() ");
+    ikea_box->fh = NULL;
+    if (1 != EVP_DigestFinal_ex(&(ikea_box->ctx), digest, &digest_len))
+        fatal_perror("Error - EVP_DigestFinal_ex() ");
+    // convert to string suitable for filename
+    base64(digest, digest_len, contenthash, sizeof(contenthash));
 
-// FIXME
-
-// compose full pathnames:
-//        <basedir>/<ndir>/namehash.temp
-//        <basedir>/<ndir>/namehash.name
-//        (<basedir>/ndir>/ already exists)
-//
-//        <basedir>/<cdir>/contenthash.g
-//        mkdir -p <basedir>/<cdir>
-
-
-//  if contenthash_file exists
-//       rm temp/namehash -- i.e. the one we just closed
-//  else
-//       mv temp/namehash cont/contenthash
-//       -- unlink any old namehash
-//       -- if last link to oldcontenthash - remove contenthash (by finding inode)
-//  fi
-//  hardlink /cont/contenthash name/namehash
-//  log contenthas -> namehash mapping
-
-        }
-    }
+//FIXME rename the file
     free(ikea_box);
+
+    return contenthash;
 }
 
 
-//  FIXME
+//  FIXME - avoid globals
 static gzFile gzf;
 
 /**
@@ -427,21 +278,17 @@ static tartype_t gztype = {
 ikea_store_t * ikea_store_open( const char * oldstore )
 {
     ikea_store_t * ikea_store;
-    int i;
-    char *template_init = "/tmp/g_XXXXXX";
+    int fd;
+    char *td;
 
     // allocate a new store
     if ((ikea_store = calloc(1, sizeof(ikea_store_t))) == NULL)
         fatal_perror("Error - calloc() ");
 
-    // copy template including trailing NULL
-    i = 0;
-    while ((ikea_store->template[i] = template_init[i])) {
-        i++;
-    }
+    strcpy(ikea_store->tempdir, tempdir_template);
 
     // make a temporary directory 
-    if ((ikea_store->tempdir = mkdtemp(ikea_store->template)) == NULL)
+    if ((td = mkdtemp(ikea_store->tempdir)) == NULL)
         fatal_perror("Error - mkdtemp(): ");
 
     return ikea_store;
@@ -623,9 +470,13 @@ void ikea_store_close ( ikea_store_t * ikea_store )
 //================================================================
 #endif
 
+#if 0
+// FIXME - remove content of temporary directory
+
     // rmdir the temporary directory
     if (rmdir(ikea_store->tempdir) == -1)
         fatal_perror("Error - rmdir(): ");
+#endif
 
     free(ikea_store);
 }
