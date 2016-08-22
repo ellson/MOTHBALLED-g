@@ -11,7 +11,6 @@
     unsigned char *in;         // next charater to be processed
     char *username;            // set by first call to g_session
     char *hostname;            // ditto
-    char *tempdir;             // temporary dir for container files
     inbuf_t *free_inbuf_list;  // linked list of unused inbufs
     elem_t *free_elem_list;    // linked list of unused list elems
     state_t insi;              // state represented by last character read
@@ -31,7 +30,6 @@
     style_t style;             // spacing style in emitted outputs
                                //   may be ignored if the next character is a token which implicitly separates.)
     int containment;           // depth of containment
-    char template[32];         // place to keep template for mkdtemp()
     long linecount_at_start;   // activity line count when this file was opened.
     elem_t myname;             // header for a list of components of my name (in the same form as subjects)
     ikea_store_t *ikea_store;   // persistency

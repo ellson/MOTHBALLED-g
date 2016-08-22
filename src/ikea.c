@@ -55,6 +55,8 @@ typedef enum {IKEA_READ, IKEA_WRITE} ikea_mode_t;
 struct ikea_store_s {
     ikea_box_t *namehash_buckets[64];
     hash_elem_t *hash_buckets[64];  // 64 buckets of name hashes and FILE*.
+    char *tempdir;             // temporary dir for container files
+    char template[32];         // place to keep template for mkdtemp()
 };
 struct ikea_box_s {
     ikea_box_t *next;
@@ -425,28 +427,22 @@ static tartype_t gztype = {
 ikea_store_t * ikea_store_open( const char * oldstore )
 {
     ikea_store_t * ikea_store;
-
-#if 0
     int i;
     char *template_init = "/tmp/g_XXXXXX";
 
-    // The top name is simply '^' - like "Dad" (or "Mum", or better: "Parent")
-    // Note that adoption is possible as we never use an actual name.
+    // allocate a new store
+    if ((ikea_store = calloc(1, sizeof(ikea_store_t))) == NULL)
+        fatal_perror("Error - calloc() ");
 
     // copy template including trailing NULL
     i = 0;
-    while ((C->template[i] = template_init[i])) {
+    while ((ikea_store->template[i] = template_init[i])) {
         i++;
     }
 
-    // make a temporary directory (probably based on pid - no semantic significance here
-    C->tempdir = mkdtemp(C->template);
-    if (!C->tempdir)
+    // make a temporary directory 
+    if ((ikea_store->tempdir = mkdtemp(ikea_store->template)) == NULL)
         fatal_perror("Error - mkdtemp(): ");
-#endif
-
-    if ((ikea_store = calloc(1, sizeof(ikea_store_t))) == NULL)
-        fatal_perror("Error - calloc() ");
 
     return ikea_store;
 }
@@ -623,12 +619,11 @@ void ikea_store_close ( ikea_store_t * ikea_store )
             C->free_elem_list = elem;
         }
     }
+    free_list(C, &(C->myname));
 //================================================================
+#endif
 
     // rmdir the temporary directory
-    if (rmdir(C->tempdir) == -1)
+    if (rmdir(ikea_store->tempdir) == -1)
         fatal_perror("Error - rmdir(): ");
-
-    free_list(C, &(C->myname));
-#endif
 }
