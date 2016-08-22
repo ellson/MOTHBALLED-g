@@ -74,7 +74,7 @@ CC->out = stdout;
     emit_start_activity(CC);
     C->containment++;            // containment nesting level
     C->stat_containercount++;    // number of containers
-    if ((rc = je_parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+    if ((rc = je_parse_r(CC, &root, CONTENTS, SREP, 0, 0)) != SUCCESS) {
         if (C->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
@@ -151,11 +151,11 @@ je_parse_r(container_context_t * CC, elem_t * root,
         goto done;
     }
     switch (si) {
-    case ACTIVITY:          // Recursion into Contained activity
+    case CONTENTS:          // Recursion into Contained activity
         if (C->bi == LBE) {    // if not top-level of containment
             C->bi = NLL;
-            rc = je_parse(CC->context, &CC->subject);    // recursively process contained ACTIVITY in to its own root
-            C->bi = C->insi;    // The char class that terminates the ACTIVITY
+            rc = je_parse(CC->context, &CC->subject);    // recursively process contained CONTENTS in to its own root
+            C->bi = C->insi;    // The char class that terminates the CONTENTS
             goto done;
         }
         break;

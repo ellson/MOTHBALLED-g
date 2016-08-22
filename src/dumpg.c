@@ -91,7 +91,7 @@ static void printg_r(state_t si, int indent)
         print_next(si, ni);
         print_prop(state_props[ti]);
         fprintf(OUT, "%s\n", styleLBE);
-        if (ni != ACTIVITY) {    // stop recursion
+        if (ni != CONTENTS) {    // stop recursion
             printg_r(ni, indent + 2);
         }
         for (i = indent; i--;)
@@ -105,7 +105,7 @@ static void printg_r(state_t si, int indent)
 // recursively walk the grammar - tests all possible transitions
 void printg(void)
 {
-    printg_r(ACTIVITY, 0);
+    printg_r(CONTENTS, 0);
 }
 
 static void print_chars(state_t si)
@@ -135,7 +135,7 @@ void dumpg(void)
     char so;
     state_t si, ni, ti;
 
-    si = ACTIVITY;
+    si = CONTENTS;
     while (si < sizeof_state_machine) {
         if (state_machine[si]) {    // non-terminal
             ti = si;
