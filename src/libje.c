@@ -58,6 +58,7 @@ void je_finalize( context_t * C )
 {
    emit_finalize(C);
 
+   ikea_store_snapshot(C->ikea_store);
    ikea_store_close(C->ikea_store);
 
    // free context

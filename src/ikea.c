@@ -450,13 +450,13 @@ ikea_store_t * ikea_store_open( const char * oldstore )
 // snapshot of temporary files
 void ikea_store_snapshot ( ikea_store_t * ikea_store )
 {
+    TAR *pTar;
+    char *tarFilename = "g_snapshot.tgz";
+    char *extractTo = ".";
 #if 0
     int i;
     elem_t *elem, *next;
     FILE *fp;
-    TAR *pTar;
-    char *tarFilename = "g_snapshot.tgz";
-    char *extractTo = ".";
 
 //============================= ikea flush all ===============
 
@@ -484,16 +484,16 @@ void ikea_store_snapshot ( ikea_store_t * ikea_store )
         }
 //=======================================================
     }
+#endif
 
     if (tar_open(&pTar, tarFilename, &gztype, O_WRONLY | O_CREAT | O_TRUNC, 0600, TAR_GNU) == -1)
         fatal_perror("Error - tar_open(): ");
-    if (tar_append_tree(pTar, C->tempdir, extractTo) == -1)
+    if (tar_append_tree(pTar, ikea_store->tempdir, extractTo) == -1)
         fatal_perror("Error - tar_append_tree(): ");
     if (tar_append_eof(pTar) == -1)
         fatal_perror("Error - tar_append_eof(): ");
     if (tar_close(pTar) == -1)
         fatal_perror("Error - tar_close(): ");
-#endif
 }
 
 /**
@@ -626,4 +626,6 @@ void ikea_store_close ( ikea_store_t * ikea_store )
     // rmdir the temporary directory
     if (rmdir(ikea_store->tempdir) == -1)
         fatal_perror("Error - rmdir(): ");
+
+    free(ikea_store);
 }
