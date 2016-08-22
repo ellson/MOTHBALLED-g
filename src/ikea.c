@@ -56,6 +56,7 @@ struct ikea_box_s {
 // forward b64 mapping table (6-bits of data to 7-bit ASCII)
 const static char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+_";
 
+#if 0  //unused
 // reverse b64 mappinag (7-bit ASCII to 6-bits of data)
 const static char un_b64[128] = {
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -67,6 +68,7 @@ const static char un_b64[128] = {
      -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
      41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1
 };
+#endif
 
 /**
  * Encode a byte array to a NUL terminated printable base64 string,
@@ -295,7 +297,6 @@ static tartype_t gztype = {
 ikea_store_t * ikea_store_open( const char * oldstore )
 {
     ikea_store_t * ikea_store;
-    int fd;
     char *td;
 
     // allocate a new store
@@ -317,38 +318,6 @@ void ikea_store_snapshot ( ikea_store_t * ikea_store )
     TAR *pTar;
     char *tarFilename = "g_snapshot.tgz";
     char *extractTo = ".";
-#if 0
-    int i;
-    elem_t *elem, *next;
-    FILE *fp;
-
-//============================= ikea flush all ===============
-
-    ikea_box_t *ikea_box;
-
-    for (i=0; i<64; i++) {
-        ikea_box = C->namehash_buckets[i];
-        while(ikea_box) {
-            ikea_box_flush(ikea_box);
-            ikea_box = ikea_box->next;
-        }
-    }
-
-//============================= old flush ================
-    // flush all open files
-    for (i=0; i<64; i++) {
-        next = C->hash_buckets[i];
-        while(next) {
-            elem = next;
-            next = elem->next;
-            if ((fp = ((hash_elem_t*)elem)->out)) {
-                if (fflush(fp))
-                    fatal_perror("Error - fflush(): ");
-            }
-        }
-//=======================================================
-    }
-#endif
 
     if (tar_open(&pTar, tarFilename, &gztype, O_WRONLY | O_CREAT | O_TRUNC, 0600, TAR_GNU) == -1)
         fatal_perror("Error - tar_open(): ");
@@ -434,66 +403,37 @@ void ikea_store_restore ( ikea_store_t * ikea_store )
  */
 void ikea_store_close ( ikea_store_t * ikea_store )
 {
-#if 0
-    FILE *fp;
-    int i;
-    elem_t *elem, *next;
-    char hashname[12], *filename;
+    glob_t pglob;
+    size_t pathc;
+    char glob_pattern[(sizeof(tempdir_template) +4)];
+    int rc;
 
-//========================== ikea close all ==========================
-    ikea_box_t * ikea_box, **ikea_box_p;
-
-    for (i=0; i<64; i++) {
-        ikea_box_p = &(C->namehash_buckets[i]);
-        while (*ikea_box_p) {
-            ikea_box = *ikea_box_p;
-            *ikea_box_p = ikea_box->next;  // get next before freeing this one
-            ikea_box_close(ikea_box);  // frees ikea_box
+    // glob for all the files in the temporay directory
+    strcpy(glob_pattern, ikea_store->tempdir);
+    strcat(glob_pattern, "/*");
+    if ((rc = glob(glob_pattern, 0, glob_err, &pglob))) {
+        switch (rc) {
+        case GLOB_NOSPACE:
+            fprintf(stderr,"Error - glob(): no memory available (GLOB_NOSPACE)");
+            break;
+        case GLOB_ABORTED:
+            fprintf(stderr,"Error - glob(): read error (GLOB_ABORTED)");
+            break;
+        case GLOB_NOMATCH:
+            fprintf(stderr,"Error - glob(): no matches found (GLOB_NOMATCH)");
+            break;
         }
+        exit(EXIT_FAILURE);
     }
-//========================== old close ===========================
-    for (i=0; i<64; i++) {
-        next = C->hash_buckets[i];
-        while(next) {
-            elem = next;
-            next = elem->next;
-            if ((fp = ((hash_elem_t*)elem)->out)) {
-
-                // close all open files
-                if (fclose(fp))
-                    fatal_perror("Error - fclose(): ");
-                // FIXME - perhaps we should keep the base64 filenames around?
- 
-                // reconsitute the filename and unlink
-                je_long_to_base64(hashname, &(((hash_elem_t*)elem)->hash));
-                if (! (filename = malloc(sizeof(C->template) + 1 + sizeof(hashname) + 1)))
-                    fatal_perror("Error - malloc(): ");
-                strcpy(filename, C->tempdir);
-                strcat(filename, "/");
-                strcat(filename, hashname);
-                
-                // rm all output files
-                if (unlink(filename) == -1)
-                    fatal_perror("Error - unlink(): ");
-                free(filename);
-            }
-
-            // return hash_elem to free_elem_list
-            elem->next = C->free_elem_list;
-            C->free_elem_list = elem;
-        }
+    for (pathc=0; pathc < pglob.gl_pathc; pathc++) {
+        if ((unlink(pglob.gl_pathv[pathc])) == -1)
+            fatal_perror("Error - unlink(): ");
     }
-    free_list(C, &(C->myname));
-//================================================================
-#endif
-
-#if 0
-// FIXME - remove content of temporary directory
+    globfree(&pglob);
 
     // rmdir the temporary directory
     if (rmdir(ikea_store->tempdir) == -1)
         fatal_perror("Error - rmdir(): ");
-#endif
 
     free(ikea_store);
 }
