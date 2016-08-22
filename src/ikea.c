@@ -43,13 +43,14 @@ static char *tempfile_template="/g_XXXXXX";
 
 // private structs
 struct ikea_store_s {
-    char tempdir[sizeof(tempdir_template)];     // place to keep tempdir string for mkdtemp() to compose
+    char tempdir[sizeof(tempdir_template)+1];     // place to keep tempdir string for mkdtemp() to compose
 };
 struct ikea_box_s {
     ikea_box_t *next;
+    ikea_store_t *ikea_store;
     FILE *fh;
     EVP_MD_CTX ctx;   // context for content hash accumulation
-    char tempfile[sizeof(tempdir_template)+sizeof(tempfile_template)]; // place to keep template for mkstemp()
+    char tempfile[sizeof(tempdir_template)+sizeof(tempfile_template)+1]; // place to keep template for mkstemp()
 };
 
 // forward b64 mapping table (6-bits of data to 7-bit ASCII)
@@ -109,8 +110,12 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
     ikea_box_t *ikea_box;
     int fd;
 
+    assert(ikea_store);
+
     if ((ikea_box = calloc(1, sizeof(ikea_box_t))) == NULL)
         fatal_perror("Error - calloc() ");
+
+    ikea_box->ikea_store = ikea_store;
 
     // construct temporary file path, in the temporary directory
     strcpy(ikea_box->tempfile, ikea_store->tempdir);
@@ -120,6 +125,7 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
     if ((fd = mkstemp(ikea_box->tempfile)) == -1)
         fatal_perror("Error - mkstemp(): ");
 
+    // convert to FILE*
     if ((ikea_box->fh = fdopen(fd, "w")) == NULL)
         fatal_perror("Error - fdopen(): ");
 
@@ -144,6 +150,8 @@ char * ikea_box_close(ikea_box_t* ikea_box)
     unsigned int digest_len = sizeof(digest); 
     static char contenthash[(((EVP_MAX_MD_SIZE+1)*8/6)+1)];
         // big enough for base64 encode largest possible digest, plus \0
+    char contentpathname[sizeof(tempdir_template) +1 +sizeof(contenthash) +1];
+    ikea_store_t * ikea_store = ikea_box->ikea_store;
 
     if (fclose(ikea_box->fh))
         fatal_perror("Error - fclose() ");
@@ -153,10 +161,19 @@ char * ikea_box_close(ikea_box_t* ikea_box)
     // convert to string suitable for filename
     base64(digest, digest_len, contenthash, sizeof(contenthash));
 
-//FIXME rename the file
+    //compose the new filename
+    strcpy(contentpathname, ikea_store->tempdir);
+    strcat(contentpathname, "/");
+    strcat(contentpathname, contenthash);
+
+    // rename the file
+    if ((rename(ikea_box->tempfile, contentpathname)) == -1)
+        fatal_perror("Error - rename() ");
+
+    // free resources
     free(ikea_box);
 
-    return contenthash;
+    return contenthash;  // return the contenthash string - good until next call
 }
 
 
