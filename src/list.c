@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
 #include <time.h>
 #include <sys/types.h>
 #include <assert.h>
@@ -93,7 +94,7 @@ elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *fra
  * @param hash a long containing a hash value
  * @return a new intialized elem_t
  */
-elem_t *new_hash(context_t * C, unsigned long hash)
+elem_t *new_hash(context_t * C, uint64_t hash)
 {
     hash_elem_t *hash_elem;
 

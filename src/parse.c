@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 #include <time.h>
 #include <sys/types.h>
 #include <errno.h>
@@ -45,7 +46,7 @@ success_t je_parse(context_t * C, elem_t * name)
     elem_t root = { 0 };    // the output parse tree
     hash_elem_t *hash_elem;
     success_t rc;
-    unsigned long hash;
+    uint64_t hash;
     char hashname[12], *filename;
 
     CC->context = C;
@@ -111,7 +112,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
     success_t rc;
     elem_t branch = { 0 };
     context_t *C = CC->context;
-    unsigned long hash;
+    uint64_t hash;
     static unsigned char nullstring[] = { '\0' };
 
     rc = SUCCESS;

@@ -134,6 +134,7 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
     if ((ikea_box->fh = fdopen(fd, "w")) == NULL)
         fatal_perror("Error - fdopen(): ");
 
+    // initialize contenthash accumulation
     if (1 != EVP_DigestInit_ex(&(ikea_box->ctx), EVP_sha1(), NULL))
         fatal_perror("Error - EVP_DigestInit_ex() ");
 
@@ -160,7 +161,6 @@ char * ikea_box_close(ikea_box_t* ikea_box)
 
     if (fclose(ikea_box->fh))
         fatal_perror("Error - fclose() ");
-    ikea_box->fh = NULL;
     if (1 != EVP_DigestFinal_ex(&(ikea_box->ctx), digest, &digest_len))
         fatal_perror("Error - EVP_DigestFinal_ex() ");
     // convert to string suitable for filename
@@ -358,7 +358,7 @@ void ikea_store_restore ( ikea_store_t * ikea_store )
     size_t len, pathc;
     char *tarFilename = "g_snapshot.tgz";
     char *glob_pattern;
-    unsigned long hash;
+    uint64_t hash;
 
     if (tar_open(&pTar, tarFilename, &gztype, O_RDONLY, 0600, TAR_GNU) == -1)
         fatal_perror("Error - tar_open(): ");

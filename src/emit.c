@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 #include <time.h>
 #include <sys/types.h>
 #include <assert.h>
@@ -148,7 +149,7 @@ void je_append_string(context_t *C, char **pos, char *string)
     *pos += len;
 }
 
-void je_append_ulong(context_t *C, char **pos, unsigned long integer)
+void je_append_ulong(context_t *C, char **pos, uint64_t integer)
 {
     int len;
 
@@ -165,7 +166,7 @@ void je_append_ulong(context_t *C, char **pos, unsigned long integer)
 
 // special case formatter for runtime
 void je_append_runtime(context_t *C, char **pos,
-        unsigned long run_sec, unsigned long run_ns)
+        uint64_t run_sec, uint64_t run_ns)
 {
     int len;
 

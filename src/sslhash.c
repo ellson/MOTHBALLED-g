@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <inttypes.h>
 #include <time.h>
 #include <sys/types.h>
 #include <openssl/evp.h>
@@ -43,7 +44,7 @@ static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list)
     }
 }
 
-static void hash_list_r(unsigned long *hash, elem_t *list);
+static void hash_list_r(uint64_t *hash, elem_t *list);
 
 #define MSB_LONG (8*(sizeof(long))-1)
 #define FNV_INIT  0xcbf29ce484222325
@@ -66,7 +67,7 @@ static void hash_list_r(unsigned long *hash, elem_t *list);
  * @param hash place for resulting hash
  * @param list - fraglist or list of fraglist to be hashed
  */
-void je_hash_list(unsigned long *hash, elem_t *list)
+void je_hash_list(uint64_t *hash, elem_t *list)
 {
     assert(sizeof(long) == 8);
     assert(list);
@@ -82,7 +83,7 @@ void je_hash_list(unsigned long *hash, elem_t *list)
  * @param hash place for resulting hash
  * @param list - fraglist or list of fraglist to be hashed
  */
-static void hash_list_r(unsigned long *hash, elem_t *list)
+static void hash_list_r(uint64_t *hash, elem_t *list)
 {
     elem_t *elem;
     unsigned char *cp;
@@ -145,10 +146,10 @@ const static char un_b64[128] = {
  * @param b64string result (caller-provided 12 character buffer for result)
  * @param hash = 64bit integer to be hashed
  */
-void je_long_to_base64(char b64string[], const unsigned long *hash)
+void je_long_to_base64(char b64string[], const uint64_t *hash)
 {
     int i;
-    unsigned long h = *hash;
+    uint64_t h = *hash;
     char *p = b64string;
 
     for (i = 0; i < 11; i++) {
@@ -165,9 +166,9 @@ void je_long_to_base64(char b64string[], const unsigned long *hash)
  * @param hash result
  * @return success/fail
  */
-success_t je_base64_to_long(const char b64string[], unsigned long *hash)
+success_t je_base64_to_long(const char b64string[], uint64_t *hash)
 {
-    unsigned long h = 0;
+    uint64_t h = 0;
     char c;
     size_t len;
 
@@ -199,7 +200,7 @@ success_t je_base64_to_long(const char b64string[], unsigned long *hash)
  * @param hash
  * @return a list element
  */
-hash_elem_t *je_hash_bucket(context_t * C, unsigned long hash)
+hash_elem_t *je_hash_bucket(context_t * C, uint64_t hash)
 {
     elem_t *elem, **next;
 

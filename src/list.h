@@ -30,7 +30,7 @@ struct frag_elem_s {     // castable to elem_s  -- size must match (32bytes)
 
 struct hash_elem_s {     // castable to elem_s  -- size must match (32bytes)
     hash_elem_t *next;
-    unsigned long hash;  // hash value
+    uint64_t hash;  // hash value
     FILE *out;           // file handle, or NULL if not opened yet.
     unsigned int count;  // unused
     char type;           // HASHELEM
@@ -49,7 +49,7 @@ struct hashname_elem_s {     // castable to elem_s  -- size must match (32bytes)
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
-elem_t *new_hash(context_t * C, unsigned long hash);
+elem_t *new_hash(context_t * C, uint64_t hash);
 elem_t *new_hashname(context_t * C, unsigned char *hash, size_t hash_len);
 elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag);
 elem_t *move_list(context_t * C, elem_t * list);
