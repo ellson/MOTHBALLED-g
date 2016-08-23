@@ -62,7 +62,7 @@ static success_t je_more_in(context_t * C)
             } else {
                 C->file = fopen(C->filename, "rb");
                 if (!C->file) {
-                    emit_error(C, CONTENTS, "fopen fail");
+                    emit_error(C, ACTIVITY, "fopen fail");
                 }
             }
             C->linecount_at_start = C->stat_lfcount ? C->stat_lfcount : C->stat_crcount;

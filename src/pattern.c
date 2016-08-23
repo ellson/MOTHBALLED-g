@@ -42,7 +42,7 @@ je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern);
  * For each match, append a (refcounted copy) of the current
  * subject, followed by (refcounted) copies of the ATTRIBUTES
  * and CONTAINER from the pattern.  Finally return for the current
- * subject to be appended with its own ATTRIBUTES and CONTENTS.
+ * subject to be appended with its own ATTRIBUTES and ACTIVITY.
  *
  * @param CC container_context
  * @param root of the output tree

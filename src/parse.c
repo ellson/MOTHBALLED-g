@@ -75,7 +75,7 @@ CC->out = stdout;
     emit_start_activity(CC);
     C->containment++;            // containment nesting level
     C->stat_containercount++;    // number of containers
-    if ((rc = je_parse_r(CC, &root, CONTENTS, SREP, 0, 0)) != SUCCESS) {
+    if ((rc = je_parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
         if (C->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
@@ -152,11 +152,11 @@ je_parse_r(container_context_t * CC, elem_t * root,
         goto done;
     }
     switch (si) {
-    case CONTENTS:          // Recursion into Contained activity
+    case ACTIVITY:          // Recursion into Contained activity
         if (C->bi == LBE) {    // if not top-level of containment
             C->bi = NLL;
-            rc = je_parse(CC->context, &CC->subject);    // recursively process contained CONTENTS in to its own root
-            C->bi = C->insi;    // The char class that terminates the CONTENTS
+            rc = je_parse(CC->context, &CC->subject);    // recursively process contained ACTIVITY in to its own root
+            C->bi = C->insi;    // The char class that terminates the ACTIVITY
             goto done;
         }
         break;
@@ -271,6 +271,7 @@ P(&branch);
             C->verb = si;  // record verb prefix, if not default
             break;
         case HAT:
+            // FIXME - this  is all wrong ... maybe it should just close the current box
             // FIXME - close this container's box
             ikea_store_snapshot(C->ikea_store);
             // FIXME - open appending container for this box.
@@ -300,6 +301,7 @@ P(root)
             emit_subject(CC, &branch);      // emit hook for rewritten subject
             break;
         case ATTRIBUTES:
+        case ACTATTR:
             emit_attributes(CC, &branch);   // emit hook for attributes
             break;
         default:
