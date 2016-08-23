@@ -27,17 +27,20 @@ static char *tempfile_template="/g_XXXXXX";
  * ikea.c   (the container store )
  *
  * Objective:  
- *        A container (ikea_box_t)  holds a single flat graph from a tree of graphs described by a 'g' file.
- *        A store (ikea_store_t) holds the set of containers corresponding to a g file, in a persistent
- *        tar.gz format.
+ *        A container (ikea_box_t)  holds a single flat graph from
+ *        a tree of graphs described by a 'g' file.
  *
- *        This code maintains each container in a separate file, but only once in the case that contents
- *        of multiple containers match.
+ *        A store (ikea_store_t) holds the set of containers correspondings
+ *        to a g file, in a persistent tar.gz format.
  *
- *        The "contents" of each container are hashed, and used as the file name. This allows
- *        duplicates to be stored just once.
+ *        This code maintains each container in a separate file, but
+ *        only once in the case that contents of multiple containers match.
  *
- *        When g is stopped, the container store is archived to a compressed tar file.
+ *        The "contents" of each container are hashed, and used as the
+ *        file name. This allows duplicates to be stored just once.
+ *
+ *        When g is stopped, the container store is archived
+ *        to a compressed tar file.
  *        When g is running, the tree is unpacked into a private tree.
  */
 
@@ -349,7 +352,6 @@ static int glob_err (const char *epath, int eerrno)
  */
 void ikea_store_restore ( ikea_store_t * ikea_store )
 {
-#if 0
     TAR *pTar;
     glob_t pglob;
     int rc;
@@ -360,14 +362,14 @@ void ikea_store_restore ( ikea_store_t * ikea_store )
 
     if (tar_open(&pTar, tarFilename, &gztype, O_RDONLY, 0600, TAR_GNU) == -1)
         fatal_perror("Error - tar_open(): ");
-    if (tar_extract_all(pTar, C->tempdir) == -1)
+    if (tar_extract_all(pTar, ikea_store->tempdir) == -1)
         fatal_perror("Error - tar_extract_all(): ");
     if (tar_close(pTar) == -1)
         fatal_perror("Error - tar_close(): ");
-    len = strlen(C->tempdir);
+    len = strlen(ikea_store->tempdir);
     if ((glob_pattern = malloc(len + 2)) == NULL)
         fatal_perror("Error - malloc(): ");
-    strcpy(glob_pattern, C->tempdir);
+    strcpy(glob_pattern, ikea_store->tempdir);
     strcat(glob_pattern, "/*");
     if ((rc = glob(glob_pattern, 0, glob_err, &pglob))) {
         switch (rc) {
@@ -384,16 +386,17 @@ void ikea_store_restore ( ikea_store_t * ikea_store )
         exit(EXIT_FAILURE);
     }
     for (pathc=0; pathc < pglob.gl_pathc; pathc++) {
+#if 0
         if (je_base64_to_long(pglob.gl_pathv[pathc]+len+1, &hash) == FAIL) {
             fprintf(stderr, "Error - je_base64_to_long():  invalid base64 name \"%s\"\n",
                     pglob.gl_pathv[pathc]+len+1);
             exit(EXIT_FAILURE);
         }
         je_hash_bucket(C, hash); // reinsert into bucket list.
+#endif
     }
     free(glob_pattern);
     globfree(&pglob);
-#endif
 }
 
 /**
