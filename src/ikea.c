@@ -135,7 +135,7 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
         fatal_perror("Error - fdopen(): ");
 
     // initialize contenthash accumulation
-    if (1 != EVP_DigestInit_ex(&(ikea_box->ctx), EVP_sha1(), NULL))
+    if ((EVP_DigestInit_ex(&(ikea_box->ctx), EVP_sha1(), NULL)) != 1)
         fatal_perror("Error - EVP_DigestInit_ex() ");
 
     // return handle
@@ -146,7 +146,7 @@ void ikea_box_append(ikea_box_t* ikea_box, unsigned char *data, size_t data_len)
 {
     if (fwrite(data, data_len, 1, ikea_box->fh) != data_len)
         fatal_perror("Error - fwrite() ");
-    if (1 != EVP_DigestUpdate(&(ikea_box->ctx), data, data_len))
+    if ((EVP_DigestUpdate(&(ikea_box->ctx), data, data_len)) != 1)
         fatal_perror("Error - EVP_DigestUpdate() ");
 }
 
@@ -161,7 +161,7 @@ char * ikea_box_close(ikea_box_t* ikea_box)
 
     if (fclose(ikea_box->fh))
         fatal_perror("Error - fclose() ");
-    if (1 != EVP_DigestFinal_ex(&(ikea_box->ctx), digest, &digest_len))
+    if ((EVP_DigestFinal_ex(&(ikea_box->ctx), digest, &digest_len)) != 1)
         fatal_perror("Error - EVP_DigestFinal_ex() ");
     // convert to string suitable for filename
     base64(digest, digest_len, contenthash, sizeof(contenthash));

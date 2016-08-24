@@ -17,7 +17,7 @@ static void je_gvrender_list(context_t *C, FILE *chan, elem_t * list);
 
 // jump table for available emitters 
 static emit_t *emitters[] =
-    {&g_api, &g1_api, &g2_api, &t_api, &t1_api, &gv_api};
+    {&g_api, &g1_api, &g2_api, &g3_api, &t_api, &t1_api, &gv_api};
 
 static void api_act(container_context_t * CC, elem_t *list)
 {
@@ -45,9 +45,45 @@ static void api_act(container_context_t * CC, elem_t *list)
     }
 }
 
-// this is default emitter used for writing to the file-per-container
+// this is default emitter used when writing to the file-per-container
 // stored in the temp directory
 static emit_t null_api = { "null",
+    /* api_initialize */ NULL,
+    /* api_finalize */ NULL,
+
+    /* api_start_file */ NULL,
+    /* api_end_file */ NULL,
+
+    /* api_start_activity */ NULL,
+    /* api_end_activity */ NULL,
+
+    /* api_start_act */ NULL,
+    /* api_end_act */ NULL,
+
+    /* api_start_subject */ NULL,
+    /* api_end_subject */ NULL,
+
+    /* api_start_state */ NULL,
+    /* api_end_state */ NULL,
+
+    /* api_act */ NULL,
+    /* api_subject */ NULL,
+    /* api_attributes */ NULL,
+
+    /* api_sep */ NULL,
+    /* api_token */ NULL,
+    /* api_string */ NULL,
+
+    /* api_frag */ NULL,
+
+    /* api_error */ NULL
+};
+
+// default emit set here
+emit_t *emit = &null_api;
+
+// this emits in an expanded g form
+emit_t g3_api = { "g3",
     /* api_initialize */ NULL,
     /* api_finalize */ NULL,
 
@@ -78,8 +114,6 @@ static emit_t null_api = { "null",
 
     /* api_error */ je_emit_error
 };
-
-emit_t *emit = &null_api;
 
 success_t je_select_emitter(char *name)
 {

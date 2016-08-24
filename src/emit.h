@@ -103,11 +103,12 @@ struct emit_s {
 
 // emit.c
 extern emit_t *emit;
-extern emit_t g_api, g1_api, g2_api, t_api, t1_api, gv_api;
+extern emit_t g_api, g1_api, g2_api, g3_api, t_api, t1_api, gv_api;
 char je_char_prop(unsigned char prop, char noprop);
 void je_append_token(context_t *C, char **pos, char tok);
 void je_append_string(context_t *C, char **pos, char *string);
 void je_append_ulong(context_t *C, char **pos, uint64_t integer);
 void je_append_runtime(context_t *C, char **pos, uint64_t run_sec, uint64_t run_ns);
 void je_emit_list(context_t * C, FILE * chan, elem_t * subject);
-void je_emit_error(context_t * CC, state_t si, char *message);
+void je_emit_error(context_t * C, state_t si, char *message);
+void je_emit_ikea(container_context_t * CC, elem_t *list);

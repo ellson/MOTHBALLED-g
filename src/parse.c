@@ -11,6 +11,7 @@
 
 #include "libje_private.h"
 
+// forward declarations
 static success_t
 je_parse_r(container_context_t * CC, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc);
@@ -262,6 +263,7 @@ P(&branch);
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 emit_act(CC, root);  // emit hook for rewritten act
+                emit_act_to_ikea(CC, root);  // primary emitter to ikea store
 
                 free_list(C, root);  // that's all folks.  move on to the next ACT.
             }
