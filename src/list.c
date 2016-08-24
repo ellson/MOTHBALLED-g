@@ -281,6 +281,7 @@ void free_list(context_t * C, elem_t * list)
             free_list(C, elem); // recursively free lists that have no references
             break;
         case HASHELEM:
+        case HASHNAMEELEM:
             assert(0);  // should not be here
             break;
         }
@@ -434,6 +435,7 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep)
         }
         break;
     case HASHELEM:
+    case HASHNAMEELEM:
         assert(0);  // should not be here
         break;
     }
