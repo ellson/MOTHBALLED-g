@@ -263,7 +263,7 @@ P(&branch);
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 emit_act(CC, root);  // emit hook for rewritten act
-                emit_act_to_ikea(CC, root);  // primary emitter to ikea store
+                je_emit_ikea(CC, root);  // primary emitter to ikea store
 
                 free_list(C, root);  // that's all folks.  move on to the next ACT.
             }

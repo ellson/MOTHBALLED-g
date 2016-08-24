@@ -144,7 +144,7 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
 
 void ikea_box_append(ikea_box_t* ikea_box, unsigned char *data, size_t data_len)
 {
-    if (fwrite(data, data_len, 1, ikea_box->fh) != data_len)
+    if (fwrite(data, 1, data_len, ikea_box->fh) != data_len)
         fatal_perror("Error - fwrite() ");
     if ((EVP_DigestUpdate(&(ikea_box->ctx), data, data_len)) != 1)
         fatal_perror("Error - EVP_DigestUpdate() ");
