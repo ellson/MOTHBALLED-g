@@ -303,7 +303,6 @@ P(root)
             emit_subject(CC, &branch);      // emit hook for rewritten subject
             break;
         case ATTRIBUTES:
-        case ACTATTR:
             emit_attributes(CC, &branch);   // emit hook for attributes
             break;
         default:
