@@ -42,6 +42,7 @@ libje_C_la_SOURCES = \
 	dumpg.c \
 	list.c \
 	hash.c \
+	sslhash.c \
 	sameas.c \
 	pattern.c \
 	emit_ikea.c \
