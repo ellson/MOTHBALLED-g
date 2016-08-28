@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include "libje_private.h"
+#include "sslhash.h"
 
 static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list);
 
