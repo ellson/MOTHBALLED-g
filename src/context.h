@@ -1,6 +1,6 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
- struct context_s {            // input_context
+struct context_s {             // input_context
     char *progname;            // name of program
     int *pargc;                // remaining filenames from command line
     char **argv;
@@ -32,7 +32,7 @@
     int containment;           // depth of containment
     long linecount_at_start;   // activity line count when this file was opened.
     elem_t myname;             // header for a list of components of my name (in the same form as subjects)
-    ikea_store_t *ikea_store;   // persistency
+    ikea_store_t *ikea_store;  // persistency
     ikea_box_t *namehash_buckets[64];
     elem_t *hash_buckets[64];  // 64 buckets of name hashes and FILE*.
     long stat_filecount;       // various stats

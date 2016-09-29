@@ -112,6 +112,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
     state_t ti, ni;
     success_t rc;
     elem_t branch = { 0 };
+    elem_t *elem;
     context_t *C = CC->context;
     uint64_t hash;
     static unsigned char nullstring[] = { '\0' };
@@ -262,8 +263,13 @@ P(&branch);
 
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
-                emit_act(CC, root);  // emit hook for rewritten act
-                je_emit_ikea(CC, root);  // primary emitter to ikea store
+                elem = root->first;
+                while (elem) {
+                    emit_act(CC, elem);  // emit hook for rewritten act
+                    je_emit_ikea(CC, elem);  // primary emitter to ikea store
+
+                    elem = elem->next;
+                }
 
                 free_list(C, root);  // that's all folks.  move on to the next ACT.
             }

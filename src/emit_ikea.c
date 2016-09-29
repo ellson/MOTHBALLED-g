@@ -11,23 +11,15 @@
 #include "libje_private.h"
 
 // forward declaration
-static void ikea_list(container_context_t *CC, elem_t * list);
+static void ikea_list_r(container_context_t *CC, elem_t * list);
 static void ikea_print_frags(ikea_box_t * ikea_box, state_t liststate, elem_t * elem, char *sep);
 
-void je_emit_ikea(container_context_t * CC, elem_t *list)
+void je_emit_ikea(container_context_t * CC, elem_t *elem)
 {
-    elem_t *elem;
-
-    // after dispatch() there can be mutiple ACTs in the list
-    elem = list->first;
-    while (elem) {
-        CC->context->sep = 0; // suppress space before (because preceded by BOF or NL)
-        // emit in compact g format
-        ikea_list(CC, elem);
-        ikea_box_append(CC->ikea_box, "\n", 1); // NL after each act
-
-        elem = elem->next;
-    }
+    CC->context->sep = 0; // suppress space before (because preceded by BOF or NL)
+    // emit in compact g format
+    ikea_list_r(CC, elem);
+    ikea_box_append(CC->ikea_box, "\n", 1); // NL after each act
 }
 
 static void token(container_context_t *CC, char *tok)
@@ -36,7 +28,8 @@ static void token(container_context_t *CC, char *tok)
     CC->context->sep = 0;
 }
 
-static void ikea_list(container_context_t *CC, elem_t * list)
+// recursive function
+static void ikea_list_r(container_context_t *CC, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;
@@ -91,7 +84,7 @@ static void ikea_list(container_context_t *CC, elem_t * list)
                     break;
                 }
             }
-            ikea_list(CC, elem);    // recurse
+            ikea_list_r(CC, elem);    // recurse
             elem = elem->next;
         }
         switch (liststate) {

@@ -19,30 +19,23 @@ static void je_gvrender_list(context_t *C, FILE *chan, elem_t * list);
 static emit_t *emitters[] =
     {&g_api, &g1_api, &g2_api, &g3_api, &t_api, &t1_api, &gv_api};
 
-static void api_act(container_context_t * CC, elem_t *list)
+static void api_act(container_context_t * CC, elem_t *elem)
 {
     context_t *C = CC->context;
-    elem_t *elem;
 
     if (!CC->out)
         return;
 
-    // after dispatch() there can be mutiple ACTs in the list
-    elem = list->first;
-    while (elem) {
 #if 0
-        // render through libcgraph to svg
-        je_gvrender_list(CC->context, stdout, elem);
-        putc('\n', stdout);   // NL after
+    // render through libcgraph to svg
+    je_gvrender_list(CC->context, stdout, elem);
+    putc('\n', stdout);   // NL after
 #endif
 
-        C->sep = 0;         // suppress space before (because preceded by BOF or NL)
-        // emit in g format
-        je_emit_list(CC->context, CC->out, elem);
-        putc('\n', CC->out);   // NL after
-
-        elem = elem->next;
-    }
+    C->sep = 0;         // suppress space before (because preceded by BOF or NL)
+    // emit in g format
+    je_emit_list(CC->context, CC->out, elem);
+    putc('\n', CC->out);   // NL after
 }
 
 // this is default emitter used when writing to the file-per-container
