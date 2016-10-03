@@ -72,8 +72,6 @@ emit_t g_api = { "g",
     /* api_string */ NULL,
 
     /* api_frag */ NULL,
-
-    /* api_error */ je_emit_error
 };
 
 static void api1_end_activity(container_context_t * CC)
@@ -131,8 +129,6 @@ emit_t g1_api = { "g1",
     /* api_string */ api1_string,
 
     /* api_frag */ NULL,
-
-    /* api_error */ je_emit_error
 };
 
 static void api2_end_activity(container_context_t * CC)
@@ -175,6 +171,4 @@ emit_t g2_api = { "g2",
     /* api_string */ api1_string,
 
     /* api_frag */ NULL,
-
-    /* api_error */ je_emit_error
 };

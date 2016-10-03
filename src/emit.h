@@ -34,7 +34,6 @@ struct emit_s {
     void (*token) (context_t * C, char token);
     void (*string) (context_t * C, elem_t * branch);
     void (*frag) (context_t * C, unsigned char len, unsigned char *frag);
-    void (*error) (context_t * C, state_t si, char *message);
 };
 
 #define emit_initialize(C) \
@@ -81,8 +80,6 @@ struct emit_s {
     if (emit->string) {emit->string(C, branch);}
 #define emit_frag(C, len, frag) \
     if (emit->frag) {emit->frag(C, len, frag);}
-#define emit_error(C, si, message) \
-    if (emit->error) {emit->error(C, si, message);}
 
 // if we're not providing the function in any api,
 //    then we can avoid the runtime cost of testing for it
@@ -110,5 +107,4 @@ void je_append_string(context_t *C, char **pos, char *string);
 void je_append_ulong(context_t *C, char **pos, uint64_t integer);
 void je_append_runtime(context_t *C, char **pos, uint64_t run_sec, uint64_t run_ns);
 void je_emit_list(context_t * C, FILE * chan, elem_t * subject);
-void je_emit_error(context_t * C, state_t si, char *message);
 void je_emit_ikea(container_context_t * CC, elem_t *list);

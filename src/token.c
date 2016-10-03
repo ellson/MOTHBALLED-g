@@ -1,13 +1,43 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 #include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
 #include <time.h>
 #include <sys/types.h>
 #include <assert.h>
 
+
 #include "libje_private.h"
+
+
+/**
+ * report an error during parsing with context info.
+ *
+ * @param IN context
+ * @param si parser state
+ * @param si error message
+ */
+void je_parse_error(input_t * IN, state_t si, char *message)
+{
+    unsigned char *p, c;
+
+    fprintf(stderr, "Error: %s ", message);
+    print_len_frag(stderr, NAMEP(si));
+    fprintf(stderr, "\n      in \"%s\" line: %ld just before: \"",
+        IN->filename, (IN->stat_lfcount ?  IN->stat_lfcount : IN->stat_crcount) - IN->linecount_at_start + 1);
+    p = IN->in;
+    while ((c = *p++)) {
+        if (c == '\n' || c == '\r') {
+            break;
+        }
+        putc(c, stderr);
+    }
+    fprintf(stderr, "\"\n");
+    exit(EXIT_FAILURE);
+}
 
 /**
  * fill buffers from input files
@@ -44,7 +74,7 @@ static success_t je_more_in(context_t * C)
             //   be more user-friendly to check that we are not in a quote string
             //   whenever EOF occurs.
             if (IN->in_quote) {
-                emit_error(C, NLL, "EOF in the middle of a quote string");
+                je_parse_error(IN, NLL, "EOF in the middle of a quote string");
             }
 // FIXME don't close stdin
 // FIXME - stall for more more input   (inotify events ?)
@@ -64,7 +94,7 @@ static success_t je_more_in(context_t * C)
             } else {
                 IN->file = fopen(IN->filename, "rb");
                 if (!IN->file) {
-                    emit_error(C, ACTIVITY, "fopen fail");
+                    je_parse_error(IN, ACTIVITY, "fopen fail");
                 }
             }
             IN->linecount_at_start = IN->stat_lfcount ? IN->stat_lfcount : IN->stat_crcount;

@@ -49,6 +49,7 @@ success_t je_parse(context_t * C, elem_t * name)
     success_t rc;
     uint64_t hash;
     char hashname[12], *filename;
+    input_t * IN = &(C->IN);
 
     CC->context = C;
     CC->ikea_box = ikea_box_open(C->ikea_store, NULL);
@@ -77,10 +78,10 @@ CC->out = stdout;
     C->containment++;            // containment nesting level
     C->stat_containercount++;    // number of containers
     if ((rc = je_parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
-        if (C->IN.insi == NLL) {    // EOF is OK
+        if (IN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
-            emit_error(C, C->IN.state, "Parse error. Last good state was:");
+            je_parse_error(IN, IN->state, "Parse error. Last good state was:");
         }
     }
     C->containment--;

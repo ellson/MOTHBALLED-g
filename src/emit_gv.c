@@ -58,6 +58,4 @@ emit_t gv_api = { "gv",
     /* api_string */ NULL,
 
     /* api_frag */ NULL,
-
-    /* api_error */ je_emit_error
 };

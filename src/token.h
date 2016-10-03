@@ -27,6 +27,7 @@ struct input_s {
     long stat_filecount;       // various stats
 };
 
+void je_parse_error(input_t * IN, state_t si, char *message);
 success_t je_parse_whitespace(context_t * C);
 success_t je_parse_string(context_t * C, elem_t * fraglist);
 success_t je_parse_vstring(context_t * C, elem_t * fraglist);

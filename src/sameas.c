@@ -61,6 +61,7 @@ static void je_sameas_r(container_context_t * CC, elem_t * subject, elem_t ** ne
     elem_t object = { 0 };
     state_t si;
     context_t * C = CC->context;
+    input_t * IN = &(C->IN);
 
     assert(subject->type == (char)LISTELEM);
 
@@ -84,9 +85,9 @@ if (*nextold) {
             } else {
                 if (si != CC->subject_type) {
                     if (si == NODE) {
-                        emit_error(CC->context, si, "EDGE subject includes");
+                        je_parse_error(IN, si, "EDGE subject includes");
                     } else {
-                        emit_error(CC->context, si, "NODE subject includes");
+                        je_parse_error(IN, si, "NODE subject includes");
                     }
                 }
             }
@@ -124,7 +125,7 @@ if (*nextold) {
                 *nextold = (*nextold)->next;
                 C->stat_sameas++;
             } else {
-                emit_error(CC->context, si, "No corresponding object found for same-as substitution");
+                je_parse_error(IN, si, "No corresponding object found for same-as substitution");
             }
             break;
         default:

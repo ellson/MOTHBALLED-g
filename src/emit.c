@@ -68,8 +68,6 @@ static emit_t null_api = { "null",
     /* api_string */ NULL,
 
     /* api_frag */ NULL,
-
-    /* api_error */ NULL
 };
 
 // default emit set here
@@ -104,8 +102,6 @@ emit_t g3_api = { "g3",
     /* api_string */ NULL,
 
     /* api_frag */ NULL,
-
-    /* api_error */ je_emit_error
 };
 
 success_t je_select_emitter(char *name)
@@ -393,23 +389,4 @@ void je_emit_list(context_t *C, FILE *chan, elem_t * list)
         assert(0);  // should not be here
         break;
     }
-}
-
-void je_emit_error(context_t * C, state_t si, char *message)
-{
-    unsigned char *p, c;
-
-    fprintf(stderr, "Error: %s ", message);
-    print_len_frag(stderr, NAMEP(si));
-    fprintf(stderr, "\n      in \"%s\" line: %ld just before: \"",
-        C->IN.filename, (C->IN.stat_lfcount ?  C->IN.stat_lfcount : C->IN.stat_crcount) - C->IN.linecount_at_start + 1);
-    p = C->IN.in;
-    while ((c = *p++)) {
-        if (c == '\n' || c == '\r') {
-            break;
-        }
-        putc(c, stderr);
-    }
-    fprintf(stderr, "\"\n");
-    exit(EXIT_FAILURE);
 }
