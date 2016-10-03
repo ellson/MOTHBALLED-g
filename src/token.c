@@ -17,69 +17,70 @@
  */
 static success_t je_more_in(context_t * C)
 {
+    input_t *IN = &(C->IN);
     int size;
 
-    if (C->inbuf) {        // if there is an existing active-inbuf
-        if (C->in == &(C->inbuf->end_of_buf)) {    // if it is full
-            if ((--(C->inbuf->refs)) == 0) {    // dereference active-inbuf
-                free_inbuf(C, C->inbuf);    // free if no refs left (unlikely)
+    if (IN->inbuf) {        // if there is an existing active-inbuf
+        if (IN->in == &(IN->inbuf->end_of_buf)) {    // if it is full
+            if ((--(IN->inbuf->refs)) == 0) {    // dereference active-inbuf
+                free_inbuf(IN, IN->inbuf);    // free if no refs left (unlikely)
             }
-            new_inbuf(C);    // get new
-            assert(C->inbuf);
-            C->inbuf->refs = 1;    // add active-inbuf reference
-            C->in = C->inbuf->buf;    // point to beginning of buffer
+            IN->inbuf = new_inbuf(IN);    // get new
+            assert(IN->inbuf);
+            IN->inbuf->refs = 1;    // add active-inbuf reference
+            IN->in = IN->inbuf->buf;    // point to beginning of buffer
         }
     } else {        // no inbuf, implies just starting
-        new_inbuf(C);    // get new
-        assert(C->inbuf);
-        C->inbuf->refs = 1;    // add active-inbuf reference
-        C->in = C->inbuf->buf;
+        IN->inbuf = new_inbuf(IN);    // get new
+        assert(IN->inbuf);
+        IN->inbuf->refs = 1;    // add active-inbuf reference
+        IN->in = IN->inbuf->buf;
     }
 
-    if (C->file) {        // if there is an existing active input file
-        if (C->insi == NLL && feof(C->file)) {    //    if it is at EOF
+    if (IN->file) {        // if there is an existing active input file
+        if (IN->insi == NLL && feof(IN->file)) {    //    if it is at EOF
             //   Although the grammar doesn't care, I decided that it would
             //   be more user-friendly to check that we are not in a quote string
             //   whenever EOF occurs.
-            if (C->in_quote) {
+            if (IN->in_quote) {
                 emit_error(C, NLL, "EOF in the middle of a quote string");
             }
 // FIXME don't close stdin
 // FIXME - stall for more more input   (inotify events ?)
-            fclose(C->file);    // then close it and indicate no active input file
-            C->file = NULL;
+            fclose(IN->file);    // then close it and indicate no active input file
+            IN->file = NULL;
             emit_end_file(C);
         }
     }
-    if (!C->file) {        // if there is no active input file
-        if (*(C->pargc) > 0) {    //   then try to open the next file
-            C->filename = C->argv[0];
-            (*(C->pargc))--;
-            C->argv = &(C->argv[1]);
-            if (strcmp(C->filename, "-") == 0) {
-                C->file = stdin;
-                *(C->pargc) = 0;    // No files after stdin
+    if (!IN->file) {        // if there is no active input file
+        if (*(IN->pargc) > 0) {    //   then try to open the next file
+            IN->filename = IN->argv[0];
+            (*(IN->pargc))--;
+            IN->argv = &(IN->argv[1]);
+            if (strcmp(IN->filename, "-") == 0) {
+                IN->file = stdin;
+                *(IN->pargc) = 0;    // No files after stdin
             } else {
-                C->file = fopen(C->filename, "rb");
-                if (!C->file) {
+                IN->file = fopen(IN->filename, "rb");
+                if (!IN->file) {
                     emit_error(C, ACTIVITY, "fopen fail");
                 }
             }
-            C->linecount_at_start = C->stat_lfcount ? C->stat_lfcount : C->stat_crcount;
-            C->stat_filecount++;
+            IN->linecount_at_start = IN->stat_lfcount ? IN->stat_lfcount : IN->stat_crcount;
+            IN->stat_filecount++;
             emit_start_file(C);
         } else {
             return FAIL;    // no more input available
         }
-        assert(C->file);
+        assert(IN->file);
     }
     // slurp in data from file stream
-    size = fread(C->in, 1, &(C->inbuf->end_of_buf) - C->in, C->file);
-    C->in[size] = '\0';    // ensure terminated (we have an extras
+    size = fread(IN->in, 1, &(IN->inbuf->end_of_buf) - IN->in, IN->file);
+    IN->in[size] = '\0';    // ensure terminated (we have an extras
     //    character in inbuf_t for this )
-    C->insi = char2state[*C->in];
+    IN->insi = char2state[*IN->in];
 
-    C->stat_inchars += size;
+    IN->stat_inchars += size;
     return SUCCESS;
 }
 
@@ -88,17 +89,17 @@ static success_t je_more_in(context_t * C)
  *
  * @param C context
  */
-static void je_parse_comment_fragment(context_t * C)
+static void je_parse_comment_fragment(input_t * IN)
 {
     unsigned char *in, c;
 
-    in = C->in;
+    in = IN->in;
     c = *in;
     while (c != '\0' && c != '\n' && c != '\r') {
         c = *++in;
     }
-    C->insi = char2state[c];
-    C->in = in;
+    IN->insi = char2state[c];
+    IN->in = in;
 }
 
 /**
@@ -109,15 +110,16 @@ static void je_parse_comment_fragment(context_t * C)
  */
 static success_t je_parse_comment(context_t * C)
 {
+    input_t *IN = &(C->IN);
     success_t rc;
 
     rc = SUCCESS;
-    je_parse_comment_fragment(C);    // eat comment
-    while (C->insi == NLL) {    // end_of_buffer, or EOF, during comment
+    je_parse_comment_fragment(IN);    // eat comment
+    while (IN->insi == NLL) {    // end_of_buffer, or EOF, during comment
         if ((rc = je_more_in(C) == FAIL)) {
             break;    // EOF
         }
-        je_parse_comment_fragment(C);    // eat comment
+        je_parse_comment_fragment(IN);    // eat comment
     }
     return rc;
 }
@@ -125,28 +127,28 @@ static success_t je_parse_comment(context_t * C)
 /**
  * consume whitespace fagments
  *
- * @ C context
+ * @ IN context
  */
-static void je_parse_whitespace_fragment(context_t * C)
+static void je_parse_whitespace_fragment(input_t * IN)
 {
     unsigned char *in, c;
     state_t insi;
 
-    if ((in = C->in)) {
+    if ((in = IN->in)) {
         c = *in;
-        insi = C->insi;
+        insi = IN->insi;
         while (insi == WS) {    // eat all leading whitespace
             if (c == '\n') {
-                C->stat_lfcount++;
+                IN->stat_lfcount++;
             }
             if (c == '\r') {
-                C->stat_crcount++;
+                IN->stat_crcount++;
             }
             c = *++in;
             insi = char2state[c];
         }
-        C->insi = insi;
-        C->in = in;
+        IN->insi = insi;
+        IN->in = in;
     }
 }
 
@@ -158,15 +160,16 @@ static void je_parse_whitespace_fragment(context_t * C)
  */
 static success_t je_parse_non_comment(context_t * C)
 {
+    input_t *IN = &(C->IN);
     success_t rc;
 
     rc = SUCCESS;
-    je_parse_whitespace_fragment(C);    // eat whitespace
-    while (C->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
+    je_parse_whitespace_fragment(IN);    // eat whitespace
+    while (IN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((rc = je_more_in(C) == FAIL)) {
             break;    // EOF
         }
-        je_parse_whitespace_fragment(C);    // eat all remaining leading whitespace
+        je_parse_whitespace_fragment(IN);    // eat all remaining leading whitespace
     }
     return rc;
 }
@@ -179,6 +182,7 @@ static success_t je_parse_non_comment(context_t * C)
  */
 success_t je_parse_whitespace(context_t * C)
 {
+    input_t *IN = &(C->IN);
     success_t rc;
 
     rc = SUCCESS;
@@ -186,10 +190,10 @@ success_t je_parse_whitespace(context_t * C)
         if ((rc = je_parse_non_comment(C)) == FAIL) {
             break;
         }
-        if (C->insi != OCT) {
+        if (IN->insi != OCT) {
             break;
         }
-        while (C->insi == OCT) {
+        while (IN->insi == OCT) {
             if ((rc = je_parse_comment(C)) == FAIL) {
                 break;
             }
@@ -207,6 +211,7 @@ success_t je_parse_whitespace(context_t * C)
  */
 static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
 {
+    input_t *IN = &(C->IN);
     unsigned char *frag;
     state_t insi;
     int slen, len;
@@ -214,64 +219,64 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
 
     slen = 0;
     while (1) {
-        if (C->in_quote) {
-            if (C->in_quote == 2) {    // character after BSL
-                C->in_quote = 1;
-                frag = C->in;
-                C->insi = char2state[*++(C->in)];
+        if (IN->in_quote) {
+            if (IN->in_quote == 2) {    // character after BSL
+                IN->in_quote = 1;
+                frag = IN->in;
+                IN->insi = char2state[*++(IN->in)];
                 elem = new_frag(C, BSL, 1, frag);
                 slen++;
-            } else if (C->insi == DQT) {
-                C->in_quote = 0;
-                C->insi = char2state[*++(C->in)];
+            } else if (IN->insi == DQT) {
+                IN->in_quote = 0;
+                IN->insi = char2state[*++(IN->in)];
                 continue;
-            } else if (C->insi == BSL) {
-                C->in_quote = 2;
-                C->insi = char2state[*++(C->in)];
+            } else if (IN->insi == BSL) {
+                IN->in_quote = 2;
+                IN->insi = char2state[*++(IN->in)];
                 continue;
-            } else if (C->insi == NLL) {
+            } else if (IN->insi == NLL) {
                 break;
             } else {
-                frag = C->in;
+                frag = IN->in;
                 len = 1;
                 while (1) {
-                    insi = char2state[*++(C->in)];
+                    insi = char2state[*++(IN->in)];
                     if (insi == DQT || insi == BSL || insi == NLL) {
                         break;
                     }
                     len++;
                 }
-                C->insi = insi;
+                IN->insi = insi;
                 elem = new_frag(C, DQT, len, frag);
                 slen += len;
             }
-        } else if (C->insi == ABC) {
-            frag = C->in;
+        } else if (IN->insi == ABC) {
+            frag = IN->in;
             len = 1;
-            while ((insi = char2state[*++(C->in)]) == ABC) {
+            while ((insi = char2state[*++(IN->in)]) == ABC) {
                 len++;
             }
-            C->insi = insi;
+            IN->insi = insi;
             elem = new_frag(C, ABC, len, frag);
             slen += len;
-        } else if (C->insi == AST) {
-            C->has_ast = 1;
-            frag = C->in;
-            while ((C->insi = char2state[*++(C->in)]) == AST) {
+        } else if (IN->insi == AST) {
+            IN->has_ast = 1;
+            frag = IN->in;
+            while ((IN->insi = char2state[*++(IN->in)]) == AST) {
             }    // extra '*' ignored
             elem = new_frag(C, AST, 1, frag);
             slen++;
-        } else if (C->insi == DQT) {
-            C->in_quote = 1;
-            C->has_quote = 1;
-            C->insi = char2state[*++(C->in)];
+        } else if (IN->insi == DQT) {
+            IN->in_quote = 1;
+            IN->has_quote = 1;
+            IN->insi = char2state[*++(IN->in)];
             continue;
         } else {
             break;
         }
         append_list(fraglist, elem);
         emit_frag(C, len, frag);
-        C->stat_fragcount++;
+        IN->stat_fragcount++;
     }
     return slen;
 }
@@ -286,11 +291,12 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
  
 success_t je_parse_string(context_t * C, elem_t * fraglist)
 {
+    input_t *IN = &(C->IN);
     int len, slen;
 
-    C->has_quote = 0;
+    IN->has_quote = 0;
     slen = je_parse_string_fragment(C, fraglist);    // leading string
-    while (C->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
+    while (IN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((je_more_in(C) == FAIL)) {
             break;    // EOF
         }
@@ -300,8 +306,8 @@ success_t je_parse_string(context_t * C, elem_t * fraglist)
         slen += len;
     }
     if (slen > 0) {
-        C->stat_stringcount++;
-        if (C->has_quote) {
+        IN->stat_stringcount++;
+        if (IN->has_quote) {
             fraglist->state = DQT;
         } else {
             fraglist->state = ABC;
@@ -323,6 +329,7 @@ success_t je_parse_string(context_t * C, elem_t * fraglist)
  */
 static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
 {
+    input_t *IN = &(C->IN);
     unsigned char *frag;
     state_t insi;
     int slen, len;
@@ -330,77 +337,77 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
 
     slen = 0;
     while (1) {
-        if (C->in_quote) {
-            if (C->in_quote == 2) {    // character after BSL
-                C->in_quote = 1;
-                frag = C->in;
-                C->insi = char2state[*++(C->in)];
+        if (IN->in_quote) {
+            if (IN->in_quote == 2) {    // character after BSL
+                IN->in_quote = 1;
+                frag = IN->in;
+                IN->insi = char2state[*++(IN->in)];
                 elem = new_frag(C, BSL, 1, frag);
                 slen++;
-            } else if (C->insi == DQT) {
-                C->in_quote = 0;
-                C->insi = char2state[*++(C->in)];
+            } else if (IN->insi == DQT) {
+                IN->in_quote = 0;
+                IN->insi = char2state[*++(IN->in)];
                 continue;
-            } else if (C->insi == BSL) {
-                C->in_quote = 2;
-                C->insi = char2state[*++(C->in)];
+            } else if (IN->insi == BSL) {
+                IN->in_quote = 2;
+                IN->insi = char2state[*++(IN->in)];
                 continue;
-            } else if (C->insi == NLL) {
+            } else if (IN->insi == NLL) {
                 break;
             } else {
-                frag = C->in;
+                frag = IN->in;
                 len = 1;
                 while (1) {
-                    insi = char2state[*++(C->in)];
+                    insi = char2state[*++(IN->in)];
                     if (insi == DQT || insi == BSL || insi == NLL) {
                         break;
                     }
                     len++;
                 }
-                C->insi = insi;
+                IN->insi = insi;
                 elem = new_frag(C, DQT, len, frag);
                 slen += len;
             }
         // In the unquoted portions of VSTRING we allow '/' '\' ':' '?'
         // in addition to the ABC class
         // this allows URIs as values without quoting
-        } else if (C->insi == ABC ||
-                   C->insi == FSL ||
-                   C->insi == BSL ||
-                   C->insi == CLN ||
-                   C->insi == QRY) {
-            frag = C->in;
+        } else if (IN->insi == ABC ||
+                   IN->insi == FSL ||
+                   IN->insi == BSL ||
+                   IN->insi == CLN ||
+                   IN->insi == QRY) {
+            frag = IN->in;
             len = 1;
-            while ((insi = char2state[*++(C->in)]) == ABC ||
+            while ((insi = char2state[*++(IN->in)]) == ABC ||
                     insi == FSL ||
                     insi == BSL ||
                     insi == CLN ||
                     insi == QRY) {
                 len++;
             }
-            C->insi = insi;
+            IN->insi = insi;
             elem = new_frag(C, ABC, len, frag);
             slen += len;
 
         // but '*' are still special  (maybe used ias wild card in queries)
-        } else if (C->insi == AST) {
-            C->has_ast = 1;
-            frag = C->in;
-            while ((C->insi = char2state[*++(C->in)]) == AST) {
+        } else if (IN->insi == AST) {
+            IN->has_ast = 1;
+            frag = IN->in;
+            while ((IN->insi = char2state[*++(IN->in)]) == AST) {
             }    // extra '*' ignored
             elem = new_frag(C, AST, 1, frag);
             slen++;
-        } else if (C->insi == DQT) {
-            C->in_quote = 1;
-            C->has_quote = 1;
-            C->insi = char2state[*++(C->in)];
+        } else if (IN->insi == DQT) {
+            IN->in_quote = 1;
+            IN->has_quote = 1;
+            IN->insi = char2state[*++(IN->in)];
             continue;
         } else {
             break;
         }
         append_list(fraglist, elem);
         emit_frag(C, len, frag);
-        C->stat_fragcount++;
+        IN->stat_fragcount++;
     }
     return slen;
 }
@@ -414,11 +421,12 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
  */
 success_t je_parse_vstring(context_t * C, elem_t * fraglist)
 {
+    input_t *IN = &(C->IN);
     int len, slen;
 
-    C->has_quote = 0;
+    IN->has_quote = 0;
     slen = je_parse_vstring_fragment(C, fraglist);    // leading string
-    while (C->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
+    while (IN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((je_more_in(C) == FAIL)) {
             break;    // EOF
         }
@@ -428,8 +436,8 @@ success_t je_parse_vstring(context_t * C, elem_t * fraglist)
         slen += len;
     }
     if (slen > 0) {
-        C->stat_stringcount++;     //FIXME ?
-        if (C->has_quote) {
+        IN->stat_stringcount++;     //FIXME ?
+        if (IN->has_quote) {
             fraglist->state = DQT;
         } else {
             fraglist->state = ABC;
@@ -443,15 +451,16 @@ success_t je_parse_vstring(context_t * C, elem_t * fraglist)
 /**
  * process single character tokens
  *
- * @param C context
+ * @param IN context
  * @return success/fail
  */
 success_t je_parse_token(context_t * C)
 {
+    input_t *IN = &(C->IN);
     char token;
 
-    token = state_token[C->insi];
+    token = state_token[IN->insi];
     emit_token(C, token);
-    C->insi = char2state[*++(C->in)];
+    IN->insi = char2state[*++(IN->in)];
     return SUCCESS;
 }

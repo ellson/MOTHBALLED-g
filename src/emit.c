@@ -402,10 +402,8 @@ void je_emit_error(context_t * C, state_t si, char *message)
     fprintf(stderr, "Error: %s ", message);
     print_len_frag(stderr, NAMEP(si));
     fprintf(stderr, "\n      in \"%s\" line: %ld just before: \"",
-        C->filename, (C->stat_lfcount ?
-            C->stat_lfcount :
-            C->stat_crcount) - C->linecount_at_start + 1);
-    p = C->in;
+        C->IN.filename, (C->IN.stat_lfcount ?  C->IN.stat_lfcount : C->IN.stat_crcount) - C->IN.linecount_at_start + 1);
+    p = C->IN.in;
     while ((c = *p++)) {
         if (c == '\n' || c == '\r') {
             break;

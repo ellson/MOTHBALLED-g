@@ -77,10 +77,10 @@ CC->out = stdout;
     C->containment++;            // containment nesting level
     C->stat_containercount++;    // number of containers
     if ((rc = je_parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
-        if (C->insi == NLL) {    // EOF is OK
+        if (C->IN.insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
-            emit_error(C, C->state, "Parse error. Last good state was:");
+            emit_error(C, C->IN.state, "Parse error. Last good state was:");
         }
     }
     C->containment--;
@@ -124,22 +124,22 @@ je_parse_r(container_context_t * CC, elem_t * root,
     nest++;
     assert(nest >= 0);    // catch overflows
 
-    if (!C->inbuf) {    // state_machine just started
-        C->bi = WS;        // pretend preceeded by WS to satisfy toplevel SREP or REP
+    if (!C->IN.inbuf) {    // state_machine just started
+        C->IN.bi = WS;        // pretend preceeded by WS to satisfy toplevel SREP or REP
                         // (Note, first REP of a sequence *can*
                         // be preceeded by WS, just not the
                         // rest of the REPs. )
-        C->in = nullstring;    // fake it;
-        C->insi = NLL;    // pretend last input was the EOF of
+        C->IN.in = nullstring;    // fake it;
+        C->IN.insi = NLL;    // pretend last input was the EOF of
                         // a prior file.
     }
 
     // Entering state
-    C->state = si;        // record of last state entered, for error messages.
+    C->IN.state = si;        // record of last state entered, for error messages.
 
     // deal with "terminal" states: Whitespace, Tokens, and Contained activity, Strings
 
-    C->ei = C->insi;    // the char class that ended the last token
+    C->IN.ei = C->IN.insi;    // the char class that ended the last token
 
     // Whitespace
     if ((rc = je_parse_whitespace(C)) == FAIL) {
@@ -147,40 +147,40 @@ je_parse_r(container_context_t * CC, elem_t * root,
     }
 
     // Special character tokens
-    if (si == C->insi) {    // single character terminals matching state_machine expectation
-        C->bi = C->insi;
+    if (si == C->IN.insi) {    // single character terminals matching state_machine expectation
+        C->IN.bi = C->IN.insi;
         rc = je_parse_token(C);
-        C->ei = C->insi;
+        C->IN.ei = C->IN.insi;
         goto done;
     }
     switch (si) {
     case ACTIVITY:          // Recursion into Contained activity
-        if (C->bi == LBE) {    // if not top-level of containment
-            C->bi = NLL;
+        if (C->IN.bi == LBE) {    // if not top-level of containment
+            C->IN.bi = NLL;
             rc = je_parse(CC->context, &CC->subject);    // recursively process contained ACTIVITY in to its own root
-            C->bi = C->insi;    // The char class that terminates the ACTIVITY
+            C->IN.bi = C->IN.insi;    // The char class that terminates the ACTIVITY
             goto done;
         }
         break;
 
     case STRING:            // Strings
         rc = je_parse_string(C, &branch);
-        C->bi = C->insi;    // the char class that terminates the STRING
+        C->IN.bi = C->IN.insi;    // the char class that terminates the STRING
         goto done;
         break;
 
     case VSTRING:            // Value Strings
         rc = je_parse_vstring(C, &branch);
-        C->bi = C->insi;    // the char class that terminates the VSTRING
+        C->IN.bi = C->IN.insi;    // the char class that terminates the VSTRING
         goto done;
         break;
 
     // the remainder of the switch() is just state initialization
     case ACT:
-        C->verb = 0;        // initialize verb to default "add"
+        C->IN.verb = 0;        // initialize verb to default "add"
         break;
     case SUBJECT:
-        C->has_ast = 0;     // maintain a flag for an '*' found anywhere in the subject
+        C->IN.has_ast = 0;     // maintain a flag for an '*' found anywhere in the subject
         C->has_cousin = 0;  // maintain a flag for any NODEREF to COUSIN (requiring involvement of ancestors)
         break;
     case COUSIN:
@@ -276,7 +276,7 @@ P(&branch);
             break;
         case TLD:
         case QRY:
-            C->verb = si;  // record verb prefix, if not default
+            C->IN.verb = si;  // record verb prefix, if not default
             break;
         case HAT:
             // FIXME - this  is all wrong ... maybe it should just close the current box
@@ -299,7 +299,7 @@ P(root)
 
             // If this subject is not itself a pattern, then
             // perform pattern matching and insertion if matched
-            if (!(CC->is_pattern = C->has_ast)) {
+            if (!(CC->is_pattern = C->IN.has_ast)) {
                 je_pattern(CC, root, &branch);
             }
 #if 0
@@ -344,11 +344,11 @@ static success_t je_more_rep(context_t * C, unsigned char prop)
     if (!(prop & (REP | SREP)))
         return FAIL;
 
-    ei = C->ei;
+    ei = C->IN.ei;
     if (ei == RPN || ei == RAN || ei == RBR || ei == RBE) {
         return FAIL;    // no more repetitions
     }
-    bi = C->bi;
+    bi = C->IN.bi;
     if (bi == RPN || bi == RAN || bi == RBR || bi == RBE
         || (ei != ABC && ei != AST && ei != DQT)) {
         return SUCCESS;    // more repetitions, but additional WS sep is optional

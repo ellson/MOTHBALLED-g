@@ -2,53 +2,29 @@
 
 struct context_s {             // input_context
     char *progname;            // name of program
-    int *pargc;                // remaining filenames from command line
-    char **argv;
-    char *filename;            // name of file currently being processed, or "-" for stdin
-    FILE *file;                // open file handle for file currently being processed
     FILE *out;                 // typically stdout for parser debug outputs
-    inbuf_t *inbuf;            // the active input buffer
-    unsigned char *in;         // next charater to be processed
+
+    input_t IN;
+
+    elem_t *free_elem_list;    // linked list of unused list elems
     char *username;            // set by first call to g_session
     char *hostname;            // ditto
-    inbuf_t *free_inbuf_list;  // linked list of unused inbufs
-    elem_t *free_elem_list;    // linked list of unused list elems
-    state_t insi;              // state represented by last character read
-    state_t ei;                // ei, bi are used to determine whitespace needs around STRINGs
-    state_t bi;
-    state_t verb;              // the "verb" for the ACT. Default is "add",
-                                                    // '~' is "delete",
-                                                    // '?' is "query"
-    state_t state;             // last state entered
-    char has_ast;              // flag set if an '*' is found in a STRING
     char has_cousin;           // flag set if a COUSIN is found in any EDGE of the ACT (forward EDGE to ancestors for processing)
-    char in_quote;             // flag set if between "..."
-    char has_quote;            // flag set if STRING contains one or more DQT fragments
     char needstats;            // flag set if -s on command line
     char sep;                  // the next separator (either 0, or ' ' if following a STRING that requires a separator.
                                //   may be ignored if the next character is a token which implicitly separates.)
     style_t style;             // spacing style in emitted outputs
                                //   may be ignored if the next character is a token which implicitly separates.)
     int containment;           // depth of containment
-    long linecount_at_start;   // activity line count when this file was opened.
     elem_t myname;             // header for a list of components of my name (in the same form as subjects)
     ikea_store_t *ikea_store;  // persistency
     ikea_box_t *namehash_buckets[64];
     elem_t *hash_buckets[64];  // 64 buckets of name hashes and FILE*.
-    long stat_filecount;       // various stats
-    long stat_lfcount;
-    long stat_crcount;
-    long stat_inchars;
     long stat_actcount;
     long stat_sameas;
     long stat_patterncount;
     long stat_patternmatches;
     long stat_containercount;
-    long stat_stringcount;
-    long stat_fragcount;
-    long stat_inbufmalloc;
-    long stat_inbufmax;
-    long stat_inbufnow;
     long stat_elemmalloc;
     long stat_elemmax;
     long stat_elemnow;

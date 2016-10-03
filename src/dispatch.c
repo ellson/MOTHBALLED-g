@@ -186,10 +186,10 @@ static void je_assemble_act(context_t *C, elem_t *pelem, elem_t *pattributes, el
     act.state = ACT;
 
     // verb
-    switch(C->verb) {
+    switch(C->IN.verb) {
     case QRY:
     case TLD:
-        verb.state = C->verb;
+        verb.state = C->IN.verb;
         pnew = move_list(C, &verb);
         append_list(&act, pnew);
         break;
