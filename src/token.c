@@ -18,23 +18,24 @@
 static success_t je_more_in(context_t * C)
 {
     input_t *IN = &(C->IN);
+    INBUFS_t *INBUFS = &(C->INBUFS);
     int size;
 
-    if (IN->inbuf) {        // if there is an existing active-inbuf
-        if (IN->in == &(IN->inbuf->end_of_buf)) {    // if it is full
-            if ((--(IN->inbuf->refs)) == 0) {    // dereference active-inbuf
-                free_inbuf(IN, IN->inbuf);    // free if no refs left (unlikely)
+    if (INBUFS->inbuf) {        // if there is an existing active-inbuf
+        if (IN->in == &(INBUFS->inbuf->end_of_buf)) {    // if it is full
+            if ((--(INBUFS->inbuf->refs)) == 0) {    // dereference active-inbuf
+                free_inbuf(INBUFS, INBUFS->inbuf);    // free if no refs left (unlikely)
             }
-            IN->inbuf = new_inbuf(IN);    // get new
-            assert(IN->inbuf);
-            IN->inbuf->refs = 1;    // add active-inbuf reference
-            IN->in = IN->inbuf->buf;    // point to beginning of buffer
+            INBUFS->inbuf = new_inbuf(INBUFS);    // get new
+            assert(INBUFS->inbuf);
+            INBUFS->inbuf->refs = 1;    // add active-inbuf reference
+            IN->in = INBUFS->inbuf->buf;    // point to beginning of buffer
         }
     } else {        // no inbuf, implies just starting
-        IN->inbuf = new_inbuf(IN);    // get new
-        assert(IN->inbuf);
-        IN->inbuf->refs = 1;    // add active-inbuf reference
-        IN->in = IN->inbuf->buf;
+        INBUFS->inbuf = new_inbuf(INBUFS);    // get new
+        assert(INBUFS->inbuf);
+        INBUFS->inbuf->refs = 1;    // add active-inbuf reference
+        IN->in = INBUFS->inbuf->buf;
     }
 
     if (IN->file) {        // if there is an existing active input file
@@ -75,7 +76,7 @@ static success_t je_more_in(context_t * C)
         assert(IN->file);
     }
     // slurp in data from file stream
-    size = fread(IN->in, 1, &(IN->inbuf->end_of_buf) - IN->in, IN->file);
+    size = fread(IN->in, 1, &(INBUFS->inbuf->end_of_buf) - IN->in, IN->file);
     IN->in[size] = '\0';    // ensure terminated (we have an extras
     //    character in inbuf_t for this )
     IN->insi = char2state[*IN->in];

@@ -226,11 +226,11 @@ char * je_stats(context_t *C)
 
     je_append_string  (C, &pos, "inbufmax");
     je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->IN.stat_inbufmax);
+    je_append_ulong   (C, &pos, C->INBUFS.stat_inbufmax);
 
     je_append_string  (C, &pos, "inbufnow");
     je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->IN.stat_inbufnow);
+    je_append_ulong   (C, &pos, C->INBUFS.stat_inbufnow);
 
     je_append_string  (C, &pos, "elemsize");
     je_append_token   (C, &pos, '=');
@@ -250,11 +250,11 @@ char * je_stats(context_t *C)
 
     je_append_string  (C, &pos, "inbufmalloccount");
     je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->IN.stat_inbufmalloc);
+    je_append_ulong   (C, &pos, C->INBUFS.stat_inbufmalloc);
 
     je_append_string  (C, &pos, "inbufmalloctotal");
     je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->IN.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t));
+    je_append_ulong   (C, &pos, C->INBUFS.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t));
 
     je_append_string  (C, &pos, "elemmallocsize");
     je_append_token   (C, &pos, '=');
@@ -271,7 +271,7 @@ char * je_stats(context_t *C)
     je_append_string  (C, &pos, "malloctotal");
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, (C->stat_elemmalloc * LISTALLOCNUM * size_elem_t)
-                        + (C->IN.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t)));
+                        + (C->INBUFS.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t)));
 
     je_append_token   (C, &pos, ']');
 

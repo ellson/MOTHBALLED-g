@@ -69,18 +69,18 @@ elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *fra
 
     frag_elem = (frag_elem_t*)new_elem_sub(C);
 
-    assert(C->IN.inbuf);
-    assert(C->IN.inbuf->refs >= 0);
+    assert(C->INBUFS.inbuf);
+    assert(C->INBUFS.inbuf->refs >= 0);
     assert(frag);
     assert(len > 0);
     // complete frag elem initialization
     frag_elem->type = FRAGELEM;    // type
-    frag_elem->inbuf = C->IN.inbuf;    // record inbuf for ref counting
+    frag_elem->inbuf = C->INBUFS.inbuf;    // record inbuf for ref counting
     frag_elem->frag = frag;    // pointer to begging of frag
     frag_elem->len = len;    // length of frag
     frag_elem->state = state;    // state_machine state that created this frag
 
-    C->IN.inbuf->refs++;        // increment reference count in inbuf.
+    C->INBUFS.inbuf->refs++;        // increment reference count in inbuf.
     return (elem_t*)frag_elem;
 }
 
@@ -271,7 +271,7 @@ void free_list(context_t * C, elem_t * list)
             frag_elem = (frag_elem_t*) elem;
             assert(frag_elem->inbuf->refs > 0);
             if (--(frag_elem->inbuf->refs) == 0) {
-                free_inbuf(&(C->IN), frag_elem->inbuf);
+                free_inbuf(&(C->INBUFS), frag_elem->inbuf);
             }
             break;
         case LISTELEM:

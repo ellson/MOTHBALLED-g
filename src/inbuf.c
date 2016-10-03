@@ -4,28 +4,27 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "grammar.h"
 #include "inbuf.h"
 #include "fatal.h"
 
 /**
  * allocate an inbuf for g input (takes from freelist if possible)
  *
- * @param IN context
+ * @param INBUFS context
  */
-inbuf_t * new_inbuf(input_t *IN)
+inbuf_t * new_inbuf(INBUFS_t *INBUFS)
 {
     inbuf_t *inbuf, *next;
     int i;
 
-    if (!IN->free_inbuf_list) {    // if no inbufs in free_inbuf_list
+    if (!INBUFS->free_inbuf_list) {    // if no inbufs in free_inbuf_list
 
-        IN->free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbuf_t));
-        if (!IN->free_inbuf_list) 
+        INBUFS->free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbuf_t));
+        if (!INBUFS->free_inbuf_list) 
             fatal_perror("Error - malloc(): ");
-        IN->stat_inbufmalloc++;
+        INBUFS->stat_inbufmalloc++;
 
-        next = IN->free_inbuf_list;    // link the new inbufs into free_inbuf_list
+        next = INBUFS->free_inbuf_list;    // link the new inbufs into free_inbuf_list
         i = INBUFALLOCNUM;
         while (i--) {
             inbuf = next++;
@@ -34,16 +33,16 @@ inbuf_t * new_inbuf(input_t *IN)
         inbuf->next = NULL;    // terminate last inbuf
 
     }
-    inbuf = IN->free_inbuf_list;    // use first inbuf from free_inbuf_list
-    IN->free_inbuf_list = inbuf->next;    // update list to point to next available
+    inbuf = INBUFS->free_inbuf_list;    // use first inbuf from free_inbuf_list
+    INBUFS->free_inbuf_list = inbuf->next;    // update list to point to next available
 
     inbuf->next = NULL;
     inbuf->refs = 0;
     inbuf->end_of_buf = '\0';    // parse() sees this null like an EOF
 
-    IN->stat_inbufnow++;    // stats
-    if (IN->stat_inbufnow > IN->stat_inbufmax) {
-        IN->stat_inbufmax = IN->stat_inbufnow;
+    INBUFS->stat_inbufnow++;    // stats
+    if (INBUFS->stat_inbufnow > INBUFS->stat_inbufmax) {
+        INBUFS->stat_inbufmax = INBUFS->stat_inbufnow;
     }
     return inbuf;
 }
@@ -51,16 +50,16 @@ inbuf_t * new_inbuf(input_t *IN)
 /**
  * free an inbuf (not really freed, maintains freelist for reuse)
  *
- * @param IN context
+ * @param INBUFS context
  * @param inbuf
  */
-void free_inbuf(input_t * IN, inbuf_t * inbuf)
+void free_inbuf(INBUFS_t * INBUFS, inbuf_t * inbuf)
 {
     assert(inbuf);
 
     // insert inbuf into inbuf_freelist
-    inbuf->next = IN->free_inbuf_list;
-    IN->free_inbuf_list = inbuf;
+    inbuf->next = INBUFS->free_inbuf_list;
+    INBUFS->free_inbuf_list = inbuf;
 
-    IN->stat_inbufnow--;    // stats
+    INBUFS->stat_inbufnow--;    // stats
 }

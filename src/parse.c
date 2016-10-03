@@ -124,7 +124,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
     nest++;
     assert(nest >= 0);    // catch overflows
 
-    if (!C->IN.inbuf) {    // state_machine just started
+    if (!C->INBUFS.inbuf) {    // state_machine just started
         C->IN.bi = WS;        // pretend preceeded by WS to satisfy toplevel SREP or REP
                         // (Note, first REP of a sequence *can*
                         // be preceeded by WS, just not the
