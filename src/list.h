@@ -51,9 +51,9 @@ struct hashname_elem_s {     // castable to elem_s  -- size must match (32bytes)
 };
 
 typedef struct {
-    INBUF_t INBUF;        // Header for inbug management   
+    INBUF_t INBUF;        // Header for inbuf management   
     elem_t *free_elem_list;    // linked list of unused list elems
-    long stat_elemmalloc;
+    long stat_elemmalloc;  // list stats
     long stat_elemmax;
     long stat_elemnow;
 } LIST_t;
