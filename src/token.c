@@ -10,6 +10,7 @@
 #include "grammar.h"
 #include "list.h"
 #include "token.h"
+#include "fatal.h"
 
 /**
  * report an error during parsing with context info.
@@ -90,7 +91,7 @@ static success_t je_more_in(TOKEN_t * TOKEN)
             } else {
                 TOKEN->file = fopen(TOKEN->filename, "rb");
                 if (!TOKEN->file) {
-                    je_token_error(TOKEN, ACTIVITY, "fopen fail");
+                    fatal_perror("Error - fopen()");
                 }
             }
             TOKEN->linecount_at_start = TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount;
