@@ -1,7 +1,7 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 struct context_s {             // input_context
-    TOKENS_t TOKENS;           // Must be first (to allow casting from context_t)
+    TOKEN_t TOKEN;           // Must be first (to allow casting from CONTEXT_t)
 
     char *progname;            // name of program
     FILE *out;                 // typically stdout for parser debug outputs
@@ -38,7 +38,7 @@ struct context_s {             // input_context
 };
 
 struct container_context_s {    // container_context
-    context_t *context;         // the input context
+    CONTEXT_t *context;         // the input context
     elem_t subject;             // Preceeding ACT's subject, until this ACT's SUBJECT has been parsed
                                 // and processd by sameas()  - at which point it becomes this ACT's subject.
                                 // (So: in SUBJECT parsing it is the previous ACT's subject and used for sameas()

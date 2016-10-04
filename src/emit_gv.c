@@ -7,25 +7,25 @@
 
 #include "libje_private.h"
 
-static void api_start_activity(container_context_t * CC)
+static void api_start_activity(container_CONTEXT_t * CC)
 {
-    context_t *C = CC->context;
+    CONTEXT_t *C = CC->context;
 
     C->sep = 0;
     fprintf(C->out, "graph {\n");
 }
 
-static void api_end_activity(container_context_t * CC)
+static void api_end_activity(container_CONTEXT_t * CC)
 {
-    context_t *C = CC->context;
+    CONTEXT_t *C = CC->context;
 
     C->sep = 0;
     fprintf(C->out, "\n}\n");
 }
 
-static void api_list(container_context_t * CC, elem_t *list)
+static void api_list(container_CONTEXT_t * CC, elem_t *list)
 {
-    context_t *C = CC->context;
+    CONTEXT_t *C = CC->context;
 
     je_emit_list(C, C->out, list);
 }

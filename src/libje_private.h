@@ -16,7 +16,7 @@
 
 // private types that maybe forward referenced
 typedef struct emit_s emit_t;
-typedef struct container_context_s container_context_t;
+typedef struct container_context_s container_CONTEXT_t;
 typedef struct ikea_store_s ikea_store_t;
 typedef struct ikea_box_s ikea_box_t;
 

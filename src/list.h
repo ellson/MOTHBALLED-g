@@ -51,23 +51,23 @@ struct hashname_elem_s {     // castable to elem_s  -- size must match (32bytes)
 };
 
 typedef struct {
-    INBUFS_t INBUFS;        // Header for inbug management   
+    INBUF_t INBUF;        // Header for inbug management   
     elem_t *free_elem_list;    // linked list of unused list elems
     long stat_elemmalloc;
     long stat_elemmax;
     long stat_elemnow;
-} LISTS_t;
+} LIST_t;
 
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
-elem_t *new_hash(LISTS_t * LISTS, uint64_t hash);
-elem_t *new_hashname(LISTS_t * LISTS, unsigned char *hash, size_t hash_len);
-elem_t *new_frag(LISTS_t * LISTS, char state, unsigned int len, unsigned char *frag);
-elem_t *move_list(LISTS_t * LISTS, elem_t * list);
-elem_t *ref_list(LISTS_t * LISTS, elem_t * list);
+elem_t *new_hash(LIST_t * LIST, uint64_t hash);
+elem_t *new_hashname(LIST_t * LIST, unsigned char *hash, size_t hash_len);
+elem_t *new_frag(LIST_t * LIST, char state, unsigned int len, unsigned char *frag);
+elem_t *move_list(LIST_t * LIST, elem_t * list);
+elem_t *ref_list(LIST_t * LIST, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);
-void free_list(LISTS_t * LISTS, elem_t * list);
+void free_list(LIST_t * LIST, elem_t * list);
 int print_len_frag(FILE * chan, unsigned char *len_frag);
 void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep);
 void print_list(FILE * chan, elem_t * list, int nest, char *sep);

@@ -9,7 +9,7 @@
 #include "libje_private.h"
 
 static success_t
-je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern);
+je_pattern_r(container_CONTEXT_t * CC, elem_t * subject, elem_t * pattern);
 
 /*
  * A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
@@ -48,10 +48,10 @@ je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern);
  * @param root of the output tree
  * @param subject to be checked for pattern matches
  */
-void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
+void je_pattern(container_CONTEXT_t * CC, elem_t * root, elem_t * subject)
 {
-    context_t *C = CC->context;
-    LISTS_t * LISTS = (LISTS_t *)C;
+    CONTEXT_t *C = CC->context;
+    LIST_t * LIST = (LIST_t *)C;
     elem_t *pattern_acts, *pact, *psubj, *pattr;
 
     assert(root);
@@ -88,10 +88,10 @@ P(pact);
             // insert matched attrubutes, contents,
             // and then the subject again
             
-            append_list(root, ref_list(LISTS, subject));
+            append_list(root, ref_list(LIST, subject));
             emit_subject(CC, subject);
             if (pattr && (state_t)pattr->state == ATTRIBUTES) {
-                append_list(root, ref_list(LISTS, pattr));
+                append_list(root, ref_list(LIST, pattr));
                 emit_attributes(CC, pattr);
             }
 
@@ -114,7 +114,7 @@ P(root);
  * @return success/fail 
  */
 static success_t
-je_pattern_r(container_context_t * CC, elem_t * subject, elem_t * pattern)
+je_pattern_r(container_CONTEXT_t * CC, elem_t * subject, elem_t * pattern)
 {
     elem_t *s_elem, *p_elem, *ts_elem, *tp_elem;
     unsigned char *s_cp, *p_cp;

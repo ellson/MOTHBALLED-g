@@ -7,9 +7,9 @@
 
 #include "libje_private.h"
 
-static void api_start_activity(container_context_t * CC)
+static void api_start_activity(container_CONTEXT_t * CC)
 {
-    context_t *C = CC->context;
+    CONTEXT_t *C = CC->context;
 
     C->sep = 0;
     if (C->containment != 0) {
@@ -17,9 +17,9 @@ static void api_start_activity(container_context_t * CC)
     }
 }
 
-static void api_end_activity(container_context_t * CC)
+static void api_end_activity(container_CONTEXT_t * CC)
 {
-    context_t *C = CC->context;
+    CONTEXT_t *C = CC->context;
 
     C->sep = 0;
     if (C->containment != 0) {
@@ -30,16 +30,16 @@ static void api_end_activity(container_context_t * CC)
     }
 }
 
-static void api_subject(container_context_t * CC, elem_t *list)
+static void api_subject(container_CONTEXT_t * CC, elem_t *list)
 {
-    context_t *C = CC->context;
+    CONTEXT_t *C = CC->context;
 
     je_emit_list(C, C->out, list);
 }
 
-static void api_attributes(container_context_t * CC, elem_t *list)
+static void api_attributes(container_CONTEXT_t * CC, elem_t *list)
 {
-    context_t *C = CC->context;
+    CONTEXT_t *C = CC->context;
 
     je_emit_list(C, C->out, list);
 }
@@ -74,21 +74,21 @@ emit_t g_api = { "g",
     /* api_frag */ NULL,
 };
 
-static void api1_end_activity(container_context_t * CC)
+static void api1_end_activity(container_CONTEXT_t * CC)
 {
-    context_t *C = CC->context;
+    CONTEXT_t *C = CC->context;
 
     if (C->containment == 0) {
         putc('\n', C->out);
     }
 }
 
-static void api1_sep(context_t * C)
+static void api1_sep(CONTEXT_t * C)
 {
     putc(' ', C->out);
 }
 
-static void api1_string(context_t *C, elem_t * branch)
+static void api1_string(CONTEXT_t *C, elem_t * branch)
 {
     char sep;
 
@@ -96,7 +96,7 @@ static void api1_string(context_t *C, elem_t * branch)
     print_list(C->out, branch, -1, &sep);
 }
 
-static void api1_token(context_t *C, char token)
+static void api1_token(CONTEXT_t *C, char token)
 {
     putc(token, C->out);
 }
@@ -131,12 +131,12 @@ emit_t g1_api = { "g1",
     /* api_frag */ NULL,
 };
 
-static void api2_end_activity(container_context_t * CC)
+static void api2_end_activity(container_CONTEXT_t * CC)
 {
     putc('\n', CC->context->out);
 }
 
-static void api2_token(context_t * C, char token)
+static void api2_token(CONTEXT_t * C, char token)
 {
     putc('\n', C->out);
     putc(token, C->out);

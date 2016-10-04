@@ -8,8 +8,8 @@
 
 #include "libje_private.h"
 
-static void je_dispatch_r(context_t * C, elem_t * plist, elem_t *pattributes, elem_t * pnodes, elem_t * pedges);
-static void je_assemble_act(context_t *C, elem_t * pelem, elem_t * pattributes, elem_t * plist);
+static void je_dispatch_r(CONTEXT_t * C, elem_t * plist, elem_t *pattributes, elem_t * pnodes, elem_t * pedges);
+static void je_assemble_act(CONTEXT_t *C, elem_t * pelem, elem_t * pattributes, elem_t * plist);
 
 /*
  * Processes an ACT after sameas and pattern substitutions.
@@ -51,10 +51,10 @@ static void je_assemble_act(context_t *C, elem_t * pelem, elem_t * pattributes, 
  * @param CC container context
  * @param plist
  */
-void je_dispatch(container_context_t * CC, elem_t * plist)
+void je_dispatch(container_CONTEXT_t * CC, elem_t * plist)
 {
-    context_t *C = CC->context;
-    LISTS_t * LISTS = (LISTS_t *)C;
+    CONTEXT_t *C = CC->context;
+    LIST_t * LIST = (LIST_t *)C;
     elem_t attributes = { 0 };
     elem_t nodes = { 0 };
     elem_t edges = { 0 };
@@ -70,7 +70,7 @@ void je_dispatch(container_context_t * CC, elem_t * plist)
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
     //                      for each EDGE, generate new ACT: verb edge attributes
 
-    free_list(LISTS, plist);  // free old ACT to be replace by these new expanded ACTS
+    free_list(LIST, plist);  // free old ACT to be replace by these new expanded ACTS
     switch (CC->subject_type) {
     case NODE:
         pelem = nodes.first;
@@ -105,13 +105,13 @@ void je_dispatch(container_context_t * CC, elem_t * plist)
         break;
     }
 
-    free_list(LISTS, &attributes);
-    free_list(LISTS, &nodes);
-    free_list(LISTS, &edges);
+    free_list(LIST, &attributes);
+    free_list(LIST, &nodes);
+    free_list(LIST, &edges);
 }
 
 /**
- * This function expands OBJECT_LISTS of NODES or EDGES, and then expands ENPOINTSETS in EDGES
+ * This function expands OBJECT_LIST of NODES or EDGES, and then expands ENPOINTSETS in EDGES
  *
  * @param C context
  * @param plist   -- object-list
@@ -119,9 +119,9 @@ void je_dispatch(container_context_t * CC, elem_t * plist)
  * @param pnodes
  * @param pedges
  */
-static void je_dispatch_r(context_t * C, elem_t * plist, elem_t * pattributes, elem_t * pnodes, elem_t * pedges)
+static void je_dispatch_r(CONTEXT_t * C, elem_t * plist, elem_t * pattributes, elem_t * pnodes, elem_t * pedges)
 {
-    LISTS_t * LISTS = (LISTS_t *)C;
+    LIST_t * LIST = (LIST_t *)C;
     elem_t *pelem, *pnew, *pobject;
     state_t si;
 
@@ -135,7 +135,7 @@ static void je_dispatch_r(context_t * C, elem_t * plist, elem_t * pattributes, e
             je_dispatch_r(C, pelem, pattributes, pnodes, pedges);
             break;
         case ATTRIBUTES:
-            pnew = ref_list(LISTS, pelem);
+            pnew = ref_list(LIST, pelem);
             append_list(pattributes, pnew);
             break;
         case SUBJECT:
@@ -158,7 +158,7 @@ static void je_dispatch_r(context_t * C, elem_t * plist, elem_t * pattributes, e
             }
             break;
         case NODE:
-            pnew = ref_list(LISTS, pelem);
+            pnew = ref_list(LIST, pelem);
             append_list(pnodes, pnew);
             break;
         case EDGE:
@@ -179,10 +179,10 @@ static void je_dispatch_r(context_t * C, elem_t * plist, elem_t * pattributes, e
  * @param pattributes
  * @param plist - output ACT
  */
-static void je_assemble_act(context_t *C, elem_t *pelem, elem_t *pattributes, elem_t *plist)
+static void je_assemble_act(CONTEXT_t *C, elem_t *pelem, elem_t *pattributes, elem_t *plist)
 {
-    TOKENS_t * IN = (TOKENS_t *)C;
-    LISTS_t * LISTS = (LISTS_t *)C;
+    TOKEN_t * IN = (TOKEN_t *)C;
+    LIST_t * LIST = (LIST_t *)C;
     elem_t act = { 0 };
     elem_t verb = { 0 };
     elem_t *pnew;
@@ -194,7 +194,7 @@ static void je_assemble_act(context_t *C, elem_t *pelem, elem_t *pattributes, el
     case QRY:
     case TLD:
         verb.state = IN->verb;
-        pnew = move_list(LISTS, &verb);
+        pnew = move_list(LIST, &verb);
         append_list(&act, pnew);
         break;
     default:
@@ -202,18 +202,18 @@ static void je_assemble_act(context_t *C, elem_t *pelem, elem_t *pattributes, el
     }
 
     // subject
-    pnew = ref_list(LISTS, pelem);
+    pnew = ref_list(LIST, pelem);
     append_list(&act, pnew);
 
     // attributes
     if (pattributes && pattributes->first) {
-        pnew = ref_list(LISTS, pattributes->first);
+        pnew = ref_list(LIST, pattributes->first);
         append_list(&act, pnew);
     }
 
     // no container ever because contains are in their own streams
 
-    pnew = move_list(LISTS, &act);
+    pnew = move_list(LIST, &act);
     append_list(plist, pnew);
 }
 

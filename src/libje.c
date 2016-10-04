@@ -17,11 +17,11 @@
  * @param optind
  * @return context
  */
-context_t *je_initialize(int *pargc, char *argv[], int optind)
+CONTEXT_t *je_initialize(int *pargc, char *argv[], int optind)
 {
-    context_t *C;
+    CONTEXT_t *C;
 
-    if (! (C = calloc(1, sizeof(context_t))))
+    if (! (C = calloc(1, sizeof(CONTEXT_t))))
         fatal_perror("Error - calloc(): ");
 
     C->progname = argv[0];
@@ -35,8 +35,8 @@ context_t *je_initialize(int *pargc, char *argv[], int optind)
         *pargc = 1;
     }
 
-    C->TOKENS.pargc = pargc;
-    C->TOKENS.argv = argv;
+    C->TOKEN.pargc = pargc;
+    C->TOKEN.argv = argv;
 
     // gather session info, including starttime.
     //    subsequent calls to je_session() just reuse the info gathered in this first call.
@@ -55,7 +55,7 @@ context_t *je_initialize(int *pargc, char *argv[], int optind)
  *
  * @param C context
  */
-void je_finalize( context_t * C )
+void je_finalize( CONTEXT_t * C )
 {
    emit_finalize(C);
 
@@ -66,7 +66,7 @@ void je_finalize( context_t * C )
    free(C);
 }
 
-void je_interrupt( context_t * C )
+void je_interrupt( CONTEXT_t * C )
 {
    ikea_store_close(C->ikea_store);
 }

@@ -1,7 +1,7 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 typedef struct {
-    LISTS_t LISTS;             // Must be first (to allow casting from context_t)
+    LIST_t LIST;             // Must be first (to allow casting from CONTEXT_t)
 
     int *pargc;                // remaining filenames from command line
     char **argv;
@@ -25,15 +25,15 @@ typedef struct {
     long stat_stringcount;
     long stat_fragcount;
     long stat_filecount;       // various stats
-} TOKENS_t;
+} TOKEN_t;
 
 typedef enum {
     SUCCESS,
     FAIL
 } success_t;
 
-void je_token_error(TOKENS_t * TOKENS, state_t si, char *message);
-success_t je_token_whitespace(TOKENS_t * TOKENS);
-success_t je_token_string(TOKENS_t * TOKENS, elem_t * fraglist);
-success_t je_token_vstring(TOKENS_t * TOKENS, elem_t * fraglist);
-success_t je_token(TOKENS_t * TOKENS);
+void je_token_error(TOKEN_t * TOKEN, state_t si, char *message);
+success_t je_token_whitespace(TOKEN_t * TOKEN);
+success_t je_token_string(TOKEN_t * TOKEN, elem_t * fraglist);
+success_t je_token_vstring(TOKEN_t * TOKEN, elem_t * fraglist);
+success_t je_token(TOKEN_t * TOKEN);

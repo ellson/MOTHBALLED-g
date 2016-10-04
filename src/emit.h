@@ -8,32 +8,32 @@ typedef enum {
 
 struct emit_s {
     char *name;
-    void (*initialize) (context_t * C);
-    void (*finalize) (context_t * C);
+    void (*initialize) (CONTEXT_t * C);
+    void (*finalize) (CONTEXT_t * C);
 
-    void (*start_file) (context_t * C);
-    void (*end_file) (context_t * C);
+    void (*start_file) (CONTEXT_t * C);
+    void (*end_file) (CONTEXT_t * C);
 
-    void (*start_activity) (container_context_t * CC);
-    void (*end_activity) (container_context_t * CC);
+    void (*start_activity) (container_CONTEXT_t * CC);
+    void (*end_activity) (container_CONTEXT_t * CC);
 
-    void (*start_act) (container_context_t * CC);
-    void (*end_act) (container_context_t * CC);
+    void (*start_act) (container_CONTEXT_t * CC);
+    void (*end_act) (container_CONTEXT_t * CC);
 
-    void (*start_subject) (container_context_t * CC);
-    void (*end_subject) (container_context_t * CC);
+    void (*start_subject) (container_CONTEXT_t * CC);
+    void (*end_subject) (container_CONTEXT_t * CC);
 
-    void (*start_state) (container_context_t * CC, char class, unsigned char prop, int nest, int repc);
-    void (*end_state) (container_context_t * CC, char class, success_t rc, int nest, int repc);
+    void (*start_state) (container_CONTEXT_t * CC, char class, unsigned char prop, int nest, int repc);
+    void (*end_state) (container_CONTEXT_t * CC, char class, success_t rc, int nest, int repc);
 
-    void (*act) (container_context_t * CC, elem_t * root);
-    void (*subject) (container_context_t * CC, elem_t * root);
-    void (*attributes) (container_context_t * CC, elem_t * root);
+    void (*act) (container_CONTEXT_t * CC, elem_t * root);
+    void (*subject) (container_CONTEXT_t * CC, elem_t * root);
+    void (*attributes) (container_CONTEXT_t * CC, elem_t * root);
 
-    void (*sep) (context_t * C);
-    void (*token) (context_t * C, char token);
-    void (*string) (context_t * C, elem_t * branch);
-    void (*frag) (context_t * C, unsigned char len, unsigned char *frag);
+    void (*sep) (CONTEXT_t * C);
+    void (*token) (CONTEXT_t * C, char token);
+    void (*string) (CONTEXT_t * C, elem_t * branch);
+    void (*frag) (CONTEXT_t * C, unsigned char len, unsigned char *frag);
 };
 
 #define emit_initialize(C) \
@@ -102,9 +102,9 @@ struct emit_s {
 extern emit_t *emit;
 extern emit_t g_api, g1_api, g2_api, g3_api, t_api, t1_api, gv_api;
 char je_char_prop(unsigned char prop, char noprop);
-void je_append_token(context_t *C, char **pos, char tok);
-void je_append_string(context_t *C, char **pos, char *string);
-void je_append_ulong(context_t *C, char **pos, uint64_t integer);
-void je_append_runtime(context_t *C, char **pos, uint64_t run_sec, uint64_t run_ns);
-void je_emit_list(context_t * C, FILE * chan, elem_t * subject);
-void je_emit_ikea(container_context_t * CC, elem_t *list);
+void je_append_token(CONTEXT_t *C, char **pos, char tok);
+void je_append_string(CONTEXT_t *C, char **pos, char *string);
+void je_append_ulong(CONTEXT_t *C, char **pos, uint64_t integer);
+void je_append_runtime(CONTEXT_t *C, char **pos, uint64_t run_sec, uint64_t run_ns);
+void je_emit_list(CONTEXT_t * C, FILE * chan, elem_t * subject);
+void je_emit_ikea(container_CONTEXT_t * CC, elem_t *list);

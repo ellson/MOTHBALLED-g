@@ -30,9 +30,9 @@
 
 // forward declarations
 static success_t
-je_parse_r(container_context_t * CC, elem_t * root,
+je_parse_r(container_CONTEXT_t * CC, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc);
-static success_t je_more_rep(context_t * C, unsigned char prop);
+static success_t je_more_rep(CONTEXT_t * C, unsigned char prop);
 
 /**
  * parse G syntax input
@@ -57,10 +57,10 @@ static success_t je_more_rep(context_t * C, unsigned char prop);
  * @return success/fail
  */
 
-success_t je_parse(context_t * C, elem_t * name)
+success_t je_parse(CONTEXT_t * C, elem_t * name)
 {
-    container_context_t container_context = { 0 };
-    container_context_t *CC = &container_context;
+    container_CONTEXT_t container_context = { 0 };
+    container_CONTEXT_t *CC = &container_context;
     elem_t root = { 0 };    // the output parse tree
     success_t rc;
 #if 0
@@ -68,8 +68,8 @@ success_t je_parse(context_t * C, elem_t * name)
     uint64_t hash;
     char hashname[12], *filename;
 #endif
-    TOKENS_t * TOKENS = (TOKENS_t *)C;
-    LISTS_t * LISTS = (LISTS_t *)C;
+    TOKEN_t * TOKEN = (TOKEN_t *)C;
+    LIST_t * LIST = (LIST_t *)C;
 
     CC->context = C;
     CC->ikea_box = ikea_box_open(C->ikea_store, NULL);
@@ -98,10 +98,10 @@ CC->out = stdout;
     C->containment++;            // containment nesting level
     C->stat_containercount++;    // number of containers
     if ((rc = je_parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
-        if (TOKENS->insi == NLL) {    // EOF is OK
+        if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
-            je_token_error(TOKENS, TOKENS->state, "Parse error. Last good state was:");
+            je_token_error(TOKEN, TOKEN->state, "Parse error. Last good state was:");
         }
     }
     C->containment--;
@@ -109,10 +109,10 @@ CC->out = stdout;
 
     ikea_box_close ( CC->ikea_box );
 
-    free_list(LISTS, &root);
-    free_list(LISTS, &(CC->subject));
-    free_list(LISTS, &(CC->node_pattern_acts));
-    free_list(LISTS, &(CC->edge_pattern_acts));
+    free_list(LIST, &root);
+    free_list(LIST, &(CC->subject));
+    free_list(LIST, &(CC->node_pattern_acts));
+    free_list(LIST, &(CC->edge_pattern_acts));
 
     return rc;
 }
@@ -125,13 +125,13 @@ CC->out = stdout;
  *  @return success/fail
  */
 static success_t
-je_parse_r(container_context_t * CC, elem_t * root,
+je_parse_r(container_CONTEXT_t * CC, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc)
 {
-    context_t *C = CC->context;
-    TOKENS_t * TOKENS = (TOKENS_t *)C;
-    LISTS_t * LISTS = (LISTS_t *)C;
-    INBUFS_t * INBUFS = (INBUFS_t *)C;
+    CONTEXT_t *C = CC->context;
+    TOKEN_t * TOKEN = (TOKEN_t *)C;
+    LIST_t * LIST = (LIST_t *)C;
+    INBUF_t * INBUF = (INBUF_t *)C;
     unsigned char nprop;
     char so;        // offset to next state, signed
     state_t ti, ni;
@@ -148,63 +148,63 @@ je_parse_r(container_context_t * CC, elem_t * root,
     nest++;
     assert(nest >= 0);    // catch overflows
 
-    if (!INBUFS->inbuf) {    // state_machine just started
-        TOKENS->bi = WS;        // pretend preceeded by WS to satisfy toplevel SREP or REP
+    if (!INBUF->inbuf) {    // state_machine just started
+        TOKEN->bi = WS;        // pretend preceeded by WS to satisfy toplevel SREP or REP
                         // (Note, first REP of a sequence *can*
                         // be preceeded by WS, just not the
                         // rest of the REPs. )
-        TOKENS->in = nullstring;    // fake it;
-        TOKENS->insi = NLL;    // pretend last input was the EOF of
+        TOKEN->in = nullstring;    // fake it;
+        TOKEN->insi = NLL;    // pretend last input was the EOF of
                         // a prior file.
     }
 
     // Entering state
-    TOKENS->state = si;        // record of last state entered, for error messages.
+    TOKEN->state = si;        // record of last state entered, for error messages.
 
     // deal with "terminal" states: Whitespace, Tokens, and Contained activity, Strings
 
-    TOKENS->ei = TOKENS->insi;    // the char class that ended the last token
+    TOKEN->ei = TOKEN->insi;    // the char class that ended the last token
 
     // Whitespace
-    if ((rc = je_token_whitespace(TOKENS)) == FAIL) {
+    if ((rc = je_token_whitespace(TOKEN)) == FAIL) {
         goto done;    // EOF during whitespace
     }
 
     // Special character tokens
-    if (si == TOKENS->insi) {    // single character terminals matching state_machine expectation
-        TOKENS->bi = TOKENS->insi;
-        rc = je_token(TOKENS);
-        TOKENS->ei = TOKENS->insi;
+    if (si == TOKEN->insi) {    // single character terminals matching state_machine expectation
+        TOKEN->bi = TOKEN->insi;
+        rc = je_token(TOKEN);
+        TOKEN->ei = TOKEN->insi;
         goto done;
     }
     switch (si) {
     case ACTIVITY:          // Recursion into Contained activity
-        if (TOKENS->bi == LBE) {    // if not top-level of containment
-            TOKENS->bi = NLL;
+        if (TOKEN->bi == LBE) {    // if not top-level of containment
+            TOKEN->bi = NLL;
             rc = je_parse(C, &CC->subject);    // recursively process contained ACTIVITY in to its own root
-            TOKENS->bi = TOKENS->insi;    // The char class that terminates the ACTIVITY
+            TOKEN->bi = TOKEN->insi;    // The char class that terminates the ACTIVITY
             goto done;
         }
         break;
 
     case STRING:            // Strings
-        rc = je_token_string(TOKENS, &branch);
-        TOKENS->bi = TOKENS->insi;    // the char class that terminates the STRING
+        rc = je_token_string(TOKEN, &branch);
+        TOKEN->bi = TOKEN->insi;    // the char class that terminates the STRING
         goto done;
         break;
 
     case VSTRING:            // Value Strings
-        rc = je_token_vstring(TOKENS, &branch);
-        TOKENS->bi = TOKENS->insi;    // the char class that terminates the VSTRING
+        rc = je_token_vstring(TOKEN, &branch);
+        TOKEN->bi = TOKEN->insi;    // the char class that terminates the VSTRING
         goto done;
         break;
 
     // the remainder of the switch() is just state initialization
     case ACT:
-        TOKENS->verb = 0;        // initialize verb to default "add"
+        TOKEN->verb = 0;        // initialize verb to default "add"
         break;
     case SUBJECT:
-        TOKENS->has_ast = 0;     // maintain a flag for an '*' found anywhere in the subject
+        TOKEN->has_ast = 0;     // maintain a flag for an '*' found anywhere in the subject
         C->has_cousin = 0;  // maintain a flag for any NODEREF to COUSIN (requiring involvement of ancestors)
         break;
     case COUSIN:
@@ -266,18 +266,18 @@ je_parse_r(container_context_t * CC, elem_t * root,
                                     //  save entire previous ACT in a list of pattern_acts
                 C->stat_patterncount++;
                 if (CC->subject_type == NODE) {
-                    append_list(&(CC->node_pattern_acts), move_list(LISTS, &branch));
+                    append_list(&(CC->node_pattern_acts), move_list(LIST, &branch));
 
                 } else {
                     assert(CC->subject_type == EDGE);
-                    append_list(&(CC->edge_pattern_acts), move_list(LISTS, &branch));
+                    append_list(&(CC->edge_pattern_acts), move_list(LIST, &branch));
                 }
             } else {
                 C->stat_actcount++;
 #if 0
 P(&branch);
 #endif
-                append_list(root, move_list(LISTS, &branch));
+                append_list(root, move_list(LIST, &branch));
 #if 0
 P(&branch);
 #endif
@@ -295,12 +295,12 @@ P(&branch);
                     elem = elem->next;
                 }
 
-                free_list(LISTS, root);  // that's all folks.  move on to the next ACT.
+                free_list(LIST, root);  // that's all folks.  move on to the next ACT.
             }
             break;
         case TLD:
         case QRY:
-            TOKENS->verb = si;  // record verb prefix, if not default
+            TOKEN->verb = si;  // record verb prefix, if not default
             break;
         case HAT:
             // FIXME - this  is all wrong ... maybe it should just close the current box
@@ -323,7 +323,7 @@ P(root)
 
             // If this subject is not itself a pattern, then
             // perform pattern matching and insertion if matched
-            if (!(CC->is_pattern = TOKENS->has_ast)) {
+            if (!(CC->is_pattern = TOKEN->has_ast)) {
                 je_pattern(CC, root, &branch);
             }
 #if 0
@@ -344,7 +344,7 @@ P(root)
                 // - except for STRINGs which use state for quoting info
                 branch.state = si;
             }
-            append_list(root, move_list(LISTS, &branch));
+            append_list(root, move_list(LIST, &branch));
         }
     }
     nest--;
@@ -361,19 +361,19 @@ P(root)
  * @param prop properties from grammar
  * @return success = more, fail - no more
  */
-static success_t je_more_rep(context_t * C, unsigned char prop)
+static success_t je_more_rep(CONTEXT_t * C, unsigned char prop)
 {
-    TOKENS_t * TOKENS = (TOKENS_t *)C;
+    TOKEN_t * TOKEN = (TOKEN_t *)C;
     state_t ei, bi;
 
     if (!(prop & (REP | SREP)))
         return FAIL;
 
-    ei = TOKENS->ei;
+    ei = TOKEN->ei;
     if (ei == RPN || ei == RAN || ei == RBR || ei == RBE) {
         return FAIL;    // no more repetitions
     }
-    bi = TOKENS->bi;
+    bi = TOKEN->bi;
     if (bi == RPN || bi == RAN || bi == RBR || bi == RBE
         || (ei != ABC && ei != AST && ei != DQT)) {
         return SUCCESS;    // more repetitions, but additional WS sep is optional

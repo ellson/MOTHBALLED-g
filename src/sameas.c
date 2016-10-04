@@ -8,7 +8,7 @@
 
 #include "libje_private.h"
 
-static void je_sameas_r(container_context_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist);
+static void je_sameas_r(container_CONTEXT_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist);
 
 /**
  * rewrite subject into a newsubject
@@ -20,10 +20,10 @@ static void je_sameas_r(container_context_t * CC, elem_t * subject, elem_t ** ne
  * @param CC container context
  * @param subject a subject tree from the parser (may be multiple object with same attributes)
  */
-void je_sameas(container_context_t * CC, elem_t * subject)
+void je_sameas(container_CONTEXT_t * CC, elem_t * subject)
 {
-    context_t * C = CC->context;
-    LISTS_t * LISTS = (LISTS_t *)C;
+    CONTEXT_t * C = CC->context;
+    LIST_t * LIST = (LIST_t *)C;
     elem_t *newsubject, *oldsubject, *nextold;
     elem_t subject_rewrite = { 0 };
 
@@ -38,8 +38,8 @@ void je_sameas(container_context_t * CC, elem_t * subject)
     // rewrite subject into newsubject with any EQL elements substituted from oldsubject
     je_sameas_r(CC, subject, &nextold, newsubject);
 
-    free_list(LISTS, subject);     // free original subject ( although refs are retained in other lists )
-    free_list(LISTS, oldsubject);    // free the previous oldsubject
+    free_list(LIST, subject);     // free original subject ( although refs are retained in other lists )
+    free_list(LIST, oldsubject);    // free the previous oldsubject
 
     newsubject->state = SUBJECT;  
     *oldsubject = *newsubject;    // save the newsubject as oldsubject
@@ -56,11 +56,11 @@ void je_sameas(container_context_t * CC, elem_t * subject)
  * @param nextold
  * @param mewlist
  */
-static void je_sameas_r(container_context_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist)
+static void je_sameas_r(container_CONTEXT_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {
-    context_t * C = CC->context;
-    TOKENS_t * TOKENS = (TOKENS_t *)C;
-    LISTS_t * LISTS = (LISTS_t *)C;
+    CONTEXT_t * C = CC->context;
+    TOKEN_t * TOKEN = (TOKEN_t *)C;
+    LIST_t * LIST = (LIST_t *)C;
     elem_t *elem, *new, *nextoldelem = NULL;
     elem_t object = { 0 };
     state_t si;
@@ -87,9 +87,9 @@ if (*nextold) {
             } else {
                 if (si != CC->subject_type) {
                     if (si == NODE) {
-                        je_token_error(TOKENS, si, "EDGE subject includes");
+                        je_token_error(TOKEN, si, "EDGE subject includes");
                     } else {
-                        je_token_error(TOKENS, si, "NODE subject includes");
+                        je_token_error(TOKEN, si, "NODE subject includes");
                     }
                 }
             }
@@ -108,12 +108,12 @@ if (*nextold) {
                 }
             }
             je_sameas_r(CC, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
-            new = move_list(LISTS, &object);
+            new = move_list(LIST, &object);
             new->state = si;
             append_list(newlist, new);
             break;
         case NODEID:
-            new = ref_list(LISTS, elem);
+            new = ref_list(LIST, elem);
             append_list(newlist, new);
             if (*nextold) {    // doesn't matter if old is shorter
                 // ... as long as no further substitutions are needed
@@ -122,12 +122,12 @@ if (*nextold) {
             break;
         case EQL:
             if (*nextold) {
-                new = ref_list(LISTS, *nextold);
+                new = ref_list(LIST, *nextold);
                 append_list(newlist, new);
                 *nextold = (*nextold)->next;
                 C->stat_sameas++;
             } else {
-                je_token_error(TOKENS, si, "No corresponding object found for same-as substitution");
+                je_token_error(TOKEN, si, "No corresponding object found for same-as substitution");
             }
             break;
         default:
@@ -137,7 +137,7 @@ if (*nextold) {
                 *nextold = (*nextold)->next;    // at this level, continue over the elems
             }
             je_sameas_r(CC, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
-            new = move_list(LISTS, &object);
+            new = move_list(LIST, &object);
             new->state = si;
             append_list(newlist, new);
             break;

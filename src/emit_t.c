@@ -7,9 +7,9 @@
 
 #include "libje_private.h"
 
-static void api_start_activity(container_context_t * CC)
+static void api_start_activity(container_CONTEXT_t * CC)
 {
-    context_t *C = CC->context;
+    CONTEXT_t *C = CC->context;
     FILE *chan = C->out;
 
     C->sep = 0;
@@ -25,7 +25,7 @@ static void api_start_activity(container_context_t * CC)
 }
 
 static void
-api_start_state(container_context_t * CC, char class, unsigned char prop, int nest, int repc)
+api_start_state(container_CONTEXT_t * CC, char class, unsigned char prop, int nest, int repc)
 {
     FILE *chan = CC->context->out;
 
@@ -35,7 +35,7 @@ api_start_state(container_context_t * CC, char class, unsigned char prop, int ne
     print_len_frag(chan, NAMEP(class));
 }
 
-static void api_string(context_t * C, elem_t * branch)
+static void api_string(CONTEXT_t * C, elem_t * branch)
 {
     FILE *chan = C->out;
     char sep;
@@ -45,7 +45,7 @@ static void api_string(context_t * C, elem_t * branch)
     print_list(chan, branch, -1, &sep);
 }
 
-static void api_token(context_t * C, char token)
+static void api_token(CONTEXT_t * C, char token)
 {
     FILE *chan = C->out;
 
@@ -53,7 +53,7 @@ static void api_token(context_t * C, char token)
 }
 
 static void
-api_end_state(container_context_t * CC, char class, success_t rc, int nest, int repc)
+api_end_state(container_CONTEXT_t * CC, char class, success_t rc, int nest, int repc)
 {
     FILE *chan = CC->context->out;
 
@@ -61,9 +61,9 @@ api_end_state(container_context_t * CC, char class, success_t rc, int nest, int 
     print_len_frag(chan, NAMEP(class));
 }
 
-static void api_end_activity(container_context_t * CC)
+static void api_end_activity(container_CONTEXT_t * CC)
 {
-    context_t *C = CC->context;
+    CONTEXT_t *C = CC->context;
     FILE *chan = C->out;
 
     C->sep = 0;
@@ -100,7 +100,7 @@ emit_t t_api = { "t",
     /* api_frag */ NULL,
 };
 
-static void api1_act(container_context_t * CC, elem_t * tree)
+static void api1_act(container_CONTEXT_t * CC, elem_t * tree)
 {
     FILE *chan = CC->context->out;
     char sep;

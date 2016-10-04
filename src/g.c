@@ -12,7 +12,7 @@
 #include "fatal.h"   // FIXME - so is this public or private?
                      // or should option processing be in a private function?
 
-static context_t *C;  // the input context - needs to be global for intr()
+static CONTEXT_t *C;  // the input context - needs to be global for intr()
 
 // if interrupted we try to gracefully snapshot the current state 
 static void intr(int s)

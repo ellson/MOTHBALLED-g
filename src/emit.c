@@ -12,16 +12,16 @@
 
 // forward declarations
 #if 0
-static void je_gvrender_list(context_t *C, FILE *chan, elem_t * list);
+static void je_gvrender_list(CONTEXT_t *C, FILE *chan, elem_t * list);
 #endif
 
 // jump table for available emitters 
 static emit_t *emitters[] =
     {&g_api, &g1_api, &g2_api, &g3_api, &t_api, &t1_api, &gv_api};
 
-static void api_act(container_context_t * CC, elem_t *elem)
+static void api_act(container_CONTEXT_t * CC, elem_t *elem)
 {
-    context_t *C = CC->context;
+    CONTEXT_t *C = CC->context;
 
     if (!CC->out)
         return;
@@ -143,7 +143,7 @@ char je_char_prop(unsigned char prop, char noprop)
     return c;
 }
 
-void je_append_token(context_t *C, char **pos, char tok)
+void je_append_token(CONTEXT_t *C, char **pos, char tok)
 {
     // FIXME - check available buffer space
                         // ignore sep before
@@ -152,7 +152,7 @@ void je_append_token(context_t *C, char **pos, char tok)
     C->sep = 0;        // no sep required after tokens
 }
 
-void je_append_string(context_t *C, char **pos, char *string)
+void je_append_string(CONTEXT_t *C, char **pos, char *string)
 {
     int len;
 
@@ -167,7 +167,7 @@ void je_append_string(context_t *C, char **pos, char *string)
     *pos += len;
 }
 
-void je_append_ulong(context_t *C, char **pos, uint64_t integer)
+void je_append_ulong(CONTEXT_t *C, char **pos, uint64_t integer)
 {
     int len;
 
@@ -183,7 +183,7 @@ void je_append_ulong(context_t *C, char **pos, uint64_t integer)
 }
 
 // special case formatter for runtime
-void je_append_runtime(context_t *C, char **pos,
+void je_append_runtime(CONTEXT_t *C, char **pos,
         uint64_t run_sec, uint64_t run_ns)
 {
     int len;
@@ -197,7 +197,7 @@ void je_append_runtime(context_t *C, char **pos,
     *pos += len;
 }
 
-static void je_emit_token(context_t *C, FILE *chan, char tok)
+static void je_emit_token(CONTEXT_t *C, FILE *chan, char tok)
 {
     if (C->style == SHELL_FRIENDLY_STYLE) {
         putc('\n', chan);
@@ -209,7 +209,7 @@ static void je_emit_token(context_t *C, FILE *chan, char tok)
     C->sep = 0;
 }
 
-static void je_emit_close_token(context_t *C, FILE *chan, char tok)
+static void je_emit_close_token(CONTEXT_t *C, FILE *chan, char tok)
 {
     if (C->style == SHELL_FRIENDLY_STYLE) {
         putc('\n', chan);
@@ -222,7 +222,7 @@ static void je_emit_close_token(context_t *C, FILE *chan, char tok)
 }
 
 #if 0
-static void je_gvrender_list(context_t *C, FILE *chan, elem_t * list)
+static void je_gvrender_list(CONTEXT_t *C, FILE *chan, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;
@@ -309,7 +309,7 @@ static void je_gvrender_list(context_t *C, FILE *chan, elem_t * list)
 }
 #endif
 
-void je_emit_list(context_t *C, FILE *chan, elem_t * list)
+void je_emit_list(CONTEXT_t *C, FILE *chan, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;
