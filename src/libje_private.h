@@ -21,10 +21,6 @@ typedef struct ikea_store_s ikea_store_t;
 typedef struct ikea_box_s ikea_box_t;
 
 // private headers
-#include "grammar.h"
-#include "inbuf.h"
-#include "fatal.h"
-#include "list.h"
 #include "hash.h"
 #include "ikea.h"
 #include "emit.h"

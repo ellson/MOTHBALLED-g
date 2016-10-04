@@ -5,9 +5,9 @@ struct context_s {             // input_context
     FILE *out;                 // typically stdout for parser debug outputs
 
     INBUFS_t INBUFS;
+    LISTS_t LISTS;
     input_t IN;
 
-    elem_t *free_elem_list;    // linked list of unused list elems
     char *username;            // set by first call to g_session
     char *hostname;            // ditto
     char has_cousin;           // flag set if a COUSIN is found in any EDGE of the ACT (forward EDGE to ancestors for processing)
@@ -26,9 +26,6 @@ struct context_s {             // input_context
     long stat_patterncount;
     long stat_patternmatches;
     long stat_containercount;
-    long stat_elemmalloc;
-    long stat_elemmax;
-    long stat_elemnow;
 
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe struct - but should be ok for uptime

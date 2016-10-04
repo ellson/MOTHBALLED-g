@@ -2,12 +2,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <assert.h>
+/*
 #include <inttypes.h>
 #include <time.h>
 #include <sys/types.h>
-#include <assert.h>
 
 #include "libje_private.h"
+*/
+
+#include "grammar.h"
+#include "fatal.h"
+#include "inbuf.h"
+#include "list.h"
 
 /**
  * Private function to manage the allocation an elem_t
@@ -15,22 +23,22 @@
  * elem_t are allocated in blocks and maintained in a free_elem_t list.
  * Freeing an elem_t actually means returning to this list.
  *
- * @param C the top-level context in which all lists are managed
+ * @param LISTS the top-level context in which all lists are managed
  * @return a new intialized elem_t
  */
-static elem_t *new_elem_sub(context_t * C)
+static elem_t *new_elem_sub(LISTS_t * LISTS)
 {
     elem_t *elem, *next;
     int i;
 
-    if (!C->free_elem_list) {    // if no elems in free_elem_list
+    if (!LISTS->free_elem_list) {    // if no elems in free_elem_list
 
-        C->free_elem_list = malloc(LISTALLOCNUM * size_elem_t);
-        if (!C->free_elem_list)
+        LISTS->free_elem_list = malloc(LISTALLOCNUM * size_elem_t);
+        if (!LISTS->free_elem_list)
             fatal_perror("Error - malloc(): ");
-        C->stat_elemmalloc++;
+        LISTS->stat_elemmalloc++;
 
-        next = C->free_elem_list;    // link the new elems into free_elem_list
+        next = LISTS->free_elem_list;    // link the new elems into free_elem_list
         i = LISTALLOCNUM;
         while (i--) {
             elem = next++;
@@ -39,15 +47,15 @@ static elem_t *new_elem_sub(context_t * C)
         elem->next = NULL;    // terminate last elem
 
     }
-    elem = C->free_elem_list;    // use first elem from free_elem_list
-    C->free_elem_list = elem->next; // update list to point to next available
+    elem = LISTS->free_elem_list;    // use first elem from free_elem_list
+    LISTS->free_elem_list = elem->next; // update list to point to next available
 
 //  elem->type = NULL;  // private function, so we can rely on callers to initialize
     elem->next = NULL;
 
-    C->stat_elemnow++;        // stats
-    if (C->stat_elemnow > C->stat_elemmax) {
-        C->stat_elemmax = C->stat_elemnow;
+    LISTS->stat_elemnow++;        // stats
+    if (LISTS->stat_elemnow > LISTS->stat_elemmax) {
+        LISTS->stat_elemmax = LISTS->stat_elemnow;
     }
     return elem;
 }
@@ -57,30 +65,31 @@ static elem_t *new_elem_sub(context_t * C)
  * (start address and length).
  * The elem_t is memory managed without caller involvement.
  *
- * @param C the top-level context in which all lists are managed
+ * @param LISTS the top-level context in which all lists are managed
+ * @param INBUFS the top-level context in which all inbufs are managed
  * @param state a one character value stored with the elem, no internal meaning
  * @param len fragment length
  * @param frag pointer to first character of contiguous fragment of len chars
  * @return a new intialized elem_t
  */
-elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag)
+elem_t *new_frag(LISTS_t * LISTS, INBUFS_t * INBUFS, char state, unsigned int len, unsigned char *frag)
 {
     frag_elem_t *frag_elem;
 
-    frag_elem = (frag_elem_t*)new_elem_sub(C);
+    frag_elem = (frag_elem_t*)new_elem_sub(LISTS);
 
-    assert(C->INBUFS.inbuf);
-    assert(C->INBUFS.inbuf->refs >= 0);
+    assert(INBUFS->inbuf);
+    assert(INBUFS->inbuf->refs >= 0);
     assert(frag);
     assert(len > 0);
     // complete frag elem initialization
     frag_elem->type = FRAGELEM;    // type
-    frag_elem->inbuf = C->INBUFS.inbuf;    // record inbuf for ref counting
+    frag_elem->inbuf = INBUFS->inbuf;    // record inbuf for ref counting
     frag_elem->frag = frag;    // pointer to begging of frag
     frag_elem->len = len;    // length of frag
     frag_elem->state = state;    // state_machine state that created this frag
 
-    C->INBUFS.inbuf->refs++;        // increment reference count in inbuf.
+    INBUFS->inbuf->refs++;        // increment reference count in inbuf.
     return (elem_t*)frag_elem;
 }
 
@@ -94,11 +103,11 @@ elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *fra
  * @param hash a long containing a hash value
  * @return a new intialized elem_t
  */
-elem_t *new_hash(context_t * C, uint64_t hash)
+elem_t *new_hash(LISTS_t * LISTS, uint64_t hash)
 {
     hash_elem_t *hash_elem;
 
-    hash_elem = (hash_elem_t*)new_elem_sub(C);
+    hash_elem = (hash_elem_t*)new_elem_sub(LISTS);
 
     // complete frag elem initialization
     hash_elem->type = HASHELEM;     // type
@@ -117,11 +126,11 @@ elem_t *new_hash(context_t * C, uint64_t hash)
  * @param hash a long containing a hash value
  * @return a new intialized elem_t
  */
-elem_t *new_hashname(context_t * C, unsigned char* hash, size_t hash_len)
+elem_t *new_hashname(LISTS_t * LISTS, unsigned char* hash, size_t hash_len)
 {
     hashname_elem_t *hashname_elem;
 
-    hashname_elem = (hashname_elem_t*)new_elem_sub(C);
+    hashname_elem = (hashname_elem_t*)new_elem_sub(LISTS);
 
     // complete frag elem initialization
     hashname_elem->type = HASHNAMEELEM;     // type
@@ -144,13 +153,13 @@ elem_t *new_hashname(context_t * C, unsigned char* hash, size_t hash_len)
  * @param list a header to a list to be cloned
  * @return a new intialized elem_t
  */
-static elem_t *clone_list(context_t * C, elem_t * list)
+static elem_t *clone_list(LISTS_t * LISTS, elem_t * list)
 {
     elem_t *elem;
 
     assert(list->type == (char)LISTELEM);
 
-    elem = new_elem_sub(C);
+    elem = new_elem_sub(LISTS);
 
     elem->type = LISTELEM;         // type
     elem->first = list->first;     // copy details
@@ -174,11 +183,11 @@ static elem_t *clone_list(context_t * C, elem_t * list)
  * @param list a header to a list to be moved
  * @return a new intialized elem_t which is now the header of the moved list
  */
-elem_t *move_list(context_t * C, elem_t * list)
+elem_t *move_list(LISTS_t * LISTS, elem_t * list)
 {
     elem_t *elem;
 
-    elem = clone_list(C, list);
+    elem = clone_list(LISTS, list);
 
     list->first = NULL;    // reset old header
     list->last = NULL;
@@ -199,11 +208,11 @@ elem_t *move_list(context_t * C, elem_t * list)
  * @param list a header to a list to be referenced
  * @return a new intialized elem_t which is now also a header of the referenced list
  */
-elem_t *ref_list(context_t * C, elem_t * list)
+elem_t *ref_list(LISTS_t * LISTS, elem_t * list)
 {
     elem_t *elem;
 
-    elem = clone_list(C, list);
+    elem = clone_list(LISTS, list);
 
     if (list->first && list->first->type == LISTELEM) {
         list->first->refs++;    // increment ref count
@@ -252,9 +261,8 @@ void append_list(elem_t * list, elem_t * elem)
  * @param C the top-level context in which all lists are managed
  * @param list a header to the list to be freed.
  */
-void free_list(context_t * C, elem_t * list)
+void free_list(LISTS_t * LISTS, INBUFS_t * INBUFS, elem_t * list)
 {
-    input_t *IN = &(C->IN);
     elem_t *elem, *next;
     frag_elem_t *frag_elem;
 
@@ -271,7 +279,7 @@ void free_list(context_t * C, elem_t * list)
             frag_elem = (frag_elem_t*) elem;
             assert(frag_elem->inbuf->refs > 0);
             if (--(frag_elem->inbuf->refs) == 0) {
-                free_inbuf(&(C->INBUFS), frag_elem->inbuf);
+                free_inbuf(INBUFS, frag_elem->inbuf);
             }
             break;
         case LISTELEM:
@@ -279,7 +287,7 @@ void free_list(context_t * C, elem_t * list)
             if (--(elem->refs) > 0) {
                 goto done;    // stop at any point with additional refs
             }
-            free_list(C, elem); // recursively free lists that have no references
+            free_list(LISTS, INBUFS, elem); // recursively free lists that have no references
             break;
         case HASHELEM:
         case HASHNAMEELEM:
@@ -288,10 +296,10 @@ void free_list(context_t * C, elem_t * list)
         }
 
         // insert elem at beginning of freelist
-        elem->next = C->free_elem_list;
-        C->free_elem_list = elem;
+        elem->next = LISTS->free_elem_list;
+        LISTS->free_elem_list = elem;
 
-        C->stat_elemnow--;    // maintain stats
+        LISTS->stat_elemnow--;    // maintain stats
 
         elem = next;
     }

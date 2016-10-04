@@ -52,6 +52,7 @@ void je_pattern(container_context_t * CC, elem_t * root, elem_t * subject)
 {
     elem_t *pattern_acts, *pact, *psubj, *pattr;
     context_t *C = CC->context;
+    LISTS_t * LISTS = &(C->LISTS);
 
     assert(root);
     assert(subject);
@@ -87,10 +88,10 @@ P(pact);
             // insert matched attrubutes, contents,
             // and then the subject again
             
-            append_list(root, ref_list(C, subject));
+            append_list(root, ref_list(LISTS, subject));
             emit_subject(CC, subject);
             if (pattr && (state_t)pattr->state == ATTRIBUTES) {
-                append_list(root, ref_list(C, pattr));
+                append_list(root, ref_list(LISTS, pattr));
                 emit_attributes(CC, pattr);
             }
 

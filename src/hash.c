@@ -167,6 +167,7 @@ success_t je_base64_to_long(const char b64string[], uint64_t *hash)
  */
 hash_elem_t *je_hash_bucket(context_t * C, uint64_t hash)
 {
+    LISTS_t * LISTS = &(C->LISTS);
     elem_t *elem, **next;
 
     next = &(C->hash_buckets[(hash & 0x3F)]);
@@ -177,7 +178,7 @@ hash_elem_t *je_hash_bucket(context_t * C, uint64_t hash)
         }
         next = &(elem->next);
     }
-    elem = new_hash(C, hash);
+    elem = new_hash(LISTS, hash);
     *next = elem;
     return (hash_elem_t*)elem;
 }

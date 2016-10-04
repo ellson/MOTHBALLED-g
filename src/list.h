@@ -1,5 +1,10 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+typedef struct elem_s elem_t;
+typedef struct frag_elem_s frag_elem_t;
+typedef struct hash_elem_s hash_elem_t;
+typedef struct hashname_elem_s hashname_elem_t;
+
 typedef enum {
     LISTELEM = 0, // must be 0 for static or calloc allocation of list headers
     FRAGELEM = 1,
@@ -9,6 +14,15 @@ typedef enum {
 
 // Print a list (tree) -  used for debugging
 #define P(L) {C->sep = ' ';print_list(stdout, L, 0, &(C->sep));putc('\n', stdout);}
+
+typedef struct LISTS_s LISTS_t;
+
+struct LISTS_s {
+    elem_t *free_elem_list;    // linked list of unused list elems
+    long stat_elemmalloc;
+    long stat_elemmax;
+    long stat_elemnow;
+};
 
 struct elem_s {          // castable from frag_elem_s and hash_elem_s -- sizes must match (32bytes)
     elem_t *next;
@@ -49,13 +63,13 @@ struct hashname_elem_s {     // castable to elem_s  -- size must match (32bytes)
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
-elem_t *new_hash(context_t * C, uint64_t hash);
-elem_t *new_hashname(context_t * C, unsigned char *hash, size_t hash_len);
-elem_t *new_frag(context_t * C, char state, unsigned int len, unsigned char *frag);
-elem_t *move_list(context_t * C, elem_t * list);
-elem_t *ref_list(context_t * C, elem_t * list);
+elem_t *new_hash(LISTS_t * LISTS, uint64_t hash);
+elem_t *new_hashname(LISTS_t * LISTS, unsigned char *hash, size_t hash_len);
+elem_t *new_frag(LISTS_t * LISTS, INBUFS_t * INBUFS, char state, unsigned int len, unsigned char *frag);
+elem_t *move_list(LISTS_t * LISTS, elem_t * list);
+elem_t *ref_list(LISTS_t * LISTS, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);
-void free_list(context_t * C, elem_t * list);
+void free_list(LISTS_t * LISTS, INBUFS_t * INBUFS, elem_t * list);
 int print_len_frag(FILE * chan, unsigned char *len_frag);
 void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep);
 void print_list(FILE * chan, elem_t * list, int nest, char *sep);

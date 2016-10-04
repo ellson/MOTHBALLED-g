@@ -25,6 +25,8 @@ void je_sameas(container_context_t * CC, elem_t * subject)
     elem_t *newsubject, *oldsubject, *nextold;
     elem_t subject_rewrite = { 0 };
     context_t * C = CC->context;
+    LISTS_t * LISTS = &(C->LISTS);
+    INBUFS_t * INBUFS = &(C->INBUFS);
 
     newsubject = &subject_rewrite;
     oldsubject = &(CC->subject);
@@ -37,8 +39,8 @@ void je_sameas(container_context_t * CC, elem_t * subject)
     // rewrite subject into newsubject with any EQL elements substituted from oldsubject
     je_sameas_r(CC, subject, &nextold, newsubject);
 
-    free_list(C, subject);     // free original subject ( although refs are retained in other lists )
-    free_list(C, oldsubject);    // free the previous oldsubject
+    free_list(LISTS, INBUFS, subject);     // free original subject ( although refs are retained in other lists )
+    free_list(LISTS, INBUFS, oldsubject);    // free the previous oldsubject
 
     newsubject->state = SUBJECT;  
     *oldsubject = *newsubject;    // save the newsubject as oldsubject
@@ -62,6 +64,7 @@ static void je_sameas_r(container_context_t * CC, elem_t * subject, elem_t ** ne
     state_t si;
     context_t * C = CC->context;
     input_t * IN = &(C->IN);
+    LISTS_t * LISTS = &(C->LISTS);
 
     assert(subject->type == (char)LISTELEM);
 
@@ -106,12 +109,12 @@ if (*nextold) {
                 }
             }
             je_sameas_r(CC, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
-            new = move_list(C, &object);
+            new = move_list(LISTS, &object);
             new->state = si;
             append_list(newlist, new);
             break;
         case NODEID:
-            new = ref_list(C, elem);
+            new = ref_list(LISTS, elem);
             append_list(newlist, new);
             if (*nextold) {    // doesn't matter if old is shorter
                 // ... as long as no further substitutions are needed
@@ -120,7 +123,7 @@ if (*nextold) {
             break;
         case EQL:
             if (*nextold) {
-                new = ref_list(C, *nextold);
+                new = ref_list(LISTS, *nextold);
                 append_list(newlist, new);
                 *nextold = (*nextold)->next;
                 C->stat_sameas++;
@@ -135,7 +138,7 @@ if (*nextold) {
                 *nextold = (*nextold)->next;    // at this level, continue over the elems
             }
             je_sameas_r(CC, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
-            new = move_list(C, &object);
+            new = move_list(LISTS, &object);
             new->state = si;
             append_list(newlist, new);
             break;

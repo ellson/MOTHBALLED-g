@@ -1,11 +1,14 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#include <stdint.h>
+
+#include "grammar.h"
+#include "fatal.h"
+#include "inbuf.h"
+#include "list.h"
+
 //opaque structs from the public interface
 typedef struct context_s context_t;
-typedef struct elem_s elem_t;
-typedef struct frag_elem_s frag_elem_t;
-typedef struct hash_elem_s hash_elem_t;
-typedef struct hashname_elem_s hashname_elem_t;
 
 typedef enum {
     SUCCESS,

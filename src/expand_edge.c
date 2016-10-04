@@ -20,6 +20,8 @@ static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
  */
 void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
 {
+    LISTS_t * LISTS = &(C->LISTS);
+    INBUFS_t * INBUFS = &(C->INBUFS);
     elem_t *leg, *epset, *ep, *new;
     elem_t newlist = { 0 };
     elem_t newepset = { 0 };
@@ -31,11 +33,11 @@ void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
     while (leg) {
         assert((state_t)leg->state == LEG);
         epset = leg->first;
-        new = ref_list(C, epset);
+        new = ref_list(LISTS, epset);
         if ((state_t)epset->state == ENDPOINT) { // put singletons into lists too
             newepset.state = ENDPOINTSET;
             append_list(&newepset, new);
-            new = move_list(C, &newepset);
+            new = move_list(LISTS, &newepset);
         }
         append_list(&newlist, new);
 
@@ -46,7 +48,7 @@ void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
             assert((state_t)ep->state == ENDPOINT);                    
             switch (ep->first->state) {
             case SIBLING:
-                new = ref_list(C, ep->first);
+                new = ref_list(LISTS, ep->first);
                 append_list(nodes, new);
                 // FIXME - induce CHILDren in this node's container
                 break;
@@ -59,7 +61,7 @@ void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
                 // this case occurs if '=' matches an epset
                 //     <(a b) c>
                 //     <= d>
-                new = ref_list(C, ep->first);
+                new = ref_list(LISTS, ep->first);
                 append_list(nodes, new);
                 break;
             default:
@@ -72,7 +74,7 @@ void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
     }
     // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
     je_expand_r(C, &newepset, newlist.first, edges);
-    free_list(C, &newlist);
+    free_list(LISTS, INBUFS, &newlist);
 }
 /**
  * this function expands ENDPOINTSETs
@@ -86,6 +88,8 @@ void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
  */
 static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
 {
+    LISTS_t * LISTS = &(C->LISTS);
+    INBUFS_t * INBUFS = &(C->INBUFS);
     elem_t newedge = { 0 };
     elem_t *ep, *new;
 
@@ -94,13 +98,13 @@ static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
         while(ep) {
 
             // append the next ep for this leg
-            new = ref_list(C, ep); 
+            new = ref_list(LISTS, ep); 
             append_list(epset, new);
             
             // recursively process the rest of the legs
             je_expand_r(C, epset, leg->next, edges);
 
-            free_list(C, new);
+            free_list(LISTS, INBUFS, new);
 
             // and iterate to next ep for this leg
             ep = ep->next;
@@ -111,12 +115,12 @@ static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
         newedge.state = EDGE;
         ep = epset->first;
         while (ep) {
-            new = ref_list(C, ep);
+            new = ref_list(LISTS, ep);
             append_list(&newedge, new);
             ep = ep->next;
         }
         // and append the new simplified edge to the result
-        new = move_list(C, &newedge);
+        new = move_list(LISTS, &newedge);
         append_list(edges, new);
     }
 }
