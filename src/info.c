@@ -224,6 +224,10 @@ char * je_stats(context_t *C)
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, sizeof(inbuf_t));
 
+    je_append_string  (C, &pos, "inbufcapacity");
+    je_append_token   (C, &pos, '=');
+    je_append_ulong   (C, &pos, INBUFSIZE);
+
     je_append_string  (C, &pos, "inbufmax");
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, C->TOKENS.LISTS.INBUFS.stat_inbufmax);
