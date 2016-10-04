@@ -24,7 +24,6 @@ typedef struct ikea_box_s ikea_box_t;
 #include "hash.h"
 #include "ikea.h"
 #include "emit.h"
-#include "token.h"
 #include "context.h"
 #include "pattern.h"
 #include "sameas.h"

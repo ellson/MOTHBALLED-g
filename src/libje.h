@@ -6,14 +6,10 @@
 #include "fatal.h"
 #include "inbuf.h"
 #include "list.h"
+#include "token.h"
 
 //opaque structs from the public interface
 typedef struct context_s context_t;
-
-typedef enum {
-    SUCCESS,
-    FAIL
-} success_t;
 
 // libje.c
 context_t *je_initialize( int *argc, char *argv[], int optind );

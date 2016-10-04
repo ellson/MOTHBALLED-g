@@ -84,7 +84,7 @@ CC->out = stdout;
         if (TOKENS->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
-            je_parse_error(TOKENS, TOKENS->state, "Parse error. Last good state was:");
+            je_token_error(TOKENS, TOKENS->state, "Parse error. Last good state was:");
         }
     }
     C->containment--;
@@ -149,14 +149,14 @@ je_parse_r(container_context_t * CC, elem_t * root,
     TOKENS->ei = TOKENS->insi;    // the char class that ended the last token
 
     // Whitespace
-    if ((rc = je_parse_whitespace(C)) == FAIL) {
+    if ((rc = je_token_whitespace(TOKENS)) == FAIL) {
         goto done;    // EOF during whitespace
     }
 
     // Special character tokens
     if (si == TOKENS->insi) {    // single character terminals matching state_machine expectation
         TOKENS->bi = TOKENS->insi;
-        rc = je_parse_token(C);
+        rc = je_token(TOKENS);
         TOKENS->ei = TOKENS->insi;
         goto done;
     }
@@ -171,13 +171,13 @@ je_parse_r(container_context_t * CC, elem_t * root,
         break;
 
     case STRING:            // Strings
-        rc = je_parse_string(C, &branch);
+        rc = je_token_string(TOKENS, &branch);
         TOKENS->bi = TOKENS->insi;    // the char class that terminates the STRING
         goto done;
         break;
 
     case VSTRING:            // Value Strings
-        rc = je_parse_vstring(C, &branch);
+        rc = je_token_vstring(TOKENS, &branch);
         TOKENS->bi = TOKENS->insi;    // the char class that terminates the VSTRING
         goto done;
         break;

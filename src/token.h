@@ -29,8 +29,13 @@ struct TOKENS_s {
     long stat_filecount;       // various stats
 };
 
-void je_parse_error(TOKENS_t * IN, state_t si, char *message);
-success_t je_parse_whitespace(context_t * C);
-success_t je_parse_string(context_t * C, elem_t * fraglist);
-success_t je_parse_vstring(context_t * C, elem_t * fraglist);
-success_t je_parse_token(context_t * C);
+typedef enum {
+    SUCCESS,
+    FAIL
+} success_t;
+
+void je_token_error(TOKENS_t * TOKENS, state_t si, char *message);
+success_t je_token_whitespace(TOKENS_t * TOKENS);
+success_t je_token_string(TOKENS_t * TOKENS, elem_t * fraglist);
+success_t je_token_vstring(TOKENS_t * TOKENS, elem_t * fraglist);
+success_t je_token(TOKENS_t * TOKENS);

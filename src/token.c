@@ -1,17 +1,15 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 #include <stdio.h>
-#include <stdarg.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
-#include <inttypes.h>
-#include <time.h>
-#include <sys/types.h>
 #include <assert.h>
 
-
-#include "libje_private.h"
-
+#include "inbuf.h"
+#include "grammar.h"
+#include "list.h"
+#include "token.h"
 
 /**
  * report an error during parsing with context info.
@@ -20,7 +18,7 @@
  * @param si parser state
  * @param si error message
  */
-void je_parse_error(TOKENS_t * TOKENS, state_t si, char *message)
+void je_token_error(TOKENS_t * TOKENS, state_t si, char *message)
 {
     unsigned char *p, c;
 
@@ -42,13 +40,12 @@ void je_parse_error(TOKENS_t * TOKENS, state_t si, char *message)
 /**
  * fill buffers from input files
  *
- * @param C context
+ * @param TOKENS context
  * @return success/fail
  */
-static success_t je_more_in(context_t * C)
+static success_t je_more_in(TOKENS_t * TOKENS)
 {
-    TOKENS_t *TOKENS = (TOKENS_t *)C;
-    INBUFS_t *INBUFS = (INBUFS_t *)C;
+    INBUFS_t *INBUFS = (INBUFS_t *)TOKENS;
     int size;
 
     if (INBUFS->inbuf) {        // if there is an existing active-inbuf
@@ -74,13 +71,12 @@ static success_t je_more_in(context_t * C)
             //   be more user-friendly to check that we are not in a quote string
             //   whenever EOF occurs.
             if (TOKENS->in_quote) {
-                je_parse_error(TOKENS, NLL, "EOF in the middle of a quote string");
+                je_token_error(TOKENS, NLL, "EOF in the middle of a quote string");
             }
 // FIXME don't close stdin
 // FIXME - stall for more more input   (inotify events ?)
             fclose(TOKENS->file);    // then close it and indicate no active input file
             TOKENS->file = NULL;
-            emit_end_file(C);
         }
     }
     if (!TOKENS->file) {        // if there is no active input file
@@ -94,12 +90,11 @@ static success_t je_more_in(context_t * C)
             } else {
                 TOKENS->file = fopen(TOKENS->filename, "rb");
                 if (!TOKENS->file) {
-                    je_parse_error(TOKENS, ACTIVITY, "fopen fail");
+                    je_token_error(TOKENS, ACTIVITY, "fopen fail");
                 }
             }
             TOKENS->linecount_at_start = TOKENS->stat_lfcount ? TOKENS->stat_lfcount : TOKENS->stat_crcount;
             TOKENS->stat_filecount++;
-            emit_start_file(C);
         } else {
             return FAIL;    // no more input available
         }
@@ -118,9 +113,9 @@ static success_t je_more_in(context_t * C)
 /**
  * consume comment fagments
  *
- * @param C context
+ * @param TOKENS context
  */
-static void je_parse_comment_fragment(TOKENS_t * TOKENS)
+static void je_token_comment_fragment(TOKENS_t * TOKENS)
 {
     unsigned char *in, c;
 
@@ -136,21 +131,20 @@ static void je_parse_comment_fragment(TOKENS_t * TOKENS)
 /**
  * consume all comment up to next token, or EOF
  *
- * @param C context
+ * @param TOKENS context
  * @return success/fail
  */
-static success_t je_parse_comment(context_t * C)
+static success_t je_token_comment(TOKENS_t * TOKENS)
 {
-    TOKENS_t *TOKENS = (TOKENS_t *)C;
     success_t rc;
 
     rc = SUCCESS;
-    je_parse_comment_fragment(TOKENS);    // eat comment
+    je_token_comment_fragment(TOKENS);    // eat comment
     while (TOKENS->insi == NLL) {    // end_of_buffer, or EOF, during comment
-        if ((rc = je_more_in(C) == FAIL)) {
+        if ((rc = je_more_in(TOKENS) == FAIL)) {
             break;    // EOF
         }
-        je_parse_comment_fragment(TOKENS);    // eat comment
+        je_token_comment_fragment(TOKENS);    // eat comment
     }
     return rc;
 }
@@ -160,7 +154,7 @@ static success_t je_parse_comment(context_t * C)
  *
  * @ TOKENS context
  */
-static void je_parse_whitespace_fragment(TOKENS_t * TOKENS)
+static void je_token_whitespace_fragment(TOKENS_t * TOKENS)
 {
     unsigned char *in, c;
     state_t insi;
@@ -186,21 +180,20 @@ static void je_parse_whitespace_fragment(TOKENS_t * TOKENS)
 /**
  * consume all non-comment whitespace up to next token, or EOF
  *
- * @param C context
+ * @param TOKENS context
  * @return success/fail
  */
-static success_t je_parse_non_comment(context_t * C)
+static success_t je_token_non_comment(TOKENS_t * TOKENS)
 {
-    TOKENS_t *TOKENS = (TOKENS_t *)C;
     success_t rc;
 
     rc = SUCCESS;
-    je_parse_whitespace_fragment(TOKENS);    // eat whitespace
+    je_token_whitespace_fragment(TOKENS);    // eat whitespace
     while (TOKENS->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
-        if ((rc = je_more_in(C) == FAIL)) {
+        if ((rc = je_more_in(TOKENS) == FAIL)) {
             break;    // EOF
         }
-        je_parse_whitespace_fragment(TOKENS);    // eat all remaining leading whitespace
+        je_token_whitespace_fragment(TOKENS);    // eat all remaining leading whitespace
     }
     return rc;
 }
@@ -208,24 +201,23 @@ static success_t je_parse_non_comment(context_t * C)
 /**
  * consume all whitespace or comments up to next token, or EOF
  *
- * @param C context
+ * @param TOKENS context
  * @return success/fail
  */
-success_t je_parse_whitespace(context_t * C)
+success_t je_token_whitespace(TOKENS_t * TOKENS)
 {
-    TOKENS_t *TOKENS = (TOKENS_t *)C;
     success_t rc;
 
     rc = SUCCESS;
     while (1) {
-        if ((rc = je_parse_non_comment(C)) == FAIL) {
+        if ((rc = je_token_non_comment(TOKENS)) == FAIL) {
             break;
         }
         if (TOKENS->insi != OCT) {
             break;
         }
         while (TOKENS->insi == OCT) {
-            if ((rc = je_parse_comment(C)) == FAIL) {
+            if ((rc = je_token_comment(TOKENS)) == FAIL) {
                 break;
             }
         }
@@ -236,14 +228,13 @@ success_t je_parse_whitespace(context_t * C)
 /**
  * load STRING fragments
  *
- * @param C context
+ * @param TOKENS context
  * @param fraglist - list of frags constituting a string
  * @return length of string
  */
-static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
+static int je_token_string_fragment(TOKENS_t * TOKENS, elem_t * fraglist)
 {
-    TOKENS_t *TOKENS = (TOKENS_t *)C;
-    LISTS_t *LISTS = (LISTS_t *)C;
+    LISTS_t *LISTS = (LISTS_t *)TOKENS;
     unsigned char *frag;
     state_t insi;
     int slen, len;
@@ -307,7 +298,6 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
             break;
         }
         append_list(fraglist, elem);
-        emit_frag(C, len, frag);
         TOKENS->stat_fragcount++;
     }
     return slen;
@@ -316,23 +306,22 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
 /**
  * collect fragments to form a STRING token
  *
- * @param C context
+ * @param TOKENS context
  * @param fraglist
  * @return success/fail
  */
  
-success_t je_parse_string(context_t * C, elem_t * fraglist)
+success_t je_token_string(TOKENS_t * TOKENS, elem_t * fraglist)
 {
-    TOKENS_t *TOKENS = (TOKENS_t *)C;
     int len, slen;
 
     TOKENS->has_quote = 0;
-    slen = je_parse_string_fragment(C, fraglist);    // leading string
+    slen = je_token_string_fragment(TOKENS, fraglist);    // leading string
     while (TOKENS->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
-        if ((je_more_in(C) == FAIL)) {
+        if ((je_more_in(TOKENS) == FAIL)) {
             break;    // EOF
         }
-        if ((len = je_parse_string_fragment(C, fraglist)) == 0) {
+        if ((len = je_token_string_fragment(TOKENS, fraglist)) == 0) {
             break;
         }
         slen += len;
@@ -344,7 +333,6 @@ success_t je_parse_string(context_t * C, elem_t * fraglist)
         } else {
             fraglist->state = ABC;
         }
-        emit_string(C, fraglist);
         return SUCCESS;
     }
     return FAIL;
@@ -355,14 +343,13 @@ success_t je_parse_string(context_t * C, elem_t * fraglist)
  *
  * FIXME - add support for additonal quoting formats  (HTML-like, ...)
  *
- * @param C context
+ * @param TOKENS context
  * @param fraglist
  * @return length of string
  */
-static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
+static int je_token_vstring_fragment(TOKENS_t * TOKENS, elem_t * fraglist)
 {
-    TOKENS_t *TOKENS = (TOKENS_t *)C;
-    LISTS_t *LISTS = (LISTS_t *)C;
+    LISTS_t *LISTS = (LISTS_t *)TOKENS;
     unsigned char *frag;
     state_t insi;
     int slen, len;
@@ -439,7 +426,6 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
             break;
         }
         append_list(fraglist, elem);
-        emit_frag(C, len, frag);
         TOKENS->stat_fragcount++;
     }
     return slen;
@@ -448,22 +434,21 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
 /**
  * collect fragments to form a VSTRING token
  *
- * @param C context
+ * @param TOKENS context
  * @param fraglist
  * @return success/fail
  */
-success_t je_parse_vstring(context_t * C, elem_t * fraglist)
+success_t je_token_vstring(TOKENS_t * TOKENS, elem_t * fraglist)
 {
-    TOKENS_t *TOKENS = (TOKENS_t *)C;
     int len, slen;
 
     TOKENS->has_quote = 0;
-    slen = je_parse_vstring_fragment(C, fraglist);    // leading string
+    slen = je_token_vstring_fragment(TOKENS, fraglist);    // leading string
     while (TOKENS->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
-        if ((je_more_in(C) == FAIL)) {
+        if ((je_more_in(TOKENS) == FAIL)) {
             break;    // EOF
         }
-        if ((len = je_parse_vstring_fragment(C, fraglist)) == 0) {
+        if ((len = je_token_vstring_fragment(TOKENS, fraglist)) == 0) {
             break;
         }
         slen += len;
@@ -475,7 +460,6 @@ success_t je_parse_vstring(context_t * C, elem_t * fraglist)
         } else {
             fraglist->state = ABC;
         }
-        emit_string(C, fraglist);  // FIXME ?
         return SUCCESS;
     } 
     return FAIL;
@@ -487,13 +471,11 @@ success_t je_parse_vstring(context_t * C, elem_t * fraglist)
  * @param TOKENS context
  * @return success/fail
  */
-success_t je_parse_token(context_t * C)
+success_t je_token(TOKENS_t * TOKENS)
 {
-    TOKENS_t *TOKENS = (TOKENS_t *)C;
     char token;
 
     token = state_token[TOKENS->insi];
-    emit_token(C, token);
     TOKENS->insi = char2state[*++(TOKENS->in)];
     return SUCCESS;
 }

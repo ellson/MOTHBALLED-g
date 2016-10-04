@@ -1,5 +1,6 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+typedef struct LISTS_s LISTS_t;
 typedef struct elem_s elem_t;
 typedef struct frag_elem_s frag_elem_t;
 typedef struct hash_elem_s hash_elem_t;
@@ -14,8 +15,6 @@ typedef enum {
 
 // Print a list (tree) -  used for debugging
 #define P(L) {C->sep = ' ';print_list(stdout, L, 0, &(C->sep));putc('\n', stdout);}
-
-typedef struct LISTS_s LISTS_t;
 
 struct LISTS_s {
     INBUFS_t INBUFS;        // Header for inbug management   

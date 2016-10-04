@@ -87,9 +87,9 @@ if (*nextold) {
             } else {
                 if (si != CC->subject_type) {
                     if (si == NODE) {
-                        je_parse_error(TOKENS, si, "EDGE subject includes");
+                        je_token_error(TOKENS, si, "EDGE subject includes");
                     } else {
-                        je_parse_error(TOKENS, si, "NODE subject includes");
+                        je_token_error(TOKENS, si, "NODE subject includes");
                     }
                 }
             }
@@ -127,7 +127,7 @@ if (*nextold) {
                 *nextold = (*nextold)->next;
                 C->stat_sameas++;
             } else {
-                je_parse_error(TOKENS, si, "No corresponding object found for same-as substitution");
+                je_token_error(TOKENS, si, "No corresponding object found for same-as substitution");
             }
             break;
         default:

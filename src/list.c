@@ -5,10 +5,10 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "grammar.h"
-#include "fatal.h"
 #include "inbuf.h"
+#include "grammar.h"
 #include "list.h"
+#include "fatal.h"
 
 /**
  * Private function to manage the allocation an elem_t
