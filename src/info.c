@@ -184,25 +184,33 @@ char * je_stats(CONTEXT_t *C)
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, 1 + (C->TOKEN.stat_lfcount ? C->TOKEN.stat_lfcount : C->TOKEN.stat_crcount));
 
-    je_append_string  (C, &pos, "acts");
+    je_append_string  (C, &pos, "inacts");
     je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->stat_actcount);
+    je_append_ulong   (C, &pos, C->stat_inactcount);
 
-    je_append_string  (C, &pos, "acts_per_second");
+    je_append_string  (C, &pos, "inacts_per_second");
     je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->stat_actcount*TEN9/runtime);
+    je_append_ulong   (C, &pos, C->stat_inactcount*TEN9/runtime);
 
     je_append_string  (C, &pos, "sameas");
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, C->stat_sameas);
 
-    je_append_string  (C, &pos, "patterns");
+    je_append_string  (C, &pos, "patternacts");
     je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->stat_patterncount);
+    je_append_ulong   (C, &pos, C->stat_patternactcount);
+
+    je_append_string  (C, &pos, "nonpatternacts");
+    je_append_token   (C, &pos, '=');
+    je_append_ulong   (C, &pos, C->stat_nonpatternactcount);
 
     je_append_string  (C, &pos, "patternmatches");
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, C->stat_patternmatches);
+
+    je_append_string  (C, &pos, "outacts");
+    je_append_token   (C, &pos, '=');
+    je_append_ulong   (C, &pos, C->stat_outactcount);
 
     je_append_string  (C, &pos, "strings");
     je_append_token   (C, &pos, '=');

@@ -19,9 +19,11 @@ struct context_s {             // input_context
     ikea_store_t *ikea_store;  // persistency
     ikea_box_t *namehash_buckets[64];
     elem_t *hash_buckets[64];  // 64 buckets of name hashes and FILE*.
-    long stat_actcount;
+    long stat_inactcount;
+    long stat_outactcount;
     long stat_sameas;
-    long stat_patterncount;
+    long stat_patternactcount;
+    long stat_nonpatternactcount;
     long stat_patternmatches;
     long stat_containercount;
 

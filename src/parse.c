@@ -262,9 +262,10 @@ je_parse_r(container_CONTEXT_t * CC, elem_t * root,
     if (rc == SUCCESS) {
         switch (si) {
         case ACT:
+            C->stat_inactcount++;
             if (CC->is_pattern) {   // flag was set by SUBJECT in previous ACT
                                     //  save entire previous ACT in a list of pattern_acts
-                C->stat_patterncount++;
+                C->stat_patternactcount++;
                 if (CC->subject_type == NODE) {
                     append_list(&(CC->node_pattern_acts), move_list(LIST, &branch));
 
@@ -273,7 +274,7 @@ je_parse_r(container_CONTEXT_t * CC, elem_t * root,
                     append_list(&(CC->edge_pattern_acts), move_list(LIST, &branch));
                 }
             } else {
-                C->stat_actcount++;
+                C->stat_nonpatternactcount++;
 #if 0
 P(&branch);
 #endif
@@ -289,6 +290,7 @@ P(&branch);
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 elem = root->first;
                 while (elem) {
+                    C->stat_outactcount++;
                     emit_act(CC, elem);  // emit hook for rewritten act
                     je_emit_ikea(CC, elem);  // primary emitter to ikea store
 
