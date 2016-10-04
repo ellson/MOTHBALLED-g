@@ -1,8 +1,6 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-typedef struct TOKENS_s TOKENS_t;
-
-struct TOKENS_s {
+typedef struct {
     LISTS_t LISTS;             // Must be first (to allow casting from context_t)
 
     int *pargc;                // remaining filenames from command line
@@ -27,7 +25,7 @@ struct TOKENS_s {
     long stat_stringcount;
     long stat_fragcount;
     long stat_filecount;       // various stats
-};
+} TOKENS_t;
 
 typedef enum {
     SUCCESS,

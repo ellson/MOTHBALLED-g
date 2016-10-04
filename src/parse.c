@@ -1,5 +1,6 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#if 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +11,22 @@
 #include <assert.h>
 
 #include "libje_private.h"
+
+#else
+
+#include <stdio.h>
+// #include <stdlib.h>
+#include <stdint.h>
+// #include <string.h>
+#include <assert.h>
+
+#include "inbuf.h"
+#include "grammar.h"
+#include "list.h"
+#include "token.h"
+#include "context.h"
+
+#endif
 
 // forward declarations
 static success_t

@@ -1,11 +1,5 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-typedef struct LISTS_s LISTS_t;
-typedef struct elem_s elem_t;
-typedef struct frag_elem_s frag_elem_t;
-typedef struct hash_elem_s hash_elem_t;
-typedef struct hashname_elem_s hashname_elem_t;
-
 typedef enum {
     LISTELEM = 0, // must be 0 for static or calloc allocation of list headers
     FRAGELEM = 1,
@@ -16,14 +10,7 @@ typedef enum {
 // Print a list (tree) -  used for debugging
 #define P(L) {C->sep = ' ';print_list(stdout, L, 0, &(C->sep));putc('\n', stdout);}
 
-struct LISTS_s {
-    INBUFS_t INBUFS;        // Header for inbug management   
-    elem_t *free_elem_list;    // linked list of unused list elems
-    long stat_elemmalloc;
-    long stat_elemmax;
-    long stat_elemnow;
-};
-
+typedef struct elem_s elem_t;
 struct elem_s {          // castable from frag_elem_s and hash_elem_s -- sizes must match (32bytes)
     elem_t *next;
     elem_t *first;
@@ -33,6 +20,7 @@ struct elem_s {          // castable from frag_elem_s and hash_elem_s -- sizes m
     char state;          // state_machine state that generated this list
 };
 
+typedef struct frag_elem_s frag_elem_t;
 struct frag_elem_s {     // castable to elem_s  -- size must match (32bytes)
     frag_elem_t *next;
     inbuf_t *inbuf;      // inbuf containing frag - for memory management
@@ -42,6 +30,7 @@ struct frag_elem_s {     // castable to elem_s  -- size must match (32bytes)
     char state;          // state_machine state that generated this list
 };
 
+typedef struct hash_elem_s hash_elem_t;
 struct hash_elem_s {     // castable to elem_s  -- size must match (32bytes)
     hash_elem_t *next;
     uint64_t hash;       // hash value
@@ -51,6 +40,7 @@ struct hash_elem_s {     // castable to elem_s  -- size must match (32bytes)
     char state;          // state_machine state that generated this list
 };
 
+typedef struct hashname_elem_s hashname_elem_t;
 struct hashname_elem_s {     // castable to elem_s  -- size must match (32bytes)
     hash_elem_t *next;
     char *hashname;      // a filename constructed from a hash of the subject
@@ -59,6 +49,14 @@ struct hashname_elem_s {     // castable to elem_s  -- size must match (32bytes)
     char type;           // HASHNAMEELEM
     char state;          // unused
 };
+
+typedef struct {
+    INBUFS_t INBUFS;        // Header for inbug management   
+    elem_t *free_elem_list;    // linked list of unused list elems
+    long stat_elemmalloc;
+    long stat_elemmax;
+    long stat_elemnow;
+} LISTS_t;
 
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
