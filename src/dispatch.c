@@ -55,7 +55,6 @@ void je_dispatch(container_context_t * CC, elem_t * plist)
 {
     context_t *C = CC->context;
     LISTS_t * LISTS = &(C->LISTS);
-    INBUFS_t * INBUFS = &(C->INBUFS);
     elem_t attributes = { 0 };
     elem_t nodes = { 0 };
     elem_t edges = { 0 };
@@ -71,7 +70,7 @@ void je_dispatch(container_context_t * CC, elem_t * plist)
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
     //                      for each EDGE, generate new ACT: verb edge attributes
 
-    free_list(LISTS, INBUFS, plist);  // free old ACT to be replace by these new expanded ACTS
+    free_list(LISTS, plist);  // free old ACT to be replace by these new expanded ACTS
     switch (CC->subject_type) {
     case NODE:
         pelem = nodes.first;
@@ -106,9 +105,9 @@ void je_dispatch(container_context_t * CC, elem_t * plist)
         break;
     }
 
-    free_list(LISTS, INBUFS, &attributes);
-    free_list(LISTS, INBUFS, &nodes);
-    free_list(LISTS, INBUFS, &edges);
+    free_list(LISTS, &attributes);
+    free_list(LISTS, &nodes);
+    free_list(LISTS, &edges);
 }
 
 /**

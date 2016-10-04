@@ -48,7 +48,7 @@ void je_parse_error(input_t * IN, state_t si, char *message)
 static success_t je_more_in(context_t * C)
 {
     input_t *IN = &(C->IN);
-    INBUFS_t *INBUFS = &(C->INBUFS);
+    INBUFS_t *INBUFS = &(C->LISTS.INBUFS);
     int size;
 
     if (INBUFS->inbuf) {        // if there is an existing active-inbuf
@@ -244,7 +244,6 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
 {
     input_t *IN = &(C->IN);
     LISTS_t *LISTS = &(C->LISTS);
-    INBUFS_t *INBUFS = &(C->INBUFS);
     unsigned char *frag;
     state_t insi;
     int slen, len;
@@ -257,7 +256,7 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
                 IN->in_quote = 1;
                 frag = IN->in;
                 IN->insi = char2state[*++(IN->in)];
-                elem = new_frag(LISTS, INBUFS, BSL, 1, frag);
+                elem = new_frag(LISTS, BSL, 1, frag);
                 slen++;
             } else if (IN->insi == DQT) {
                 IN->in_quote = 0;
@@ -280,7 +279,7 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
                     len++;
                 }
                 IN->insi = insi;
-                elem = new_frag(LISTS, INBUFS, DQT, len, frag);
+                elem = new_frag(LISTS, DQT, len, frag);
                 slen += len;
             }
         } else if (IN->insi == ABC) {
@@ -290,14 +289,14 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
                 len++;
             }
             IN->insi = insi;
-            elem = new_frag(LISTS, INBUFS, ABC, len, frag);
+            elem = new_frag(LISTS, ABC, len, frag);
             slen += len;
         } else if (IN->insi == AST) {
             IN->has_ast = 1;
             frag = IN->in;
             while ((IN->insi = char2state[*++(IN->in)]) == AST) {
             }    // extra '*' ignored
-            elem = new_frag(LISTS, INBUFS, AST, 1, frag);
+            elem = new_frag(LISTS, AST, 1, frag);
             slen++;
         } else if (IN->insi == DQT) {
             IN->in_quote = 1;
@@ -364,7 +363,6 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
 {
     input_t *IN = &(C->IN);
     LISTS_t *LISTS = &(C->LISTS);
-    INBUFS_t *INBUFS = &(C->INBUFS);
     unsigned char *frag;
     state_t insi;
     int slen, len;
@@ -377,7 +375,7 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
                 IN->in_quote = 1;
                 frag = IN->in;
                 IN->insi = char2state[*++(IN->in)];
-                elem = new_frag(LISTS, INBUFS, BSL, 1, frag);
+                elem = new_frag(LISTS, BSL, 1, frag);
                 slen++;
             } else if (IN->insi == DQT) {
                 IN->in_quote = 0;
@@ -400,7 +398,7 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
                     len++;
                 }
                 IN->insi = insi;
-                elem = new_frag(LISTS, INBUFS, DQT, len, frag);
+                elem = new_frag(LISTS, DQT, len, frag);
                 slen += len;
             }
         // In the unquoted portions of VSTRING we allow '/' '\' ':' '?'
@@ -421,7 +419,7 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
                 len++;
             }
             IN->insi = insi;
-            elem = new_frag(LISTS, INBUFS, ABC, len, frag);
+            elem = new_frag(LISTS, ABC, len, frag);
             slen += len;
 
         // but '*' are still special  (maybe used ias wild card in queries)
@@ -430,7 +428,7 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
             frag = IN->in;
             while ((IN->insi = char2state[*++(IN->in)]) == AST) {
             }    // extra '*' ignored
-            elem = new_frag(LISTS, INBUFS, AST, 1, frag);
+            elem = new_frag(LISTS, AST, 1, frag);
             slen++;
         } else if (IN->insi == DQT) {
             IN->in_quote = 1;

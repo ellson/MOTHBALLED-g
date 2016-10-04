@@ -4,13 +4,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
-/*
-#include <inttypes.h>
-#include <time.h>
-#include <sys/types.h>
-
-#include "libje_private.h"
-*/
 
 #include "grammar.h"
 #include "fatal.h"
@@ -66,14 +59,14 @@ static elem_t *new_elem_sub(LISTS_t * LISTS)
  * The elem_t is memory managed without caller involvement.
  *
  * @param LISTS the top-level context in which all lists are managed
- * @param INBUFS the top-level context in which all inbufs are managed
  * @param state a one character value stored with the elem, no internal meaning
  * @param len fragment length
  * @param frag pointer to first character of contiguous fragment of len chars
  * @return a new intialized elem_t
  */
-elem_t *new_frag(LISTS_t * LISTS, INBUFS_t * INBUFS, char state, unsigned int len, unsigned char *frag)
+elem_t *new_frag(LISTS_t * LISTS, char state, unsigned int len, unsigned char *frag)
 {
+    INBUFS_t * INBUFS = &(LISTS->INBUFS);
     frag_elem_t *frag_elem;
 
     frag_elem = (frag_elem_t*)new_elem_sub(LISTS);
@@ -261,8 +254,9 @@ void append_list(elem_t * list, elem_t * elem)
  * @param C the top-level context in which all lists are managed
  * @param list a header to the list to be freed.
  */
-void free_list(LISTS_t * LISTS, INBUFS_t * INBUFS, elem_t * list)
+void free_list(LISTS_t * LISTS, elem_t * list)
 {
+    INBUFS_t * INBUFS = &(LISTS->INBUFS);
     elem_t *elem, *next;
     frag_elem_t *frag_elem;
 
@@ -287,7 +281,7 @@ void free_list(LISTS_t * LISTS, INBUFS_t * INBUFS, elem_t * list)
             if (--(elem->refs) > 0) {
                 goto done;    // stop at any point with additional refs
             }
-            free_list(LISTS, INBUFS, elem); // recursively free lists that have no references
+            free_list(LISTS, elem); // recursively free lists that have no references
             break;
         case HASHELEM:
         case HASHNAMEELEM:

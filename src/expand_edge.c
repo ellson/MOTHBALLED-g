@@ -21,7 +21,6 @@ static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
 void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
 {
     LISTS_t * LISTS = &(C->LISTS);
-    INBUFS_t * INBUFS = &(C->INBUFS);
     elem_t *leg, *epset, *ep, *new;
     elem_t newlist = { 0 };
     elem_t newepset = { 0 };
@@ -74,7 +73,7 @@ void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
     }
     // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
     je_expand_r(C, &newepset, newlist.first, edges);
-    free_list(LISTS, INBUFS, &newlist);
+    free_list(LISTS, &newlist);
 }
 /**
  * this function expands ENDPOINTSETs
@@ -89,7 +88,6 @@ void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
 static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
 {
     LISTS_t * LISTS = &(C->LISTS);
-    INBUFS_t * INBUFS = &(C->INBUFS);
     elem_t newedge = { 0 };
     elem_t *ep, *new;
 
@@ -104,7 +102,7 @@ static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
             // recursively process the rest of the legs
             je_expand_r(C, epset, leg->next, edges);
 
-            free_list(LISTS, INBUFS, new);
+            free_list(LISTS, new);
 
             // and iterate to next ep for this leg
             ep = ep->next;

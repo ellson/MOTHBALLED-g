@@ -26,7 +26,6 @@ void je_sameas(container_context_t * CC, elem_t * subject)
     elem_t subject_rewrite = { 0 };
     context_t * C = CC->context;
     LISTS_t * LISTS = &(C->LISTS);
-    INBUFS_t * INBUFS = &(C->INBUFS);
 
     newsubject = &subject_rewrite;
     oldsubject = &(CC->subject);
@@ -39,8 +38,8 @@ void je_sameas(container_context_t * CC, elem_t * subject)
     // rewrite subject into newsubject with any EQL elements substituted from oldsubject
     je_sameas_r(CC, subject, &nextold, newsubject);
 
-    free_list(LISTS, INBUFS, subject);     // free original subject ( although refs are retained in other lists )
-    free_list(LISTS, INBUFS, oldsubject);    // free the previous oldsubject
+    free_list(LISTS, subject);     // free original subject ( although refs are retained in other lists )
+    free_list(LISTS, oldsubject);    // free the previous oldsubject
 
     newsubject->state = SUBJECT;  
     *oldsubject = *newsubject;    // save the newsubject as oldsubject

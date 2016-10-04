@@ -358,7 +358,9 @@ void ikea_store_restore ( ikea_store_t * ikea_store )
     size_t len, pathc;
     char *tarFilename = "g_snapshot.tgz";
     char *glob_pattern;
+#if 0
     uint64_t hash;
+#endif
 
     if (tar_open(&pTar, tarFilename, &gztype, O_RDONLY, 0600, TAR_GNU) == -1)
         fatal_perror("Error - tar_open(): ");

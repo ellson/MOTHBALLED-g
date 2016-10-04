@@ -4,7 +4,6 @@ struct context_s {             // input_context
     char *progname;            // name of program
     FILE *out;                 // typically stdout for parser debug outputs
 
-    INBUFS_t INBUFS;
     LISTS_t LISTS;
     input_t IN;
 

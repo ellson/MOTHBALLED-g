@@ -45,13 +45,14 @@ success_t je_parse(context_t * C, elem_t * name)
     container_context_t container_context = { 0 };
     container_context_t *CC = &container_context;
     elem_t root = { 0 };    // the output parse tree
-    hash_elem_t *hash_elem;
     success_t rc;
+#if 0
+    hash_elem_t *hash_elem;
     uint64_t hash;
     char hashname[12], *filename;
+#endif
     input_t * IN = &(C->IN);
     LISTS_t * LISTS = &(C->LISTS);
-    INBUFS_t * INBUFS = &(C->INBUFS);
 
     CC->context = C;
     CC->ikea_box = ikea_box_open(C->ikea_store, NULL);
@@ -91,10 +92,10 @@ CC->out = stdout;
 
     ikea_box_close ( CC->ikea_box );
 
-    free_list(LISTS, INBUFS, &root);
-    free_list(LISTS, INBUFS, &(CC->subject));
-    free_list(LISTS, INBUFS, &(CC->node_pattern_acts));
-    free_list(LISTS, INBUFS, &(CC->edge_pattern_acts));
+    free_list(LISTS, &root);
+    free_list(LISTS, &(CC->subject));
+    free_list(LISTS, &(CC->node_pattern_acts));
+    free_list(LISTS, &(CC->edge_pattern_acts));
 
     return rc;
 }
@@ -118,7 +119,7 @@ je_parse_r(container_context_t * CC, elem_t * root,
     elem_t *elem;
     context_t *C = CC->context;
     LISTS_t * LISTS = &(C->LISTS);
-    INBUFS_t * INBUFS = &(C->INBUFS);
+    INBUFS_t * INBUFS = &(C->LISTS.INBUFS);
     input_t * IN = &(C->IN);
     uint64_t hash;
     static unsigned char nullstring[] = { '\0' };
@@ -277,7 +278,7 @@ P(&branch);
                     elem = elem->next;
                 }
 
-                free_list(LISTS, INBUFS, root);  // that's all folks.  move on to the next ACT.
+                free_list(LISTS, root);  // that's all folks.  move on to the next ACT.
             }
             break;
         case TLD:
