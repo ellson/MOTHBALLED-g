@@ -1,8 +1,10 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-typedef struct input_s input_t;
+typedef struct TOKENS_s TOKENS_t;
 
-struct input_s {
+struct TOKENS_s {
+    LISTS_t LISTS;             // Must be first (to allow casting from context_t)
+
     int *pargc;                // remaining filenames from command line
     char **argv;
     char *filename;            // name of file currently being processed, or "-" for stdin
@@ -27,7 +29,7 @@ struct input_s {
     long stat_filecount;       // various stats
 };
 
-void je_parse_error(input_t * IN, state_t si, char *message);
+void je_parse_error(TOKENS_t * IN, state_t si, char *message);
 success_t je_parse_whitespace(context_t * C);
 success_t je_parse_string(context_t * C, elem_t * fraglist);
 success_t je_parse_vstring(context_t * C, elem_t * fraglist);

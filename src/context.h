@@ -1,11 +1,10 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 struct context_s {             // input_context
+    TOKENS_t TOKENS;           // Must be first (to allow casting from context_t)
+
     char *progname;            // name of program
     FILE *out;                 // typically stdout for parser debug outputs
-
-    LISTS_t LISTS;
-    input_t IN;
 
     char *username;            // set by first call to g_session
     char *hostname;            // ditto

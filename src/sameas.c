@@ -22,10 +22,10 @@ static void je_sameas_r(container_context_t * CC, elem_t * subject, elem_t ** ne
  */
 void je_sameas(container_context_t * CC, elem_t * subject)
 {
+    context_t * C = CC->context;
+    LISTS_t * LISTS = (LISTS_t *)C;
     elem_t *newsubject, *oldsubject, *nextold;
     elem_t subject_rewrite = { 0 };
-    context_t * C = CC->context;
-    LISTS_t * LISTS = &(C->LISTS);
 
     newsubject = &subject_rewrite;
     oldsubject = &(CC->subject);
@@ -58,12 +58,12 @@ void je_sameas(container_context_t * CC, elem_t * subject)
  */
 static void je_sameas_r(container_context_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {
+    context_t * C = CC->context;
+    TOKENS_t * TOKENS = (TOKENS_t *)C;
+    LISTS_t * LISTS = (LISTS_t *)C;
     elem_t *elem, *new, *nextoldelem = NULL;
     elem_t object = { 0 };
     state_t si;
-    context_t * C = CC->context;
-    input_t * IN = &(C->IN);
-    LISTS_t * LISTS = &(C->LISTS);
 
     assert(subject->type == (char)LISTELEM);
 
@@ -87,9 +87,9 @@ if (*nextold) {
             } else {
                 if (si != CC->subject_type) {
                     if (si == NODE) {
-                        je_parse_error(IN, si, "EDGE subject includes");
+                        je_parse_error(TOKENS, si, "EDGE subject includes");
                     } else {
-                        je_parse_error(IN, si, "NODE subject includes");
+                        je_parse_error(TOKENS, si, "NODE subject includes");
                     }
                 }
             }
@@ -127,7 +127,7 @@ if (*nextold) {
                 *nextold = (*nextold)->next;
                 C->stat_sameas++;
             } else {
-                je_parse_error(IN, si, "No corresponding object found for same-as substitution");
+                je_parse_error(TOKENS, si, "No corresponding object found for same-as substitution");
             }
             break;
         default:

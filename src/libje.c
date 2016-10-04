@@ -35,8 +35,8 @@ context_t *je_initialize(int *pargc, char *argv[], int optind)
         *pargc = 1;
     }
 
-    C->IN.pargc = pargc;
-    C->IN.argv = argv;
+    C->TOKENS.pargc = pargc;
+    C->TOKENS.argv = argv;
 
     // gather session info, including starttime.
     //    subsequent calls to je_session() just reuse the info gathered in this first call.

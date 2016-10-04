@@ -16,19 +16,19 @@
 /**
  * report an error during parsing with context info.
  *
- * @param IN context
+ * @param TOKENS context
  * @param si parser state
  * @param si error message
  */
-void je_parse_error(input_t * IN, state_t si, char *message)
+void je_parse_error(TOKENS_t * TOKENS, state_t si, char *message)
 {
     unsigned char *p, c;
 
     fprintf(stderr, "Error: %s ", message);
     print_len_frag(stderr, NAMEP(si));
     fprintf(stderr, "\n      in \"%s\" line: %ld just before: \"",
-        IN->filename, (IN->stat_lfcount ?  IN->stat_lfcount : IN->stat_crcount) - IN->linecount_at_start + 1);
-    p = IN->in;
+        TOKENS->filename, (TOKENS->stat_lfcount ?  TOKENS->stat_lfcount : TOKENS->stat_crcount) - TOKENS->linecount_at_start + 1);
+    p = TOKENS->in;
     while ((c = *p++)) {
         if (c == '\n' || c == '\r') {
             break;
@@ -47,71 +47,71 @@ void je_parse_error(input_t * IN, state_t si, char *message)
  */
 static success_t je_more_in(context_t * C)
 {
-    input_t *IN = &(C->IN);
-    INBUFS_t *INBUFS = &(C->LISTS.INBUFS);
+    TOKENS_t *TOKENS = (TOKENS_t *)C;
+    INBUFS_t *INBUFS = (INBUFS_t *)C;
     int size;
 
     if (INBUFS->inbuf) {        // if there is an existing active-inbuf
-        if (IN->in == &(INBUFS->inbuf->end_of_buf)) {    // if it is full
+        if (TOKENS->in == &(INBUFS->inbuf->end_of_buf)) {    // if it is full
             if ((--(INBUFS->inbuf->refs)) == 0) {    // dereference active-inbuf
                 free_inbuf(INBUFS, INBUFS->inbuf);    // free if no refs left (unlikely)
             }
             INBUFS->inbuf = new_inbuf(INBUFS);    // get new
             assert(INBUFS->inbuf);
             INBUFS->inbuf->refs = 1;    // add active-inbuf reference
-            IN->in = INBUFS->inbuf->buf;    // point to beginning of buffer
+            TOKENS->in = INBUFS->inbuf->buf;    // point to beginning of buffer
         }
     } else {        // no inbuf, implies just starting
         INBUFS->inbuf = new_inbuf(INBUFS);    // get new
         assert(INBUFS->inbuf);
         INBUFS->inbuf->refs = 1;    // add active-inbuf reference
-        IN->in = INBUFS->inbuf->buf;
+        TOKENS->in = INBUFS->inbuf->buf;
     }
 
-    if (IN->file) {        // if there is an existing active input file
-        if (IN->insi == NLL && feof(IN->file)) {    //    if it is at EOF
+    if (TOKENS->file) {        // if there is an existing active input file
+        if (TOKENS->insi == NLL && feof(TOKENS->file)) {    //    if it is at EOF
             //   Although the grammar doesn't care, I decided that it would
             //   be more user-friendly to check that we are not in a quote string
             //   whenever EOF occurs.
-            if (IN->in_quote) {
-                je_parse_error(IN, NLL, "EOF in the middle of a quote string");
+            if (TOKENS->in_quote) {
+                je_parse_error(TOKENS, NLL, "EOF in the middle of a quote string");
             }
 // FIXME don't close stdin
 // FIXME - stall for more more input   (inotify events ?)
-            fclose(IN->file);    // then close it and indicate no active input file
-            IN->file = NULL;
+            fclose(TOKENS->file);    // then close it and indicate no active input file
+            TOKENS->file = NULL;
             emit_end_file(C);
         }
     }
-    if (!IN->file) {        // if there is no active input file
-        if (*(IN->pargc) > 0) {    //   then try to open the next file
-            IN->filename = IN->argv[0];
-            (*(IN->pargc))--;
-            IN->argv = &(IN->argv[1]);
-            if (strcmp(IN->filename, "-") == 0) {
-                IN->file = stdin;
-                *(IN->pargc) = 0;    // No files after stdin
+    if (!TOKENS->file) {        // if there is no active input file
+        if (*(TOKENS->pargc) > 0) {    //   then try to open the next file
+            TOKENS->filename = TOKENS->argv[0];
+            (*(TOKENS->pargc))--;
+            TOKENS->argv = &(TOKENS->argv[1]);
+            if (strcmp(TOKENS->filename, "-") == 0) {
+                TOKENS->file = stdin;
+                *(TOKENS->pargc) = 0;    // No files after stdin
             } else {
-                IN->file = fopen(IN->filename, "rb");
-                if (!IN->file) {
-                    je_parse_error(IN, ACTIVITY, "fopen fail");
+                TOKENS->file = fopen(TOKENS->filename, "rb");
+                if (!TOKENS->file) {
+                    je_parse_error(TOKENS, ACTIVITY, "fopen fail");
                 }
             }
-            IN->linecount_at_start = IN->stat_lfcount ? IN->stat_lfcount : IN->stat_crcount;
-            IN->stat_filecount++;
+            TOKENS->linecount_at_start = TOKENS->stat_lfcount ? TOKENS->stat_lfcount : TOKENS->stat_crcount;
+            TOKENS->stat_filecount++;
             emit_start_file(C);
         } else {
             return FAIL;    // no more input available
         }
-        assert(IN->file);
+        assert(TOKENS->file);
     }
     // slurp in data from file stream
-    size = fread(IN->in, 1, &(INBUFS->inbuf->end_of_buf) - IN->in, IN->file);
-    IN->in[size] = '\0';    // ensure terminated (we have an extras
+    size = fread(TOKENS->in, 1, &(INBUFS->inbuf->end_of_buf) - TOKENS->in, TOKENS->file);
+    TOKENS->in[size] = '\0';    // ensure terminated (we have an extras
     //    character in inbuf_t for this )
-    IN->insi = char2state[*IN->in];
+    TOKENS->insi = char2state[*TOKENS->in];
 
-    IN->stat_inchars += size;
+    TOKENS->stat_inchars += size;
     return SUCCESS;
 }
 
@@ -120,17 +120,17 @@ static success_t je_more_in(context_t * C)
  *
  * @param C context
  */
-static void je_parse_comment_fragment(input_t * IN)
+static void je_parse_comment_fragment(TOKENS_t * TOKENS)
 {
     unsigned char *in, c;
 
-    in = IN->in;
+    in = TOKENS->in;
     c = *in;
     while (c != '\0' && c != '\n' && c != '\r') {
         c = *++in;
     }
-    IN->insi = char2state[c];
-    IN->in = in;
+    TOKENS->insi = char2state[c];
+    TOKENS->in = in;
 }
 
 /**
@@ -141,16 +141,16 @@ static void je_parse_comment_fragment(input_t * IN)
  */
 static success_t je_parse_comment(context_t * C)
 {
-    input_t *IN = &(C->IN);
+    TOKENS_t *TOKENS = (TOKENS_t *)C;
     success_t rc;
 
     rc = SUCCESS;
-    je_parse_comment_fragment(IN);    // eat comment
-    while (IN->insi == NLL) {    // end_of_buffer, or EOF, during comment
+    je_parse_comment_fragment(TOKENS);    // eat comment
+    while (TOKENS->insi == NLL) {    // end_of_buffer, or EOF, during comment
         if ((rc = je_more_in(C) == FAIL)) {
             break;    // EOF
         }
-        je_parse_comment_fragment(IN);    // eat comment
+        je_parse_comment_fragment(TOKENS);    // eat comment
     }
     return rc;
 }
@@ -158,28 +158,28 @@ static success_t je_parse_comment(context_t * C)
 /**
  * consume whitespace fagments
  *
- * @ IN context
+ * @ TOKENS context
  */
-static void je_parse_whitespace_fragment(input_t * IN)
+static void je_parse_whitespace_fragment(TOKENS_t * TOKENS)
 {
     unsigned char *in, c;
     state_t insi;
 
-    if ((in = IN->in)) {
+    if ((in = TOKENS->in)) {
         c = *in;
-        insi = IN->insi;
+        insi = TOKENS->insi;
         while (insi == WS) {    // eat all leading whitespace
             if (c == '\n') {
-                IN->stat_lfcount++;
+                TOKENS->stat_lfcount++;
             }
             if (c == '\r') {
-                IN->stat_crcount++;
+                TOKENS->stat_crcount++;
             }
             c = *++in;
             insi = char2state[c];
         }
-        IN->insi = insi;
-        IN->in = in;
+        TOKENS->insi = insi;
+        TOKENS->in = in;
     }
 }
 
@@ -191,16 +191,16 @@ static void je_parse_whitespace_fragment(input_t * IN)
  */
 static success_t je_parse_non_comment(context_t * C)
 {
-    input_t *IN = &(C->IN);
+    TOKENS_t *TOKENS = (TOKENS_t *)C;
     success_t rc;
 
     rc = SUCCESS;
-    je_parse_whitespace_fragment(IN);    // eat whitespace
-    while (IN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
+    je_parse_whitespace_fragment(TOKENS);    // eat whitespace
+    while (TOKENS->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((rc = je_more_in(C) == FAIL)) {
             break;    // EOF
         }
-        je_parse_whitespace_fragment(IN);    // eat all remaining leading whitespace
+        je_parse_whitespace_fragment(TOKENS);    // eat all remaining leading whitespace
     }
     return rc;
 }
@@ -213,7 +213,7 @@ static success_t je_parse_non_comment(context_t * C)
  */
 success_t je_parse_whitespace(context_t * C)
 {
-    input_t *IN = &(C->IN);
+    TOKENS_t *TOKENS = (TOKENS_t *)C;
     success_t rc;
 
     rc = SUCCESS;
@@ -221,10 +221,10 @@ success_t je_parse_whitespace(context_t * C)
         if ((rc = je_parse_non_comment(C)) == FAIL) {
             break;
         }
-        if (IN->insi != OCT) {
+        if (TOKENS->insi != OCT) {
             break;
         }
-        while (IN->insi == OCT) {
+        while (TOKENS->insi == OCT) {
             if ((rc = je_parse_comment(C)) == FAIL) {
                 break;
             }
@@ -242,8 +242,8 @@ success_t je_parse_whitespace(context_t * C)
  */
 static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
 {
-    input_t *IN = &(C->IN);
-    LISTS_t *LISTS = &(C->LISTS);
+    TOKENS_t *TOKENS = (TOKENS_t *)C;
+    LISTS_t *LISTS = (LISTS_t *)C;
     unsigned char *frag;
     state_t insi;
     int slen, len;
@@ -251,64 +251,64 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
 
     slen = 0;
     while (1) {
-        if (IN->in_quote) {
-            if (IN->in_quote == 2) {    // character after BSL
-                IN->in_quote = 1;
-                frag = IN->in;
-                IN->insi = char2state[*++(IN->in)];
+        if (TOKENS->in_quote) {
+            if (TOKENS->in_quote == 2) {    // character after BSL
+                TOKENS->in_quote = 1;
+                frag = TOKENS->in;
+                TOKENS->insi = char2state[*++(TOKENS->in)];
                 elem = new_frag(LISTS, BSL, 1, frag);
                 slen++;
-            } else if (IN->insi == DQT) {
-                IN->in_quote = 0;
-                IN->insi = char2state[*++(IN->in)];
+            } else if (TOKENS->insi == DQT) {
+                TOKENS->in_quote = 0;
+                TOKENS->insi = char2state[*++(TOKENS->in)];
                 continue;
-            } else if (IN->insi == BSL) {
-                IN->in_quote = 2;
-                IN->insi = char2state[*++(IN->in)];
+            } else if (TOKENS->insi == BSL) {
+                TOKENS->in_quote = 2;
+                TOKENS->insi = char2state[*++(TOKENS->in)];
                 continue;
-            } else if (IN->insi == NLL) {
+            } else if (TOKENS->insi == NLL) {
                 break;
             } else {
-                frag = IN->in;
+                frag = TOKENS->in;
                 len = 1;
                 while (1) {
-                    insi = char2state[*++(IN->in)];
+                    insi = char2state[*++(TOKENS->in)];
                     if (insi == DQT || insi == BSL || insi == NLL) {
                         break;
                     }
                     len++;
                 }
-                IN->insi = insi;
+                TOKENS->insi = insi;
                 elem = new_frag(LISTS, DQT, len, frag);
                 slen += len;
             }
-        } else if (IN->insi == ABC) {
-            frag = IN->in;
+        } else if (TOKENS->insi == ABC) {
+            frag = TOKENS->in;
             len = 1;
-            while ((insi = char2state[*++(IN->in)]) == ABC) {
+            while ((insi = char2state[*++(TOKENS->in)]) == ABC) {
                 len++;
             }
-            IN->insi = insi;
+            TOKENS->insi = insi;
             elem = new_frag(LISTS, ABC, len, frag);
             slen += len;
-        } else if (IN->insi == AST) {
-            IN->has_ast = 1;
-            frag = IN->in;
-            while ((IN->insi = char2state[*++(IN->in)]) == AST) {
+        } else if (TOKENS->insi == AST) {
+            TOKENS->has_ast = 1;
+            frag = TOKENS->in;
+            while ((TOKENS->insi = char2state[*++(TOKENS->in)]) == AST) {
             }    // extra '*' ignored
             elem = new_frag(LISTS, AST, 1, frag);
             slen++;
-        } else if (IN->insi == DQT) {
-            IN->in_quote = 1;
-            IN->has_quote = 1;
-            IN->insi = char2state[*++(IN->in)];
+        } else if (TOKENS->insi == DQT) {
+            TOKENS->in_quote = 1;
+            TOKENS->has_quote = 1;
+            TOKENS->insi = char2state[*++(TOKENS->in)];
             continue;
         } else {
             break;
         }
         append_list(fraglist, elem);
         emit_frag(C, len, frag);
-        IN->stat_fragcount++;
+        TOKENS->stat_fragcount++;
     }
     return slen;
 }
@@ -323,12 +323,12 @@ static int je_parse_string_fragment(context_t * C, elem_t * fraglist)
  
 success_t je_parse_string(context_t * C, elem_t * fraglist)
 {
-    input_t *IN = &(C->IN);
+    TOKENS_t *TOKENS = (TOKENS_t *)C;
     int len, slen;
 
-    IN->has_quote = 0;
+    TOKENS->has_quote = 0;
     slen = je_parse_string_fragment(C, fraglist);    // leading string
-    while (IN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
+    while (TOKENS->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((je_more_in(C) == FAIL)) {
             break;    // EOF
         }
@@ -338,8 +338,8 @@ success_t je_parse_string(context_t * C, elem_t * fraglist)
         slen += len;
     }
     if (slen > 0) {
-        IN->stat_stringcount++;
-        if (IN->has_quote) {
+        TOKENS->stat_stringcount++;
+        if (TOKENS->has_quote) {
             fraglist->state = DQT;
         } else {
             fraglist->state = ABC;
@@ -361,8 +361,8 @@ success_t je_parse_string(context_t * C, elem_t * fraglist)
  */
 static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
 {
-    input_t *IN = &(C->IN);
-    LISTS_t *LISTS = &(C->LISTS);
+    TOKENS_t *TOKENS = (TOKENS_t *)C;
+    LISTS_t *LISTS = (LISTS_t *)C;
     unsigned char *frag;
     state_t insi;
     int slen, len;
@@ -370,77 +370,77 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
 
     slen = 0;
     while (1) {
-        if (IN->in_quote) {
-            if (IN->in_quote == 2) {    // character after BSL
-                IN->in_quote = 1;
-                frag = IN->in;
-                IN->insi = char2state[*++(IN->in)];
+        if (TOKENS->in_quote) {
+            if (TOKENS->in_quote == 2) {    // character after BSL
+                TOKENS->in_quote = 1;
+                frag = TOKENS->in;
+                TOKENS->insi = char2state[*++(TOKENS->in)];
                 elem = new_frag(LISTS, BSL, 1, frag);
                 slen++;
-            } else if (IN->insi == DQT) {
-                IN->in_quote = 0;
-                IN->insi = char2state[*++(IN->in)];
+            } else if (TOKENS->insi == DQT) {
+                TOKENS->in_quote = 0;
+                TOKENS->insi = char2state[*++(TOKENS->in)];
                 continue;
-            } else if (IN->insi == BSL) {
-                IN->in_quote = 2;
-                IN->insi = char2state[*++(IN->in)];
+            } else if (TOKENS->insi == BSL) {
+                TOKENS->in_quote = 2;
+                TOKENS->insi = char2state[*++(TOKENS->in)];
                 continue;
-            } else if (IN->insi == NLL) {
+            } else if (TOKENS->insi == NLL) {
                 break;
             } else {
-                frag = IN->in;
+                frag = TOKENS->in;
                 len = 1;
                 while (1) {
-                    insi = char2state[*++(IN->in)];
+                    insi = char2state[*++(TOKENS->in)];
                     if (insi == DQT || insi == BSL || insi == NLL) {
                         break;
                     }
                     len++;
                 }
-                IN->insi = insi;
+                TOKENS->insi = insi;
                 elem = new_frag(LISTS, DQT, len, frag);
                 slen += len;
             }
         // In the unquoted portions of VSTRING we allow '/' '\' ':' '?'
         // in addition to the ABC class
         // this allows URIs as values without quoting
-        } else if (IN->insi == ABC ||
-                   IN->insi == FSL ||
-                   IN->insi == BSL ||
-                   IN->insi == CLN ||
-                   IN->insi == QRY) {
-            frag = IN->in;
+        } else if (TOKENS->insi == ABC ||
+                   TOKENS->insi == FSL ||
+                   TOKENS->insi == BSL ||
+                   TOKENS->insi == CLN ||
+                   TOKENS->insi == QRY) {
+            frag = TOKENS->in;
             len = 1;
-            while ((insi = char2state[*++(IN->in)]) == ABC ||
+            while ((insi = char2state[*++(TOKENS->in)]) == ABC ||
                     insi == FSL ||
                     insi == BSL ||
                     insi == CLN ||
                     insi == QRY) {
                 len++;
             }
-            IN->insi = insi;
+            TOKENS->insi = insi;
             elem = new_frag(LISTS, ABC, len, frag);
             slen += len;
 
         // but '*' are still special  (maybe used ias wild card in queries)
-        } else if (IN->insi == AST) {
-            IN->has_ast = 1;
-            frag = IN->in;
-            while ((IN->insi = char2state[*++(IN->in)]) == AST) {
+        } else if (TOKENS->insi == AST) {
+            TOKENS->has_ast = 1;
+            frag = TOKENS->in;
+            while ((TOKENS->insi = char2state[*++(TOKENS->in)]) == AST) {
             }    // extra '*' ignored
             elem = new_frag(LISTS, AST, 1, frag);
             slen++;
-        } else if (IN->insi == DQT) {
-            IN->in_quote = 1;
-            IN->has_quote = 1;
-            IN->insi = char2state[*++(IN->in)];
+        } else if (TOKENS->insi == DQT) {
+            TOKENS->in_quote = 1;
+            TOKENS->has_quote = 1;
+            TOKENS->insi = char2state[*++(TOKENS->in)];
             continue;
         } else {
             break;
         }
         append_list(fraglist, elem);
         emit_frag(C, len, frag);
-        IN->stat_fragcount++;
+        TOKENS->stat_fragcount++;
     }
     return slen;
 }
@@ -454,12 +454,12 @@ static int je_parse_vstring_fragment(context_t * C, elem_t * fraglist)
  */
 success_t je_parse_vstring(context_t * C, elem_t * fraglist)
 {
-    input_t *IN = &(C->IN);
+    TOKENS_t *TOKENS = (TOKENS_t *)C;
     int len, slen;
 
-    IN->has_quote = 0;
+    TOKENS->has_quote = 0;
     slen = je_parse_vstring_fragment(C, fraglist);    // leading string
-    while (IN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
+    while (TOKENS->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((je_more_in(C) == FAIL)) {
             break;    // EOF
         }
@@ -469,8 +469,8 @@ success_t je_parse_vstring(context_t * C, elem_t * fraglist)
         slen += len;
     }
     if (slen > 0) {
-        IN->stat_stringcount++;     //FIXME ?
-        if (IN->has_quote) {
+        TOKENS->stat_stringcount++;     //FIXME ?
+        if (TOKENS->has_quote) {
             fraglist->state = DQT;
         } else {
             fraglist->state = ABC;
@@ -484,16 +484,16 @@ success_t je_parse_vstring(context_t * C, elem_t * fraglist)
 /**
  * process single character tokens
  *
- * @param IN context
+ * @param TOKENS context
  * @return success/fail
  */
 success_t je_parse_token(context_t * C)
 {
-    input_t *IN = &(C->IN);
+    TOKENS_t *TOKENS = (TOKENS_t *)C;
     char token;
 
-    token = state_token[IN->insi];
+    token = state_token[TOKENS->insi];
     emit_token(C, token);
-    IN->insi = char2state[*++(IN->in)];
+    TOKENS->insi = char2state[*++(TOKENS->in)];
     return SUCCESS;
 }

@@ -54,7 +54,7 @@ static void je_assemble_act(context_t *C, elem_t * pelem, elem_t * pattributes, 
 void je_dispatch(container_context_t * CC, elem_t * plist)
 {
     context_t *C = CC->context;
-    LISTS_t * LISTS = &(C->LISTS);
+    LISTS_t * LISTS = (LISTS_t *)C;
     elem_t attributes = { 0 };
     elem_t nodes = { 0 };
     elem_t edges = { 0 };
@@ -121,7 +121,7 @@ void je_dispatch(container_context_t * CC, elem_t * plist)
  */
 static void je_dispatch_r(context_t * C, elem_t * plist, elem_t * pattributes, elem_t * pnodes, elem_t * pedges)
 {
-    LISTS_t * LISTS = &(C->LISTS);
+    LISTS_t * LISTS = (LISTS_t *)C;
     elem_t *pelem, *pnew, *pobject;
     state_t si;
 
@@ -181,8 +181,8 @@ static void je_dispatch_r(context_t * C, elem_t * plist, elem_t * pattributes, e
  */
 static void je_assemble_act(context_t *C, elem_t *pelem, elem_t *pattributes, elem_t *plist)
 {
-    input_t * IN = &(C->IN);
-    LISTS_t * LISTS = &(C->LISTS);
+    TOKENS_t * IN = (TOKENS_t *)C;
+    LISTS_t * LISTS = (LISTS_t *)C;
     elem_t act = { 0 };
     elem_t verb = { 0 };
     elem_t *pnew;

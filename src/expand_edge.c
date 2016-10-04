@@ -20,7 +20,7 @@ static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
  */
 void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
 {
-    LISTS_t * LISTS = &(C->LISTS);
+    LISTS_t * LISTS = (LISTS_t *)C;
     elem_t *leg, *epset, *ep, *new;
     elem_t newlist = { 0 };
     elem_t newepset = { 0 };
@@ -87,7 +87,7 @@ void je_expand_edge(context_t *C, elem_t *elem, elem_t *nodes, elem_t *edges)
  */
 static void je_expand_r(context_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
 {
-    LISTS_t * LISTS = &(C->LISTS);
+    LISTS_t * LISTS = (LISTS_t *)C;
     elem_t newedge = { 0 };
     elem_t *ep, *new;
 

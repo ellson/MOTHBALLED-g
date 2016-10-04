@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "inbuf.h"
 #include "fatal.h"
+#include "inbuf.h"
 
 /**
  * allocate an inbuf for g input (takes from freelist if possible)
