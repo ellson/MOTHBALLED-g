@@ -46,6 +46,7 @@ libje_C_la_SOURCES = \
 	sameas.c \
 	pattern.c \
 	emit_ikea.c \
+	emit_act.c \
 	emit.c \
 	emit_t.c \
 	emit_g.c \

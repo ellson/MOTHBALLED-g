@@ -288,6 +288,7 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
                     C->stat_outactcount++;
                     emit_act(CC, elem);  // emit hook for rewritten act
                     je_emit_ikea(CC, elem);  // primary emitter to ikea store
+                    je_emit_act(CC, elem);  // primary emitter to graph DB
 
                     elem = elem->next;
                 }
