@@ -92,7 +92,7 @@ elem_t *new_frag(LIST_t * LIST, char state, unsigned int len, unsigned char *fra
  * The element is memory managed without caller involvement.
  * The FILE* in the elem_t is initialized to NULL
  *
- * @param C the top-level context in which all lists are managed
+ * @param LIST the top-level context in which all lists are managed
  * @param hash a long containing a hash value
  * @return a new intialized elem_t
  */
@@ -115,7 +115,7 @@ elem_t *new_hash(LIST_t * LIST, uint64_t hash)
  * The element is memory managed without caller involvement.
  * The FILE* in the elem_t is initialized to NULL
  *
- * @param C the top-level context in which all lists are managed
+ * @param LIST the top-level context in which all lists are managed
  * @param hash a long containing a hash value
  * @return a new intialized elem_t
  */
@@ -142,7 +142,7 @@ elem_t *new_hashname(LIST_t * LIST, unsigned char* hash, size_t hash_len)
  * this function must only be used by move_list() or ref_list(), which
  * make appropriate fixes to the ref counts.
  *
- * @param C the top-level context in which all lists are managed
+ * @param LIST the top-level context in which all lists are managed
  * @param list a header to a list to be cloned
  * @return a new intialized elem_t
  */
@@ -172,7 +172,7 @@ static elem_t *clone_list(LIST_t * LIST, elem_t * list)
  *
  * Clean up the old list header so it no longer references the list elems.
  *
- * @param C the top-level context in which all lists are managed
+ * @param LIST the top-level context in which all lists are managed
  * @param list a header to a list to be moved
  * @return a new intialized elem_t which is now the header of the moved list
  */
@@ -197,7 +197,7 @@ elem_t *move_list(LIST_t * LIST, elem_t * list)
  * increment the first elem's ref count.  (NB, not the ref_count in this
  * new elem_t)
  *
- * @param C the top-level context in which all lists are managed
+ * @param LIST the top-level context in which all lists are managed
  * @param list a header to a list to be referenced
  * @return a new intialized elem_t which is now also a header of the referenced list
  */
@@ -251,7 +251,7 @@ void append_list(elem_t * list, elem_t * elem)
  *
  * Lists of hashes are not allowed to be freed.
  *
- * @param C the top-level context in which all lists are managed
+ * @param LIST the top-level context in which all lists are managed
  * @param list a header to the list to be freed.
  */
 void free_list(LIST_t * LIST, elem_t * list)
