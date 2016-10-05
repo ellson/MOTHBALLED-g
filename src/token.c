@@ -205,7 +205,7 @@ static success_t token_non_comment(TOKEN_t * TOKEN)
  * @param TOKEN context
  * @return success/fail
  */
-success_t token_whitespace(TOKEN_t * TOKEN)
+success_t je_token_whitespace(TOKEN_t * TOKEN)
 {
     success_t rc;
 
@@ -312,7 +312,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
  * @return success/fail
  */
  
-success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist)
+success_t je_token_string(TOKEN_t * TOKEN, elem_t * fraglist)
 {
     int len, slen;
 
@@ -439,7 +439,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
  * @param fraglist
  * @return success/fail
  */
-success_t token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
+success_t je_token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
 {
     int len, slen;
 

@@ -29,22 +29,23 @@
 #endif
 
 // forward declarations
-static success_t
-je_parse_r(container_CONTEXT_t * CC, elem_t * root,
+
+static success_t parse_r(container_CONTEXT_t * CC, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc);
-static success_t je_more_rep(CONTEXT_t * C, unsigned char prop);
+
+static success_t parse_more_rep(CONTEXT_t * C, unsigned char prop);
 
 /**
  * parse G syntax input
  *
  * This parser recurses at two levels:
  *
- *     main() -----> je_parse(C) ----> je_parse_r(CC) -| -|  
- *                     ^                 ^             |  |
- *                     |                 |             |  |
- *                     |                 -------<-------  |
- *                     |                                  |
- *                     ---------------<--------------------
+ *    main() --> je_parse(C) --> parse_r(CC) -| -|  
+ *                 ^               ^          |  |
+ *                 |               |          |  |
+ *                 |               ------<-----  |
+ *                 |                             |
+ *                 -------------<-----------------
  *
  * The inner recursions are through the grammar state_machine at a single
  * level of containment - maintained in container_context (CC)
@@ -97,7 +98,7 @@ CC->out = stdout;
     emit_start_activity(CC);
     C->containment++;            // containment nesting level
     C->stat_containercount++;    // number of containers
-    if ((rc = je_parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+    if ((rc = parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
@@ -125,7 +126,7 @@ CC->out = stdout;
  *  @return success/fail
  */
 static success_t
-je_parse_r(container_CONTEXT_t * CC, elem_t * root,
+parse_r(container_CONTEXT_t * CC, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc)
 {
     CONTEXT_t *C = CC->context;
@@ -229,7 +230,7 @@ je_parse_r(container_CONTEXT_t * CC, elem_t * root,
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            if ((rc = je_parse_r(CC, &branch, ni, nprop, nest, 0)) == SUCCESS) {
+            if ((rc = parse_r(CC, &branch, ni, nprop, nest, 0)) == SUCCESS) {
                 break;                  // ALT satisfied
             }
 
@@ -237,19 +238,19 @@ je_parse_r(container_CONTEXT_t * CC, elem_t * root,
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                if ((je_parse_r(CC, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
-                    while (je_more_rep(C, nprop) == SUCCESS) {
-                        if (je_parse_r(CC, &branch, ni, nprop, nest, repc++) == FAIL) {
+                if ((parse_r(CC, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
+                    while (parse_more_rep(C, nprop) == SUCCESS) {
+                        if (parse_r(CC, &branch, ni, nprop, nest, repc++) == FAIL) {
                             break;
                         }
                     }
                 }
             } else {                    // else not OPTional
-                if ((rc = je_parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
+                if ((rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
                     break;
                 }
-                while (je_more_rep(C, nprop) == SUCCESS) {
-                    if ((rc = je_parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
+                while (parse_more_rep(C, nprop) == SUCCESS) {
+                    if ((rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
                         break;
                     }
                 }
@@ -275,13 +276,7 @@ je_parse_r(container_CONTEXT_t * CC, elem_t * root,
                 }
             } else {
                 C->stat_nonpatternactcount++;
-#if 0
-P(&branch);
-#endif
                 append_list(root, move_list(LIST, &branch));
-#if 0
-P(&branch);
-#endif
 
                 // dispatch events for the ACT just finished
                 je_dispatch(CC, root);
@@ -319,18 +314,12 @@ P(&branch);
 
             je_hash_list(&hash, &(CC->subject));   // generate name hash
             (void)je_hash_bucket(C, hash);    // save in bucket list 
-#if 0
-P(root)
-#endif
 
             // If this subject is not itself a pattern, then
             // perform pattern matching and insertion if matched
             if (!(CC->is_pattern = TOKEN->has_ast)) {
                 je_pattern(CC, root, &branch);
             }
-#if 0
-P(root)
-#endif
 
             emit_subject(CC, &branch);      // emit hook for rewritten subject
             break;
@@ -363,7 +352,7 @@ P(root)
  * @param prop properties from grammar
  * @return success = more, fail - no more
  */
-static success_t je_more_rep(CONTEXT_t * C, unsigned char prop)
+static success_t parse_more_rep(CONTEXT_t * C, unsigned char prop)
 {
     TOKEN_t * TOKEN = (TOKEN_t *)C;
     state_t ei, bi;
