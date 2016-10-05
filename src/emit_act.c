@@ -61,7 +61,7 @@ static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
                     break;
                 case OBJECT_LIST:
                 case ENDPOINTSET:
-                    emit_act_print_token(CC, "(");
+                    assert(0); // lists should be fully expanded at this point
                     break;
                 case ATTRIBUTES:
                     emit_act_print_token(CC, "[");
@@ -88,7 +88,7 @@ static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
             break;
         case OBJECT_LIST:
         case ENDPOINTSET:
-            emit_act_print_token(CC, ")");
+            assert(0); // lists should be fully expanded at this point
             break;
         case ATTRIBUTES:
             emit_act_print_token(CC, "]");
