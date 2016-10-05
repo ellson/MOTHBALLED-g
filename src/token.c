@@ -44,7 +44,7 @@ void je_token_error(TOKEN_t * TOKEN, state_t si, char *message)
  * @param TOKEN context
  * @return success/fail
  */
-static success_t je_more_in(TOKEN_t * TOKEN)
+static success_t token_more_in(TOKEN_t * TOKEN)
 {
     INBUF_t *INBUF = (INBUF_t *)TOKEN;
     int size;
@@ -116,7 +116,7 @@ static success_t je_more_in(TOKEN_t * TOKEN)
  *
  * @param TOKEN context
  */
-static void je_token_comment_fragment(TOKEN_t * TOKEN)
+static void token_comment_fragment(TOKEN_t * TOKEN)
 {
     unsigned char *in, c;
 
@@ -135,17 +135,17 @@ static void je_token_comment_fragment(TOKEN_t * TOKEN)
  * @param TOKEN context
  * @return success/fail
  */
-static success_t je_token_comment(TOKEN_t * TOKEN)
+static success_t token_comment(TOKEN_t * TOKEN)
 {
     success_t rc;
 
     rc = SUCCESS;
-    je_token_comment_fragment(TOKEN);    // eat comment
+    token_comment_fragment(TOKEN);    // eat comment
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during comment
-        if ((rc = je_more_in(TOKEN) == FAIL)) {
+        if ((rc = token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        je_token_comment_fragment(TOKEN);    // eat comment
+        token_comment_fragment(TOKEN);    // eat comment
     }
     return rc;
 }
@@ -155,7 +155,7 @@ static success_t je_token_comment(TOKEN_t * TOKEN)
  *
  * @ TOKEN context
  */
-static void je_token_whitespace_fragment(TOKEN_t * TOKEN)
+static void token_whitespace_fragment(TOKEN_t * TOKEN)
 {
     unsigned char *in, c;
     state_t insi;
@@ -184,17 +184,17 @@ static void je_token_whitespace_fragment(TOKEN_t * TOKEN)
  * @param TOKEN context
  * @return success/fail
  */
-static success_t je_token_non_comment(TOKEN_t * TOKEN)
+static success_t token_non_comment(TOKEN_t * TOKEN)
 {
     success_t rc;
 
     rc = SUCCESS;
-    je_token_whitespace_fragment(TOKEN);    // eat whitespace
+    token_whitespace_fragment(TOKEN);    // eat whitespace
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
-        if ((rc = je_more_in(TOKEN) == FAIL)) {
+        if ((rc = token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        je_token_whitespace_fragment(TOKEN);    // eat all remaining leading whitespace
+        token_whitespace_fragment(TOKEN);    // eat all remaining leading whitespace
     }
     return rc;
 }
@@ -205,20 +205,20 @@ static success_t je_token_non_comment(TOKEN_t * TOKEN)
  * @param TOKEN context
  * @return success/fail
  */
-success_t je_token_whitespace(TOKEN_t * TOKEN)
+success_t token_whitespace(TOKEN_t * TOKEN)
 {
     success_t rc;
 
     rc = SUCCESS;
     while (1) {
-        if ((rc = je_token_non_comment(TOKEN)) == FAIL) {
+        if ((rc = token_non_comment(TOKEN)) == FAIL) {
             break;
         }
         if (TOKEN->insi != OCT) {
             break;
         }
         while (TOKEN->insi == OCT) {
-            if ((rc = je_token_comment(TOKEN)) == FAIL) {
+            if ((rc = token_comment(TOKEN)) == FAIL) {
                 break;
             }
         }
@@ -233,7 +233,7 @@ success_t je_token_whitespace(TOKEN_t * TOKEN)
  * @param fraglist - list of frags constituting a string
  * @return length of string
  */
-static int je_token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
+static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
 {
     LIST_t *LIST = (LIST_t *)TOKEN;
     unsigned char *frag;
@@ -312,17 +312,17 @@ static int je_token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
  * @return success/fail
  */
  
-success_t je_token_string(TOKEN_t * TOKEN, elem_t * fraglist)
+success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist)
 {
     int len, slen;
 
     TOKEN->has_quote = 0;
-    slen = je_token_string_fragment(TOKEN, fraglist);    // leading string
+    slen = token_string_fragment(TOKEN, fraglist);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
-        if ((je_more_in(TOKEN) == FAIL)) {
+        if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        if ((len = je_token_string_fragment(TOKEN, fraglist)) == 0) {
+        if ((len = token_string_fragment(TOKEN, fraglist)) == 0) {
             break;
         }
         slen += len;
@@ -348,7 +348,7 @@ success_t je_token_string(TOKEN_t * TOKEN, elem_t * fraglist)
  * @param fraglist
  * @return length of string
  */
-static int je_token_vstring_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
+static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
 {
     LIST_t *LIST = (LIST_t *)TOKEN;
     unsigned char *frag;
@@ -439,17 +439,17 @@ static int je_token_vstring_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
  * @param fraglist
  * @return success/fail
  */
-success_t je_token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
+success_t token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
 {
     int len, slen;
 
     TOKEN->has_quote = 0;
-    slen = je_token_vstring_fragment(TOKEN, fraglist);    // leading string
+    slen = token_vstring_fragment(TOKEN, fraglist);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
-        if ((je_more_in(TOKEN) == FAIL)) {
+        if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        if ((len = je_token_vstring_fragment(TOKEN, fraglist)) == 0) {
+        if ((len = token_vstring_fragment(TOKEN, fraglist)) == 0) {
             break;
         }
         slen += len;
