@@ -11,6 +11,7 @@
 #include "libje_private.h"
 
 // forward declaration
+static emit_act_func(container_CONTEXT_t * CC, char *verb, elem_t *subject, elem_t *attributes);
 static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list);
 static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep);
 
@@ -25,7 +26,6 @@ void je_emit_act2(container_CONTEXT_t * CC, elem_t *list)
     char *verb = "";
     elem_t *subject, *attributes;
 
-    CC->context->sep = '\0';
     assert(list);
     elem = list->first;
     assert(elem); // must always be a subject
@@ -43,16 +43,17 @@ void je_emit_act2(container_CONTEXT_t * CC, elem_t *list)
         }
         elem = elem->next;
     }
+    emit_act_func(CC, verb, elem, elem->next);
+}
+
+static emit_act_func(container_CONTEXT_t * CC, char *verb, elem_t *subject, elem_t *attributes)
+{
+    CC->context->sep = '\0';
     fprintf(stdout,"%s", verb);
 
-    assert(elem);  // must always be a subject
-    subject = elem;
+    emit_act_list_r(CC, subject); // There must always be a subject 
 
-    emit_act_list_r(CC, subject);
-
-    attributes = elem->next;  // may be null
-
-    if (attributes) {
+    if (attributes) {  // attributes are optional
         emit_act_list_r(CC, attributes);
     }
 
