@@ -16,10 +16,46 @@ static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep);
 
 static void emit_act_print_token(container_CONTEXT_t *CC, char *tok);
 
-void je_emit_act(container_CONTEXT_t * CC, elem_t *elem)
+void je_emit_act2(container_CONTEXT_t * CC, elem_t *list)
 {
-    CC->context->sep = 0; // suppress space before (because preceded by BOF or NL)
-    emit_act_list_r(CC, elem);
+    elem_t * elem;
+    elemtype_t type;
+    int cnt;
+    state_t liststate;
+    char *verb = "add";
+    elem_t *subject, *attributes;
+
+    CC->context->sep = ' ';
+    assert(list);
+    elem = list->first;
+    assert(elem); // must always be a subject
+    liststate = (state_t) elem->state;
+    if (! (elem->first)) { // is the first elem just a tag?
+        switch (liststate) {
+        case QRY:
+            verb = "qry";
+            break;
+        case TLD:
+            verb = "del";
+            break;
+        default:
+            break;
+        }
+        elem = elem->next;
+    }
+    fprintf(stdout,"%s", verb);
+
+    assert(elem);  // must always be a subject
+    subject = elem;
+
+    emit_act_list_r(CC, subject);
+
+    attributes = elem->next;  // may be null
+
+    if (attributes) {
+        emit_act_list_r(CC, attributes);
+    }
+
     putc('\n', stdout);
 }
 
@@ -34,17 +70,7 @@ static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
     assert(list);
     liststate = (state_t) list->state;
     elem = list->first;
-    if (! elem) {
-        switch (liststate) {
-        case QRY:
-            emit_act_print_token(CC, "?");
-            break;
-        case TLD:
-            emit_act_print_token(CC, "~");
-            break;
-        default:
-            break;
-        }
+    if (! elem) {    // FIXME - I don't understand why this is needed - attribute processing breaks without
         return;
     }
     type = (elemtype_t) elem->type;
