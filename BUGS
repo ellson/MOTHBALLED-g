@@ -69,6 +69,12 @@ Without this canonicalization,  a pattern like a* will fail to match "a"
     g (master)$ src/g comments.g
 Error: fopen fail ACTIVITY
       in "comments.g" line: 1 just before: ""
+** partially fixed - could use filename in error message
+
+14) BUG - edge disambiguators not parsed correctly
+    $ echo '<a b>`c' | g
+    g: sameas.c:68: je_sameas_r: Assertion `subject->type == (char)LISTELEM' failed.
+    Aborted (core dumped)
 
 
 

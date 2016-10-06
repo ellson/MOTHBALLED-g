@@ -22,10 +22,10 @@ void je_emit_act2(container_CONTEXT_t * CC, elem_t *list)
     elemtype_t type;
     int cnt;
     state_t liststate;
-    char *verb = "add";
+    char *verb = "";
     elem_t *subject, *attributes;
 
-    CC->context->sep = ' ';
+    CC->context->sep = '\0';
     assert(list);
     elem = list->first;
     assert(elem); // must always be a subject
@@ -33,10 +33,10 @@ void je_emit_act2(container_CONTEXT_t * CC, elem_t *list)
     if (! (elem->first)) { // is the first elem just a tag?
         switch (liststate) {
         case QRY:
-            verb = "qry";
+            verb = "?";
             break;
         case TLD:
-            verb = "del";
+            verb = "~";
             break;
         default:
             break;
