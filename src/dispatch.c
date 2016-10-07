@@ -60,6 +60,7 @@ void je_dispatch(container_CONTEXT_t * CC, elem_t * plist)
     elem_t *pelem;
     
     assert(plist);
+P(plist);
     assert(plist->type == (char)LISTELEM);
 
     // expand OBJECT_LIST and ENDPOINTSETS
@@ -87,7 +88,6 @@ void je_dispatch(container_CONTEXT_t * CC, elem_t * plist)
         else {
                 pelem = nodes.first;
                 while (pelem) {
-                    // FIXME - may have nattributes on LEG
                     je_assemble_act(C,pelem,NULL,plist);
                     pelem = pelem->next;
                 }

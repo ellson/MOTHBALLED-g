@@ -1,9 +1,11 @@
 <a b>
-<a b>`c
-~<a b>`c
-?<a b>`c
+<a b>`x
+~<a b>`x
+?<a b>`x
 
 <a b> [foo=bar]
-<a b>`c [foo=bar]
-~<a b>`c [foo=bar]
-?<a b>`c [foo=bar]
+<a b>`x [foo=bar]
+~<a b>`x [foo=bar]
+?<a b>`x [foo=bar]
+
+<(a b) c>`x [foo=bar]

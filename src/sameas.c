@@ -94,7 +94,6 @@ if (*nextold) {
                     }
                 }
             }
-// if (si == EDGE) { P(elem); }
             if (*nextold) {
                 if (si == (state_t) (*nextold)->state)    // old subject matches NODE or EDGE type
                 {
@@ -114,6 +113,7 @@ if (*nextold) {
             new->state = si;
             append_list(newlist, new);
             break;
+        case DISAMBIG:
         case NODEID:
             new = ref_list(LIST, elem);
             append_list(newlist, new);
@@ -130,16 +130,6 @@ if (*nextold) {
                 C->stat_sameas++;
             } else {
                 je_token_error(TOKEN, si, "No corresponding object found for same-as substitution");
-            }
-            break;
-        case DISAMBIG:
-            // FIXME - not sure about this ???
-            // This doesn't feel right 
-            new = ref_list(LIST, elem);
-            append_list(newlist, new);
-            if (*nextold) {    // doesn't matter if old is shorter
-                // ... as long as no further substitutions are needed
-                *nextold = (*nextold)->next;
             }
             break;
         default:
