@@ -7,9 +7,6 @@ typedef enum {
     HASHNAMEELEM = 3
 } elemtype_t;
 
-// Print a list (tree) -  used for debugging
-#define P(L) {C->sep = ' ';print_list(stdout, L, 0, &(C->sep));putc('\n', stdout);}
-
 typedef struct elem_s elem_t;
 struct elem_s {          // castable from frag_elem_s and hash_elem_s -- sizes must match (32bytes)
     elem_t *next;

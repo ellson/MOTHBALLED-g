@@ -309,6 +309,7 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
 
             // Perform EQL "same as in subject of previous ACT" substitutions
             // Also classifies ACT as NODE or EDGE based on SUBJECT
+P(&branch);
             je_sameas(CC, &branch);
 
             je_hash_list(&hash, &(CC->subject));   // generate name hash

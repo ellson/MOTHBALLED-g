@@ -85,6 +85,8 @@ if (*nextold) {
                 CC->subject_type = si;    // record if the ACT has a NODE or EDGE SUBJECT
             } else {
                 if (si != CC->subject_type) {
+                    // all members of the SUBJECT must be of the same type: NODE or EDGE
+                    // (this is really a shortcut to avoid extra productions in the grammar)
                     if (si == NODE) {
                         je_token_error(TOKEN, si, "EDGE subject includes");
                     } else {
@@ -92,6 +94,7 @@ if (*nextold) {
                     }
                 }
             }
+// if (si == EDGE) { P(elem); }
             if (*nextold) {
                 if (si == (state_t) (*nextold)->state)    // old subject matches NODE or EDGE type
                 {
@@ -131,6 +134,7 @@ if (*nextold) {
             break;
         case DISAMBIG:
             // FIXME - not sure about this ???
+            // This doesn't feel right 
             new = ref_list(LIST, elem);
             append_list(newlist, new);
             if (*nextold) {    // doesn't matter if old is shorter

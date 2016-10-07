@@ -59,3 +59,7 @@ struct container_context_s {    // container_context
     // FIXME  - place for fork header for layout process...
 
 };
+
+// Print a list (tree) -  used for debugging
+#define P(L) {C->sep = ' ';print_list(stdout, L, 0, &(C->sep));putc('\n', stdout);}
+
