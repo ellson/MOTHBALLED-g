@@ -4,10 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <inttypes.h>
-#include <time.h>
-#include <sys/types.h>
-#include <errno.h>
 #include <assert.h>
 
 #include "libje_private.h"
@@ -15,16 +11,16 @@
 #else
 
 #include <stdio.h>
-// #include <stdlib.h>
+#include <stdlib.h>
 #include <stdint.h>
-// #include <string.h>
+#include <string.h>
 #include <assert.h>
 
 #include "inbuf.h"
 #include "grammar.h"
 #include "list.h"
 #include "token.h"
-#include "context.h"
+#include "ikea.h"
 
 #endif
 

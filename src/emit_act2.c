@@ -2,16 +2,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
-#include <time.h>
-#include <sys/types.h>
+#include <stdlib.h>
 #include <assert.h>
 
 #include "libje_private.h"
 
 // forward declaration
-static emit_act_func(container_CONTEXT_t * CC, char *verb, elem_t *subject, elem_t *attributes);
+static void emit_act_func(container_CONTEXT_t * CC, char *verb, elem_t *subject, elem_t *attributes);
 static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list);
 static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep);
 
@@ -46,7 +43,7 @@ void je_emit_act2(container_CONTEXT_t * CC, elem_t *list)
     emit_act_func(CC, verb, elem, elem->next);
 }
 
-static emit_act_func(container_CONTEXT_t * CC, char *verb, elem_t *subject, elem_t *attributes)
+static void emit_act_func(container_CONTEXT_t * CC, char *verb, elem_t *subject, elem_t *attributes)
 {
     CC->context->sep = '\0';
     fprintf(stdout,"%s", verb);

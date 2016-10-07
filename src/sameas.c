@@ -1,9 +1,8 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 #include <stdio.h>
-#include <inttypes.h>
-#include <time.h>
-#include <sys/types.h>
+#include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include "libje_private.h"
@@ -65,7 +64,7 @@ static void je_sameas_r(container_CONTEXT_t * CC, elem_t * subject, elem_t ** ne
     elem_t object = { 0 };
     state_t si;
 
-    assert(subject->type == (char)LISTELEM);
+    assert (subject->type == (char)LISTELEM);
 
     elem = subject->first;
 #if 0
@@ -128,6 +127,15 @@ if (*nextold) {
                 C->stat_sameas++;
             } else {
                 je_token_error(TOKEN, si, "No corresponding object found for same-as substitution");
+            }
+            break;
+        case DISAMBIG:
+            // FIXME - not sure about this ???
+            new = ref_list(LIST, elem);
+            append_list(newlist, new);
+            if (*nextold) {    // doesn't matter if old is shorter
+                // ... as long as no further substitutions are needed
+                *nextold = (*nextold)->next;
             }
             break;
         default:

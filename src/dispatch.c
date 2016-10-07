@@ -1,9 +1,8 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 #include <stdio.h>
-#include <inttypes.h>
-#include <time.h>
-#include <sys/types.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <assert.h>
 
 #include "libje_private.h"
