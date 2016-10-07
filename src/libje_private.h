@@ -28,4 +28,4 @@ typedef struct ikea_box_s ikea_box_t;
 #include "pattern.h"
 #include "sameas.h"
 #include "dispatch.h"
-#include "expand_edge.h"
+#include "expand.h"

@@ -161,7 +161,7 @@ static void je_dispatch_r(CONTEXT_t * C, elem_t * plist, elem_t * pattributes, e
             append_list(pnodes, pnew);
             break;
         case EDGE:
-            je_expand_edge(C, pelem, pnodes, pedges);
+            je_expand(C, pelem, pnodes, pedges);
             break;
         default:
             break;

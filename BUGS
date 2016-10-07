@@ -76,6 +76,9 @@ Error: fopen fail ACTIVITY
     g: sameas.c:68: je_sameas_r: Assertion `subject->type == (char)LISTELEM' failed.
     Aborted (core dumped)
 
+    status:  disambiguators get lost in expand_edge.c
+	     some question about disambig code in sameas.h
+
 
 
 	

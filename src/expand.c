@@ -17,7 +17,7 @@ static void je_expand_r(CONTEXT_t *C, elem_t *epset, elem_t *leg, elem_t *edges)
  * @param nodes - resulting nodes
  * @param edges - resulting simple edges
  */
-void je_expand_edge(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
+void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
 {
     LIST_t * LIST = (LIST_t *)C;
     elem_t *elem, *epset, *ep, *new;

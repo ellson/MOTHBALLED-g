@@ -13,7 +13,7 @@ noinst_HEADERS = \
 	context.h \
 	dispatch.h \
 	emit.h \
-	expand_edge.h \
+	expand.h \
 	grammar.h \
 	hash.h \
 	ikea.h \
@@ -38,7 +38,7 @@ libje_C_la_SOURCES = \
 	info.c \
 	inbuf.c \
 	dispatch.c \
-	expand_edge.c \
+	expand.c \
 	dumpg.c \
 	list.c \
 	hash.c \
