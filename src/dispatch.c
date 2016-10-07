@@ -60,7 +60,7 @@ void je_dispatch(container_CONTEXT_t * CC, elem_t * plist)
     elem_t *pelem;
     
     assert(plist);
-P(plist);
+// P(plist);
     assert(plist->type == (char)LISTELEM);
 
     // expand OBJECT_LIST and ENDPOINTSETS
@@ -75,7 +75,6 @@ P(plist);
     case NODE:
         pelem = nodes.first;
         while (pelem) {
-            assert ((state_t)pelem->state == NODE);
             je_assemble_act(C,pelem,&attributes,plist);
             pelem = pelem->next;
         }

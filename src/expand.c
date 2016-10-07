@@ -26,19 +26,14 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
 
     assert(list);
 
+P(list);
+
     elem = list->first;
     while (elem) {
         switch ((state_t)elem->state) {
         case DISAMBIG:
-            // FIXME - now what?
-            //
-            // rather than waiting for this case to show up at the end, I think
-            // it needs to be extracted first, so that it can be passed into 
-            // je_expand_r() where the new edges are created.
-            //
-            // why are we finding it here ?   maybe this should be extracted in the caller?
-            //          EDGE ::= LAN _LEG+ RAN DISAMBIG?
-            fprintf(stderr,"FIXME - Found DISAMBIG\n");
+            // FIXME - appends an ENPOINT instead of a DISAMBIG
+            append_list(&newlist, ref_list(LIST, elem));
             break;
         case LEG:
             // build a leg list with endpointsets for each leg
@@ -89,6 +84,7 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
     }
     // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
     je_expand_r(C, &newepset, newlist.first, edges);
+P(&newlist);
     free_list(LIST, &newlist);
 }
 /**
