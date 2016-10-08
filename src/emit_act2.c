@@ -100,6 +100,9 @@ static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
                 case CHILD:
                     emit_act_print_token(CC, "/");
                     break;
+                case DISAMBID:
+                    emit_act_print_token(CC, "`");
+                    break;
                 default:
                     break;
                 }

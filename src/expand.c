@@ -32,7 +32,6 @@ P(list);
     while (elem) {
         switch ((state_t)elem->state) {
         case DISAMBIG:
-            // FIXME - appends an ENPOINT instead of a DISAMBIG
             append_list(&newlist, ref_list(LIST, elem));
             break;
         case LEG:
@@ -84,13 +83,15 @@ P(list);
     }
     // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
     je_expand_r(C, &newepset, newlist.first, edges);
-P(&newlist);
+
+P(edges);
+
     free_list(LIST, &newlist);
 }
 /**
  * this function expands ENDPOINTSETs
- * expands edges like:    <(a b) c>
- * into:                  <a c><b c>
+ * expands edges like:    <(a b) c>`x
+ * into:                  <a c>`x <b c>`x
  *
  * @param C context
  * @param epset
