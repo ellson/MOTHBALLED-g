@@ -22,6 +22,7 @@ void je_emit_act2(container_CONTEXT_t * CC, elem_t *list)
     state_t liststate;
     char *verb = "";
     elem_t *subject, *attributes;
+    CC->context->sep = '\0';
 
     assert(list);
     elem = list->first;
@@ -40,21 +41,35 @@ void je_emit_act2(container_CONTEXT_t * CC, elem_t *list)
         }
         elem = elem->next;
     }
-    emit_act_func(CC, verb, elem, elem->next);
-}
-
-static void emit_act_func(container_CONTEXT_t * CC, char *verb, elem_t *subject, elem_t *attributes)
-{
-    CC->context->sep = '\0';
     fprintf(stdout,"%s", verb);
-
-    emit_act_list_r(CC, subject); // There must always be a subject 
-
-    if (attributes) {  // attributes are optional
-        emit_act_list_r(CC, attributes);
+   
+    liststate = (state_t) elem->state;
+    switch (liststate) {
+    case SIBLING:
+        fprintf(stdout,"NODE\n");
+        break;
+    case EDGE:
+        fprintf(stdout,"EDGE\n");
+        break;
+    default:
+        assert(0); // SUBJECT must be NODE(SIBLING) or EDGE
+        break;
     }
+    elem = elem->next;
 
-    putc('\n', stdout);
+    if (elem) {
+        liststate = (state_t) elem->state;
+        switch (liststate) {
+        case ATTRIBUTES:
+            fprintf(stdout,"ATTRIBUTES\n");
+            break;
+        default:
+            assert(0); // that should be all
+            break;
+        }
+        elem = elem->next;
+    }
+    assert(elem == NULL);
 }
 
 // recursive function
