@@ -8,7 +8,7 @@
 #include "libje_private.h"
 
 // forward declaration
-static void emit_act_func(container_CONTEXT_t * CC, char *verb, elem_t *subject, elem_t *attributes);
+static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes);
 static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list);
 static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep);
 
@@ -20,8 +20,9 @@ void je_emit_act2(container_CONTEXT_t * CC, elem_t *list)
     elemtype_t type;
     int cnt;
     state_t liststate;
-    char *verb = "";
-    elem_t *subject, *attributes;
+    state_t verb = 0;
+    state_t subjtype = 0;
+    elem_t *subject, *attributes = NULL, *disambig = NULL;
     CC->context->sep = '\0';
 
     assert(list);
@@ -31,28 +32,30 @@ void je_emit_act2(container_CONTEXT_t * CC, elem_t *list)
     if (! (elem->first)) { // is the first elem just a tag?
         switch (liststate) {
         case QRY:
-            verb = "?";
-            break;
         case TLD:
-            verb = "~";
+            verb = liststate;
             break;
         default:
+            assert(0); // verb must be query (QRY),  or delete (TLD), (or add if no verb)
             break;
         }
         elem = elem->next;
     }
-    fprintf(stdout,"%s", verb);
    
     liststate = (state_t) elem->state;
     switch (liststate) {
+    case NODE:
     case SIBLING:
-        fprintf(stdout,"NODE\n");
+        subject = elem;
+        subjtype = liststate;
         break;
     case EDGE:
-        fprintf(stdout,"EDGE\n");
+        subject = elem->first;
+        disambig = subject->next;
+        subjtype = liststate;
         break;
     default:
-        assert(0); // SUBJECT must be NODE(SIBLING) or EDGE
+        assert(0); // SUBJECT must be NODE,SIBLING, or EDGE
         break;
     }
     elem = elem->next;
@@ -61,7 +64,7 @@ void je_emit_act2(container_CONTEXT_t * CC, elem_t *list)
         liststate = (state_t) elem->state;
         switch (liststate) {
         case ATTRIBUTES:
-            fprintf(stdout,"ATTRIBUTES\n");
+            attributes = elem;
             break;
         default:
             assert(0); // that should be all
@@ -70,6 +73,43 @@ void je_emit_act2(container_CONTEXT_t * CC, elem_t *list)
         elem = elem->next;
     }
     assert(elem == NULL);
+
+    emit_act_func(CC, verb, subjtype, subject, disambig, attributes);
+}
+
+static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes)
+{
+    CONTEXT_t *C = CC->context;
+    switch (verb) {
+    case QRY: putc('?', stdout); break;
+    case TLD: putc('~', stdout); break;
+    }
+    switch (subjtype) {
+    case NODE:
+    case SIBLING:
+//P(subject);
+        emit_act_list_r(CC, subject);
+        break;
+    case EDGE:
+        putc('<', stdout);
+//P(subject);
+        emit_act_list_r(CC, subject);
+        putc('>', stdout);
+        break;
+    }
+    if (disambig) {
+        putc('`', stdout);
+        CC->context->sep = '\0';
+        emit_act_list_r(CC, disambig);
+    }
+    if (attributes) {
+        putc('[', stdout);
+        CC->context->sep = '\0';
+//P(attributes);
+        emit_act_list_r(CC, attributes);
+        putc(']', stdout);
+    }
+    putc('\n', stdout);
 }
 
 // recursive function
@@ -81,66 +121,22 @@ static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
     state_t liststate;
 
     assert(list);
-    liststate = (state_t) list->state;
     elem = list->first;
-    if (! elem) {    // FIXME - I don't understand why this is needed - attribute processing breaks without
-        return;
-    }
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
         emit_act_print_frags(liststate, elem, &(CC->context->sep));
         break;
     case LISTELEM:
-        cnt = 0;
         while (elem) {
-            if (cnt++ == 0) {
-                switch (liststate) {
-                case EDGE:
-                    emit_act_print_token(CC, "<");
-                    break;
-                case OBJECT_LIST:
-                case ENDPOINTSET:
-                    assert(0); // lists should be fully expanded at this point
-                    break;
-                case ATTRIBUTES:
-                    emit_act_print_token(CC, "[");
-                    break;
-                case CONTAINER:
-                    emit_act_print_token(CC, "{");
-                    break;
-                case VALASSIGN:
-                    emit_act_print_token(CC, "=");
-                    break;
-                case CHILD:
-                    emit_act_print_token(CC, "/");
-                    break;
-                case DISAMBID:
-                    emit_act_print_token(CC, "`");
-                    break;
-                default:
-                    break;
-                }
+            if ((state_t)(elem->state) == EQL) {
+                putc('=', stdout);
+                CC->context->sep = '\0';
             }
-            emit_act_list_r(CC, elem);    // recurse
+            else {
+                emit_act_list_r(CC, elem);    // recurse
+            }
             elem = elem->next;
-        }
-        switch (liststate) {
-        case EDGE:
-            emit_act_print_token(CC, ">");
-            break;
-        case OBJECT_LIST:
-        case ENDPOINTSET:
-            assert(0); // lists should be fully expanded at this point
-            break;
-        case ATTRIBUTES:
-            emit_act_print_token(CC, "]");
-            break;
-        case CONTAINER:
-            emit_act_print_token(CC, "}");
-            break;
-        default:
-            break;
         }
         break;
     default:

@@ -101,6 +101,7 @@ static void je_expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *d
 {
     LIST_t * LIST = (LIST_t *)C;
     elem_t newedge = { 0 };
+    elem_t newlegs = { 0 };
     elem_t *ep, *new;
 
     if (epset) {
@@ -123,12 +124,16 @@ static void je_expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *d
     else {
         // if no more epsets, then we can create a new edge with the current newepset and dismbig
         newedge.state = EDGE;
+        newlegs.state = ENDPOINTSET;
         ep = newepset->first;
         while (ep) {
             new = ref_list(LIST, ep);
-            append_list(&newedge, new);
+            append_list(&newlegs, new);
             ep = ep->next;
         }
+        new = move_list(LIST, &newlegs);
+        append_list(&newedge, new);
+
         newepset->first = 0;  // reset newepset for next combo
         if (disambig) {
             new = ref_list(LIST, disambig);
