@@ -24,6 +24,8 @@
 
 #endif
 
+#include "emit_act.h"
+
 // forward declarations
 
 static success_t parse_r(container_CONTEXT_t * CC, elem_t * root,
@@ -283,7 +285,7 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
                 while (elem) {
                     C->stat_outactcount++;
 //P(elem);
-                    je_emit_act2(CC, elem);  // primary emitter to graph DB
+                    je_emit_act(CC, elem);  // primary emitter to graph DB
 
                     elem = elem->next;
                 }

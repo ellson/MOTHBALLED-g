@@ -13,6 +13,7 @@ noinst_HEADERS = \
 	context.h \
 	dispatch.h \
 	emit.h \
+	emit_act.h \
 	expand.h \
 	grammar.h \
 	hash.h \
@@ -47,7 +48,6 @@ libje_C_la_SOURCES = \
 	pattern.c \
 	emit_ikea.c \
 	emit_act.c \
-	emit_act2.c \
 	emit.c \
 	emit_t.c \
 	emit_g.c \
