@@ -86,21 +86,25 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
     }
     switch (subjtype) {
     case NODE:
+//P(subject->first);
+        emit_act_list_r(CC, subject->first); // skip NODEID
+        break;
     case SIBLING:
-//P(subject);
-        emit_act_list_r(CC, subject);
+//P(subject->first->first);
+        emit_act_list_r(CC, subject->first->first); // skip NODEREF NODEID
         break;
     case EDGE:
         putc('<', stdout);
-//P(subject);
-        emit_act_list_r(CC, subject);
+P(subject);
+//        emit_act_list_r(CC, subject);
         putc('>', stdout);
         break;
     }
     if (disambig) {
         putc('`', stdout);
+//P(disambig->first);
         CC->context->sep = '\0';
-        emit_act_list_r(CC, disambig);
+        emit_act_list_r(CC, disambig->first); // skip DISAMBID
     }
     if (attributes) {
         putc('[', stdout);
