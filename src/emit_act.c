@@ -33,7 +33,7 @@ void je_emit_act(container_CONTEXT_t * CC, elem_t *list)
         switch (liststate) {
         case QRY:
         case TLD:
-            verb = liststate;
+            verb = liststate; // override default: 0 = add
             break;
         default:
             assert(0); // verb must be query (QRY),  or delete (TLD), (or add if no verb)
@@ -47,12 +47,12 @@ void je_emit_act(container_CONTEXT_t * CC, elem_t *list)
     case NODE:
     case SIBLING:
         subject = elem;
-        subjtype = liststate;
+        subjtype = liststate; // NODE or SIBLING
         break;
     case EDGE:
-        subject = elem->first;
-        disambig = subject->next;
-        subjtype = liststate;
+        subject = elem->first;  // ENDPOINTS (legs)
+        disambig = subject->next; // DISAMBIG (may be NULL)
+        subjtype = liststate; // EDGE
         break;
     default:
         assert(0); // SUBJECT must be NODE,SIBLING, or EDGE
