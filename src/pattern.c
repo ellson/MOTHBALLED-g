@@ -50,7 +50,7 @@ je_pattern_r(container_CONTEXT_t * CC, elem_t * subject, elem_t * pattern);
  */
 void je_pattern(container_CONTEXT_t * CC, elem_t * root, elem_t * subject)
 {
-    CONTEXT_t *C = CC->context;
+    CONTEXT_t *C = CC->C;
     LIST_t * LIST = (LIST_t *)C;
     elem_t *pattern_acts, *pact, *psubj, *pattr;
 

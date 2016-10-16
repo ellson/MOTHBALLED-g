@@ -23,7 +23,7 @@ void je_emit_act(container_CONTEXT_t * CC, elem_t *list)
     state_t verb = 0;
     state_t subjtype = 0;
     elem_t *subject, *attributes = NULL, *disambig = NULL;
-    CC->context->sep = '\0';
+    CC->C->sep = '\0';
 
     assert(list);
     elem = list->first;
@@ -79,7 +79,7 @@ void je_emit_act(container_CONTEXT_t * CC, elem_t *list)
 
 static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes)
 {
-    CONTEXT_t *C = CC->context;
+    CONTEXT_t *C = CC->C;
     switch (verb) {
     case QRY: putc('?', stdout); break;
     case TLD: putc('~', stdout); break;
@@ -95,20 +95,20 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
         break;
     case EDGE:
         putc('<', stdout);
-P(subject);
-//        emit_act_list_r(CC, subject);
+//P(subject);
+        emit_act_list_r(CC, subject);
         putc('>', stdout);
         break;
     }
     if (disambig) {
         putc('`', stdout);
 //P(disambig->first);
-        CC->context->sep = '\0';
+        C->sep = '\0';
         emit_act_list_r(CC, disambig->first); // skip DISAMBID
     }
     if (attributes) {
         putc('[', stdout);
-        CC->context->sep = '\0';
+        C->sep = '\0';
 //P(attributes);
         emit_act_list_r(CC, attributes);
         putc(']', stdout);
@@ -129,13 +129,13 @@ static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-        emit_act_print_frags(liststate, elem, &(CC->context->sep));
+        emit_act_print_frags(liststate, elem, &(CC->C->sep));
         break;
     case LISTELEM:
         while (elem) {
             if ((state_t)(elem->state) == EQL) {
                 putc('=', stdout);
-                CC->context->sep = '\0';
+                CC->C->sep = '\0';
             }
             else {
                 emit_act_list_r(CC, elem);    // recurse
@@ -152,7 +152,7 @@ static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
 static void emit_act_print_token(container_CONTEXT_t *CC, char *tok)
 {
     putc(*tok, stdout);
-    CC->context->sep = 0;
+    CC->C->sep = 0;
 }
 
 /**

@@ -21,20 +21,20 @@ static emit_t *emitters[] =
 
 static void api_act(container_CONTEXT_t * CC, elem_t *elem)
 {
-    CONTEXT_t *C = CC->context;
+    CONTEXT_t *C = CC->C;
 
     if (!CC->out)
         return;
 
 #if 0
     // render through libcgraph to svg
-    je_gvrender_list(CC->context, stdout, elem);
+    je_gvrender_list(CC->C, stdout, elem);
     putc('\n', stdout);   // NL after
 #endif
 
     C->sep = 0;         // suppress space before (because preceded by BOF or NL)
     // emit in g format
-    je_emit_list(CC->context, CC->out, elem);
+    je_emit_list(CC->C, CC->out, elem);
     putc('\n', CC->out);   // NL after
 }
 

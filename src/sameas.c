@@ -21,8 +21,7 @@ static void je_sameas_r(container_CONTEXT_t * CC, elem_t * subject, elem_t ** ne
  */
 void je_sameas(container_CONTEXT_t * CC, elem_t * subject)
 {
-    CONTEXT_t * C = CC->context;
-    LIST_t * LIST = (LIST_t *)C;
+    LIST_t * LIST = (LIST_t *)(CC->C);
     elem_t *newsubject, *oldsubject, *nextold;
     elem_t subject_rewrite = { 0 };
 
@@ -57,7 +56,7 @@ void je_sameas(container_CONTEXT_t * CC, elem_t * subject)
  */
 static void je_sameas_r(container_CONTEXT_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {
-    CONTEXT_t * C = CC->context;
+    CONTEXT_t * C = CC->C;
     TOKEN_t * TOKEN = (TOKEN_t *)C;
     LIST_t * LIST = (LIST_t *)C;
     elem_t *elem, *new, *nextoldelem = NULL;

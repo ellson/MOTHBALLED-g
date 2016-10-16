@@ -52,7 +52,7 @@ static void je_assemble_act(CONTEXT_t *C, elem_t * pelem, elem_t * pattributes, 
  */
 void je_dispatch(container_CONTEXT_t * CC, elem_t * plist)
 {
-    CONTEXT_t *C = CC->context;
+    CONTEXT_t *C = CC->C;
     LIST_t * LIST = (LIST_t *)C;
     elem_t attributes = { 0 };
     elem_t nodes = { 0 };

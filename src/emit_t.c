@@ -9,7 +9,7 @@
 
 static void api_start_activity(container_CONTEXT_t * CC)
 {
-    CONTEXT_t *C = CC->context;
+    CONTEXT_t *C = CC->C;
     FILE *chan = C->out;
 
     C->sep = 0;
@@ -27,7 +27,7 @@ static void api_start_activity(container_CONTEXT_t * CC)
 static void
 api_start_state(container_CONTEXT_t * CC, char class, unsigned char prop, int nest, int repc)
 {
-    FILE *chan = CC->context->out;
+    FILE *chan = CC->C->out;
 
     fprintf(chan, "\n   ");
     putc(je_char_prop(prop, '.'), chan);
@@ -55,7 +55,7 @@ static void api_token(CONTEXT_t * C, char token)
 static void
 api_end_state(container_CONTEXT_t * CC, char class, success_t rc, int nest, int repc)
 {
-    FILE *chan = CC->context->out;
+    FILE *chan = CC->C->out;
 
     fprintf(chan, "\n   %d%4d%4d%4d   ", rc, class, nest, repc);
     print_len_frag(chan, NAMEP(class));
@@ -63,7 +63,7 @@ api_end_state(container_CONTEXT_t * CC, char class, success_t rc, int nest, int 
 
 static void api_end_activity(container_CONTEXT_t * CC)
 {
-    CONTEXT_t *C = CC->context;
+    CONTEXT_t *C = CC->C;
     FILE *chan = C->out;
 
     C->sep = 0;
@@ -102,11 +102,11 @@ emit_t t_api = { "t",
 
 static void api1_act(container_CONTEXT_t * CC, elem_t * tree)
 {
-    FILE *chan = CC->context->out;
+    FILE *chan = CC->C->out;
     char sep;
 
     sep = ' ';
-    fprintf(chan, "%3d ACT", CC->context->containment);
+    fprintf(chan, "%3d ACT", CC->C->containment);
     print_list(chan, tree, 7, &sep);
 }
 

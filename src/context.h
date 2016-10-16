@@ -40,7 +40,7 @@ struct context_s {             // input_context
 };
 
 struct container_context_s {    // container_context
-    CONTEXT_t *context;         // the input context
+    CONTEXT_t *C;               // the input context
     elem_t subject;             // Preceeding ACT's subject, until this ACT's SUBJECT has been parsed
                                 // and processd by sameas()  - at which point it becomes this ACT's subject.
                                 // (So: in SUBJECT parsing it is the previous ACT's subject and used for sameas()

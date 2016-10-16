@@ -20,7 +20,6 @@
 #include "grammar.h"
 #include "list.h"
 #include "token.h"
-#include "ikea.h"
 
 #endif
 
@@ -70,7 +69,7 @@ success_t je_parse(CONTEXT_t * C, elem_t * name)
     TOKEN_t * TOKEN = (TOKEN_t *)C;
     LIST_t * LIST = (LIST_t *)C;
 
-    CC->context = C;
+    CC->C = C;
     CC->ikea_box = ikea_box_open(C->ikea_store, NULL);
 #if 0
 // old, to be removed
@@ -127,7 +126,7 @@ static success_t
 parse_r(container_CONTEXT_t * CC, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc)
 {
-    CONTEXT_t *C = CC->context;
+    CONTEXT_t *C = CC->C;
     TOKEN_t * TOKEN = (TOKEN_t *)C;
     LIST_t * LIST = (LIST_t *)C;
     INBUF_t * INBUF = (INBUF_t *)C;
