@@ -12,8 +12,6 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
 static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list);
 static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep);
 
-static void emit_act_print_token(container_CONTEXT_t *CC, char *tok);
-
 void je_emit_act(container_CONTEXT_t * CC, elem_t *list)
 {
     elem_t * elem;
@@ -99,6 +97,9 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
         emit_act_list_r(CC, subject);
         putc('>', stdout);
         break;
+    default:
+        assert(0); // that should be all
+        break;
     }
     if (disambig) {
         putc('`', stdout);
@@ -147,12 +148,6 @@ static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
         assert(0);  // should not be here
         break;
     }
-}
-
-static void emit_act_print_token(container_CONTEXT_t *CC, char *tok)
-{
-    putc(*tok, stdout);
-    CC->C->sep = 0;
 }
 
 /**

@@ -7,6 +7,8 @@
 
 #include "libje_private.h"
 
+#define BINODE_EDGES 1
+
 static void je_expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *edges);
 
 /**
@@ -23,6 +25,14 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
     elem_t *elem, *epset, *ep, *new, *disambig = NULL;
     elem_t newlist = { 0 };
     elem_t newepset = { 0 };
+    elem_t newnode = { 0 };
+    elem_t newnoderef = { 0 };
+    elem_t newnodeid = { 0 };
+    elem_t newnodestr = { 0 };
+    frag_elem_t newnodefrag = { 0 };
+    unsigned char *newnodenamestr = "_hub";
+    unsigned int newnodenamelen = 4;
+   
 
     assert(list);
     elem = list->first;
@@ -50,6 +60,7 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
                 switch (ep->first->state) {
                 case SIBLING:
                     new = ref_list(LIST, ep->first);
+P(new);
                     append_list(nodes, new);
                     // FIXME - induce CHILDren in this node's container
                     break;
@@ -78,6 +89,39 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
         }
         elem = elem->next;
     }
+
+#ifdef BINODE_EDGES
+    // if edge has 1 leg, or has >2 legs
+    if ((! newlist.first->next) || (newlist.first->next->next)) {
+        // create a special node to represent the hub
+
+        // FIXME - this is ugly!
+
+        newnodefrag.state = ABC;
+        newnodefrag.type = FRAGELEM;
+        newnodefrag.inbuf = NULL;
+        newnodefrag.frag = newnodenamestr;
+        newnodefrag.len = newnodenamelen;
+
+        newnodestr.first = &newnodefrag;
+        newnodestr.state = ABC;
+        new = move_list(LIST, &newnodestr);
+        append_list(&newnodeid, new);
+
+        newnodeid.state = NODEID;
+        new = move_list(LIST, &newnodeid);
+        append_list(&newnoderef, new);
+
+        newnoderef.state = NODEREF;
+        new = move_list(LIST, &newnoderef);
+        append_list(&newnode, new);
+
+        newnode.state = NODE;
+        new = move_list(LIST, &newnode);
+        append_list(nodes, new);
+    }
+#endif
+
     // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
     je_expand_r(C, &newepset, newlist.first, disambig, edges);
 
@@ -134,7 +178,9 @@ static void je_expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *d
         new = move_list(LIST, &newlegs);
         append_list(&newedge, new);
 
+        // FIXME - this doesn't look right, and may be an emem leak
         newepset->first = 0;  // reset newepset for next combo
+
         if (disambig) {
             new = ref_list(LIST, disambig);
             append_list(&newedge, new);
