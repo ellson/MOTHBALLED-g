@@ -147,6 +147,7 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
     LIST_t * LIST = (LIST_t *)C;
     elem_t newedge = { 0 };
     elem_t newlegs = { 0 };
+    elem_t newep = { 0 };
     elem_t *ep, *new;
 
     if (epset) {
@@ -171,13 +172,16 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
         newedge.state = EDGE;
         newlegs.state = ENDPOINTSET;
         if (hub) { // if we have a hub at this point, then we are to split into simple 2-node <tail head> edges
+            newep.state = ENDPOINT;
+            new = ref_list(LIST, hub);
+            append_list(&newep, new);
             ep = newepset->first;
             if (ep) {
-                expand_hub(C, ep, hub, disambig, edges);  // first leg is the tail
+                expand_hub(C, ep, &newep, disambig, edges);  // first leg is the tail
                 ep = ep->next;
             }
             while (ep) {
-                expand_hub(C, hub, ep, disambig, edges);  // all other legs are head
+                expand_hub(C, &newep, ep, disambig, edges);  // all other legs are head
                 ep = ep->next;
             }
         }
@@ -197,7 +201,7 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
             }
             // and append the new simplified edge to the result
             new = move_list(LIST, &newedge);
-P(new);
+// P(new);
             append_list(edges, new);
         }
         // FIXME - this doesn't look right, and may be an elem leak
@@ -213,10 +217,12 @@ static void expand_hub(CONTEXT_t *C, elem_t *tail, elem_t *head, elem_t *disambi
     elem_t newlegs = { 0 };
     elem_t *ep, *new;
 
+    newedge.state = EDGE;
+    newlegs.state = ENDPOINTSET;
     new = ref_list(LIST, tail);
-    append_list(&newedge, new);
+    append_list(&newlegs, new);
     new = ref_list(LIST, head);
-    append_list(&newedge, new);
+    append_list(&newlegs, new);
     new = move_list(LIST, &newlegs);
     append_list(&newedge, new);
     if (disambig) {
@@ -224,6 +230,6 @@ static void expand_hub(CONTEXT_t *C, elem_t *tail, elem_t *head, elem_t *disambi
         append_list(&newedge, new);
     }
     new = move_list(LIST, &newedge);
-P(new);
+// P(new);
     append_list(edges, new);
 }
