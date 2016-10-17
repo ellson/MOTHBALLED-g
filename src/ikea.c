@@ -57,9 +57,6 @@ struct ikea_box_s {
     ikea_store_t *ikea_store;
     FILE *fh;
     char tempfile[sizeof(tempdir_template)+sizeof(tempfile_template)+1]; // place to keep template for mkstemp()
-#ifndef HAVE_EVP_MD_CTX_NEW
-    EVP_MD_CTX evp_md_ctx;   // context for content hash accumulation
-#endif
     EVP_MD_CTX *ctx;
 };
 
@@ -128,9 +125,11 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
         fatal_perror("Error - calloc() ");
 
 #ifndef HAVE_EVP_MD_CTX_NEW
-    ikea_box->ctx = &(ikea_box->evp_md_ctx);
+    if ((ikea_box->ctx = malloc(sizeof(EVP_MD_CTX))) == NULL)
+        fatal_perror("Error - malloc() ");
 #else
-    ikea_box->ctx = EVP_MD_CTX_new();
+    if ((ikea_box->ctx = EVP_MD_CTX_new()) == NULL)
+        fatal_perror("Error - EVP_MD_CTX_new() ");
 #endif
     ikea_box->ikea_store = ikea_store;
 

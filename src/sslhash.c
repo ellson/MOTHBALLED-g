@@ -28,11 +28,14 @@ static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list);
  */
 void je_sslhash_list(uint64_t *hash, elem_t *list)
 {
+    EVP_MD_CTX *ctx;
+
 #ifndef HAVE_EVP_MD_CTX_NEW
-    EVP_MD_CTX evp_md_ctx;   // context for content hash accumulation
-    EVP_MD_CTX *ctx = &evp_md_ctx;
+    if ((ctx = malloc(sizeof(EVP_MD_CTX))) == NULL)
+        fatal_perror("Error - malloc() ");
 #else
-    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    if ((ctx = EVP_MD_CTX_new()) == NULL)
+        fatal_perror("Error - EVP_MD_CTX_new() ");
 #endif
     unsigned char digest[64];
     unsigned int digest_len=64;
