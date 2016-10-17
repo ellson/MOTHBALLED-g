@@ -52,7 +52,11 @@ struct ikea_box_s {
     ikea_box_t *next;
     ikea_store_t *ikea_store;
     FILE *fh;
+#ifndef OPENSSL1
     EVP_MD_CTX ctx;   // context for content hash accumulation
+#else
+    void *ctx;
+#endif
     char tempfile[sizeof(tempdir_template)+sizeof(tempfile_template)+1]; // place to keep template for mkstemp()
 };
 

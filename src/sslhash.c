@@ -11,7 +11,11 @@
 #include "libje_private.h"
 #include "sslhash.h"
 
+#ifndef OPENSSL1
 static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list);
+#else
+static void hash_list_r(void *ctx, elem_t *list);
+#endif
 
 /**
  * Objective:
@@ -24,7 +28,11 @@ static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list);
  */
 void je_sslhash_list(uint64_t *hash, elem_t *list)
 {
+#ifndef OPENSSL1
     EVP_MD_CTX ctx;   // context for content hash accumulation
+#else
+    int ctx;   // context for content hash accumulation
+#endif
     unsigned char digest[64];
     unsigned int digest_len=64;
     assert(list);
@@ -41,7 +49,11 @@ void je_sslhash_list(uint64_t *hash, elem_t *list)
  * @param ctx  - hashing context
  * @param list - fraglist or list of fraglist to be hashed
  */
+#ifndef OPENSSL1
 static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list)
+#else
+static void hash_list_r(void *ctx, elem_t *list)
+#endif
 {
     elem_t *elem;
     frag_elem_t *fragelem;

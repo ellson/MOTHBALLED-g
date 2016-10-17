@@ -49,11 +49,6 @@ AC_PROG_CC
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
-# Checks for libraries.
-AC_CHECK_LIB([crypto], [main])
-AC_CHECK_LIB([tar], [main])
-AC_CHECK_LIB([z], [main])
-
 # Checks for header files.
 AC_CHECK_HEADERS([ \
     stdio.h \
@@ -109,6 +104,14 @@ fi
         PKG_CONFIG_PATH="$prefix/lib/pkgconfig$PATHSEPARATOR$PKG_CONFIG_PATH"
         export PKG_CONFIG_PATH
 fi
+
+PKG_CHECK_MODULES(OPENSSL,[openssl >= 1.1.0],[CFLAGS+=" -DOPENSSL1=1"],[])
+
+# Checks for libraries.
+AC_CHECK_LIB([crypto], [main])
+AC_CHECK_LIB([openssl], [main])
+AC_CHECK_LIB([tar], [main])
+AC_CHECK_LIB([z], [main])
 
 AC_CONFIG_FILES([Makefile \
                  g.spec \
