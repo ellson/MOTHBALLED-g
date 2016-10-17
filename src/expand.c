@@ -170,7 +170,6 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
             new = move_list(LIST, hub);
             append_list(&newep, new);
     
-//P(&newep);
     }
 #endif
 
@@ -178,6 +177,7 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
         newedge.state = EDGE;
         newlegs.state = ENDPOINTSET;
         if (hub) { // if we have a hub at this point, then we are to split into simple 2-node <tail head> edges
+P(&newep);
             ep = newepset->first;
             if (ep) {
                 expand_hub(C, ep, &newep, disambig, edges);  // first leg is the tail
@@ -187,6 +187,7 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
                 expand_hub(C, &newep, ep, disambig, edges);  // all other legs are head
                 ep = ep->next;
             }
+            free_list(LIST, &newep);
         }
         else {
             ep = newepset->first;
