@@ -105,13 +105,13 @@ fi
         export PKG_CONFIG_PATH
 fi
 
-PKG_CHECK_MODULES(OPENSSL,[openssl >= 1.1.0],[CFLAGS+=" -DOPENSSL1=1"],[])
-
 # Checks for libraries.
 AC_CHECK_LIB([crypto], [main])
 AC_CHECK_LIB([openssl], [main])
 AC_CHECK_LIB([tar], [main])
 AC_CHECK_LIB([z], [main])
+
+AC_CHECK_FUNCS([EVP_MD_CTX_new])
 
 AC_CONFIG_FILES([Makefile \
                  g.spec \

@@ -10,6 +10,9 @@
 #include <glob.h>
 #include <assert.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "ikea.h"
 #include "fatal.h"
 
@@ -48,16 +51,16 @@ static char *tempfile_template="/g_XXXXXX";
 struct ikea_store_s {
     char tempdir[sizeof(tempdir_template)+1];     // place to keep tempdir string for mkdtemp() to compose
 };
+
 struct ikea_box_s {
     ikea_box_t *next;
     ikea_store_t *ikea_store;
     FILE *fh;
-#ifndef OPENSSL1
-    EVP_MD_CTX ctx;   // context for content hash accumulation
-#else
-    void *ctx;
-#endif
     char tempfile[sizeof(tempdir_template)+sizeof(tempfile_template)+1]; // place to keep template for mkstemp()
+#ifndef HAVE_EVP_MD_CTX_NEW
+    EVP_MD_CTX evp_md_ctx;   // context for content hash accumulation
+#endif
+    EVP_MD_CTX *ctx;
 };
 
 // forward b64 mapping table (6-bits of data to 7-bit ASCII)
@@ -124,6 +127,11 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
     if ((ikea_box = calloc(1, sizeof(ikea_box_t))) == NULL)
         fatal_perror("Error - calloc() ");
 
+#ifndef HAVE_EVP_MD_CTX_NEW
+    ikea_box->ctx = &(ikea_box->evp_md_ctx);
+#else
+    ikea_box->ctx = EVP_MD_CTX_new();
+#endif
     ikea_box->ikea_store = ikea_store;
 
     // construct temporary file path, in the temporary directory
@@ -139,7 +147,7 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
         fatal_perror("Error - fdopen(): ");
 
     // initialize contenthash accumulation
-    if ((EVP_DigestInit_ex(&(ikea_box->ctx), EVP_sha1(), NULL)) != 1)
+    if ((EVP_DigestInit_ex(ikea_box->ctx, EVP_sha1(), NULL)) != 1)
         fatal_perror("Error - EVP_DigestInit_ex() ");
 
     // return handle
@@ -150,7 +158,7 @@ void ikea_box_append(ikea_box_t* ikea_box, const char *data, size_t data_len)
 {
     if (fwrite(data, 1, data_len, ikea_box->fh) != data_len)
         fatal_perror("Error - fwrite() ");
-    if ((EVP_DigestUpdate(&(ikea_box->ctx), data, data_len)) != 1)
+    if ((EVP_DigestUpdate(ikea_box->ctx, data, data_len)) != 1)
         fatal_perror("Error - EVP_DigestUpdate() ");
 }
 
@@ -165,7 +173,7 @@ char * ikea_box_close(ikea_box_t* ikea_box)
 
     if (fclose(ikea_box->fh))
         fatal_perror("Error - fclose() ");
-    if ((EVP_DigestFinal_ex(&(ikea_box->ctx), digest, &digest_len)) != 1)
+    if ((EVP_DigestFinal_ex(ikea_box->ctx, digest, &digest_len)) != 1)
         fatal_perror("Error - EVP_DigestFinal_ex() ");
     // convert to string suitable for filename
     base64(digest, digest_len, contenthash, sizeof(contenthash));

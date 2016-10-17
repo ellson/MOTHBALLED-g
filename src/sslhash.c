@@ -9,13 +9,13 @@
 #include <assert.h>
 
 #include "libje_private.h"
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "sslhash.h"
 
-#ifndef OPENSSL1
 static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list);
-#else
-static void hash_list_r(void *ctx, elem_t *list);
-#endif
 
 /**
  * Objective:
@@ -28,19 +28,20 @@ static void hash_list_r(void *ctx, elem_t *list);
  */
 void je_sslhash_list(uint64_t *hash, elem_t *list)
 {
-#ifndef OPENSSL1
-    EVP_MD_CTX ctx;   // context for content hash accumulation
+#ifndef HAVE_EVP_MD_CTX_NEW
+    EVP_MD_CTX evp_md_ctx;   // context for content hash accumulation
+    EVP_MD_CTX *ctx = &evp_md_ctx;
 #else
-    int ctx;   // context for content hash accumulation
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
 #endif
     unsigned char digest[64];
     unsigned int digest_len=64;
     assert(list);
 
-    if ((EVP_DigestInit_ex(&ctx, EVP_sha1(), NULL)) != 1)
+    if ((EVP_DigestInit_ex(ctx, EVP_sha1(), NULL)) != 1)
         fatal_perror("Error - EVP_DigestInit_ex() ");
-    hash_list_r(&ctx, list);
-    if ((EVP_DigestFinal_ex(&ctx, digest, &digest_len)) != 1)
+    hash_list_r(ctx, list);
+    if ((EVP_DigestFinal_ex(ctx, digest, &digest_len)) != 1)
         fatal_perror("Error - EVP_DigestFinal_ex() ");
 }
 /**
@@ -49,11 +50,7 @@ void je_sslhash_list(uint64_t *hash, elem_t *list)
  * @param ctx  - hashing context
  * @param list - fraglist or list of fraglist to be hashed
  */
-#ifndef OPENSSL1
 static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list)
-#else
-static void hash_list_r(void *ctx, elem_t *list)
-#endif
 {
     elem_t *elem;
     frag_elem_t *fragelem;
