@@ -95,7 +95,7 @@ P(new);
     if ((! newlist.first->next) || (newlist.first->next->next)) {
         // create a special node to represent the hub
 
-        // FIXME - this is ugly!
+        // FIXME - this is ugly! and needs a hack in list.c to not free frag
 
         newnodefrag.state = ABC;
         newnodefrag.type = FRAGELEM;
