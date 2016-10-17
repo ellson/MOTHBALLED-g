@@ -136,35 +136,41 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
         }
     }
     else {
-#ifndef BINODE_EDGES
-    // if edge has 1 leg, or has >2 legs
-    if ((! newepset->first->next) || (newepset->first->next->next)) {
-        // create a special node to represent the hub
-
-        je_hash_list(&hubhash, newepset);
-        je_long_to_base64(hubhash_b64, &hubhash);
-
-        // FIXME - this is ugly! and needs a hack in list.c to not free frag
-
-        new = new_frag(LIST, ABC, 11, hubhash_b64);
-        append_list(&newnodestr, new);
-
-        newnodestr.state = ABC;
-        new = move_list(LIST, &newnodestr);
-        append_list(&newnodeid, new);
-
-        newnodeid.state = NODEID;
-        new = move_list(LIST, &newnodeid);
-        append_list(&newnoderef, new);
-
-        newnoderef.state = NODEREF;
-        new = move_list(LIST, &newnoderef);
-        append_list(&newnode, new);
-
-        newnode.state = NODE;
-        hub = move_list(LIST, &newnode);
-        new = ref_list(LIST, hub);
-        append_list(nodes, new);
+#ifdef BINODE_EDGES
+        // if edge has 1 leg, or has >2 legs
+        if ((! newepset->first->next) || (newepset->first->next->next)) {
+            // create a special node to represent the hub
+    
+            je_hash_list(&hubhash, newepset);
+            je_long_to_base64(hubhash_b64, &hubhash);
+    
+            // FIXME - this is ugly!
+    
+            new = new_frag(LIST, ABC, 11, hubhash_b64);
+            append_list(&newnodestr, new);
+    
+            newnodestr.state = ABC;
+            new = move_list(LIST, &newnodestr);
+            append_list(&newnodeid, new);
+    
+            newnodeid.state = NODEID;
+            new = move_list(LIST, &newnodeid);
+            append_list(&newnoderef, new);
+    
+            newnoderef.state = NODEREF;
+            new = move_list(LIST, &newnoderef);
+            append_list(&newnode, new);
+    
+            newnode.state = NODE;
+            hub = move_list(LIST, &newnode);
+            new = ref_list(LIST, hub);
+            append_list(nodes, new);
+    
+            newep.state = ENDPOINT;
+            new = move_list(LIST, hub);
+            append_list(&newep, new);
+    
+//P(&newep);
     }
 #endif
 
@@ -172,10 +178,6 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
         newedge.state = EDGE;
         newlegs.state = ENDPOINTSET;
         if (hub) { // if we have a hub at this point, then we are to split into simple 2-node <tail head> edges
-            newep.state = ENDPOINT;
-            new = ref_list(LIST, hub);
-            append_list(&newep, new);
-//P(hub);
             ep = newepset->first;
             if (ep) {
                 expand_hub(C, ep, &newep, disambig, edges);  // first leg is the tail

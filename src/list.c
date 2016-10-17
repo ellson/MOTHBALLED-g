@@ -301,11 +301,9 @@ void free_list(LIST_t * LIST, elem_t * list)
         switch ((elemtype_t) (elem->type)) {
         case FRAGELEM:
             frag_elem = (frag_elem_t*) elem;
-            if (frag_elem->inbuf) { // FIXME - do we want this (used for _hub)
-                assert(frag_elem->inbuf->refs > 0);
-                if (--(frag_elem->inbuf->refs) == 0) {
-                    free_inbuf(INBUF, frag_elem->inbuf);
-                }
+            assert(frag_elem->inbuf->refs > 0);
+            if (--(frag_elem->inbuf->refs) == 0) {
+                free_inbuf(INBUF, frag_elem->inbuf);
             }
             break;
         case LISTELEM:
