@@ -9,7 +9,8 @@
 
 #define BINODE_EDGES 1
 
-static void je_expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *edges);
+static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *hub, elem_t *edges);
+static void expand_hub(CONTEXT_t *C, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges);  // two node edge
 
 /**
  * this function expands and dispatches EDGEs
@@ -22,7 +23,7 @@ static void je_expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *d
 void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
 {
     LIST_t * LIST = (LIST_t *)C;
-    elem_t *elem, *epset, *ep, *new, *disambig = NULL;
+    elem_t *elem, *epset, *ep, *new, *disambig = NULL, *hub=NULL;
     elem_t newlist = { 0 };
     elem_t newepset = { 0 };
     elem_t newnode = { 0 };
@@ -60,7 +61,6 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
                 switch (ep->first->state) {
                 case SIBLING:
                     new = ref_list(LIST, ep->first);
-P(new);
                     append_list(nodes, new);
                     // FIXME - induce CHILDren in this node's container
                     break;
@@ -117,13 +117,14 @@ P(new);
         append_list(&newnode, new);
 
         newnode.state = NODE;
-        new = move_list(LIST, &newnode);
+        hub = move_list(LIST, &newnode);
+        new = ref_list(LIST, hub);
         append_list(nodes, new);
     }
 #endif
 
     // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
-    je_expand_r(C, &newepset, newlist.first, disambig, edges);
+    expand_r(C, &newepset, newlist.first, disambig, hub, edges);
 
     if (disambig) {
         free_list(LIST, disambig);
@@ -141,7 +142,7 @@ P(new);
  * @param epset
  * @param edges
  */
-static void je_expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *edges)
+static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *hub, elem_t *edges)
 {
     LIST_t * LIST = (LIST_t *)C;
     elem_t newedge = { 0 };
@@ -157,7 +158,7 @@ static void je_expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *d
             append_list(newepset, new);
             
             // recursively process the rest of the epsets
-            je_expand_r(C, newepset, epset->next, disambig, edges);
+            expand_r(C, newepset, epset->next, disambig, hub, edges);
 
             free_list(LIST, new);
 
@@ -169,24 +170,60 @@ static void je_expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *d
         // if no more epsets, then we can create a new edge with the current newepset and dismbig
         newedge.state = EDGE;
         newlegs.state = ENDPOINTSET;
-        ep = newepset->first;
-        while (ep) {
-            new = ref_list(LIST, ep);
-            append_list(&newlegs, new);
-            ep = ep->next;
+        if (hub) { // if we have a hub at this point, then we are to split into simple 2-node <tail head> edges
+            ep = newepset->first;
+            if (ep) {
+                expand_hub(C, ep, hub, disambig, edges);  // first leg is the tail
+                ep = ep->next;
+            }
+            while (ep) {
+                expand_hub(C, hub, ep, disambig, edges);  // all other legs are head
+                ep = ep->next;
+            }
         }
-        new = move_list(LIST, &newlegs);
-        append_list(&newedge, new);
-
-        // FIXME - this doesn't look right, and may be an emem leak
-        newepset->first = 0;  // reset newepset for next combo
-
-        if (disambig) {
-            new = ref_list(LIST, disambig);
+        else {
+            ep = newepset->first;
+            while (ep) {
+                new = ref_list(LIST, ep);
+                append_list(&newlegs, new);
+                ep = ep->next;
+            }
+            new = move_list(LIST, &newlegs);
             append_list(&newedge, new);
+    
+            if (disambig) {
+                new = ref_list(LIST, disambig);
+                append_list(&newedge, new);
+            }
+            // and append the new simplified edge to the result
+            new = move_list(LIST, &newedge);
+P(new);
+            append_list(edges, new);
         }
-        // and append the new simplified edge to the result
-        new = move_list(LIST, &newedge);
-        append_list(edges, new);
+        // FIXME - this doesn't look right, and may be an elem leak
+        newepset->first = 0;  // reset newepset for next combo
+    
     }
+}
+
+static void expand_hub(CONTEXT_t *C, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges)
+{
+    LIST_t * LIST = (LIST_t *)C;
+    elem_t newedge = { 0 };
+    elem_t newlegs = { 0 };
+    elem_t *ep, *new;
+
+    new = ref_list(LIST, tail);
+    append_list(&newedge, new);
+    new = ref_list(LIST, head);
+    append_list(&newedge, new);
+    new = move_list(LIST, &newlegs);
+    append_list(&newedge, new);
+    if (disambig) {
+        new = ref_list(LIST, disambig);
+        append_list(&newedge, new);
+    }
+    new = move_list(LIST, &newedge);
+P(new);
+    append_list(edges, new);
 }
