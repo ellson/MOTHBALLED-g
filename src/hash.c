@@ -111,7 +111,7 @@ const static char un_b64[128] = {
  * @param b64string result (caller-provided 12 character buffer for result)
  * @param hash = 64bit integer to be hashed
  */
-void je_long_to_base64(char b64string[], const uint64_t *hash)
+void je_long_to_base64(unsigned char b64string[], const uint64_t *hash)
 {
     int i;
     uint64_t h = *hash;
@@ -131,7 +131,7 @@ void je_long_to_base64(char b64string[], const uint64_t *hash)
  * @param hash result
  * @return success/fail
  */
-success_t je_base64_to_long(const char b64string[], uint64_t *hash)
+success_t je_base64_to_long(const unsigned char b64string[], uint64_t *hash)
 {
     uint64_t h = 0;
     char c;

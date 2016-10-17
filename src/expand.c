@@ -113,6 +113,8 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
     elem_t newnodestr = { 0 };
     frag_elem_t newnodefrag = { 0 };
     elem_t *ep, *eplast, *new, *hub = NULL;
+    uint64_t hubhash;
+    unsigned char hubhash_b64[12];
 
     if (epset) {
         ep = epset->first;
@@ -134,27 +136,19 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
         }
     }
     else {
-//P(newepset);
-#ifdef BINODE_EDGES
+#ifndef BINODE_EDGES
     // if edge has 1 leg, or has >2 legs
     if ((! newepset->first->next) || (newepset->first->next->next)) {
         // create a special node to represent the hub
-
-        uint64_t hubhash;
-        unsigned char hubhash_b64[12];
 
         je_hash_list(&hubhash, newepset);
         je_long_to_base64(hubhash_b64, &hubhash);
 
         // FIXME - this is ugly! and needs a hack in list.c to not free frag
 
-        newnodefrag.state = ABC;
-        newnodefrag.type = FRAGELEM;
-        newnodefrag.inbuf = NULL;
-        newnodefrag.frag = hubhash_b64;
-        newnodefrag.len = 11;
+        new = new_frag(LIST, ABC, 11, hubhash_b64);
+        append_list(&newnodestr, new);
 
-        newnodestr.first = &newnodefrag;
         newnodestr.state = ABC;
         new = move_list(LIST, &newnodestr);
         append_list(&newnodeid, new);
@@ -181,6 +175,7 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
             newep.state = ENDPOINT;
             new = ref_list(LIST, hub);
             append_list(&newep, new);
+//P(hub);
             ep = newepset->first;
             if (ep) {
                 expand_hub(C, ep, &newep, disambig, edges);  // first leg is the tail
