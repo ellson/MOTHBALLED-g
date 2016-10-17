@@ -79,8 +79,9 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
 {
     CONTEXT_t *C = CC->C;
     switch (verb) {
-    case QRY: putc('?', stdout); break;
-    case TLD: putc('~', stdout); break;
+    case ACTIVITY: break;               // add
+    case TLD: putc('~', stdout); break; // del
+    case QRY: putc('?', stdout); break; // qry
     default: assert(0); break;
     }
     switch (subjtype) {

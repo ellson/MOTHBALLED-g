@@ -31,9 +31,6 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
     elem_t newnodeid = { 0 };
     elem_t newnodestr = { 0 };
     frag_elem_t newnodefrag = { 0 };
-    unsigned char *newnodenamestr = "_hub";
-    unsigned int newnodenamelen = 4;
-   
 
     assert(list);
     elem = list->first;
@@ -95,13 +92,19 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
     if ((! newlist.first->next) || (newlist.first->next->next)) {
         // create a special node to represent the hub
 
+        uint64_t hubhash;
+        unsigned char hubhash_b64[12];
+
+        je_hash_list(&hubhash, &newlist);
+        je_long_to_base64(hubhash_b64, &hubhash);
+
         // FIXME - this is ugly! and needs a hack in list.c to not free frag
 
         newnodefrag.state = ABC;
         newnodefrag.type = FRAGELEM;
         newnodefrag.inbuf = NULL;
-        newnodefrag.frag = newnodenamestr;
-        newnodefrag.len = newnodenamelen;
+        newnodefrag.frag = hubhash_b64;
+        newnodefrag.len = 11;
 
         newnodestr.first = &newnodefrag;
         newnodestr.state = ABC;
