@@ -81,6 +81,7 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
     switch (verb) {
     case QRY: putc('?', stdout); break;
     case TLD: putc('~', stdout); break;
+    default: assert(0); break;
     }
     switch (subjtype) {
     case NODE:
