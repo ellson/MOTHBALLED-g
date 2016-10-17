@@ -125,8 +125,8 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
         fatal_perror("Error - calloc() ");
 
 #ifndef HAVE_EVP_MD_CTX_NEW
-    if ((ikea_box->ctx = malloc(sizeof(EVP_MD_CTX))) == NULL)
-        fatal_perror("Error - malloc() ");
+    if ((ikea_box->ctx = calloc(1, sizeof(EVP_MD_CTX))) == NULL)
+        fatal_perror("Error - calloc() ");
 #else
     if ((ikea_box->ctx = EVP_MD_CTX_new()) == NULL)
         fatal_perror("Error - EVP_MD_CTX_new() ");
