@@ -73,16 +73,6 @@ AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
 AC_TYPE_UID_T
 
-# Checks for library functions.
-AC_FUNC_ERROR_AT_LINE
-AC_FUNC_MALLOC
-AC_CHECK_FUNCS([ \
-    clock_gettime \
-    sysinfo \
-    strerror \
-    uname \
-])
-
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([no-define])
 AC_PROG_LIBTOOL
@@ -111,6 +101,17 @@ AC_CHECK_LIB([openssl], [main])
 AC_CHECK_LIB([tar], [main])
 AC_CHECK_LIB([z], [main])
 
+# Checks for library functions.
+AC_FUNC_ERROR_AT_LINE
+AC_FUNC_MALLOC
+AC_CHECK_FUNCS([ \
+    clock_gettime \
+    sysinfo \
+    strerror \
+    uname \
+])
+
+# detect effect of api change in openssl-1.1.0 (fedora-26)
 AC_CHECK_FUNCS([EVP_MD_CTX_new])
 
 AC_CONFIG_FILES([Makefile \
