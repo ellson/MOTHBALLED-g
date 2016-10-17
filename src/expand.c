@@ -9,7 +9,7 @@
 
 #define BINODE_EDGES 1
 
-static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *hub, elem_t *edges);
+static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges);
 static void expand_hub(CONTEXT_t *C, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges);  // two node edge
 
 /**
@@ -23,14 +23,9 @@ static void expand_hub(CONTEXT_t *C, elem_t *tail, elem_t *head, elem_t *disambi
 void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
 {
     LIST_t * LIST = (LIST_t *)C;
-    elem_t *elem, *epset, *ep, *new, *disambig = NULL, *hub=NULL;
+    elem_t *elem, *epset, *ep, *new, *disambig = NULL;
     elem_t newlist = { 0 };
     elem_t newepset = { 0 };
-    elem_t newnode = { 0 };
-    elem_t newnoderef = { 0 };
-    elem_t newnodeid = { 0 };
-    elem_t newnodestr = { 0 };
-    frag_elem_t newnodefrag = { 0 };
 
     assert(list);
     elem = list->first;
@@ -87,15 +82,68 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
         elem = elem->next;
     }
 
+    // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
+    expand_r(C, &newepset, newlist.first, disambig, nodes, edges);
+
+    if (disambig) {
+        free_list(LIST, disambig);
+    }
+    free_list(LIST, &newlist);
+}
+
+/**
+ * this function expands ENDPOINTSETs
+ * expands edges like:    <(a b) c>`x
+ * into:                  <a c>`x <b c>`x
+ *
+ * @param C context
+ * @param newepset
+ * @param epset
+ * @param edges
+ */
+static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges)
+{
+    LIST_t * LIST = (LIST_t *)C;
+    elem_t newedge = { 0 };
+    elem_t newlegs = { 0 };
+    elem_t newep = { 0 };
+    elem_t newnode = { 0 };
+    elem_t newnoderef = { 0 };
+    elem_t newnodeid = { 0 };
+    elem_t newnodestr = { 0 };
+    frag_elem_t newnodefrag = { 0 };
+    elem_t *ep, *eplast, *new, *hub = NULL;
+
+    if (epset) {
+        ep = epset->first;
+        while(ep) {
+
+            eplast = newepset->last;
+
+            // append the next ep for this epset
+            new = ref_list(LIST, ep); 
+            append_list(newepset, new);
+            
+            // recursively process the rest of the epsets
+            expand_r(C, newepset, epset->next, disambig, nodes, edges);
+
+            remove_next_from_list(LIST, newepset, eplast);
+
+            // and iterate to next ep for this epset
+            ep = ep->next;
+        }
+    }
+    else {
+//P(newepset);
 #ifdef BINODE_EDGES
     // if edge has 1 leg, or has >2 legs
-    if ((! newlist.first->next) || (newlist.first->next->next)) {
+    if ((! newepset->first->next) || (newepset->first->next->next)) {
         // create a special node to represent the hub
 
         uint64_t hubhash;
         unsigned char hubhash_b64[12];
 
-        je_hash_list(&hubhash, &newlist);
+        je_hash_list(&hubhash, newepset);
         je_long_to_base64(hubhash_b64, &hubhash);
 
         // FIXME - this is ugly! and needs a hack in list.c to not free frag
@@ -126,51 +174,6 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
     }
 #endif
 
-    // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
-    expand_r(C, &newepset, newlist.first, disambig, hub, edges);
-
-    if (disambig) {
-        free_list(LIST, disambig);
-    }
-    free_list(LIST, &newlist);
-}
-
-/**
- * this function expands ENDPOINTSETs
- * expands edges like:    <(a b) c>`x
- * into:                  <a c>`x <b c>`x
- *
- * @param C context
- * @param newepset
- * @param epset
- * @param edges
- */
-static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *hub, elem_t *edges)
-{
-    LIST_t * LIST = (LIST_t *)C;
-    elem_t newedge = { 0 };
-    elem_t newlegs = { 0 };
-    elem_t newep = { 0 };
-    elem_t *ep, *new;
-
-    if (epset) {
-        ep = epset->first;
-        while(ep) {
-
-            // append the next ep for this epset
-            new = ref_list(LIST, ep); 
-            append_list(newepset, new);
-            
-            // recursively process the rest of the epsets
-            expand_r(C, newepset, epset->next, disambig, hub, edges);
-
-            free_list(LIST, new);
-
-            // and iterate to next ep for this epset
-            ep = ep->next;
-        }
-    }
-    else {
         // if no more epsets, then we can create a new edge with the current newepset and dismbig
         newedge.state = EDGE;
         newlegs.state = ENDPOINTSET;
@@ -207,9 +210,6 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
 // P(new);
             append_list(edges, new);
         }
-        // FIXME - this doesn't look right, and may be an elem leak
-        newepset->first = 0;  // reset newepset for next combo
-    
     }
 }
 

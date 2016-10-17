@@ -95,7 +95,6 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
         break;
     case EDGE:
         putc('<', stdout);
-//P(subject);
         emit_act_list_r(CC, subject);
         putc('>', stdout);
         break;

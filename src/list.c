@@ -239,6 +239,36 @@ void append_list(elem_t * list, elem_t * elem)
 }
 
 /**
+ *  Remove the next element from a list.
+ *
+ *  The removed element is freed.
+ *
+ * @param list header of the list to be shortened
+ * @param elem the elem preceeding the elem to be removed (or NULL to remove 1st elem)
+ */
+void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
+{
+    elem_t *old;
+
+    assert(list);
+    assert(list->type == (char)LISTELEM);
+    assert(list->last);                  // must be at least one elem in the list
+
+    if (! elem) {                        // if removing the first elem
+        old = list->first;
+        list->first = list->first->next; // skip the elem being removed
+    }
+    else {
+        old = elem->next;
+        elem->next = elem->next->next;   // skip the elem being removed
+    }
+    if (list->last = old) {              // if removing the last element
+        list->last = elem;               // then elem is the new last (or NULL)
+    }
+    free_list(LIST, old);                // free the removed elem
+}
+
+/**
  * Free the list contents, but not the list header.
  * This function can be used on statically or callstack allocated list headers.
  *  

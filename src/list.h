@@ -64,6 +64,7 @@ elem_t *new_frag(LIST_t * LIST, char state, unsigned int len, unsigned char *fra
 elem_t *move_list(LIST_t * LIST, elem_t * list);
 elem_t *ref_list(LIST_t * LIST, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);
+void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem);
 void free_list(LIST_t * LIST, elem_t * list);
 int print_len_frag(FILE * chan, unsigned char *len_frag);
 void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep);
