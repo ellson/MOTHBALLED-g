@@ -27,6 +27,16 @@ struct frag_elem_s {     // castable to elem_s  -- size must match (32bytes)
     char state;          // state_machine state that generated this list
 };
 
+#if 1
+typedef struct hash_elem_s hash_elem_t;
+struct hash_elem_s {     // castable to elem_s  -- size must match (32bytes)
+    hash_elem_t *next;
+    unsigned int len;    // length of hash
+    char type;           // HASHELEM
+    char state;          // state_machine state that generated this list
+    unsigned char hash[18];
+};
+#else
 typedef struct hash_elem_s hash_elem_t;
 struct hash_elem_s {     // castable to elem_s  -- size must match (32bytes)
     hash_elem_t *next;
@@ -36,6 +46,7 @@ struct hash_elem_s {     // castable to elem_s  -- size must match (32bytes)
     char type;           // HASHELEM
     char state;          // state_machine state that generated this list
 };
+#endif
 
 typedef struct hashname_elem_s hashname_elem_t;
 struct hashname_elem_s {     // castable to elem_s  -- size must match (32bytes)

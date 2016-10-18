@@ -129,8 +129,8 @@ elem_t *new_hash(LIST_t * LIST, uint64_t hash)
 
     // complete frag elem initialization
     hash_elem->type = HASHELEM;     // type
-    hash_elem->hash = hash;  // the hash value
-    hash_elem->out = NULL;   // open later
+//    hash_elem->hash = hash;  // the hash value
+//    hash_elem->out = NULL;   // open later
     return (elem_t*)hash_elem;
 }
 
