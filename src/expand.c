@@ -106,21 +106,12 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
     LIST_t * LIST = (LIST_t *)C;
     elem_t newedge = { 0 };
     elem_t newlegs = { 0 };
-#if 0
-    elem_t newep = { 0 };
-    elem_t newnode = { 0 };
-    elem_t newnoderef = { 0 };
-    elem_t newnodeid = { 0 };
-    elem_t newnodestr = { 0 };
-    frag_elem_t newnodefrag = { 0 };
-    elem_t *ep, *eplast, *new, *hub = NULL;
-#endif
     elem_t * nendpoint = NULL;
     elem_t * nnode;
     elem_t * nnoderef;
     elem_t * nnodeid;
     elem_t * nnodestr;
-    elem_t * nfrag;
+    elem_t * nshortstr;
     elem_t *ep, *eplast, *new;
     uint64_t hubhash;
     unsigned char hubhash_b64[12];
@@ -156,7 +147,7 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
 // FIXME - this is ugly!
 
             // create a string fragment with the hash string
-            nfrag = new_frag(LIST, ABC, 11, hubhash_b64);
+            nshortstr = new_shortstr(LIST, EDGE, hubhash_b64);
 
             // create empty lists
             nnodestr = new_list(LIST, ABC);
@@ -166,7 +157,7 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
             nendpoint = new_list(LIST, ENDPOINT);
 
             // string them together
-            append_list(nnodestr, nfrag);
+            append_list(nnodestr, nshortstr);
             append_list(nnodeid, nnodestr);
             append_list(nnoderef, nnodeid);
             append_list(nnode, nnoderef);
@@ -177,35 +168,6 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
 
             // //new endpoint
             append_list(nendpoint, nnode);
-
-#if 0
-// FIXME - this is worse!
-    
-            new = new_frag(LIST, ABC, 11, hubhash_b64);
-            append_list(&newnodestr, new);
-    
-            newnodestr.state = ABC;
-            new = move_list(LIST, &newnodestr);
-            append_list(&newnodeid, new);
-    
-            newnodeid.state = NODEID;
-            new = move_list(LIST, &newnodeid);
-            append_list(&newnoderef, new);
-    
-            newnoderef.state = NODEREF;
-            new = move_list(LIST, &newnoderef);
-            append_list(&newnode, new);
-    
-            newnode.state = NODE;
-            hub = move_list(LIST, &newnode);
-            new = ref_list(LIST, hub);
-            append_list(nodes, new);
-    
-            newep.state = ENDPOINT;
-            new = move_list(LIST, hub);
-            append_list(&newep, new);
-#endif
-    
     }
 #endif
 
@@ -213,7 +175,7 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
         newedge.state = EDGE;
         newlegs.state = ENDPOINTSET;
         if (nendpoint) { // if we have a hub at this point, then we are to split into simple 2-node <tail head> edges
-P(nendpoint);
+//P(nendpoint);
             ep = newepset->first;
             if (ep) {
                 expand_hub(C, ep, nendpoint, disambig, edges);  // first leg is the tail

@@ -57,10 +57,10 @@ typedef struct {
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
-elem_t *new_shortsrt(LIST_t * LIST, unsigned char *str);
 elem_t *new_hashname(LIST_t * LIST, unsigned char *hash, size_t hash_len);
 elem_t *new_list(LIST_t * LIST, char state);
 elem_t *new_frag(LIST_t * LIST, char state, unsigned int len, unsigned char *frag);
+elem_t *new_shortsrt(LIST_t * LIST, char state, unsigned char *str);
 elem_t *move_list(LIST_t * LIST, elem_t * list);
 elem_t *ref_list(LIST_t * LIST, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);

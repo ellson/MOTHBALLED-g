@@ -118,10 +118,11 @@ elem_t *new_frag(LIST_t * LIST, char state, unsigned int len, unsigned char *fra
  * of the referenced str.  The stored string is not NUL terminated;
  *
  * @param LIST the top-level context in which all lists are managed
- * @param hash a long containing a hash value
+ * @param state a one character value stored with the elem, no internal meaning
+ * @param str string to be strored in elem,  first 18char max
  * @return a new intialized elem_t
  */
-elem_t *new_shortstr(LIST_t * LIST, unsigned char * str)
+elem_t *new_shortstr(LIST_t * LIST, char state, unsigned char * str)
 {
     shortstr_elem_t *shortstr_elem;
     int i;
@@ -134,6 +135,7 @@ elem_t *new_shortstr(LIST_t * LIST, unsigned char * str)
     for (i = 0; i < 18 && (c = str[i]) != '\0'; i++)
         shortstr_elem->str[i] = c;
     shortstr_elem->len = i;
+    shortstr_elem->state = state;    // state_machine state that created this shortstr
     return (elem_t*)shortstr_elem;
 }
 
