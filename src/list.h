@@ -60,6 +60,7 @@ typedef struct {
 
 elem_t *new_hash(LIST_t * LIST, uint64_t hash);
 elem_t *new_hashname(LIST_t * LIST, unsigned char *hash, size_t hash_len);
+elem_t *new_list(LIST_t * LIST, char state);
 elem_t *new_frag(LIST_t * LIST, char state, unsigned int len, unsigned char *frag);
 elem_t *move_list(LIST_t * LIST, elem_t * list);
 elem_t *ref_list(LIST_t * LIST, elem_t * list);

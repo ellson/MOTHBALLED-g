@@ -54,6 +54,31 @@ static elem_t *new_elem_sub(LIST_t * LIST)
 }
 
 /**
+ * Return a pointer to an elem_t which is an empty list
+ * The elem_t is memory managed without caller involvement.
+ *
+ * @param LIST the top-level context in which all lists are managed
+ * @param state a one character value stored with the elem, no internal meaning
+ * @return a new intialized elem_t
+ */
+elem_t *new_list(LIST_t * LIST, char state)
+{
+    elem_t *elem;
+
+    elem = new_elem_sub(LIST);
+
+    assert(elem);
+    // complete elem initialization
+    elem-> type = LISTELEM;    // type
+    elem-> first = NULL;
+    elem-> next = NULL;
+    elem-> last = NULL;
+    elem->state = state;    // state_machine state that created this frag
+
+    return elem;
+}
+
+/**
  * Return a pointer to an elem_t which holds a string fragment
  * (start address and length).
  * The elem_t is memory managed without caller involvement.
