@@ -133,6 +133,9 @@ static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
     case FRAGELEM:
         emit_act_print_frags(liststate, elem, &(CC->C->sep));
         break;
+    case SHORTSTRELEM:
+        fprintf(stdout,"print shortstr here\n");
+        break;
     case LISTELEM:
         while (elem) {
             if ((state_t)(elem->state) == EQL) {

@@ -31,9 +31,9 @@ typedef struct shortstr_elem_s shortstr_elem_t;
 struct shortstr_elem_s {     // castable to elem_s  -- size must match (32bytes)
     shortstr_elem_t *next;
     unsigned int len;    // length of shortstr
+    unsigned char str[18];
     char type;           // SHORTSTRELEM
     char state;          // state_machine state that generated this list
-    unsigned char str[18];
 };
 
 typedef struct hashname_elem_s hashname_elem_t;
