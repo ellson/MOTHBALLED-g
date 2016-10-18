@@ -155,6 +155,8 @@ success_t je_base64_to_long(const unsigned char b64string[], uint64_t *hash)
     return SUCCESS;
 }
 
+// FIXME - or not,  but this is broken
+#if 0
 /**
  * Store the hash in a bucket-list
  *
@@ -182,4 +184,4 @@ hash_elem_t *je_hash_bucket(CONTEXT_t * C, uint64_t hash)
     *next = elem;
     return (hash_elem_t*)elem;
 }
-
+#endif

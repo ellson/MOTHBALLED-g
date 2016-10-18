@@ -112,26 +112,29 @@ elem_t *new_frag(LIST_t * LIST, char state, unsigned int len, unsigned char *fra
 }
 
 /**
- * Return a pointer to an elem_t which holds a hashname
- * (suitable for use as a filename)
- * The element is memory managed without caller involvement.
- * The FILE* in the elem_t is initialized to NULL
+ * Return a pointer to an elem_t which holds a shortstr
+ * (suitable for use as a hash name for hubs)
+ * The string is stored in the struct.  Maximum length is the first 18 characters.
+ * of the referenced str.  The stored string is not NUL terminated;
  *
  * @param LIST the top-level context in which all lists are managed
  * @param hash a long containing a hash value
  * @return a new intialized elem_t
  */
-elem_t *new_hash(LIST_t * LIST, uint64_t hash)
+elem_t *new_shortstr(LIST_t * LIST, unsigned char * str)
 {
-    hash_elem_t *hash_elem;
+    shortstr_elem_t *shortstr_elem;
+    int i;
+    unsigned char c;
 
-    hash_elem = (hash_elem_t*)new_elem_sub(LIST);
+    shortstr_elem = (shortstr_elem_t*)new_elem_sub(LIST);
 
     // complete frag elem initialization
-    hash_elem->type = HASHELEM;     // type
-//    hash_elem->hash = hash;  // the hash value
-//    hash_elem->out = NULL;   // open later
-    return (elem_t*)hash_elem;
+    shortstr_elem->type = SHORTSTRELEM;     // type
+    for (i = 0; i < 18 && (c = str[i]) != '\0'; i++)
+        shortstr_elem->str[i] = c;
+    shortstr_elem->len = i;
+    return (elem_t*)shortstr_elem;
 }
 
 /**
@@ -338,7 +341,7 @@ void free_list(LIST_t * LIST, elem_t * list)
             }
             free_list(LIST, elem); // recursively free lists that have no references
             break;
-        case HASHELEM:
+        case SHORTSTRELEM:
         case HASHNAMEELEM:
             assert(0);  // should not be here
             break;
@@ -492,7 +495,7 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep)
             elem = elem->next;
         }
         break;
-    case HASHELEM:
+    case SHORTSTRELEM:
     case HASHNAMEELEM:
         assert(0);  // should not be here
         break;

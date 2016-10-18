@@ -308,8 +308,12 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
             // Perform EQL "same as in subject of previous ACT" substitutions
             // Also classifies ACT as NODE or EDGE based on SUBJECT
             je_sameas(CC, &branch);
+
+// FIXME - or not, but this is broken
+#if 0
             je_hash_list(&hash, &(CC->subject));   // generate name hash
             (void)je_hash_bucket(C, hash);    // save in bucket list 
+#endif
 
             // If this subject is not itself a pattern, then
             // perform pattern matching and insertion if matched

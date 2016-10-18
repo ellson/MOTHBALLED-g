@@ -3,12 +3,12 @@
 typedef enum {
     LISTELEM = 0, // must be 0 for static or calloc allocation of list headers
     FRAGELEM = 1,
-    HASHELEM = 2,
+    SHORTSTRELEM = 2,
     HASHNAMEELEM = 3
 } elemtype_t;
 
 typedef struct elem_s elem_t;
-struct elem_s {          // castable from frag_elem_s and hash_elem_s -- sizes must match (32bytes)
+struct elem_s {          // castable from frag_elem_s and shortstr_elem_s -- sizes must match (32bytes)
     elem_t *next;
     elem_t *first;
     elem_t *last;
@@ -27,30 +27,18 @@ struct frag_elem_s {     // castable to elem_s  -- size must match (32bytes)
     char state;          // state_machine state that generated this list
 };
 
-#if 1
-typedef struct hash_elem_s hash_elem_t;
-struct hash_elem_s {     // castable to elem_s  -- size must match (32bytes)
-    hash_elem_t *next;
-    unsigned int len;    // length of hash
-    char type;           // HASHELEM
+typedef struct shortstr_elem_s shortstr_elem_t;
+struct shortstr_elem_s {     // castable to elem_s  -- size must match (32bytes)
+    shortstr_elem_t *next;
+    unsigned int len;    // length of shortstr
+    char type;           // SHORTSTRELEM
     char state;          // state_machine state that generated this list
-    unsigned char hash[18];
+    unsigned char str[18];
 };
-#else
-typedef struct hash_elem_s hash_elem_t;
-struct hash_elem_s {     // castable to elem_s  -- size must match (32bytes)
-    hash_elem_t *next;
-    uint64_t hash;       // hash value
-    FILE *out;           // file handle, or NULL if not opened yet.
-    unsigned int count;  // unused
-    char type;           // HASHELEM
-    char state;          // state_machine state that generated this list
-};
-#endif
 
 typedef struct hashname_elem_s hashname_elem_t;
 struct hashname_elem_s {     // castable to elem_s  -- size must match (32bytes)
-    hash_elem_t *next;
+    hashname_elem_t *next;
     char *hashname;      // a filename constructed from a hash of the subject
     FILE *out;           // file handle, or NULL if not opened yet.
     unsigned int count;  // unused
@@ -69,7 +57,7 @@ typedef struct {
 #define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
-elem_t *new_hash(LIST_t * LIST, uint64_t hash);
+elem_t *new_shortsrt(LIST_t * LIST, unsigned char *str);
 elem_t *new_hashname(LIST_t * LIST, unsigned char *hash, size_t hash_len);
 elem_t *new_list(LIST_t * LIST, char state);
 elem_t *new_frag(LIST_t * LIST, char state, unsigned int len, unsigned char *frag);
