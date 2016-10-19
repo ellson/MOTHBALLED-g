@@ -148,25 +148,27 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
 
             // create a string fragment with the hash string
             nshortstr = new_shortstr(LIST, EDGE, hubhash_b64);
-
-            // create empty lists
             nnodestr = new_list(LIST, ABC);
-            nnodeid = new_list(LIST, NODEID);
-            nnoderef = new_list(LIST, NODEREF);
-            nnode = new_list(LIST, NODE);
-            nendpoint = new_list(LIST, ENDPOINT);
-
-            // string them together
             append_list(nnodestr, nshortstr);
+
+            // new nodeid
+            nnodeid = new_list(LIST, NODEID);
             append_list(nnodeid, nnodestr);
+
+            // new noderef
+            nnoderef = new_list(LIST, NODEREF);
             append_list(nnoderef, nnodeid);
-            append_list(nnode, nnoderef);
 
             // new node
+            nnode = new_list(LIST, NODE);
+            append_list(nnode, nnoderef);
+
+            // add node to list of nodes for this act
             new = ref_list(LIST, nnode);
             append_list(nodes, new);
 
-            // //new endpoint
+            //new endpoint
+            nendpoint = new_list(LIST, ENDPOINT);
             append_list(nendpoint, nnode);
     }
 #endif

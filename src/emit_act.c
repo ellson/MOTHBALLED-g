@@ -20,7 +20,6 @@ void je_emit_act(container_CONTEXT_t * CC, elem_t *list)
     state_t verb = 0;
     state_t subjtype = 0;
     elem_t *subject, *attributes = NULL, *disambig = NULL;
-    CC->C->sep = '\0';
 
     assert(list);
     elem = list->first;
@@ -74,14 +73,27 @@ void je_emit_act(container_CONTEXT_t * CC, elem_t *list)
     emit_act_func(CC, verb, subjtype, subject, disambig, attributes);
 }
 
+#define DOTLANG 1
 static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes)
 {
     CONTEXT_t *C = CC->C;
+    C->sep = '\0';
+
     switch (verb) {
     case ACTIVITY: break;               // add
-    case TLD: putc('~', stdout); break; // del
-    case QRY: putc('?', stdout); break; // qry
-    default: assert(0); break;
+    case TLD: // del
+#ifndef DOTLANG
+        putc('~', stdout);
+#endif
+        break;
+    case QRY: // qry
+#ifndef DOTLANG
+        putc('?', stdout);
+#endif
+        break;
+    default:
+        assert(0);
+        break;
     }
     switch (subjtype) {
     case NODE:
@@ -93,19 +105,29 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
         emit_act_list_r(CC, subject->first->first); // skip NODEREF NODEID
         break;
     case EDGE:
+#ifndef DOTLANG
         putc('<', stdout);
         emit_act_list_r(CC, subject);
         putc('>', stdout);
+#else
+        emit_act_list_r(CC, subject->first);
+        putc(' ', stdout);
+        putc('-', stdout);
+        putc('-', stdout);
+        emit_act_list_r(CC, subject->first->next);
+#endif
         break;
     default:
         assert(0); // that should be all
         break;
     }
     if (disambig) {
+#ifndef DOTLANG
         putc('`', stdout);
 //P(disambig->first);
         C->sep = '\0';
         emit_act_list_r(CC, disambig->first); // skip DISAMBID
+#endif
     }
     if (attributes) {
         putc('[', stdout);
