@@ -344,6 +344,8 @@ void free_list(LIST_t * LIST, elem_t * list)
             free_list(LIST, elem); // recursively free lists that have no references
             break;
         case SHORTSTRELEM:
+            // these are self contained, nothing else to clean up
+            break;
         case HASHNAMEELEM:
             assert(0);  // should not be here
             break;
@@ -448,6 +450,14 @@ void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
     *sep = ' ';
 }
 
+static void print_shortstr(FILE *chan, shortstr_elem_t *shortstr_elem, char *sep) {
+    assert(sep);
+    if (*sep) {
+        putc(*sep, chan);
+    }
+    print_one_frag(chan, shortstr_elem->len, shortstr_elem->str);
+}
+
 /**
  * Print a simple fragment list (a string)
  * or print a list of strings (recursively), with appropriate separators
@@ -468,8 +478,9 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep)
 
     assert(list->type == (char)LISTELEM);
     elem = list->first;
-    if (!elem)
+    if (!elem) {
         return;
+    }
     type = (elemtype_t) (elem->type);
     switch (type) {
     case FRAGELEM:
@@ -498,6 +509,8 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep)
         }
         break;
     case SHORTSTRELEM:
+        print_shortstr(chan, (shortstr_elem_t*)elem, sep);
+        break;
     case HASHNAMEELEM:
         assert(0);  // should not be here
         break;

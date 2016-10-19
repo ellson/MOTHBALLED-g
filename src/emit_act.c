@@ -11,12 +11,11 @@
 static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes);
 static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list);
 static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep);
+static void emit_act_print_shortstr(shortstr_elem_t * shortstr_elem, char *sep);
 
 void je_emit_act(container_CONTEXT_t * CC, elem_t *list)
 {
     elem_t * elem;
-    elemtype_t type;
-    int cnt;
     state_t liststate;
     state_t verb = 0;
     state_t subjtype = 0;
@@ -123,7 +122,6 @@ static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;
-    int cnt;
     state_t liststate;
 
     assert(list);
@@ -134,7 +132,7 @@ static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
         emit_act_print_frags(liststate, elem, &(CC->C->sep));
         break;
     case SHORTSTRELEM:
-        fprintf(stdout,"print shortstr here\n");
+        emit_act_print_shortstr((shortstr_elem_t*)elem, &(CC->C->sep));
         break;
     case LISTELEM:
         while (elem) {
@@ -166,9 +164,6 @@ static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
  */
 static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep)
 {
-    unsigned char *frag;
-    int len;
-
     assert(sep);
     if (*sep) {
         putc(*sep, stdout);
@@ -198,6 +193,15 @@ static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep)
     if (liststate == DQT) {
         putc('"', stdout);
     }
+    *sep = ' ';
+}
+
+static void emit_act_print_shortstr(shortstr_elem_t * shortstr_elem, char *sep)
+{
+    if (*sep) {
+        putc(*sep, stdout);
+    }
+    fwrite(shortstr_elem->str, 1, shortstr_elem->len, stdout);
     *sep = ' ';
 }
 

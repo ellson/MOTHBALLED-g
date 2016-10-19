@@ -10,40 +10,40 @@ typedef enum {
 typedef struct elem_s elem_t;
 struct elem_s {          // castable from frag_elem_s and shortstr_elem_s -- sizes must match (32bytes)
     elem_t *next;
-    elem_t *first;
-    elem_t *last;
     unsigned int refs;
     char type;           // LISTELEM
     char state;          // state_machine state that generated this list
+    elem_t *first;
+    elem_t *last;
 };
 
 typedef struct frag_elem_s frag_elem_t;
 struct frag_elem_s {     // castable to elem_s  -- size must match (32bytes)
     frag_elem_t *next;
-    inbuf_t *inbuf;      // inbuf containing frag - for memory management
-    unsigned char *frag; // pointer to beginning of frag
     unsigned int len;    // length of frag
     char type;           // FRAGELEM
     char state;          // state_machine state that generated this list
+    inbuf_t *inbuf;      // inbuf containing frag - for memory management
+    unsigned char *frag; // pointer to beginning of frag
 };
 
 typedef struct shortstr_elem_s shortstr_elem_t;
 struct shortstr_elem_s {     // castable to elem_s  -- size must match (32bytes)
     shortstr_elem_t *next;
     unsigned int len;    // length of shortstr
-    unsigned char str[18];
     char type;           // SHORTSTRELEM
     char state;          // state_machine state that generated this list
+    unsigned char str[18];
 };
 
 typedef struct hashname_elem_s hashname_elem_t;
 struct hashname_elem_s {     // castable to elem_s  -- size must match (32bytes)
     hashname_elem_t *next;
-    char *hashname;      // a filename constructed from a hash of the subject
-    FILE *out;           // file handle, or NULL if not opened yet.
     unsigned int count;  // unused
     char type;           // HASHNAMEELEM
     char state;          // unused
+    char *hashname;      // a filename constructed from a hash of the subject
+    FILE *out;           // file handle, or NULL if not opened yet.
 };
 
 typedef struct {
