@@ -26,7 +26,7 @@
  *
  * The resulting info is collected into a buffer using minimal
  * spacing g format
- * e.g.      "session[progname=g username=ellson hostname=work .... ]
+ * e.g.      "stats_fixed[progname=g username=ellson hostname=work .... ]
  *
  * There is an attribute pretty-printer function for when this
  * is printed for the user.
@@ -57,7 +57,7 @@ char * je_session(CONTEXT_t *C)
         return buf;
     }
 
-    je_append_string  (C, &pos, "session");
+    je_append_string  (C, &pos, "stats_fixed");
     je_append_token   (C, &pos, '[');
 
     je_append_string  (C, &pos, "progname");
@@ -120,6 +120,25 @@ char * je_session(CONTEXT_t *C)
     je_append_ulong   (C, &pos, starttime.tv_sec);
 #endif
 
+    je_append_string  (C, &pos, "inbufsize");
+    je_append_token   (C, &pos, '=');
+    je_append_ulong   (C, &pos, sizeof(inbuf_t));
+
+    je_append_string  (C, &pos, "inbufcapacity");
+    je_append_token   (C, &pos, '=');
+    je_append_ulong   (C, &pos, INBUFIZE);
+
+    je_append_string  (C, &pos, "elemsize");
+    je_append_token   (C, &pos, '=');
+    je_append_ulong   (C, &pos, size_elem_t);
+    // and while we think about it, lest just check...
+    assert(sizeof(frag_elem_t) == size_elem_t);
+    assert(sizeof(shortstr_elem_t) == size_elem_t);
+
+    je_append_string  (C, &pos, "elemmallocsize");
+    je_append_token   (C, &pos, '=');
+    je_append_ulong   (C, &pos, LISTALLOCNUM * size_elem_t);
+
     je_append_token   (C, &pos, ']');
 
     assert(pos < buf+SESSION_BUF_SIZE);
@@ -142,6 +161,8 @@ char * je_stats(CONTEXT_t *C)
     static char buf[STATS_BUF_SIZE];
 
     char *pos = &buf[0];  // NB non-static.  stats are updated and re-formatted on each call
+    
+    C->sep = '\0';
 #ifdef HAVE_CLOCK_GETTIME
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
@@ -153,7 +174,7 @@ char * je_stats(CONTEXT_t *C)
 #endif
     long runtime;    // runtime in seconds
 
-    je_append_string  (C, &pos, "stats");
+    je_append_string  (C, &pos, "stats_running");
     je_append_token   (C, &pos, '[');
 
 #if defined(HAVE_CLOCK_GETTIME)
@@ -228,14 +249,6 @@ char * je_stats(CONTEXT_t *C)
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, C->TOKEN.stat_inchars + TEN9 / runtime);
 
-    je_append_string  (C, &pos, "inbufsize");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, sizeof(inbuf_t));
-
-    je_append_string  (C, &pos, "inbufcapacity");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, INBUFIZE);
-
     je_append_string  (C, &pos, "inbufmax");
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, C->TOKEN.LIST.INBUF.stat_inbufmax);
@@ -243,10 +256,6 @@ char * je_stats(CONTEXT_t *C)
     je_append_string  (C, &pos, "inbufnow");
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, C->TOKEN.LIST.INBUF.stat_inbufnow);
-
-    je_append_string  (C, &pos, "elemsize");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, size_elem_t);
 
     je_append_string  (C, &pos, "elemmax");
     je_append_token   (C, &pos, '=');
@@ -267,10 +276,6 @@ char * je_stats(CONTEXT_t *C)
     je_append_string  (C, &pos, "inbufmalloctotal");
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, C->TOKEN.LIST.INBUF.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t));
-
-    je_append_string  (C, &pos, "elemmallocsize");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, LISTALLOCNUM * size_elem_t);
 
     je_append_string  (C, &pos, "elemmalloccount");
     je_append_token   (C, &pos, '=');
