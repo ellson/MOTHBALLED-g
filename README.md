@@ -8,26 +8,25 @@ maintaing an equivalent conciseness.
 
 The goals of the "g" language are to:
 
-0. Represent any graph that "DOT" can.
+0. Represent any graph that "DOT" can, unfortunately  not 100% achievable with the other goals, which are:
 
 1. Incremental graph creation, and modification, through a stream of ACTs
   - Allow for and encourage a multi-threaded and distrubuted implementation.
 
 2. Rethink of Subgraphs:
 
-  - Subgraphs used to to describe sets of objects to attach attributes to.
-	- g retains this capability through LISTS of objects
-  - Subgraphs used to describe a set of endpoint to edges.
-	- g retains this capabiliy
+  - Subgraphs in DOT are used to to describe sets of objects to attach attributes to.
+	- g retains this capability through sets of objects
+  - Subgraphs in DOT are used to describe a set of endpoinast to edges.
+	- g retains this capabiliy with sets of objects
   - Subgraphs used to describe clusters
-	- g replaces the concept of clusters with the use of CONTAINER
-	any NODE SUBJECT in g can have a contained graph (an ACTIVITY in g's terms)
-        so DOT's clusters are just NODES in g. Additionally, in g, an EDGE SUBJECT
-        may also have a CONTAINER.  There is no correspondence to this in DOT.
+	- g hopes to replace the concept of clusters with the use of containment.
+        -- Any NODE in g can have a contained graph, also 
+	    -- any EDGE in g can have a contained graph (DOT has no similar concept).
 
 3. Rethink of Meta objects:  "node" and "edge" in DOT.
 
-  - g uses string patterns to specify meta-object and class-like objects
+  - g offers string patterns to specify meta-object and class-like objects
 
 4. Support "netlists"  i.e. edges with: one, two, three or more ends.
 
@@ -35,7 +34,16 @@ The goals of the "g" language are to:
 
 6. Minimize the use of special characters that need quoting or escaping in strings.
 
-  - in particular, g allows signed decimal numbers to be used without quoting since: '+', '-', '.' and ',' are not special
+  - in particular, g has relaxed quoting constrains in value strings, which permit most signed/unsigned int/float
+    numbers, and most URL strinasg, to be provided without quoting. 
+   
+7. Preservation of input ordering.   
+   I've been struggling with this one ... current plans are to give this up so that graphs can be stored in
+   a canonical form independent of the arrival order of nodes and edges. In its place, objects will be stored in
+   C-locale sort order of node and edge names (SUBJECT).
+
+   The user may be able to control ordering theough the use of names chosen to sort in that order,
+   As in DOT, labels can be provided that are independent on name.
    
 
 Whats in a name:
