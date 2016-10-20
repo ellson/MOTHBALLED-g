@@ -137,6 +137,12 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
     }
     else {
 #ifdef BINODE_EDGES
+
+// FIXME - idea:
+//    always compute these hub nodes, then store them with
+//    the edge, like disambig. so that the renderers can
+//    choose to use or not use.
+
         // if edge has 1 leg, or has >2 legs
         if ((! newepset->first->next) || (newepset->first->next->next)) {
             // create a special node to represent the hub
@@ -168,7 +174,7 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
 
             // //new endpoint
             append_list(nendpoint, nnode);
-    }
+        }
 #endif
 
         // if no more epsets, then we can create a new edge with the current newepset and dismbig
