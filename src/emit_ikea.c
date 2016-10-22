@@ -150,7 +150,7 @@ static void ikea_print_frags(ikea_box_t *ikea_box, state_t liststate, elem_t * e
         }
         else {
 	    ikea_box_append(ikea_box,
-		((frag_elem_t*)elem)->frag,
+		(char*)(((frag_elem_t*)elem)->frag),    // FIXME - ugly casts
 		((frag_elem_t*)elem)->len);
         }
        elem = elem->next;

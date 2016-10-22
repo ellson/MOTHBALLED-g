@@ -136,7 +136,6 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
     success_t rc;
     elem_t branch = { 0 };
     elem_t *elem;
-    uint64_t hash;
     static unsigned char nullstring[] = { '\0' };
 
     rc = SUCCESS;

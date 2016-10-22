@@ -86,7 +86,7 @@ static void hash_list_r(uint64_t *hash, elem_t *list)
 // 64 ascii chars that are safe in filenames
 // each character used only once
 // must match reverse mapping table
-const static char b64[64] = {
+const static unsigned char b64[64] = {
     '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F',
     'G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V',
     'W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l',
@@ -94,7 +94,7 @@ const static char b64[64] = {
 };
 
 // reverse mapping
-const static char un_b64[128] = {
+const static unsigned char un_b64[128] = {
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1,
@@ -137,7 +137,7 @@ success_t je_base64_to_long(const unsigned char b64string[], uint64_t *hash)
     char c;
     size_t len;
 
-    if ((len = strlen(b64string)) != 11) {
+    if ((len = strlen((char*)b64string)) != 11) {
         return FAIL;
     }
     while (len-- > 0) {

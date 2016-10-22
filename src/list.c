@@ -89,7 +89,7 @@ elem_t *new_list(LIST_t * LIST, char state)
  * @param frag pointer to first character of contiguous fragment of len chars
  * @return a new intialized elem_t
  */
-elem_t *new_frag(LIST_t * LIST, char state, unsigned int len, unsigned char *frag)
+elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
 {
     INBUF_t * INBUF = &(LIST->INBUF);
     frag_elem_t *frag_elem;
@@ -292,7 +292,7 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
         old = elem->next;
         elem->next = elem->next->next;   // skip the elem being removed
     }
-    if (list->last = old) {              // if removing the last element
+    if (list->last == old) {             // if removing the last element
         list->last = elem;               // then elem is the new last (or NULL)
     }
     free_list(LIST, old);                // free the removed elem
@@ -388,11 +388,9 @@ static void print_one_frag(FILE * chan, unsigned int len, unsigned char *frag)
  * @param chan output FILE*
  * @param len_frag an 8bit length, followed by that number of characters
  */
-int print_len_frag(FILE * chan, unsigned char *len_frag)
+uint16_t print_len_frag(FILE * chan, unsigned char *len_frag)
 {
-    unsigned char len;
-
-    len = *len_frag++;
+    uint16_t len = *len_frag++;
     print_one_frag(chan, len, len_frag);
     return len;
 }
@@ -411,7 +409,7 @@ int print_len_frag(FILE * chan, unsigned char *len_frag)
 void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
 {
     unsigned char *frag;
-    int len;
+    uint16_t len;
 
     assert(sep);
     if (*sep) {

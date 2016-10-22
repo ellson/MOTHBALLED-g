@@ -222,7 +222,7 @@ static void expand_hub(CONTEXT_t *C, elem_t *tail, elem_t *head, elem_t *disambi
     LIST_t * LIST = (LIST_t *)C;
     elem_t newedge = { 0 };
     elem_t newlegs = { 0 };
-    elem_t *ep, *new;
+    elem_t *new;
 
     newedge.state = EDGE;
     newlegs.state = ENDPOINTSET;
