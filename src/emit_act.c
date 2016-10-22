@@ -11,7 +11,7 @@
 static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes);
 static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list);
 static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep);
-static void emit_act_print_shortstr(shortstr_elem_t * shortstr_elem, char *sep);
+static void emit_act_print_shortstr(elem_t * elem, char *sep);
 
 void je_emit_act(container_CONTEXT_t * CC, elem_t *list)
 {
@@ -22,10 +22,10 @@ void je_emit_act(container_CONTEXT_t * CC, elem_t *list)
     elem_t *subject, *attributes = NULL, *disambig = NULL;
 
     assert(list);
-    elem = list->first;
+    elem = list->u.l.first;
     assert(elem); // must always be a subject
     liststate = (state_t) elem->state;
-    if (! (elem->first)) { // is the first elem just a tag?
+    if (! (elem->u.l.first)) { // is the first elem just a tag?
         switch (liststate) {
         case QRY:
         case TLD:
@@ -46,7 +46,7 @@ void je_emit_act(container_CONTEXT_t * CC, elem_t *list)
         subjtype = liststate; // NODE or SIBLING
         break;
     case EDGE:
-        subject = elem->first;  // ENDPOINTS (legs)
+        subject = elem->u.l.first;  // ENDPOINTS (legs)
         disambig = subject->next; // DISAMBIG (may be NULL)
         subjtype = liststate; // EDGE
         break;
@@ -97,12 +97,12 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
     }
     switch (subjtype) {
     case NODE:
-//P(subject->first);
-        emit_act_list_r(CC, subject->first); // skip NODEID
+//P(subject->u.l.first);
+        emit_act_list_r(CC, subject->u.l.first); // skip NODEID
         break;
     case SIBLING:
-//P(subject->first->first);
-        emit_act_list_r(CC, subject->first->first); // skip NODEREF NODEID
+//P(subject->u.l.first->u.l.first);
+        emit_act_list_r(CC, subject->u.l.first->u.l.first); // skip NODEREF NODEID
         break;
     case EDGE:
 #ifndef DOTLANG
@@ -110,11 +110,11 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
         emit_act_list_r(CC, subject);
         putc('>', stdout);
 #else
-        emit_act_list_r(CC, subject->first);
+        emit_act_list_r(CC, subject->u.l.first);
         putc(' ', stdout);
         putc('-', stdout);
         putc('-', stdout);
-        emit_act_list_r(CC, subject->first->next);
+        emit_act_list_r(CC, subject->u.l.first->next);
 #endif
         break;
     default:
@@ -124,9 +124,9 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
     if (disambig) {
 #ifndef DOTLANG
         putc('`', stdout);
-//P(disambig->first);
+//P(disambig->u.l.first);
         C->sep = '\0';
-        emit_act_list_r(CC, disambig->first); // skip DISAMBID
+        emit_act_list_r(CC, disambig->u.l.first); // skip DISAMBID
 #endif
     }
     if (attributes) {
@@ -147,14 +147,14 @@ static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
     state_t liststate;
 
     assert(list);
-    elem = list->first;
+    elem = list->u.l.first;
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
         emit_act_print_frags(liststate, elem, &(CC->C->sep));
         break;
     case SHORTSTRELEM:
-        emit_act_print_shortstr((shortstr_elem_t*)elem, &(CC->C->sep));
+        emit_act_print_shortstr(elem, &(CC->C->sep));
         break;
     case LISTELEM:
         while (elem) {
@@ -208,7 +208,7 @@ static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep)
             }
         }
         else {
-            fwrite(((frag_elem_t*)elem)->frag,1,((frag_elem_t*)elem)->len,stdout);
+            fwrite(elem->u.f.frag,1,elem->len,stdout);
         }
        elem = elem->next;
     }
@@ -218,12 +218,12 @@ static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep)
     *sep = ' ';
 }
 
-static void emit_act_print_shortstr(shortstr_elem_t * shortstr_elem, char *sep)
+static void emit_act_print_shortstr(elem_t *elem, char *sep)
 {
     if (*sep) {
         putc(*sep, stdout);
     }
-    fwrite(shortstr_elem->str, 1, shortstr_elem->len, stdout);
+    fwrite(elem->u.s.str, 1, elem->len, stdout);
     *sep = ' ';
 }
 

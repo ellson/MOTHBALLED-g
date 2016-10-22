@@ -56,15 +56,14 @@ void je_sslhash_list(uint64_t *hash, elem_t *list)
 static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list)
 {
     elem_t *elem;
-    frag_elem_t *fragelem;
 
-    if ((elem = list->first)) {
+    assert(list->type == (char)LISTELEM);
+
+    if ((elem = list->u.l.first)) {
         switch ((elemtype_t) elem->type) {
         case FRAGELEM:
             while (elem) {
-                if ((EVP_DigestUpdate(ctx,
-                        ((frag_elem_t*)elem)->frag,
-                        ((frag_elem_t*)elem)->len)) != 1)
+                if ((EVP_DigestUpdate(ctx, elem->u.f.frag, elem->len)) != 1)
                     fatal_perror("Error - EVP_DigestUpdate() ");
                 elem = elem->next;
             }

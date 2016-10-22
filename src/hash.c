@@ -54,12 +54,14 @@ static void hash_list_r(uint64_t *hash, elem_t *list)
     unsigned char *cp;
     int len;
 
-    if ((elem = list->first)) {
+    assert(list->type == (char)LISTELEM);
+
+    if ((elem = list->u.l.first)) {
         switch ((elemtype_t) elem->type) {
         case FRAGELEM:
             while (elem) {
-                cp = ((frag_elem_t*)elem)->frag;
-                len = ((frag_elem_t*)elem)->len;
+                cp = elem->u.f.frag;
+                len = elem->len;
                 assert(len > 0);
                 while (len--) {
                     // XOR with current character

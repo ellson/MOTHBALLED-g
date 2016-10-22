@@ -231,7 +231,7 @@ static void je_gvrender_list(CONTEXT_t *C, FILE *chan, elem_t * list)
 
     assert(list);
     liststate = (state_t) list->state;
-    if (! (elem = list->first)) {
+    if (! (elem = list->u.l.first)) {
         switch (liststate) {
         case QRY:
 //            je_emit_token(C, chan, '?');
@@ -318,7 +318,7 @@ void je_emit_list(CONTEXT_t *C, FILE *chan, elem_t * list)
 
     assert(list);
     liststate = (state_t) list->state;
-    if (! (elem = list->first)) {
+    if (! (elem = list->u.l.first)) {
         switch (liststate) {
         case QRY:
             je_emit_token(C, chan, '?');

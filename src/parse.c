@@ -279,7 +279,7 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
 
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
-                elem = root->first;
+                elem = root->u.l.first;
                 while (elem) {
                     C->stat_outactcount++;
 //P(elem);
@@ -328,8 +328,8 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
         default:
             break;
         }
-        if (branch.first != NULL || si == EQL) {    // mostly ignore empty lists
-            if (branch.first && branch.first->type != FRAGELEM) {
+        if (branch.u.l.first != NULL || si == EQL) {    // mostly ignore empty lists
+            if (branch.u.l.first && branch.u.l.first->type != FRAGELEM) {
                 // record state generating this tree
                 // - except for STRINGs which use state for quoting info
                 branch.state = si;

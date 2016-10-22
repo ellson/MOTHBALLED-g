@@ -131,9 +131,6 @@ char * je_session(CONTEXT_t *C)
     je_append_string  (C, &pos, "elemsize");
     je_append_token   (C, &pos, '=');
     je_append_ulong   (C, &pos, size_elem_t);
-    // and while we think about it, lest just check...
-    assert(sizeof(frag_elem_t) == size_elem_t);
-    assert(sizeof(shortstr_elem_t) == size_elem_t);
 
     je_append_string  (C, &pos, "elemmallocsize");
     je_append_token   (C, &pos, '=');
