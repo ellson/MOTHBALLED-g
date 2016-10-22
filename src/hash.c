@@ -86,7 +86,7 @@ static void hash_list_r(uint64_t *hash, elem_t *list)
 // 64 ascii chars that are safe in filenames
 // each character used only once
 // must match reverse mapping table
-const static unsigned char b64[64] = {
+const static char b64[64] = {
     '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F',
     'G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V',
     'W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l',
@@ -94,7 +94,7 @@ const static unsigned char b64[64] = {
 };
 
 // reverse mapping
-const static unsigned char un_b64[128] = {
+const static char un_b64[128] = {
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1,
@@ -111,7 +111,7 @@ const static unsigned char un_b64[128] = {
  * @param b64string result (caller-provided 12 character buffer for result)
  * @param hash = 64bit integer to be hashed
  */
-void je_long_to_base64(unsigned char b64string[], const uint64_t *hash)
+void je_long_to_base64(char b64string[], const uint64_t *hash)
 {
     int i;
     uint64_t h = *hash;
@@ -131,13 +131,13 @@ void je_long_to_base64(unsigned char b64string[], const uint64_t *hash)
  * @param hash result
  * @return success/fail
  */
-success_t je_base64_to_long(const unsigned char b64string[], uint64_t *hash)
+success_t je_base64_to_long(const char b64string[], uint64_t *hash)
 {
     uint64_t h = 0;
     char c;
     size_t len;
 
-    if ((len = strlen((char*)b64string)) != 11) {
+    if ((len = strlen(b64string)) != 11) {
         return FAIL;
     }
     while (len-- > 0) {

@@ -114,7 +114,7 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
     elem_t * nshortstr;
     elem_t *ep, *eplast, *new;
     uint64_t hubhash;
-    unsigned char hubhash_b64[12];
+    char hubhash_b64[12];
 
     if (epset) {
         ep = epset->first;

@@ -7,47 +7,95 @@ typedef enum {
     HASHNAMEELEM = 3
 } elemtype_t;
 
+#if 1
 typedef struct elem_s elem_t;
 struct elem_s {             // castable from frag_elem_s and shortstr_elem_s
                             // -- sizes must match (32bytes)
     elem_t *next;
+
+    // FIXME - next 4 vars (22bytes) could be in union to avoid casts 
     elem_t *first;
     elem_t *last;
-    uint16_t unused[2];
-    uint16_t refs;
-    char state;             // state_machine state that generated this list
+    uint16_t unused;
+    uint16_t refs;          // don't free LISTELEM until refs == 0
+    uint16_t len;           // length of list (# elems)
+
+    char state;             // state_machine state that generated this elem
     char type;              // LISTELEM
 };
 
 typedef struct frag_elem_s frag_elem_t;
 struct frag_elem_s {        // castable to elem_s  -- size must match (32bytes)
     frag_elem_t *next;
+
+    // FIXME - next 3 vars (22bytes) could be in union to avoid casts
     inbuf_t *inbuf;         // inbuf containing frag - for memory management
     unsigned char *frag;    // pointer to beginning of frag
     uint16_t unused[2];
     uint16_t len;           // length of frag
-    char state;             // state_machine state that generated this list
+
+    char state;             // state_machine state that generated this elem
     char type;              // LISTELEM
 };
 
 typedef struct shortstr_elem_s shortstr_elem_t;
 struct shortstr_elem_s {    // castable to elem_s  -- size must match (32bytes)
     shortstr_elem_t *next;
-    unsigned char str[20];
+
+    // FIXME - next var (22bytes) could be in union to avoid casts
+    unsigned char str[20];  // the short string
     uint16_t len;           // length of shortstr
-    char state;             // state_machine state that generated this list
+
+    char state;             // state_machine state that generated this elem
     char type;              // SHORTSTRELEM
 };
 
 typedef struct hashname_elem_s hashname_elem_t;
 struct hashname_elem_s {    // castable to elem_s  -- size must match (32bytes)
     hashname_elem_t *next;
+    
+    // FIXME - next 3 vars (22bytes) could be in union to avoid casts
     unsigned char *hashname;// a filename constructed from a hash of the subject
     FILE *out;              // file handle, or NULL if not opened yet.
     uint16_t unused[3];
+
     char state;             // state_machine state that generated this list
     char type;              // HASHNAMEELEM
 };
+
+#else
+typedef struct elem_s elem_t;
+struct elem_s { 
+    elem_t *next;                  // next elem in parent's list
+    union {
+        struct {
+            elem_t *first;         // first elem in this list (or NULL)
+            elem_t *last;          // last elem in this list (or NULL)
+            uint16_t len;          // length of this list (# elems)
+            uint16_t refs;         // don't free this list until refs == 0
+            uint16_t unused;
+        } l;
+        struct {
+            inbuf_t *inbuf;        // inbuf containing frag - for memory management
+            unsigned char *frag;   // pointer to beginning of frag
+            uint16_t len;          // length of frag
+            uint16_t unused[2];
+        } f;
+        struct {
+            unsigned char str[20]; // the short string
+            uint16_t len;          // length of str
+        } s;
+        struct {
+            unsigned char *hashname;// a filename constructed from a hash of the subject
+            FILE *out;             // file handle, or NULL if not opened yet.
+            uint16_t unused[3];
+        } h;
+    } u;
+    char state;             // state_machine state that generated this elem
+    char type;              // LISTELEM
+};
+#endif
+        
 
 typedef struct {
     INBUF_t INBUF;          // Header for inbuf management   
@@ -63,7 +111,7 @@ typedef struct {
 elem_t *new_hashname(LIST_t * LIST, unsigned char *hash, size_t hash_len);
 elem_t *new_list(LIST_t * LIST, char state);
 elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag);
-elem_t *new_shortstr(LIST_t * LIST, char state, unsigned char *str);
+elem_t *new_shortstr(LIST_t * LIST, char state, char *str);
 elem_t *move_list(LIST_t * LIST, elem_t * list);
 elem_t *ref_list(LIST_t * LIST, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);

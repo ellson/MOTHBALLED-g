@@ -43,13 +43,12 @@ static elem_t *new_elem_sub(LIST_t * LIST)
     elem = LIST->free_elem_list;    // use first elem from free_elem_list
     LIST->free_elem_list = elem->next; // update list to point to next available
 
-//  elem->type = NULL;  // private function, so we can rely on callers to initialize
-    elem->next = NULL;
-
     LIST->stat_elemnow++;        // stats
     if (LIST->stat_elemnow > LIST->stat_elemmax) {
         LIST->stat_elemmax = LIST->stat_elemnow;
     }
+
+    // N.B. elem is uninitialized
     return elem;
 }
 
@@ -69,10 +68,12 @@ elem_t *new_list(LIST_t * LIST, char state)
 
     assert(elem);
     // complete elem initialization
-    elem-> type = LISTELEM;    // type
-    elem-> first = NULL;
-    elem-> next = NULL;
-    elem-> last = NULL;
+    elem->type = LISTELEM;
+    elem->next = NULL;              // clear next
+    elem->first = NULL;
+    elem->last = NULL;
+    elem->len = 0;
+    elem->refs = 0;
     elem->state = state;    // state_machine state that created this frag
 
     return elem;
@@ -102,6 +103,7 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
     assert(len > 0);
     // complete frag elem initialization
     frag_elem->type = FRAGELEM;    // type
+    frag_elem->next = NULL;              // clear next
     frag_elem->inbuf = INBUF->inbuf;    // record inbuf for ref counting
     frag_elem->frag = frag;    // pointer to begging of frag
     frag_elem->len = len;    // length of frag
@@ -114,28 +116,30 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
 /**
  * Return a pointer to an elem_t which holds a shortstr
  * (suitable for use as a hash name for hubs)
- * The string is stored in the struct.  Maximum length is the first 18 characters.
- * of the referenced str.  The stored string is not NUL terminated;
+ * The string is stored in the struct.  Maximum length is the first 28 characters.
+ * of the referenced str.  The stored string is *not* NUL terminated;
  *
  * @param LIST the top-level context in which all lists are managed
  * @param state a one character value stored with the elem, no internal meaning
  * @param str string to be strored in elem,  first 18char max
  * @return a new intialized elem_t
  */
-elem_t *new_shortstr(LIST_t * LIST, char state, unsigned char * str)
+elem_t *new_shortstr(LIST_t * LIST, char state, char * str)
 {
     shortstr_elem_t *shortstr_elem;
     int i;
-    unsigned char c;
+    char c;
 
     shortstr_elem = (shortstr_elem_t*)new_elem_sub(LIST);
 
     // complete frag elem initialization
     shortstr_elem->type = SHORTSTRELEM;     // type
-    for (i = 0; i < 18 && (c = str[i]) != '\0'; i++)
-        shortstr_elem->str[i] = c;
-    shortstr_elem->len = i;
+    shortstr_elem->next = NULL;             // clear next
     shortstr_elem->state = state;    // state_machine state that created this shortstr
+    for (i = 0; i < sizeof(((shortstr_elem_t*)0)->str) && (c = str[i]) != '\0'; i++) {
+        shortstr_elem->str[i] = c;
+    }
+    shortstr_elem->len = i;
     return (elem_t*)shortstr_elem;
 }
 
@@ -157,6 +161,7 @@ elem_t *new_hashname(LIST_t * LIST, unsigned char* hash, size_t hash_len)
 
     // complete frag elem initialization
     hashname_elem->type = HASHNAMEELEM;     // type
+    hashname_elem->next = NULL;              // clear next
     hashname_elem->hashname = hash;  // the hash value  //FIXME do base64 here ?
     hashname_elem->out = NULL;   // open later
     return (elem_t*)hashname_elem;
@@ -185,6 +190,7 @@ static elem_t *clone_list(LIST_t * LIST, elem_t * list)
     elem = new_elem_sub(LIST);
 
     elem->type = LISTELEM;         // type
+    elem->next = NULL;              // clear next
     elem->first = list->first;     // copy details
     elem->last = list->last;
     elem->refs = 0;
@@ -261,6 +267,7 @@ void append_list(elem_t * list, elem_t * elem)
     } else {
         list->first = elem;
     }
+    list->len++;
     list->last = elem;
     if (elem->type == (char)LISTELEM) {
         elem->refs++; 
@@ -295,6 +302,7 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
     if (list->last == old) {             // if removing the last element
         list->last = elem;               // then elem is the new last (or NULL)
     }
+    list->len--;                         // list has one less elem
     free_list(LIST, old);                // free the removed elem
 }
 
@@ -328,20 +336,20 @@ void free_list(LIST_t * LIST, elem_t * list)
     elem = list->first;
     while (elem) {
         next = elem->next;
-        switch ((elemtype_t) (elem->type)) {
-        case FRAGELEM:
-            frag_elem = (frag_elem_t*) elem;
-            assert(frag_elem->inbuf->refs > 0);
-            if (--(frag_elem->inbuf->refs) == 0) {
-                free_inbuf(INBUF, frag_elem->inbuf);
-            }
-            break;
+        switch ((elemtype_t)(elem->type)) {
         case LISTELEM:
             assert(elem->refs > 0);
             if (--(elem->refs) > 0) {
                 goto done;    // stop at any point with additional refs
             }
             free_list(LIST, elem); // recursively free lists that have no references
+            break;
+        case FRAGELEM:
+            frag_elem = (frag_elem_t*) elem;
+            assert(frag_elem->inbuf->refs > 0);
+            if (--(frag_elem->inbuf->refs) == 0) {
+                free_inbuf(INBUF, frag_elem->inbuf);
+            }
             break;
         case SHORTSTRELEM:
             // these are self contained, nothing else to clean up
