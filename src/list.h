@@ -42,7 +42,6 @@ typedef struct {
     long stat_elemmalloc;
 } LIST_t;
 
-#define size_elem_t (sizeof(elem_t*)*((sizeof(elem_t)+sizeof(elem_t*)-1)/(sizeof(elem_t*))))
 #define LISTALLOCNUM 512
 
 elem_t *new_hashname(LIST_t * LIST, unsigned char *hash, size_t hash_len);

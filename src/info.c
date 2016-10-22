@@ -130,11 +130,11 @@ char * je_session(CONTEXT_t *C)
 
     je_append_string  (C, &pos, "elemsize");
     je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, size_elem_t);
+    je_append_ulong   (C, &pos, sizeof(elem_t));
 
     je_append_string  (C, &pos, "elemmallocsize");
     je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, LISTALLOCNUM * size_elem_t);
+    je_append_ulong   (C, &pos, LISTALLOCNUM * sizeof(elem_t));
 
     je_append_token   (C, &pos, ']');
 
@@ -280,11 +280,11 @@ char * je_stats(CONTEXT_t *C)
 
     je_append_string  (C, &pos, "elemmalloctotal");
     je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.LIST.stat_elemmalloc * LISTALLOCNUM * size_elem_t);
+    je_append_ulong   (C, &pos, C->TOKEN.LIST.stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t));
 
     je_append_string  (C, &pos, "malloctotal");
     je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, (C->TOKEN.LIST.stat_elemmalloc * LISTALLOCNUM * size_elem_t)
+    je_append_ulong   (C, &pos, (C->TOKEN.LIST.stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t))
                         + (C->TOKEN.LIST.INBUF.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t)));
 
     je_append_token   (C, &pos, ']');
