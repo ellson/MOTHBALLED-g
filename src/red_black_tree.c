@@ -5,10 +5,16 @@
 *      See the LICENSE file for copyright infomation.     *
 **********************************************************/
 
+#ifdef HAVE_CONFIG
 #include "config.h"
+#endif
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+#include "fatal.h"
 #include "red_black_tree.h"
-#include "stdio.h"
 
 /***********************************************************************/
 /*  FUNCTION:  RBTreeCreate */
@@ -38,6 +44,8 @@ rb_red_blk_tree* RBTreeCreate( int (*CompFunc) (const void*,const void*),
   rb_red_blk_tree* newTree = NULL;
   rb_red_blk_node* temp;
 
+#if 0
+  // FIXME - do i need this?
   if (setjmp(rb_jbuf)) {
     if (newTree) {
       if (newTree->nil) free (newTree->nil);
@@ -45,7 +53,9 @@ rb_red_blk_tree* RBTreeCreate( int (*CompFunc) (const void*,const void*),
     }
     return NULL;
   }
-  newTree=(rb_red_blk_tree*) SafeMalloc(sizeof(rb_red_blk_tree));
+#endif
+  if (!(newTree=(rb_red_blk_tree*)malloc(sizeof(rb_red_blk_tree))))
+      fatal_perror("Error - malloc() ");
   newTree->nil = newTree->root = NULL;
   newTree->Compare=  CompFunc;
   newTree->DestroyKey= DestFunc;
@@ -55,11 +65,13 @@ rb_red_blk_tree* RBTreeCreate( int (*CompFunc) (const void*,const void*),
 
   /*  see the comment in the rb_red_blk_tree structure in red_black_tree.h */
   /*  for information on nil and root */
-  temp=newTree->nil= (rb_red_blk_node*) SafeMalloc(sizeof(rb_red_blk_node));
+  if (!(temp=newTree->nil= (rb_red_blk_node*)malloc(sizeof(rb_red_blk_node))))
+      fatal_perror("Error - malloc() ");
   temp->parent=temp->left=temp->right=temp;
   temp->red=0;
   temp->key=0;
-  temp=newTree->root= (rb_red_blk_node*) SafeMalloc(sizeof(rb_red_blk_node));
+  if (!(temp=newTree->root= (rb_red_blk_node*)malloc(sizeof(rb_red_blk_node))))
+      fatal_perror("Error - malloc() ");
   temp->parent=temp->left=temp->right=newTree->nil;
   temp->key=0;
   temp->red=0;
@@ -185,7 +197,7 @@ void RightRotate(rb_red_blk_tree* tree, rb_red_blk_node* y) {
 /**/
 /*  EFFECTS:  Inserts z into the tree as if it were a regular binary tree */
 /*            using the algorithm described in _Introduction_To_Algorithms_ */
-/*            by Cormen et al.  This funciton is only intended to be called */
+/*            by Cormen et al.  This function is only intended to be called */
 /*            by the RBTreeInsert function and not by the user */
 /***********************************************************************/
 
@@ -244,9 +256,13 @@ rb_red_blk_node * RBTreeInsert(rb_red_blk_tree* tree, void* key, void* info) {
   rb_red_blk_node * x;
   rb_red_blk_node * newNode;
 
+#if 0
+  // FIXME - do i need this?
   if (setjmp(rb_jbuf))
     return NULL;
-  x=(rb_red_blk_node*) SafeMalloc(sizeof(rb_red_blk_node));
+#endif
+  if (!(x=(rb_red_blk_node*)malloc(sizeof(rb_red_blk_node))))
+      fatal_perror("Error - malloc() ");
   x->key=key;
   x->info=info;
 
@@ -649,46 +665,8 @@ void RBDelete(rb_red_blk_tree* tree, rb_red_blk_node* z){
 #endif
 }
 
+/*  NullFunction does nothing it is included so that it can be passed */
+/*  as a function to RBTreeCreate when no other suitable function has */
+/*  been defined */
 
-/***********************************************************************/
-/*  FUNCTION:  RBEnumerate */
-/**/
-/*    INPUTS:  tree is the tree to look for keys >= low */
-/*             and <= high with respect to the Compare function */
-/**/
-/*    OUTPUT:  BEnumerateaining pointers to the nodes between [low,high] */
-/**/
-/*    Modifies Input: none */
-/***********************************************************************/
-
-stk_stack* RBEnumerate(rb_red_blk_tree* tree, void* low, void* high) {
-  stk_stack* enumResultStack;
-  rb_red_blk_node* nil=tree->nil;
-  rb_red_blk_node* x=tree->root->left;
-  rb_red_blk_node* lastBest=nil;
-
-  if (setjmp(rb_jbuf)) {
-    return NULL;
-  }
-  enumResultStack=StackCreate();
-  while(nil != x) {
-    if ( 1 == (tree->Compare(x->key,high)) ) { /* x->key > high */
-      x=x->left;
-    } else {
-      lastBest=x;
-      x=x->right;
-    }
-  }
-  while ( (lastBest != nil) && (1 != tree->Compare(low,lastBest->key))) {
-    StackPush(enumResultStack,lastBest);
-    lastBest=TreePredecessor(tree,lastBest);
-  }
-  return(enumResultStack);
-}
-      
-    
-  
-  
-
-
-
+void NullFunction(void * junk) { ; }
