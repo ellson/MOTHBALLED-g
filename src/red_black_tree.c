@@ -1,9 +1,29 @@
 /* $Id$Revision:  */
 /* vim:set shiftwidth=4 ts=8: */
 
-/**********************************************************
-*      See the LICENSE file for copyright infomation.     *
-**********************************************************/
+/* LICENSE *************************************************************
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that neither the name of Emin
+ * Martinian nor the names of any contributors are be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+ **********************************************************************/
+
+/* Imported by John Ellson, Oct 22, 2016 ******************************/
 
 #ifdef HAVE_CONFIG
 #include "config.h"
@@ -44,16 +64,6 @@ rb_red_blk_tree* RBTreeCreate( int (*CompFunc) (const void*,const void*),
   rb_red_blk_tree* newTree = NULL;
   rb_red_blk_node* temp;
 
-#if 0
-  // FIXME - do i need this?
-  if (setjmp(rb_jbuf)) {
-    if (newTree) {
-      if (newTree->nil) free (newTree->nil);
-      free (newTree);
-    }
-    return NULL;
-  }
-#endif
   if (!(newTree=(rb_red_blk_tree*)malloc(sizeof(rb_red_blk_tree))))
       fatal_perror("Error - malloc() ");
   newTree->nil = newTree->root = NULL;
@@ -256,11 +266,6 @@ rb_red_blk_node * RBTreeInsert(rb_red_blk_tree* tree, void* key, void* info) {
   rb_red_blk_node * x;
   rb_red_blk_node * newNode;
 
-#if 0
-  // FIXME - do i need this?
-  if (setjmp(rb_jbuf))
-    return NULL;
-#endif
   if (!(x=(rb_red_blk_node*)malloc(sizeof(rb_red_blk_node))))
       fatal_perror("Error - malloc() ");
   x->key=key;
