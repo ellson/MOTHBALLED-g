@@ -137,9 +137,7 @@ void LeftRotate(rb_red_blk_tree* tree, rb_red_blk_node* x) {
   y->left=x;
   x->parent=y;
 
-#ifdef DEBUG_ASSERT
-  Assert(!tree->nil->red,"nil not red in LeftRotate");
-#endif
+  assert(!tree->nil->red); /* nil not red in LeftRotate */
 }
 
 
@@ -191,9 +189,7 @@ void RightRotate(rb_red_blk_tree* tree, rb_red_blk_node* y) {
   x->right=y;
   y->parent=x;
 
-#ifdef DEBUG_ASSERT
-  Assert(!tree->nil->red,"nil not red in RightRotate");
-#endif
+  assert(!tree->nil->red); /* nil not red in RightRotate */
 }
 
 /***********************************************************************/
@@ -236,9 +232,7 @@ void TreeInsertHelp(rb_red_blk_tree* tree, rb_red_blk_node* z) {
     y->right=z;
   }
 
-#ifdef DEBUG_ASSERT
-  Assert(!tree->nil->red,"nil not red in TreeInsertHelp");
-#endif
+  assert(!tree->nil->red); /* nil not red in TreeInsertHelp */
 }
 
 /*  Before calling Insert RBTree the node x should have its key set */
@@ -312,10 +306,8 @@ rb_red_blk_node * RBTreeInsert(rb_red_blk_tree* tree, void* key, void* info) {
   tree->root->left->red=0;
   return(newNode);
 
-#ifdef DEBUG_ASSERT
-  Assert(!tree->nil->red,"nil not red in RBTreeInsert");
-  Assert(!tree->root->red,"root not red in RBTreeInsert");
-#endif
+  assert(!tree->nil->red); /* nil not red in RBTreeInsert */
+  assert(!tree->root->red); /* root not red in RBTreeInsert */
 }
 
 /***********************************************************************/
@@ -597,9 +589,7 @@ void RBDeleteFixUp(rb_red_blk_tree* tree, rb_red_blk_node* x) {
   }
   x->red=0;
 
-#ifdef DEBUG_ASSERT
-  Assert(!tree->nil->red,"nil not black in RBDeleteFixUp");
-#endif
+  assert(!tree->nil->red); /* nil not black in RBDeleteFixUp */
 }
 
 
@@ -638,9 +628,8 @@ void RBDelete(rb_red_blk_tree* tree, rb_red_blk_node* z){
   }
   if (y != z) { /* y should not be nil in this case */
 
-#ifdef DEBUG_ASSERT
-    Assert( (y!=tree->nil),"y is nil in RBDelete\n");
-#endif
+    assert(y!=tree->nil); /* y is nil in RBDelete */
+
     /* y is the node to splice out and x is its child */
 
     if (!(y->red)) RBDeleteFixUp(tree,x);
@@ -665,9 +654,7 @@ void RBDelete(rb_red_blk_tree* tree, rb_red_blk_node* z){
     free(y);
   }
   
-#ifdef DEBUG_ASSERT
-  Assert(!tree->nil->red,"nil not black in RBDelete");
-#endif
+  assert(!tree->nil->red); /* nil not black in RBDelete */
 }
 
 /*  NullFunction does nothing it is included so that it can be passed */
