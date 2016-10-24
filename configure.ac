@@ -53,6 +53,7 @@ AC_PROG_MAKE_SET
 AC_CHECK_HEADERS([ \
     stdio.h \
     stdlib.h \
+    stdint.h \
     string.h \
     time.h \
     sys/utsname.h \

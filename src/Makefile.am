@@ -25,8 +25,8 @@ noinst_HEADERS = \
 	sameas.h \
 	token.h \
 	tree.h \
-        compare.h \
-        reduce.h
+    compare.h \
+    reduce.h
 
 noinst_LTLIBRARIES = libje_C.la
 lib_LTLIBRARIES = libje.la
@@ -78,9 +78,9 @@ g_static_SOURCES = g.c
 g_static_CPPFLAGS = 
 g_static_LDADD = libje_C.la @LIBS@
 
-grammar.c: grammar.h
+grammar.h: grammar.c
 
-grammar.h grammar.ebnf grammar.gv: grammar.g gacc.sh
+grammar.c grammar.ebnf grammar.gv: grammar.g gacc.sh
 	./gacc.sh grammar.g
 
 grammar.svg: grammar.gv
