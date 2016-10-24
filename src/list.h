@@ -4,7 +4,8 @@ typedef enum {
     LISTELEM = 0,           // must be 0 for static or calloc allocation of list headers
     FRAGELEM = 1,
     SHORTSTRELEM = 2,
-    HASHNAMEELEM = 3
+    TREEELEM = 3,
+    HASHNAMEELEM = 4
 } elemtype_t;
 
 typedef struct elem_s elem_t;
@@ -23,15 +24,21 @@ struct elem_s {
             unsigned char str[16]; // the short string
         } s;
         struct {
+            elem_t *left;          // left elem of tree
+            elem_t *right;         // left elem of tree
+        } t;
+        struct {
             unsigned char *hashname;// a filename constructed from a hash of the subject
             FILE *out;             // file handle, or NULL if not opened yet.
         } h;
     } u;
-    uint16_t unused; 
-    uint16_t refs;          // don't free this list until refs == 0
-    uint16_t len;           // length of list, frag, or string
+    uint16_t height;        // (belongs to u.t.) height of elem in tree
+    uint16_t refs;          // (belongs to u.l.) don't free this list until refs == 0
+    uint16_t len;           // (shared by u.l. u.f. u.s.)
     char state;             // state_machine state that generated this elem
-    char type;              // LISTELEM
+    char type;              // just this *has* top be outside of union
+                            //  but to move the rest inside would increase the
+                            //  size of the struct
 };
 
 typedef struct {
@@ -46,6 +53,7 @@ typedef struct {
 
 elem_t *new_hashname(LIST_t * LIST, unsigned char *hash, size_t hash_len);
 elem_t *new_list(LIST_t * LIST, char state);
+elem_t *new_tree(LIST_t * LIST, char state);
 elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag);
 elem_t *new_shortstr(LIST_t * LIST, char state, char *str);
 elem_t *move_list(LIST_t * LIST, elem_t * list);
@@ -54,5 +62,5 @@ void append_list(elem_t * list, elem_t * elem);
 void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem);
 void free_list(LIST_t * LIST, elem_t * list);
 uint16_t print_len_frag(FILE * chan, unsigned char *len_frag);
-void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep);
+void print_frags(FILE * chan, state_t state, elem_t * elem, char *sep);
 void print_list(FILE * chan, elem_t * list, int nest, char *sep);

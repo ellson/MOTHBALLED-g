@@ -80,6 +80,34 @@ elem_t *new_list(LIST_t * LIST, char state)
 }
 
 /**
+ * Return a pointer to an elem_t which is an empty list
+ * The elem_t is memory managed without caller involvement.
+ *
+ * @param LIST the top-level context in which all lists are managed
+ * @param state a one character value stored with the elem, no internal meaning
+ * @return a new intialized elem_t
+ */
+elem_t *new_tree(LIST_t * LIST, char state)
+{
+    elem_t *elem;
+
+    elem = new_elem_sub(LIST);
+
+    assert(elem);
+    // complete elem initialization
+    elem->type = TREEELEM;
+    elem->next = NULL;      // clear next
+    elem->state = state;    // state_machine state that created this frag
+    elem->u.t.left = NULL; // new list is empty
+    elem->u.t.right = NULL;
+    elem->height = 0;
+    elem->len = 0;
+    elem->refs = 0;
+
+    return elem;
+}
+
+/**
  * Return a pointer to an elem_t which holds a string fragment
  * (start address and length).
  * The elem_t is memory managed without caller involvement.
@@ -411,11 +439,11 @@ uint16_t print_len_frag(FILE * chan, unsigned char *len_frag)
  * (although not necessarily in the same way as in the original input).
  *
  * @param chan output FILE*
- * @param liststate an indicator if the string is to be quoted
+ * @param state an indicator if the string is to be quoted
  * @param elem the first frag of the fragllist
  * @param sep if not NULL then a character to be printed first
  */
-void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
+void print_frags(FILE * chan, state_t state, elem_t * elem, char *sep)
 {
     unsigned char *frag;
     uint16_t len;
@@ -424,7 +452,7 @@ void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
     if (*sep) {
         putc(*sep, chan);
     }
-    if (liststate == DQT) {
+    if (state == DQT) {
         putc('"', chan);
     }
     while (elem) {
@@ -438,7 +466,7 @@ void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
             putc('\\', chan);
         }
         if ((state_t) elem->state == AST) {
-            if (liststate == DQT) {
+            if (state == DQT) {
                 putc('"', chan);
                 putc('*', chan);
                 putc('"', chan);
@@ -451,7 +479,7 @@ void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
         }
         elem = elem->next;
     }
-    if (liststate == DQT) {
+    if (state == DQT) {
         putc('"', chan);
     }
     *sep = ' ';
