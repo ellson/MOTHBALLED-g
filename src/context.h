@@ -1,7 +1,7 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 struct context_s {             // input_context
-    TOKEN_t TOKEN;           // Must be first (to allow casting from CONTEXT_t)
+    TOKEN_t TOKEN;             // Must be first (to allow casting from CONTEXT_t)
 
     char *progname;            // name of program
     FILE *out;                 // typically stdout for parser debug outputs
