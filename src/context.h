@@ -1,5 +1,12 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#ifndef CONTEXT_H
+#define CONTEXT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct context_s {             // input_context
     TOKEN_t TOKEN;             // Must be first (to allow casting from CONTEXT_t)
 
@@ -62,3 +69,8 @@ struct container_context_s {    // container_context
 
 };
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif

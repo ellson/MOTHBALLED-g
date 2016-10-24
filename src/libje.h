@@ -1,5 +1,12 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#ifndef LIBJE_H
+#define LIBJE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 #include "fatal.h"
@@ -31,3 +38,8 @@ void set_sstyle( void );
 void printg( void );
 void dumpg( void );
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif

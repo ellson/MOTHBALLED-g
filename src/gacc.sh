@@ -344,6 +344,13 @@ cat >$ofh <<EOF
  * This is a generated file.  Do not edit.
  */
 
+#ifndef GRAMMAR_H
+#define GRAMMAR_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 EOF
 
 (
@@ -362,16 +369,20 @@ EOF
 cat ${ifn}.enum >>$ofh
 
 cat >>$ofh  <<EOF
+#define sizeof_state_machine $((++indx))
+
 extern unsigned char state_names[];
 extern unsigned char char2state[];
 extern char state_machine[];
 extern unsigned char state_props[];
 extern char state_token[];
-
-#define sizeof_state_machine $((++indx))
-
 extern unsigned char *NAMEP(int si);
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif
 EOF
 
 ##############################################

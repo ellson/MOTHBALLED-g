@@ -1,5 +1,12 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#ifndef LIST_H
+#define LIST_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     LISTELEM = 0,           // must be 0 for static or calloc allocation of list headers
     FRAGELEM = 1,
@@ -61,3 +68,9 @@ elem_t *ref_list(LIST_t * LIST, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);
 void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem);
 void free_list(LIST_t * LIST, elem_t * list);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

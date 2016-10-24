@@ -1,5 +1,12 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#ifndef EMIT_H
+#define EMIT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // emit styles
 typedef enum {
     MINIMUM_SPACE_STYLE = 0,
@@ -108,3 +115,9 @@ void je_append_ulong(CONTEXT_t *C, char **pos, uint64_t integer);
 void je_append_runtime(CONTEXT_t *C, char **pos, uint64_t run_sec, uint64_t run_ns);
 void je_emit_list(CONTEXT_t * C, FILE * chan, elem_t * subject);
 void je_emit_ikea(container_CONTEXT_t * CC, elem_t *list);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

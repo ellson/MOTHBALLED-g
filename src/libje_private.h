@@ -1,7 +1,16 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#ifndef LIBJE_PRIVATE_H
+#define LIBJE_PRIVATE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // include local configuration
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #ifdef HAVE_SYSINFO
 #include <sys/sysinfo.h>
@@ -29,3 +38,9 @@ typedef struct ikea_box_s ikea_box_t;
 #include "sameas.h"
 #include "dispatch.h"
 #include "expand.h"
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

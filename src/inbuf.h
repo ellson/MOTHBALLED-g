@@ -1,5 +1,13 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#ifndef INBUF_H
+#define INBUF_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 // My guess is that INBUFIZE should match the average ACT size, so that inbufs get released
 // roughly as ACTs are processed.    I could be wrong - may need experimentation.
 //
@@ -32,3 +40,9 @@ typedef struct {
 
 inbuf_t * new_inbuf(INBUF_t * INBUF);
 void free_inbuf(INBUF_t * INBUF, inbuf_t * inbuf);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

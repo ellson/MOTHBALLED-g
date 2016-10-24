@@ -1,5 +1,12 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#ifndef TOKEN_H
+#define TOKEN_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
     LIST_t LIST;             // Must be first (to allow casting from CONTEXT_t)
 
@@ -37,3 +44,9 @@ success_t je_token_whitespace(TOKEN_t * TOKEN);
 success_t je_token_string(TOKEN_t * TOKEN, elem_t * fraglist);
 success_t je_token_vstring(TOKEN_t * TOKEN, elem_t * fraglist);
 success_t je_token(TOKEN_t * TOKEN);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
