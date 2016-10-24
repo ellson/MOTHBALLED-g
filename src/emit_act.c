@@ -111,9 +111,9 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
         putc('>', stdout);
 #else
         emit_act_list_r(CC, subject->u.l.first);
-        putc(' ', stdout);
         putc('-', stdout);
         putc('-', stdout);
+        C->sep = '\0';
         emit_act_list_r(CC, subject->u.l.first->next);
 #endif
         break;

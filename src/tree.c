@@ -66,7 +66,7 @@ static elem_t * balance(elem_t * p)
     return p;
 }
 
-static elem_t * search(elem_t * p, elem_t * key)
+elem_t * search(elem_t * p, elem_t * key)
 {
     int comp;
 
@@ -85,7 +85,7 @@ static elem_t * search(elem_t * p, elem_t * key)
     return p;        
 }
 
-static void list(elem_t * p, char *sep)
+void list(elem_t * p, char *sep)
 {
     if (!p) {
         return;
@@ -95,7 +95,7 @@ static void list(elem_t * p, char *sep)
     list(p->u.t.right, sep);
 }
 
-static elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
+elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
 {
     int comp;
 
@@ -137,7 +137,7 @@ static elem_t * remove_min(elem_t * p)
     return balance(p);
 }
 
-static elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key)
+elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key)
 {
     elem_t  *l, *r, *m;
     int comp;
