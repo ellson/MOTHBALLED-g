@@ -28,7 +28,7 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
     elem_t newepset = { 0 };
 
     assert(list);
-    elem = list->first;
+    elem = list->u.l.first;
     while (elem) {
         switch ((state_t)elem->state) {
         case DISAMBIG:
@@ -36,7 +36,7 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
             break;
         case LEG:
             // build a leg list with endpointsets for each leg
-            epset = elem->first;
+            epset = elem->u.l.first;
             new = ref_list(LIST, epset);
             if ((state_t)epset->state == ENDPOINT) { // put singletons into lists too
                 newepset.state = ENDPOINTSET;
@@ -47,12 +47,12 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
     
             // induce all sibling nodes....
             assert((state_t)new->state == ENDPOINTSET);
-            ep = new->first;
+            ep = new->u.l.first;
             while(ep) {
                 assert((state_t)ep->state == ENDPOINT);                    
-                switch (ep->first->state) {
+                switch (ep->u.l.first->state) {
                 case SIBLING:
-                    new = ref_list(LIST, ep->first);
+                    new = ref_list(LIST, ep->u.l.first);
                     append_list(nodes, new);
                     // FIXME - induce CHILDren in this node's container
                     break;
@@ -65,7 +65,7 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
                     // this case occurs if '=' matches an epset
                     //     <(a b) c>
                     //     <= d>
-                    new = ref_list(LIST, ep->first);
+                    new = ref_list(LIST, ep->u.l.first);
                     append_list(nodes, new);
                     break;
                 default:
@@ -83,7 +83,7 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
     }
 
     // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
-    expand_r(C, &newepset, newlist.first, disambig, nodes, edges);
+    expand_r(C, &newepset, newlist.u.l.first, disambig, nodes, edges);
 
     if (disambig) {
         free_list(LIST, disambig);
@@ -111,16 +111,16 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
     elem_t * nnoderef;
     elem_t * nnodeid;
     elem_t * nnodestr;
-    elem_t * nfrag;
+    elem_t * nshortstr;
     elem_t *ep, *eplast, *new;
     uint64_t hubhash;
-    unsigned char hubhash_b64[12];
+    char hubhash_b64[12];
 
     if (epset) {
-        ep = epset->first;
+        ep = epset->u.l.first;
         while(ep) {
 
-            eplast = newepset->last;
+            eplast = newepset->u.l.last;
 
             // append the next ep for this epset
             new = ref_list(LIST, ep); 
@@ -137,8 +137,14 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
     }
     else {
 #ifdef BINODE_EDGES
+
+// FIXME - idea:
+//    always compute these hub nodes, then store them with
+//    the edge, like disambig. so that the renderers can
+//    choose to use or not use.
+
         // if edge has 1 leg, or has >2 legs
-        if ((! newepset->first->next) || (newepset->first->next->next)) {
+        if ((! newepset->u.l.first->next) || (newepset->u.l.first->next->next)) {
             // create a special node to represent the hub
     
             je_hash_list(&hubhash, newepset);
@@ -147,36 +153,38 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
 // FIXME - this is ugly!
 
             // create a string fragment with the hash string
-            nfrag = new_frag(LIST, ABC, 11, hubhash_b64);
-
-            // create empty lists
+            nshortstr = new_shortstr(LIST, EDGE, hubhash_b64);
             nnodestr = new_list(LIST, ABC);
-            nnodeid = new_list(LIST, NODEID);
-            nnoderef = new_list(LIST, NODEREF);
-            nnode = new_list(LIST, NODE);
-            nendpoint = new_list(LIST, ENDPOINT);
+            append_list(nnodestr, nshortstr);
 
-            // string them together
-            append_list(nnodestr, nfrag);
+            // new nodeid
+            nnodeid = new_list(LIST, NODEID);
             append_list(nnodeid, nnodestr);
+
+            // new noderef
+            nnoderef = new_list(LIST, NODEREF);
             append_list(nnoderef, nnodeid);
-            append_list(nnode, nnoderef);
 
             // new node
+            nnode = new_list(LIST, NODE);
+            append_list(nnode, nnoderef);
+
+            // add node to list of nodes for this act
             new = ref_list(LIST, nnode);
             append_list(nodes, new);
 
-            // //new endpoint
+            //new endpoint
+            nendpoint = new_list(LIST, ENDPOINT);
             append_list(nendpoint, nnode);
-    }
+        }
 #endif
 
         // if no more epsets, then we can create a new edge with the current newepset and dismbig
         newedge.state = EDGE;
         newlegs.state = ENDPOINTSET;
         if (nendpoint) { // if we have a hub at this point, then we are to split into simple 2-node <tail head> edges
-P(nendpoint);
-            ep = newepset->first;
+//P(nendpoint);
+            ep = newepset->u.l.first;
             if (ep) {
                 expand_hub(C, ep, nendpoint, disambig, edges);  // first leg is the tail
                 ep = ep->next;
@@ -188,7 +196,7 @@ P(nendpoint);
             free_list(LIST, nendpoint);
         }
         else {
-            ep = newepset->first;
+            ep = newepset->u.l.first;
             while (ep) {
                 new = ref_list(LIST, ep);
                 append_list(&newlegs, new);
@@ -214,7 +222,7 @@ static void expand_hub(CONTEXT_t *C, elem_t *tail, elem_t *head, elem_t *disambi
     LIST_t * LIST = (LIST_t *)C;
     elem_t newedge = { 0 };
     elem_t newlegs = { 0 };
-    elem_t *ep, *new;
+    elem_t *new;
 
     newedge.state = EDGE;
     newlegs.state = ENDPOINTSET;

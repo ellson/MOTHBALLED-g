@@ -54,12 +54,14 @@ static void hash_list_r(uint64_t *hash, elem_t *list)
     unsigned char *cp;
     int len;
 
-    if ((elem = list->first)) {
+    assert(list->type == (char)LISTELEM);
+
+    if ((elem = list->u.l.first)) {
         switch ((elemtype_t) elem->type) {
         case FRAGELEM:
             while (elem) {
-                cp = ((frag_elem_t*)elem)->frag;
-                len = ((frag_elem_t*)elem)->len;
+                cp = elem->u.f.frag;
+                len = elem->len;
                 assert(len > 0);
                 while (len--) {
                     // XOR with current character
@@ -111,7 +113,7 @@ const static char un_b64[128] = {
  * @param b64string result (caller-provided 12 character buffer for result)
  * @param hash = 64bit integer to be hashed
  */
-void je_long_to_base64(unsigned char b64string[], const uint64_t *hash)
+void je_long_to_base64(char b64string[], const uint64_t *hash)
 {
     int i;
     uint64_t h = *hash;
@@ -131,7 +133,7 @@ void je_long_to_base64(unsigned char b64string[], const uint64_t *hash)
  * @param hash result
  * @return success/fail
  */
-success_t je_base64_to_long(const unsigned char b64string[], uint64_t *hash)
+success_t je_base64_to_long(const char b64string[], uint64_t *hash)
 {
     uint64_t h = 0;
     char c;
@@ -155,6 +157,8 @@ success_t je_base64_to_long(const unsigned char b64string[], uint64_t *hash)
     return SUCCESS;
 }
 
+// FIXME - or not,  but this is broken
+#if 0
 /**
  * Store the hash in a bucket-list
  *
@@ -182,4 +186,4 @@ hash_elem_t *je_hash_bucket(CONTEXT_t * C, uint64_t hash)
     *next = elem;
     return (hash_elem_t*)elem;
 }
-
+#endif

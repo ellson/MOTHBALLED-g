@@ -38,7 +38,7 @@ static void ikea_list_r(container_CONTEXT_t *CC, elem_t * list)
 
     assert(list);
     liststate = (state_t) list->state;
-    if (! (elem = list->first)) {
+    if (! (elem = list->u.l.first)) {
         switch (liststate) {
         case QRY:
             token(CC, "?");
@@ -149,9 +149,7 @@ static void ikea_print_frags(ikea_box_t *ikea_box, state_t liststate, elem_t * e
             }
         }
         else {
-	    ikea_box_append(ikea_box,
-		((frag_elem_t*)elem)->frag,
-		((frag_elem_t*)elem)->len);
+	    ikea_box_append(ikea_box, (char*)(elem->u.f.frag), elem->len);
         }
        elem = elem->next;
     }

@@ -474,9 +474,10 @@ success_t je_token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
  */
 success_t je_token(TOKEN_t * TOKEN)
 {
-    char token;
-
-    token = state_token[TOKEN->insi];
+// FIXME - compiler complains that token is not used -  seems a bit odd
+//    char token;
+//
+//    token = state_token[TOKEN->insi];
     TOKEN->insi = char2state[*++(TOKEN->in)];
     return SUCCESS;
 }

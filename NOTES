@@ -24,3 +24,25 @@ What is the persistence model ?
                 attribues values
                 container index
 
+
+G_DB
+
+The graph db is the in-memory representation of the graph.
+
+Maybe we can maybe use cgraph ...  but may not support canonical graphs
+
+
+Req:
+       A db for each open container 
+
+       db contains an alpha sorted list of nodes (and node patterns)
+             tuple:  node + sorted attributes
+
+       db contains an alpha sorted list of edges (and edge patterns}
+             tuple:  edge + disambig + hub + sorted attributes
+
+
+Dump format can be a simpified g format
+       
+
+            

@@ -136,7 +136,6 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
     success_t rc;
     elem_t branch = { 0 };
     elem_t *elem;
-    uint64_t hash;
     static unsigned char nullstring[] = { '\0' };
 
     rc = SUCCESS;
@@ -280,7 +279,7 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
 
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
-                elem = root->first;
+                elem = root->u.l.first;
                 while (elem) {
                     C->stat_outactcount++;
 //P(elem);
@@ -308,8 +307,12 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
             // Perform EQL "same as in subject of previous ACT" substitutions
             // Also classifies ACT as NODE or EDGE based on SUBJECT
             je_sameas(CC, &branch);
+
+// FIXME - or not, but this is broken
+#if 0
             je_hash_list(&hash, &(CC->subject));   // generate name hash
             (void)je_hash_bucket(C, hash);    // save in bucket list 
+#endif
 
             // If this subject is not itself a pattern, then
             // perform pattern matching and insertion if matched
@@ -325,8 +328,8 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
         default:
             break;
         }
-        if (branch.first != NULL || si == EQL) {    // mostly ignore empty lists
-            if (branch.first && branch.first->type != FRAGELEM) {
+        if (branch.u.l.first != NULL || si == EQL) {    // mostly ignore empty lists
+            if (branch.u.l.first && branch.u.l.first->type != FRAGELEM) {
                 // record state generating this tree
                 // - except for STRINGs which use state for quoting info
                 branch.state = si;

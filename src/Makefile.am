@@ -23,7 +23,8 @@ noinst_HEADERS = \
 	list.h \
 	pattern.h \
 	sameas.h \
-	token.h
+	token.h \
+	red_black_tree.h
 
 noinst_LTLIBRARIES = libje_C.la
 lib_LTLIBRARIES = libje.la
@@ -51,7 +52,8 @@ libje_C_la_SOURCES = \
 	emit.c \
 	emit_t.c \
 	emit_g.c \
-	emit_gv.c 
+	emit_gv.c \
+	red_black_tree.c
 
 libje_C_la_LIBADD =
 

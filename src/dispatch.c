@@ -73,7 +73,7 @@ void je_dispatch(container_CONTEXT_t * CC, elem_t * plist)
     free_list(LIST, plist);  // free old ACT to be replace by these new expanded ACTS
     switch (CC->subject_type) {
     case NODE:
-        pelem = nodes.first;
+        pelem = nodes.u.l.first;
         while (pelem) {
             je_assemble_act(C,pelem,&attributes,plist);
             pelem = pelem->next;
@@ -85,13 +85,13 @@ void je_dispatch(container_CONTEXT_t * CC, elem_t * plist)
             fprintf(stdout,"EDGE has COUSIN\n");
         }
         else {
-                pelem = nodes.first;
+                pelem = nodes.u.l.first;
                 while (pelem) {
                     je_assemble_act(C,pelem,NULL,plist);
                     pelem = pelem->next;
                 }
 
-                pelem = edges.first;
+                pelem = edges.u.l.first;
                 while (pelem) {
                     je_assemble_act(C,pelem,&attributes,plist);
                     pelem = pelem->next;
@@ -125,7 +125,7 @@ static void je_dispatch_r(CONTEXT_t * C, elem_t * plist, elem_t * pattributes, e
 
     assert(plist->type == (char)LISTELEM);
 
-    pelem = plist->first;
+    pelem = plist->u.l.first;
     while (pelem) {
         si = (state_t) pelem->state;
         switch (si) {
@@ -137,13 +137,13 @@ static void je_dispatch_r(CONTEXT_t * C, elem_t * plist, elem_t * pattributes, e
             append_list(pattributes, pnew);
             break;
         case SUBJECT:
-            pobject = pelem->first;
+            pobject = pelem->u.l.first;
             switch ((state_t)pobject->state) {
             case OBJECT:
                 je_dispatch_r(C, pobject, pattributes, pnodes, pedges);
                 break;
             case OBJECT_LIST:
-                pobject = pobject->first;
+                pobject = pobject->u.l.first;
                 assert((state_t)pobject->state == OBJECT);
                 while(pobject) {
                     je_dispatch_r(C, pobject, pattributes, pnodes, pedges);
@@ -204,8 +204,8 @@ static void je_assemble_act(CONTEXT_t *C, elem_t *pelem, elem_t *pattributes, el
     append_list(&act, pnew);
 
     // attributes
-    if (pattributes && pattributes->first) {
-        pnew = ref_list(LIST, pattributes->first);
+    if (pattributes && pattributes->u.l.first) {
+        pnew = ref_list(LIST, pattributes->u.l.first);
         append_list(&act, pnew);
     }
 

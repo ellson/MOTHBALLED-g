@@ -26,7 +26,7 @@ static elem_t *new_elem_sub(LIST_t * LIST)
 
     if (!LIST->free_elem_list) {    // if no elems in free_elem_list
 
-        LIST->free_elem_list = malloc(LISTALLOCNUM * size_elem_t);
+        LIST->free_elem_list = malloc(LISTALLOCNUM * sizeof(elem_t));
         if (!LIST->free_elem_list)
             fatal_perror("Error - malloc(): ");
         LIST->stat_elemmalloc++;
@@ -43,13 +43,12 @@ static elem_t *new_elem_sub(LIST_t * LIST)
     elem = LIST->free_elem_list;    // use first elem from free_elem_list
     LIST->free_elem_list = elem->next; // update list to point to next available
 
-//  elem->type = NULL;  // private function, so we can rely on callers to initialize
-    elem->next = NULL;
-
     LIST->stat_elemnow++;        // stats
     if (LIST->stat_elemnow > LIST->stat_elemmax) {
         LIST->stat_elemmax = LIST->stat_elemnow;
     }
+
+    // N.B. elem is uninitialized
     return elem;
 }
 
@@ -69,11 +68,13 @@ elem_t *new_list(LIST_t * LIST, char state)
 
     assert(elem);
     // complete elem initialization
-    elem-> type = LISTELEM;    // type
-    elem-> first = NULL;
-    elem-> next = NULL;
-    elem-> last = NULL;
+    elem->type = LISTELEM;
+    elem->next = NULL;      // clear next
     elem->state = state;    // state_machine state that created this frag
+    elem->u.l.first = NULL; // new list is empty
+    elem->u.l.last = NULL;
+    elem->len = 0;
+    elem->refs = 0;
 
     return elem;
 }
@@ -89,49 +90,58 @@ elem_t *new_list(LIST_t * LIST, char state)
  * @param frag pointer to first character of contiguous fragment of len chars
  * @return a new intialized elem_t
  */
-elem_t *new_frag(LIST_t * LIST, char state, unsigned int len, unsigned char *frag)
+elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
 {
     INBUF_t * INBUF = &(LIST->INBUF);
-    frag_elem_t *frag_elem;
-
-    frag_elem = (frag_elem_t*)new_elem_sub(LIST);
+    elem_t *elem;
 
     assert(INBUF->inbuf);
     assert(INBUF->inbuf->refs >= 0);
     assert(frag);
     assert(len > 0);
-    // complete frag elem initialization
-    frag_elem->type = FRAGELEM;    // type
-    frag_elem->inbuf = INBUF->inbuf;    // record inbuf for ref counting
-    frag_elem->frag = frag;    // pointer to begging of frag
-    frag_elem->len = len;    // length of frag
-    frag_elem->state = state;    // state_machine state that created this frag
 
-    INBUF->inbuf->refs++;        // increment reference count in inbuf.
-    return (elem_t*)frag_elem;
+    elem = new_elem_sub(LIST);
+
+    // complete frag elem initialization
+    elem->type = FRAGELEM;  // type
+    elem->next = NULL;      // clear next
+    elem->state = state;    // state_machine state that created this frag
+    elem->u.f.inbuf = INBUF->inbuf; // record inbuf for ref counting
+    elem->u.f.frag = frag;  // pointer to begging of frag
+    elem->len = len;    // length of frag
+
+    INBUF->inbuf->refs++;   // increment reference count in inbuf.
+    return elem;
 }
 
 /**
- * Return a pointer to an elem_t which holds a hashname
- * (suitable for use as a filename)
- * The element is memory managed without caller involvement.
- * The FILE* in the elem_t is initialized to NULL
+ * Return a pointer to an elem_t which holds a shortstr
+ * (suitable for use as a hash name for hubs)
+ * The string is stored in the struct.  Maximum length is the first 16 characters.
+ * of the referenced str.  The stored string is *not* NUL terminated;
  *
  * @param LIST the top-level context in which all lists are managed
- * @param hash a long containing a hash value
+ * @param state a one character value stored with the elem, no internal meaning
+ * @param str string to be strored in elem,  first 16 chars max
  * @return a new intialized elem_t
  */
-elem_t *new_hash(LIST_t * LIST, uint64_t hash)
+elem_t *new_shortstr(LIST_t * LIST, char state, char * str)
 {
-    hash_elem_t *hash_elem;
+    elem_t *elem;
+    int i;
+    char c;
 
-    hash_elem = (hash_elem_t*)new_elem_sub(LIST);
+    elem = new_elem_sub(LIST);
 
     // complete frag elem initialization
-    hash_elem->type = HASHELEM;     // type
-    hash_elem->hash = hash;  // the hash value
-    hash_elem->out = NULL;   // open later
-    return (elem_t*)hash_elem;
+    elem->type = SHORTSTRELEM; // type
+    elem->next = NULL;         // clear next
+    elem->state = state;       // state_machine state that created this shortstr
+    for (i = 0; i < sizeof(((elem_t*)0)->u.s.str) && (c = str[i]) != '\0'; i++) {
+        elem->u.s.str[i] = c;
+    }
+    elem->len = i;
+    return elem;
 }
 
 /**
@@ -146,15 +156,17 @@ elem_t *new_hash(LIST_t * LIST, uint64_t hash)
  */
 elem_t *new_hashname(LIST_t * LIST, unsigned char* hash, size_t hash_len)
 {
-    hashname_elem_t *hashname_elem;
+    elem_t *elem;
 
-    hashname_elem = (hashname_elem_t*)new_elem_sub(LIST);
+    elem = new_elem_sub(LIST);
 
     // complete frag elem initialization
-    hashname_elem->type = HASHNAMEELEM;     // type
-    hashname_elem->hashname = hash;  // the hash value  //FIXME do base64 here ?
-    hashname_elem->out = NULL;   // open later
-    return (elem_t*)hashname_elem;
+    elem->type = HASHNAMEELEM;  // type
+    elem->next = NULL;          // clear next
+    elem->state = 0;            // state_machine state that created this shortstr
+    elem->u.h.hashname = hash;  // the hash value  //FIXME do base64 here ?
+    elem->u.h.out = NULL;       // open later
+    return elem;
 }
 
 /**
@@ -179,11 +191,13 @@ static elem_t *clone_list(LIST_t * LIST, elem_t * list)
 
     elem = new_elem_sub(LIST);
 
-    elem->type = LISTELEM;         // type
-    elem->first = list->first;     // copy details
-    elem->last = list->last;
-    elem->refs = 0;
+    elem->type = LISTELEM;       // type
+    elem->next = NULL;           // clear next
     elem->state = list->state;
+    elem->u.l.first = list->u.l.first; // copy details
+    elem->u.l.last = list->u.l.last;
+    elem->refs = 0;
+    elem->len = list->len;
     return elem;
 }
 
@@ -207,8 +221,8 @@ elem_t *move_list(LIST_t * LIST, elem_t * list)
 
     elem = clone_list(LIST, list);
 
-    list->first = NULL;    // reset old header
-    list->last = NULL;
+    list->u.l.first = NULL;    // reset old header
+    list->u.l.last = NULL;
     list->state = 0;
 
     return elem;
@@ -232,8 +246,8 @@ elem_t *ref_list(LIST_t * LIST, elem_t * list)
 
     elem = clone_list(LIST, list);
 
-    if (list->first && list->first->type == LISTELEM) {
-        list->first->refs++;    // increment ref count
+    if (list->u.l.first && list->u.l.first->type == LISTELEM) {
+        list->u.l.first->refs++;    // increment ref count
     }
     return elem;
 }
@@ -251,12 +265,13 @@ void append_list(elem_t * list, elem_t * elem)
 {
     assert(list->type == (char)LISTELEM);
 
-    if (list->first) {
-        list->last->next = elem;
+    if (list->u.l.first) {
+        list->u.l.last->next = elem;
     } else {
-        list->first = elem;
+        list->u.l.first = elem;
     }
-    list->last = elem;
+    list->len++;
+    list->u.l.last = elem;
     if (elem->type == (char)LISTELEM) {
         elem->refs++; 
         assert(elem->refs > 0);
@@ -277,19 +292,20 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
 
     assert(list);
     assert(list->type == (char)LISTELEM);
-    assert(list->last);                  // must be at least one elem in the list
+    assert(list->u.l.last);                  // must be at least one elem in the list
 
     if (! elem) {                        // if removing the first elem
-        old = list->first;
-        list->first = list->first->next; // skip the elem being removed
+        old = list->u.l.first;
+        list->u.l.first = list->u.l.first->next; // skip the elem being removed
     }
     else {
         old = elem->next;
         elem->next = elem->next->next;   // skip the elem being removed
     }
-    if (list->last = old) {              // if removing the last element
-        list->last = elem;               // then elem is the new last (or NULL)
+    if (list->u.l.last == old) {             // if removing the last element
+        list->u.l.last = elem;               // then elem is the new last (or NULL)
     }
+    list->len--;                         // list has one less elem
     free_list(LIST, old);                // free the removed elem
 }
 
@@ -313,24 +329,16 @@ void free_list(LIST_t * LIST, elem_t * list)
 {
     INBUF_t * INBUF = &(LIST->INBUF);
     elem_t *elem, *next;
-    frag_elem_t *frag_elem;
 
     assert(list);
     assert(list->type == (char)LISTELEM);
 
     // free list of elem, but really just put them back
     // on the elem_freelist (declared at the top of this file)`
-    elem = list->first;
+    elem = list->u.l.first;
     while (elem) {
         next = elem->next;
-        switch ((elemtype_t) (elem->type)) {
-        case FRAGELEM:
-            frag_elem = (frag_elem_t*) elem;
-            assert(frag_elem->inbuf->refs > 0);
-            if (--(frag_elem->inbuf->refs) == 0) {
-                free_inbuf(INBUF, frag_elem->inbuf);
-            }
-            break;
+        switch ((elemtype_t)(elem->type)) {
         case LISTELEM:
             assert(elem->refs > 0);
             if (--(elem->refs) > 0) {
@@ -338,7 +346,15 @@ void free_list(LIST_t * LIST, elem_t * list)
             }
             free_list(LIST, elem); // recursively free lists that have no references
             break;
-        case HASHELEM:
+        case FRAGELEM:
+            assert(elem->u.f.inbuf->refs > 0);
+            if (--(elem->u.f.inbuf->refs) == 0) {
+                free_inbuf(INBUF, elem->u.f.inbuf);
+            }
+            break;
+        case SHORTSTRELEM:
+            // these are self contained, nothing else to clean up
+            break;
         case HASHNAMEELEM:
             assert(0);  // should not be here
             break;
@@ -355,8 +371,8 @@ void free_list(LIST_t * LIST, elem_t * list)
 
  done:
     // clean up emptied list
-    list->first = NULL;
-    list->last = NULL;
+    list->u.l.first = NULL;
+    list->u.l.last = NULL;
     // Note: ref count of the header is not modified.
     // It may be still referenced, even though it is now empty.
 }
@@ -381,11 +397,9 @@ static void print_one_frag(FILE * chan, unsigned int len, unsigned char *frag)
  * @param chan output FILE*
  * @param len_frag an 8bit length, followed by that number of characters
  */
-int print_len_frag(FILE * chan, unsigned char *len_frag)
+uint16_t print_len_frag(FILE * chan, unsigned char *len_frag)
 {
-    unsigned char len;
-
-    len = *len_frag++;
+    uint16_t len = *len_frag++;
     print_one_frag(chan, len, len_frag);
     return len;
 }
@@ -404,7 +418,7 @@ int print_len_frag(FILE * chan, unsigned char *len_frag)
 void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
 {
     unsigned char *frag;
-    int len;
+    uint16_t len;
 
     assert(sep);
     if (*sep) {
@@ -417,8 +431,8 @@ void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
 
         assert(elem->type == FRAGELEM);
 
-        frag = ((frag_elem_t*)elem)->frag;
-        len = ((frag_elem_t*)elem)->len;
+        frag = elem->u.f.frag;
+        len = elem->len;
         assert(len > 0);
         if ((state_t) elem->state == BSL) {
             putc('\\', chan);
@@ -443,6 +457,17 @@ void print_frags(FILE * chan, state_t liststate, elem_t * elem, char *sep)
     *sep = ' ';
 }
 
+static void print_shortstr(FILE *chan, elem_t *elem, char *sep) {
+
+    assert(elem->type == (char)SHORTSTRELEM);
+    assert(sep);
+
+    if (*sep) {
+        putc(*sep, chan);
+    }
+    print_one_frag(chan, elem->len, elem->u.s.str);
+}
+
 /**
  * Print a simple fragment list (a string)
  * or print a list of strings (recursively), with appropriate separators
@@ -462,9 +487,11 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep)
     int ind, cnt, width;
 
     assert(list->type == (char)LISTELEM);
-    elem = list->first;
-    if (!elem)
+
+    elem = list->u.l.first;
+    if (!elem) {
         return;
+    }
     type = (elemtype_t) (elem->type);
     switch (type) {
     case FRAGELEM:
@@ -492,7 +519,9 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep)
             elem = elem->next;
         }
         break;
-    case HASHELEM:
+    case SHORTSTRELEM:
+        print_shortstr(chan, elem, sep);
+        break;
     case HASHNAMEELEM:
         assert(0);  // should not be here
         break;
