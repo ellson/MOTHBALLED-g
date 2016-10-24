@@ -80,20 +80,25 @@ elem_t *new_list(LIST_t * LIST, char state)
 }
 
 /**
- * Return a pointer to an elem_t which is an empty list
+ * Return a pointer to an elem_t which is a tree node with a key (reference too a list)
  * The elem_t is memory managed without caller involvement.
  *
  * @param LIST the top-level context in which all lists are managed
- * @param state a one character value stored with the elem, no internal meaning
+ * @param key a list containing (as some point) some frags wihich are the key
  * @return a new intialized elem_t
  */
 elem_t *new_tree(LIST_t * LIST, elem_t *key)
 {
     elem_t *elem;
 
-    elem = new_elem_sub(LIST);
+    assert(key);
+    assert(key->type == (char)LISTELEM);
+    key->refs++;
+    assert(key->refs > 0);
 
+    elem = new_elem_sub(LIST);
     assert(elem);
+
     // complete elem initialization
     elem->type = TREEELEM;
     elem->next = key; 
@@ -105,6 +110,24 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
     elem->refs = 0;  //notused
 
     return elem;
+}
+
+void free_tree(LIST_t *LIST, elem_t * p)
+{
+    if ( !p ) {
+        return;
+    }
+    assert(p->type = (char)TREEELEM);
+    free_tree(LIST, p->u.t.left);
+    free_tree(LIST, p->u.t.right);
+
+    assert(p->next == (char)LISTELEM);
+    free_list(LIST, p->next);
+
+    // insert p at beginning of freelist
+    p->next = LIST->free_elem_list;
+    LIST->free_elem_list = p;
+    LIST->stat_elemnow--;    // maintain stats
 }
 
 /**
@@ -404,6 +427,7 @@ void free_list(LIST_t * LIST, elem_t * list)
     // Note: ref count of the header is not modified.
     // It may be still referenced, even though it is now empty.
 }
+
 
 /**
  * Print a single fragment of len contiguous characters.

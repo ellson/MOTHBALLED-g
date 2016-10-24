@@ -5,6 +5,7 @@
 #include "inbuf.h"
 #include "grammar.h"
 #include "list.h"
+#include "compare.h"
 
 static uint16_t max(uint16_t  a, uint16_t  b)
 {
@@ -13,21 +14,21 @@ static uint16_t max(uint16_t  a, uint16_t  b)
 
 static uint16_t  height(elem_t * p)
 {
-    return p ? p -> height : 0;
+    return p ? p->height : 0;
 }
 
 static void recalc(elem_t * p)
 {
-    p -> height = 1 + max(height(p -> u.t.left), height(p -> u.t.right));
+    p->height = 1 + max(height(p->u.t.left), height(p->u.t.right));
 }
 
 static elem_t * rotate_right(elem_t * p)
 {
     elem_t * q;
 
-    q = p -> u.t.left;
-    p -> u.t.left = q -> u.t.right;
-    q -> u.t.right = p;
+    q = p->u.t.left;
+    p->u.t.left = q->u.t.right;
+    q->u.t.right = p;
     recalc(p);
     recalc(q);
     return q;
@@ -37,9 +38,9 @@ static elem_t * rotate_left(elem_t * p)
 {
     elem_t * q;
 
-    q = p -> u.t.right;
-    p -> u.t.right = q -> u.t.left;
-    q -> u.t.left = p;
+    q = p->u.t.right;
+    p->u.t.right = q->u.t.left;
+    q->u.t.left = p;
     recalc(p);
     recalc(q);
     return q;
@@ -48,16 +49,16 @@ static elem_t * rotate_left(elem_t * p)
 static elem_t * balance(elem_t * p)
 {
     recalc(p);
-    if ( height(p -> u.t.left) - height(p -> u.t.right) == 2 ) {
-        if ( height(p -> u.t.left -> u.t.right) > height(p -> u.t.left -> u.t.left) ) {
-            p -> u.t.left = rotate_left(p -> u.t.left);
+    if (height(p->u.t.left) - height(p->u.t.right) == 2) {
+        if (height(p->u.t.left->u.t.right) > height(p->u.t.left->u.t.left)) {
+            p->u.t.left = rotate_left(p->u.t.left);
         }
         return rotate_right(p);
     }
     else {
-        if ( height(p -> u.t.right) - height(p -> u.t.left) == 2 ) {
-            if ( height(p -> u.t.right -> u.t.left) > height(p -> u.t.right -> u.t.right) ) {
-                p -> u.t.right = rotate_right(p -> u.t.right);
+        if (height(p->u.t.right) - height(p->u.t.left) == 2) {
+            if (height(p->u.t.right->u.t.left) > height(p->u.t.right->u.t.right)) {
+                p->u.t.right = rotate_right(p->u.t.right);
             }
             return rotate_left(p);
         }
@@ -69,16 +70,16 @@ static elem_t * search(elem_t * p, elem_t * key)
 {
     int comp;
 
-    if ( !p ) {
+    if (!p) {
         return NULL;
     }
-    comp = je_compare(key, p -> next);
+    comp = je_compare(key, p->next);
     if (comp) {
-        if ( comp < 0 ) {
-            return search(p -> u.t.left, key);
+        if (comp < 0) {
+            return search(p->u.t.left, key);
         }
         else {
-            return search(p -> u.t.right, key);
+            return search(p->u.t.right, key);
         }
     }
     return p;        
@@ -86,34 +87,34 @@ static elem_t * search(elem_t * p, elem_t * key)
 
 static void list(elem_t * p, char *sep)
 {
-    if ( !p ) {
+    if (!p) {
         return;
     }
-    list( p -> u.t.left, sep);
+    list(p->u.t.left, sep);
     print_frags(stdout, 0, p->next, sep);
-    list( p -> u.t.right, sep);
+    list(p->u.t.right, sep);
 }
 
 static elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
 {
     int comp;
 
-    if ( !p ) {
+    if (!p) {
         return new_tree(LIST, key);
     }
-    comp = je_compare(key, p -> next);
+    comp = je_compare(key, p->next);
     if (comp) {
-        if ( comp < 0 ) {
-            p -> u.t.left = insert(LIST, p -> u.t.left, key);
+        if (comp < 0) {
+            p->u.t.left = insert(LIST, p->u.t.left, key);
         }
         else {
-            p -> u.t.right = insert(LIST, p -> u.t.right, key);
+            p->u.t.right = insert(LIST, p->u.t.right, key);
         }
     }
     else {
         // replace existing key with newer one
-        free_list(LIST, p -> next);
-        p -> next = key;
+        free_list(LIST, p->next);
+        p->next = key;
         // FIXME - adjust refs?   Maybe use append()
     }
     return balance(p);
@@ -121,18 +122,18 @@ static elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
 
 static elem_t * find_min(elem_t * p)
 {
-    if ( p -> u.t.left != NULL ) {
-        return find_min(p -> u.t.left);
+    if (p->u.t.left != NULL) {
+        return find_min(p->u.t.left);
     }
     return p;
 }
 
 static elem_t * remove_min(elem_t * p)
 {
-    if ( p -> u.t.left == NULL ) {
-        return p -> u.t.right;
+    if (p->u.t.left == NULL) {
+        return p->u.t.right;
     }
-    p -> u.t.left = remove_min(p -> u.t.left);
+    p->u.t.left = remove_min(p->u.t.left);
     return balance(p);
 }
 
@@ -141,46 +142,37 @@ static elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key)
     elem_t  *l, *r, *m;
     int comp;
 
-    if ( !p ) {
+    if (!p) {
         return NULL;
     }
-    comp = je_compare(key, p -> next);
+    comp = je_compare(key, p->next);
     if (comp) {
-        if ( comp < 0 ) {
-            p -> u.t.left = remove_item(LIST, p -> u.t.left, key);
+        if (comp < 0) {
+            p->u.t.left = remove_item(LIST, p->u.t.left, key);
         }
         else {
-            p -> u.t.right = remove_item(LIST, p -> u.t.right, key);
+            p->u.t.right = remove_item(LIST, p->u.t.right, key);
         }
     }
     else {
-        l = p -> u.t.left;
-        r = p -> u.t.right;
+        l = p->u.t.left;
+        r = p->u.t.right;
         free_list(LIST, p);
     
-        if ( r == NULL ) {
+        if (r == NULL) {
             return l;
         }
     
         m = find_min(r);
-        m -> u.t.right = remove_min(r);        
-        m -> u.t.left = l;
+        m->u.t.right = remove_min(r);        
+        m->u.t.left = l;
     
         return balance(m);
     }
     return balance(p);
 }
 
-static void free_tree(LIST_t *LIST, elem_t * p)
-{
-    if ( !p ) {
-        return;
-    }
-    free_tree(LIST, p -> u.t.left);
-    free_tree(LIST, p -> u.t.right);
-    free_list(LIST, p);
-}
-
+#if 0
 int main(void)
 {
     LIST_t LIST;
@@ -188,7 +180,7 @@ int main(void)
     char c, sep;
     elem_t *key = NULL;
 
-    while ( scanf("%c", &c) && c != 'F' ) {
+    while (scanf("%c", &c) && c != 'F') {
         sep = '\0';
         switch (c) {
         case 'A':
@@ -198,7 +190,7 @@ int main(void)
         case 'S':
 //            scanf("%d", key);
             n = search(root, key);
-            if ( n ) {
+            if (n) {
                 print_frags(stdout, 0, n->next, &sep);
                 printf("\n");
             }
@@ -218,3 +210,4 @@ int main(void)
 
     return 0;
 }
+#endif
