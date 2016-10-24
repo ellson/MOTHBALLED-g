@@ -62,6 +62,3 @@ struct container_context_s {    // container_context
 
 };
 
-// Print a list (tree) -  used for debugging
-#define P(L) {C->sep = ' ';print_list(stdout, L, 0, &(C->sep));putc('\n', stdout);}
-
