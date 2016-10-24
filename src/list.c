@@ -87,7 +87,7 @@ elem_t *new_list(LIST_t * LIST, char state)
  * @param state a one character value stored with the elem, no internal meaning
  * @return a new intialized elem_t
  */
-elem_t *new_tree(LIST_t * LIST, char state)
+elem_t *new_tree(LIST_t * LIST, elem_t *key)
 {
     elem_t *elem;
 
@@ -96,13 +96,13 @@ elem_t *new_tree(LIST_t * LIST, char state)
     assert(elem);
     // complete elem initialization
     elem->type = TREEELEM;
-    elem->next = NULL;      // clear next
-    elem->state = state;    // state_machine state that created this frag
-    elem->u.t.left = NULL; // new list is empty
+    elem->next = key; 
+    elem->u.t.left = NULL; // new tree is empty so far
     elem->u.t.right = NULL;
     elem->height = 0;
-    elem->len = 0;
-    elem->refs = 0;
+    elem->state = 0; //notused
+    elem->len = 0;   //notused
+    elem->refs = 0;  //notused
 
     return elem;
 }

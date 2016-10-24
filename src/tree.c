@@ -2,92 +2,67 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#if 1
-struct node
-{
-    int key;
-    int data;    
-
-    int height;
-
-    struct node* left;
-    struct node* right;
-};
-
-typedef struct node node;
-#endif 
-
 #include "inbuf.h"
 #include "grammar.h"
 #include "list.h"
 
-static node* new_node(int key, int data)
+static int compare(elem_t *a, elem_t *b)
 {
-    node* p;
-
-    p = malloc(sizeof(node));
-//FIXME - deal will malloc fail
-    p -> key    = key;
-    p -> data   = data;
-    p -> height = 1;
-    p -> left   = NULL;
-    p -> right  = NULL;
-
-    return p;
+    return 0;
 }
 
-static int max(int a, int b)
+static uint16_t max(uint16_t  a, uint16_t  b)
 {
     return a > b ? a : b;
 }
 
-static int height(node* p)
+static uint16_t  height(elem_t * p)
 {
     return p ? p -> height : 0;
 }
 
-void recalc(node* p)
+static void recalc(elem_t * p)
 {
-    p -> height = 1 + max(height(p -> left), height(p -> right));
+    p -> height = 1 + max(height(p -> u.t.left), height(p -> u.t.right));
 }
 
-static node* rotate_right(node* p)
+static elem_t * rotate_right(elem_t * p)
 {
-    node* q;
+    elem_t * q;
 
-    q = p -> left;
-    p -> left = q -> right;
-    q -> right = p;
+    q = p -> u.t.left;
+    p -> u.t.left = q -> u.t.right;
+    q -> u.t.right = p;
     recalc(p);
     recalc(q);
     return q;
 }
 
-static node* rotate_left(node* p)
+static elem_t * rotate_left(elem_t * p)
 {
-    node* q;
+    elem_t * q;
 
-    q = p -> right;
-    p -> right = q -> left;
-    q -> left = p;
+    q = p -> u.t.right;
+    p -> u.t.right = q -> u.t.left;
+    q -> u.t.left = p;
     recalc(p);
     recalc(q);
     return q;
 }
 
-static node* balance(node* p)
+static elem_t * balance(elem_t * p)
 {
     recalc(p);
-    if ( height(p -> left) - height(p -> right) == 2 ) {
-        if ( height(p -> left -> right) > height(p -> left -> left) ) {
-            p -> left = rotate_left(p -> left);
+    if ( height(p -> u.t.left) - height(p -> u.t.right) == 2 ) {
+        if ( height(p -> u.t.left -> u.t.right) > height(p -> u.t.left -> u.t.left) ) {
+            p -> u.t.left = rotate_left(p -> u.t.left);
         }
         return rotate_right(p);
     }
     else {
-        if ( height(p -> right) - height(p -> left) == 2 ) {
-            if ( height(p -> right -> left) > height(p -> right -> right) ) {
-                p -> right = rotate_right(p -> right);
+        if ( height(p -> u.t.right) - height(p -> u.t.left) == 2 ) {
+            if ( height(p -> u.t.right -> u.t.left) > height(p -> u.t.right -> u.t.right) ) {
+                p -> u.t.right = rotate_right(p -> u.t.right);
             }
             return rotate_left(p);
         }
@@ -95,142 +70,156 @@ static node* balance(node* p)
     return p;
 }
 
-static node* search(node* p, int key)
+static elem_t * search(elem_t * p, elem_t * key)
 {
+    int comp;
+
     if ( !p ) {
         return NULL;
     }
-    if ( key < p -> key ) {
-        return search(p -> left, key);
-    }
-    else {
-        if ( key > p -> key ) {
-            return search(p -> right, key);
+    comp = compare(key, p -> next);
+    if (comp) {
+        if ( comp < 0 ) {
+            return search(p -> u.t.left, key);
+        }
+        else {
+            return search(p -> u.t.right, key);
         }
     }
     return p;        
 }
 
-static void list(node* p)
+static void list(elem_t * p, char *sep)
 {
     if ( !p ) {
         return;
     }
-    list( p -> left);
-    printf("%d %d\n", p -> key, p -> data);
-    list( p -> right);
+    list( p -> u.t.left, sep);
+    print_frags(stdout, 0, p->next, sep);
+    list( p -> u.t.right, sep);
 }
 
-static node* insert(node* p, int key, int data)
+static elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
 {
+    int comp;
+
     if ( !p ) {
-        return new_node(key, data);
+        return new_tree(LIST, key);
     }
-    if ( key < p -> key ) {
-        p -> left = insert(p -> left, key, data);
-    }
-    else {
-        if ( key > p -> key ) {
-            p -> right = insert(p -> right, key, data);
+    comp = compare(key, p -> next);
+    if (comp) {
+        if ( comp < 0 ) {
+            p -> u.t.left = insert(LIST, p -> u.t.left, key);
         }
         else {
-            p -> data = data;
+            p -> u.t.right = insert(LIST, p -> u.t.right, key);
         }
+    }
+    else {
+        // replace existing key with newer one
+        free_list(LIST, p -> next);
+        p -> next = key;
+        // FIXME - adjust refs?   Maybe use append()
     }
     return balance(p);
 }
 
-static node* find_min(node* p)
+static elem_t * find_min(elem_t * p)
 {
-    if ( p -> left != NULL ) {
-        return find_min(p -> left);
+    if ( p -> u.t.left != NULL ) {
+        return find_min(p -> u.t.left);
     }
     return p;
 }
 
-static node* remove_min(node* p)
+static elem_t * remove_min(elem_t * p)
 {
-    if ( p -> left == NULL ) {
-        return p -> right;
+    if ( p -> u.t.left == NULL ) {
+        return p -> u.t.right;
     }
-    p -> left = remove_min(p -> left);
+    p -> u.t.left = remove_min(p -> u.t.left);
     return balance(p);
 }
 
-static node* remove_item(node* p, int key)
+static elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key)
 {
-    node *l, *r, *m;
+    elem_t  *l, *r, *m;
+    int comp;
 
     if ( !p ) {
         return NULL;
     }
-    if ( key < p -> key ) {
-        p -> left = remove_item(p -> left, key);
+    comp = compare(key, p -> next);
+    if (comp) {
+        if ( comp < 0 ) {
+            p -> u.t.left = remove_item(LIST, p -> u.t.left, key);
+        }
+        else {
+            p -> u.t.right = remove_item(LIST, p -> u.t.right, key);
+        }
     }
     else {
-        if ( key > p -> key ) {
-            p -> right = remove_item(p -> right, key);
+        l = p -> u.t.left;
+        r = p -> u.t.right;
+        free_list(LIST, p);
+    
+        if ( r == NULL ) {
+            return l;
         }
-        else
-        {
-            l = p -> left;
-            r = p -> right;
-            free(p);
     
-            if ( r == NULL ) {
-                return l;
-            }
+        m = find_min(r);
+        m -> u.t.right = remove_min(r);        
+        m -> u.t.left = l;
     
-            m = find_min(r);
-            m -> right = remove_min(r);        
-            m -> left = l;
-    
-            return balance(m);
-        }
+        return balance(m);
     }
     return balance(p);
 }
 
-static void free_tree(node* p)
+static void free_tree(LIST_t *LIST, elem_t * p)
 {
     if ( !p ) {
         return;
     }
-    free_tree(p -> left);
-    free_tree(p -> right);
-    free(p);
+    free_tree(LIST, p -> u.t.left);
+    free_tree(LIST, p -> u.t.right);
+    free_list(LIST, p);
 }
 
 int main(void)
 {
-    node *n, *root = NULL;
-    char c;
-    int k, d;
+    LIST_t LIST;
+    elem_t  *n, *root = NULL;
+    char c, sep;
+    elem_t *key = NULL;
 
     while ( scanf("%c", &c) && c != 'F' ) {
+        sep = '\0';
         switch (c) {
         case 'A':
-            scanf("%d %d", &k, &d);
-            root = insert(root, k, d);
+//          scanf("%d %d", key);
+            root = insert(&LIST, root, key);
             break;
         case 'S':
-            scanf("%d", &k);
-            n = search(root, k);
+//            scanf("%d", key);
+            n = search(root, key);
             if ( n ) {
-                printf("%d %d\n", n -> key, n -> data);
+                print_frags(stdout, 0, n->next, &sep);
+                printf("\n");
             }
             break;
         case 'L':
-            list(root);
+            list(root, &sep);
+            printf("\n");
             break;
         case 'D':
-            scanf("%d", &k);
-            root = remove_item(root, k);
+//            scanf("%d", key);
+            root = remove_item(&LIST, root, key);
             break;
         }
     }
 
-    free_tree(root);
+    free_tree(&LIST, root);
 
     return 0;
 }
