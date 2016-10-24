@@ -112,6 +112,7 @@ elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
         }
     }
     else {
+        // FIXME - need to merge attributes
         // replace existing key with newer one
         free_list(LIST, p->next);
         p->next = key;
