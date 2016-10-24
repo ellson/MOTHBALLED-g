@@ -6,6 +6,7 @@
 #include <sys/types.h>
 
 #include "libje_private.h"
+#include "frag.h"
 
 #define OUT stdout
 #define ERR stderr

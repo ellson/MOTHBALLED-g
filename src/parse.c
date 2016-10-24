@@ -24,6 +24,7 @@
 #endif
 
 #include "emit_act.h"
+#include "reduce.h"
 
 // forward declarations
 

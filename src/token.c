@@ -7,8 +7,9 @@
 #include <assert.h>
 
 #include "inbuf.h"
-#include "grammar.h"
 #include "list.h"
+#include "grammar.h"
+#include "frag.h"
 #include "token.h"
 #include "fatal.h"
 

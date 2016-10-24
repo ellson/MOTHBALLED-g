@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include "libje_private.h"
+#include "frag.h"
 
 // forward declarations
 #if 0

@@ -21,6 +21,7 @@ noinst_HEADERS = \
 	inbuf.h \
 	libje_private.h \
 	list.h \
+	frag.h \
 	pattern.h \
 	sameas.h \
 	token.h \
@@ -45,6 +46,7 @@ libje_C_la_SOURCES = \
 	expand.c \
 	dumpg.c \
 	list.c \
+	frag.c \
 	hash.c \
 	sslhash.c \
 	sameas.c \

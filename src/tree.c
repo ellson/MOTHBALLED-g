@@ -3,8 +3,9 @@
 #include <stdlib.h>
 
 #include "inbuf.h"
-#include "grammar.h"
 #include "list.h"
+#include "grammar.h"
+#include "frag.h"
 #include "compare.h"
 
 static uint16_t max(uint16_t  a, uint16_t  b)

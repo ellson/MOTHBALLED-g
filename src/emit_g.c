@@ -6,6 +6,7 @@
 #include <sys/types.h>
 
 #include "libje_private.h"
+#include "frag.h"
 
 static void api_start_activity(container_CONTEXT_t * CC)
 {

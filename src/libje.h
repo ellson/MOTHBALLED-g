@@ -2,10 +2,10 @@
 
 #include <stdint.h>
 
-#include "grammar.h"
 #include "fatal.h"
 #include "inbuf.h"
 #include "list.h"
+#include "grammar.h"
 #include "token.h"
 
 //opaque structs from the public interface
