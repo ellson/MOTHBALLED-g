@@ -6,11 +6,6 @@
 #include "grammar.h"
 #include "list.h"
 
-static int compare(elem_t *a, elem_t *b)
-{
-    return 0;
-}
-
 static uint16_t max(uint16_t  a, uint16_t  b)
 {
     return a > b ? a : b;
@@ -77,7 +72,7 @@ static elem_t * search(elem_t * p, elem_t * key)
     if ( !p ) {
         return NULL;
     }
-    comp = compare(key, p -> next);
+    comp = je_compare(key, p -> next);
     if (comp) {
         if ( comp < 0 ) {
             return search(p -> u.t.left, key);
@@ -106,7 +101,7 @@ static elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
     if ( !p ) {
         return new_tree(LIST, key);
     }
-    comp = compare(key, p -> next);
+    comp = je_compare(key, p -> next);
     if (comp) {
         if ( comp < 0 ) {
             p -> u.t.left = insert(LIST, p -> u.t.left, key);
@@ -149,7 +144,7 @@ static elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key)
     if ( !p ) {
         return NULL;
     }
-    comp = compare(key, p -> next);
+    comp = je_compare(key, p -> next);
     if (comp) {
         if ( comp < 0 ) {
             p -> u.t.left = remove_item(LIST, p -> u.t.left, key);
