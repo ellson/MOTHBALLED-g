@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 int je_compare(elem_t * a, elem_t * b);
+elem_t * je_merge(elem_t * new, elem_t * old);
 
 #ifdef __cplusplus
 }

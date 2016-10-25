@@ -105,6 +105,11 @@ CC->out = stdout;
             je_token_error(TOKEN, TOKEN->state, "Parse error. Last good state was:");
         }
     }
+    if (CC->nodes) {
+        C->sep = '\0';
+        print_tree(C, CC->nodes);
+        putc('\n', stdout);
+    }
     C->containment--;
     emit_end_activity(CC);
 
@@ -344,8 +349,6 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
     nest--;
     assert(nest >= 0);
     emit_end_state(CC, si, rc, nest, repc);
-
-    print_tree(CC->nodes, &(C->sep));
 
     return rc;
 }

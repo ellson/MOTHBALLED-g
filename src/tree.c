@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "libje_private.h"
 
@@ -86,30 +87,29 @@ elem_t * search(elem_t * p, elem_t * key)
     return p;        
 }
 
-void print_tree(elem_t * p, char *sep)
+void print_tree(CONTEXT_t *C, elem_t * p)
 {
-    if (!p) {
-        return;
+//    assert(p->next);
+//    assert(p->next->u.l.first);
+//    assert(p->next->u.l.first->u.l.first);
+
+    if (p->u.t.left) {
+	print_tree(C, p->u.t.left);
     }
-    print_tree(p->u.t.left, sep);
-    print_list(stdout, p->next, 0, sep);
-    print_tree(p->u.t.right, sep);
+P(p->next);
+//    print_frags(stdout, 0, p->next->u.l.first->u.l.first, &(C->sep));
+    if (p->u.t.right) {
+	print_tree(C, p->u.t.right);
+    }
 }
 
 elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
 {
     int comp;
 
-CONTEXT_t *C = (CONTEXT_t*)LIST;
-
     if (!p) {
         return new_tree(LIST, key);
     }
-printf("\n== a ==\n");
-P(key);
-printf("\n== b ==\n");
-P(p->next);
-
     comp = je_compare(key, p->next);
     if (comp) {
         if (comp < 0) {
@@ -120,11 +120,7 @@ P(p->next);
         }
     }
     else {
-        // FIXME - need to merge attributes
-        // replace existing key with newer one
-        free_list(LIST, p->next);
-        p->next = key;
-        // FIXME - adjust refs?   Maybe use append()
+        p->next = je_merge(key, p->next);
     }
     return balance(p);
 }
@@ -180,43 +176,3 @@ elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key)
     }
     return balance(p);
 }
-
-#if 0
-int main(void)
-{
-    LIST_t LIST;
-    elem_t  *n, *root = NULL;
-    char c, sep;
-    elem_t *key = NULL;
-
-    while (scanf("%c", &c) && c != 'F') {
-        sep = '\0';
-        switch (c) {
-        case 'A':
-//          scanf("%d %d", key);
-            root = insert(&LIST, root, key);
-            break;
-        case 'S':
-//            scanf("%d", key);
-            n = search(root, key);
-            if (n) {
-                print_frags(stdout, 0, n->next, &sep);
-                printf("\n");
-            }
-            break;
-        case 'L':
-            list(root, &sep);
-            printf("\n");
-            break;
-        case 'D':
-//            scanf("%d", key);
-            root = remove_item(&LIST, root, key);
-            break;
-        }
-    }
-
-    free_tree(&LIST, root);
-
-    return 0;
-}
-#endif

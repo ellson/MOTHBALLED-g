@@ -24,8 +24,8 @@ void je_reduce(container_CONTEXT_t * CC, elem_t *list)
     state_t subjtype = 0;
     elem_t *subject, *attributes = NULL, *disambig = NULL;
 
-printf("\n== ACT ==\n");
-P(list);
+//printf("\n== ACT ==\n");
+//P(list);
 
     assert(list);
     elem = list->u.l.first;

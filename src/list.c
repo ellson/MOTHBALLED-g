@@ -103,7 +103,7 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
     elem->next = key; 
     elem->u.t.left = NULL; // new tree is empty so far
     elem->u.t.right = NULL;
-    elem->height = 0;
+    elem->height = 1;
     elem->state = 0; //notused
     elem->len = 0;   //notused
     elem->refs = 0;  //notused
