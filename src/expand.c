@@ -7,8 +7,6 @@
 
 #include "libje_private.h"
 
-#define BINODE_EDGES 1
-
 static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges);
 static void expand_hub(CONTEXT_t *C, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges);  // two node edge
 
@@ -136,6 +134,9 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
         }
     }
     else {
+
+//#define BINODE_EDGES 1
+
 #ifdef BINODE_EDGES
 
 // FIXME - idea:

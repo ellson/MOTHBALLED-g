@@ -7,6 +7,7 @@
 
 #include "libje_private.h"
 #include "tree.h"
+#include "frag.h"
 
 // forward declaration
 static void reduce_list_r(container_CONTEXT_t *CC, elem_t * list);
@@ -22,6 +23,9 @@ void je_reduce(container_CONTEXT_t * CC, elem_t *list)
     state_t verb = 0;
     state_t subjtype = 0;
     elem_t *subject, *attributes = NULL, *disambig = NULL;
+
+printf("\n== ACT ==\n");
+P(list);
 
     assert(list);
     elem = list->u.l.first;

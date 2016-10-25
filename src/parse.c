@@ -7,6 +7,8 @@
 #include <assert.h>
 
 #include "libje_private.h"
+#include "frag.h"
+#include "tree.h"
 
 #else
 
@@ -342,6 +344,8 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
     nest--;
     assert(nest >= 0);
     emit_end_state(CC, si, rc, nest, repc);
+
+    print_tree(CC->nodes, &(C->sep));
 
     return rc;
 }

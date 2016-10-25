@@ -86,14 +86,14 @@ elem_t * search(elem_t * p, elem_t * key)
     return p;        
 }
 
-void list(elem_t * p, char *sep)
+void print_tree(elem_t * p, char *sep)
 {
     if (!p) {
         return;
     }
-    list(p->u.t.left, sep);
-    print_frags(stdout, 0, p->next, sep);
-    list(p->u.t.right, sep);
+    print_tree(p->u.t.left, sep);
+    print_list(stdout, p->next, 0, sep);
+    print_tree(p->u.t.right, sep);
 }
 
 elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
@@ -101,11 +101,15 @@ elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
     int comp;
 
 CONTEXT_t *C = (CONTEXT_t*)LIST;
-P(key);
 
     if (!p) {
         return new_tree(LIST, key);
     }
+printf("\n== a ==\n");
+P(key);
+printf("\n== b ==\n");
+P(p->next);
+
     comp = je_compare(key, p->next);
     if (comp) {
         if (comp < 0) {
