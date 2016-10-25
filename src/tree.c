@@ -2,11 +2,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "inbuf.h"
-#include "list.h"
-#include "grammar.h"
-#include "frag.h"
+#include "libje_private.h"
+
 #include "compare.h"
+#include "frag.h"
+#include "tree.h"
 
 static uint16_t max(uint16_t  a, uint16_t  b)
 {
@@ -99,6 +99,9 @@ void list(elem_t * p, char *sep)
 elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
 {
     int comp;
+
+CONTEXT_t *C = (CONTEXT_t*)LIST;
+P(key);
 
     if (!p) {
         return new_tree(LIST, key);

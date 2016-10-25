@@ -8,6 +8,7 @@
 #include "grammar.h"
 #include "list.h"
 #include "compare.h"
+#include "frag.h"
 
 /**
  * compare string value of a and b - recursive function
