@@ -110,6 +110,11 @@ CC->out = stdout;
         print_tree(C, CC->nodes);
         putc('\n', stdout);
     }
+    if (CC->edges) {
+        C->sep = '\0';
+        print_tree(C, CC->edges);
+        putc('\n', stdout);
+    }
     C->containment--;
     emit_end_activity(CC);
 

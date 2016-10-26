@@ -166,7 +166,7 @@ elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key)
     else {
         l = p->u.t.left;
         r = p->u.t.right;
-        free_list(LIST, p);
+        free_list(LIST, p);  // FIXME
     
         if (r == NULL) {
             return l;
