@@ -47,7 +47,7 @@ struct elem_s {
     uint16_t refs;          // (belongs to u.l.) don't free this list until refs == 0
     uint16_t len;           // (shared by u.l. u.f. u.s.)
     char state;             // state_machine state that generated this elem
-    char type;              // just this *has* top be outside of union
+    char type;              // just this *has* to be outside of union
                             //  but to move the rest inside would increase the
                             //  size of the struct
 };
