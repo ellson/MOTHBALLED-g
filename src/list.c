@@ -1,13 +1,6 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <assert.h>
-
-#include "inbuf.h"
 #include "list.h"
-#include "fatal.h"
 
 /**
  * Private function to manage the allocation an elem_t
