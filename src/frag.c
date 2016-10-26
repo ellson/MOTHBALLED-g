@@ -1,15 +1,6 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <assert.h>
-
-#include "inbuf.h"
-#include "grammar.h"
-#include "list.h"
-#include "fatal.h"
-
+#include "frag.h"
 
 /**
  * Print a single fragment of len contiguous characters.
