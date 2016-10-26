@@ -21,35 +21,42 @@ int je_compare(elem_t * a, elem_t * b)
         assert(a_elem->type == b_elem->type);  // list structure must match
         ta_elem = a_elem;
         tb_elem = b_elem;
-        a_len = 0;
-        b_len = 0;
         if ((elemtype_t) (a_elem->type) == LISTELEM) {
             return je_compare(a_elem, b_elem);
         } else {    // FRAGELEM
-            while (ta_elem && tb_elem) {
+            a_cp = ta_elem->u.f.frag;
+            a_len = ta_elem->len;
+            b_cp = tb_elem->u.f.frag;
+            b_len = tb_elem->len;
+            while (1) {
                 // the fragmentation is not necessarily
                 // the same so manage ta_elem and tb_elem
                 // separately
-                if (a_len == 0) {    // if we reached the end
-                        // of an "a" frag, try the next frag
-                    a_cp = ta_elem->u.f.frag;
-                    a_len = ta_elem->len;
-                    ta_elem = ta_elem->next;
+                if (a_len == 0) {    // if we reached the end of "a" frag
+                    if ((ta_elem = ta_elem->next)) { // try the next frag
+                        a_cp = ta_elem->u.f.frag;
+                        a_len = ta_elem->len;
+                    }
                 }
-                if (b_len == 0) {    // if we reached the end
-                        // of a "b" frag, try the next frag
-                    b_cp = tb_elem->u.f.frag;
-                    b_len = tb_elem->len;
-                    tb_elem = tb_elem->next;
+                if (b_len == 0) {    // if we reached the end of "b" frag
+                    if ((tb_elem = tb_elem->next)) { // try the next frag
+                        b_cp = tb_elem->u.f.frag;
+                        b_len = tb_elem->len;
+                    }
                 }
+                if (! (a_len && b_len)) {
+                    break;
+                }
+                if (*a_cp != *b_cp) {    // test if chars match
+                    return *a_cp - *b_cp;
+                }
+                a_cp++;                           
+                b_cp++;                           
                 a_len--;
                 b_len--;
-                if (*a_cp++ != *b_cp++) {    // test if chars match
-                                             // (and optimistically increment)
-                    return *(--a_cp) - *(--b_cp);
-                }
             }
-            if (a_len != b_len) {  //must match the entire string
+            if (a_len != b_len) {  // if strings are same length then
+                                   // both should be 0, we know that one is 0
                 return a_len - b_len;
             }
             // all matched so far, move on to test the next STRING
@@ -57,7 +64,7 @@ int je_compare(elem_t * a, elem_t * b)
         a_elem = a_elem->next;
         b_elem = b_elem->next;
     }
-    return 0;
+    return 0;   // if we get here, then the strings match
 }
 
 elem_t * je_merge(elem_t * new, elem_t * old)
