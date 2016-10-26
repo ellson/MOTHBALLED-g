@@ -7,12 +7,6 @@
 extern "C" {
 #endif
 
-// emit styles
-typedef enum {
-    MINIMUM_SPACE_STYLE = 0,
-    SHELL_FRIENDLY_STYLE = 1
-} style_t;
-
 struct emit_s {
     char *name;
     void (*initialize) (CONTEXT_t * C);

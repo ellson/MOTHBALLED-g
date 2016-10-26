@@ -7,6 +7,21 @@
 extern "C" {
 #endif
 
+#include <string.h>
+#include <openssl/evp.h>
+#include <errno.h>
+#include <zlib.h>
+#include <libtar.h>
+#include <fcntl.h>
+#include <glob.h>
+#include <assert.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "fatal.h"
+
 typedef struct ikea_store_s ikea_store_t;
 typedef struct ikea_box_s ikea_box_t;
 

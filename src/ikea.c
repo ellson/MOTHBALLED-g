@@ -1,21 +1,6 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#include <stdio.h>
-#include <string.h>
-#include <openssl/evp.h>
-#include <errno.h>
-#include <zlib.h>
-#include <libtar.h>
-#include <fcntl.h>
-#include <glob.h>
-#include <assert.h>
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "ikea.h"
-#include "fatal.h"
 
 static char *tempdir_template="/tmp/g_XXXXXX";
 static char *tempfile_template="/g_XXXXXX";

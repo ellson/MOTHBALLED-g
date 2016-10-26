@@ -25,15 +25,20 @@ extern "C" {
 
 // private types that maybe forward referenced
 typedef struct emit_s emit_t;
-typedef struct container_context_s container_CONTEXT_t;
 typedef struct ikea_store_s ikea_store_t;
 typedef struct ikea_box_s ikea_box_t;
+
+// emit styles
+typedef enum {
+    MINIMUM_SPACE_STYLE = 0,
+    SHELL_FRIENDLY_STYLE = 1
+} style_t;
 
 // private headers
 #include "hash.h"
 #include "ikea.h"
-#include "emit.h"
 #include "context.h"
+#include "emit.h"
 #include "pattern.h"
 #include "sameas.h"
 #include "dispatch.h"

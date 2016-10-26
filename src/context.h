@@ -46,7 +46,7 @@ struct context_s {             // input_context
     pid_t pid;
 };
 
-struct container_context_s {    // container_context
+typedef struct {    // container_context
     CONTEXT_t *C;               // the input context
     elem_t *nodes;              // tree of unique nodes
     elem_t *edges;              // tree of unique edges
@@ -67,7 +67,7 @@ struct container_context_s {    // container_context
 
     // FIXME  - place for fork header for layout process...
 
-};
+} container_CONTEXT_t;
 
 #ifdef __cplusplus
 }
