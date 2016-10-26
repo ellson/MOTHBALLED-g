@@ -1,18 +1,6 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdlib.h>
-#include <assert.h>
-
-#include "libje_private.h"
-#include "tree.h"
-#include "frag.h"
-
-// forward declaration
-static void reduce_list_r(container_CONTEXT_t *CC, elem_t * list);
-static void reduce_print_frags(state_t liststate, elem_t * elem, char *sep);
-static void reduce_print_shortstr(elem_t * elem, char *sep);
+#include "reduce.h"
 
 void je_reduce(container_CONTEXT_t * CC, elem_t *list)
 {
@@ -23,9 +11,6 @@ void je_reduce(container_CONTEXT_t * CC, elem_t *list)
     state_t verb = 0;
     state_t subjtype = 0;
     elem_t *subject, *attributes = NULL, *disambig = NULL;
-
-//printf("\n== ACT ==\n");
-//P(list);
 
     assert(list);
     elem = list->u.l.first;
@@ -81,7 +66,6 @@ void je_reduce(container_CONTEXT_t * CC, elem_t *list)
         CC->nodes = insert(LIST, CC->nodes, subject->u.l.first); // skip NODEID
         break;
     case SIBLING:
-//P(subject->u.l.first->u.l.first);
         CC->nodes = insert(LIST, CC->nodes, subject->u.l.first->u.l.first); // skip NODEREF NODEID
         break;
     case EDGE:
@@ -95,7 +79,6 @@ void je_reduce(container_CONTEXT_t * CC, elem_t *list)
         //FIXME - what to do with this?
     }
     if (attributes) {
-//P(attributes);
         //FIXME - what to do with this?
     }
 }

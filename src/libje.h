@@ -15,6 +15,12 @@ typedef enum {
     FAIL
 } success_t;
 
+// emit styles
+typedef enum {
+    MINIMUM_SPACE_STYLE = 0,
+    SHELL_FRIENDLY_STYLE = 1
+} style_t;
+
 // libje.c
 CONTEXT_t *je_initialize( int *argc, char *argv[], int optind );
 void je_finalize( CONTEXT_t * C );

@@ -7,7 +7,9 @@
 extern "C" {
 #endif
 
+#include "libje.h"
 #include "token.h"
+#include "ikea.h"
 
 struct context_s {             // input_context
     TOKEN_t TOKEN;             // Must be first (to allow casting from CONTEXT_t)

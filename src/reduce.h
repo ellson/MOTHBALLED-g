@@ -7,6 +7,9 @@
 extern "C" {
 #endif
 
+#include "context.h"
+#include "tree.h"
+
 void je_reduce(container_CONTEXT_t * CC, elem_t *list);
 
 #ifdef __cplusplus
