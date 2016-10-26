@@ -7,7 +7,9 @@
 extern "C" {
 #endif
 
-struct emit_s {
+#include "context.h"
+
+typedef struct {
     char *name;
     void (*initialize) (CONTEXT_t * C);
     void (*finalize) (CONTEXT_t * C);
@@ -35,7 +37,7 @@ struct emit_s {
     void (*token) (CONTEXT_t * C, char token);
     void (*string) (CONTEXT_t * C, elem_t * branch);
     void (*frag) (CONTEXT_t * C, unsigned char len, unsigned char *frag);
-};
+} emit_t;
 
 #define emit_initialize(C) \
     if (emit->initialize) {emit->initialize(C);}

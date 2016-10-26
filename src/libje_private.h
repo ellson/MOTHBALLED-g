@@ -24,11 +24,11 @@ extern "C" {
 #include "libje.h"
 
 // private types that maybe forward referenced
-typedef struct emit_s emit_t;
 typedef struct ikea_store_s ikea_store_t;
 typedef struct ikea_box_s ikea_box_t;
 
 // private headers
+#include "emit.h"
 #include "hash.h"
 #include "ikea.h"
 #include "context.h"

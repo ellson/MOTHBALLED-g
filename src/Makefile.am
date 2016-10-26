@@ -18,6 +18,7 @@ noinst_HEADERS = \
 	grammar.h \
 	hash.h \
 	ikea.h \
+	info.h \
 	inbuf.h \
 	libje_private.h \
 	list.h \
