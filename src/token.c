@@ -1,17 +1,6 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <assert.h>
-
-#include "inbuf.h"
-#include "list.h"
-#include "grammar.h"
-#include "frag.h"
 #include "token.h"
-#include "fatal.h"
 
 /**
  * report an error during parsing with context info.

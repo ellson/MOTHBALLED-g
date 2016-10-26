@@ -7,6 +7,10 @@
 extern "C" {
 #endif
 
+#include <string.h>
+
+#include "frag.h"
+
 typedef struct {
     LIST_t LIST;             // Must be first (to allow casting from CONTEXT_t)
 
