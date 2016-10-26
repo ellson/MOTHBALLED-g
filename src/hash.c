@@ -1,13 +1,6 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdint.h>
-#include <time.h>
-#include <sys/types.h>
-#include <assert.h>
-
-#include "libje_private.h"
+#include "hash.h"
 
 static void hash_list_r(uint64_t *hash, elem_t *list);
 

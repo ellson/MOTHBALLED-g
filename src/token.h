@@ -9,6 +9,7 @@ extern "C" {
 
 #include <string.h>
 
+#include "libje.h"
 #include "frag.h"
 
 typedef struct {
@@ -37,11 +38,6 @@ typedef struct {
     long stat_fragcount;
     long stat_filecount;       // various stats
 } TOKEN_t;
-
-typedef enum {
-    SUCCESS,
-    FAIL
-} success_t;
 
 void je_token_error(TOKEN_t * TOKEN, state_t si, char *message);
 success_t je_token_whitespace(TOKEN_t * TOKEN);

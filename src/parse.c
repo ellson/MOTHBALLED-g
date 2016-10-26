@@ -30,6 +30,8 @@
 
 // forward declarations
 
+static success_t parse_nest_r(CONTEXT_t * C, elem_t * name);
+
 static success_t parse_r(container_CONTEXT_t * CC, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc);
 
@@ -40,17 +42,18 @@ static success_t parse_more_rep(CONTEXT_t * C, unsigned char prop);
  *
  * This parser recurses at two levels:
  *
- *    main() --> je_parse(C) --> parse_r(CC) -| -|  
- *                 ^               ^          |  |
- *                 |               |          |  |
- *                 |               ------<-----  |
- *                 |                             |
- *                 -------------<-----------------
+ *    je_parse() --> parse_nest_r(C) --> parse_r(CC) -| -|  
+ *                 ^                   ^              |  |
+ *                 |                   |              |  |
+ *                 |                   -------<-------|  |
+ *                 |                                     |
+ *                 -------------------<------------------|
+ *
+ * The outer recursions are through nested containment.
  *
  * The inner recursions are through the grammar state_machine at a single
  * level of containment - maintained in container_context (CC)
  *
- * The outer recursions are through nested containment.
  * The top-level context (C) is available to both and maintains the input state.
  *
  * @param C context
@@ -58,7 +61,12 @@ static success_t parse_more_rep(CONTEXT_t * C, unsigned char prop);
  * @return success/fail
  */
 
-success_t je_parse(CONTEXT_t * C, elem_t * name)
+success_t je_parse(CONTEXT_t *C)
+{
+    return parse_nest_r(C, NULL);
+}
+
+static success_t parse_nest_r(CONTEXT_t * C, elem_t * name)
 {
     container_CONTEXT_t container_context = { 0 };
     container_CONTEXT_t *CC = &container_context;
@@ -191,7 +199,7 @@ parse_r(container_CONTEXT_t * CC, elem_t * root,
     case ACTIVITY:          // Recursion into Contained activity
         if (TOKEN->bi == LBE) {    // if not top-level of containment
             TOKEN->bi = NLL;
-            rc = je_parse(C, &CC->subject);    // recursively process contained ACTIVITY in to its own root
+            rc = parse_nest_r(C, &CC->subject);    // recursively process contained ACTIVITY in to its own root
             TOKEN->bi = TOKEN->insi;    // The char class that terminates the ACTIVITY
             goto done;
         }

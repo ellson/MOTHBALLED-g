@@ -27,7 +27,6 @@ static void intr(int s)
 int main(int argc, char *argv[])
 {
     int opt, optnum, needstats = 0, needrestore = 0;
-    elem_t *name;
 
     signal(SIGINT, intr);
 
@@ -84,7 +83,7 @@ int main(int argc, char *argv[])
     C = je_initialize(&argc, argv, optind);
 
     // parse the input 
-    je_parse(C, NULL);
+    je_parse(C);
 
     // and stats, if wanted 
     if (needstats) {

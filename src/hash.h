@@ -7,6 +7,11 @@
 extern "C" {
 #endif
 
+#include <string.h>
+
+#include "libje.h"
+#include "list.h"
+
 #if 0
 hash_elem_t * je_hash_bucket(CONTEXT_t * C, uint64_t hash);
 #endif
