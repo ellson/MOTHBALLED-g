@@ -94,18 +94,19 @@ void print_tree(CONTEXT_t *C, elem_t * p)
 //    assert(p->next->u.l.first->u.l.first);
 
     if (p->u.t.left) {
-	print_tree(C, p->u.t.left);
+	    print_tree(C, p->u.t.left);
     }
-P(p->next);
-//    print_frags(stdout, 0, p->next->u.l.first->u.l.first, &(C->sep));
+//P(p->next);
+    print_frags(stdout, 0, p->next->u.l.first->u.l.first, &(C->sep));
     if (p->u.t.right) {
-	print_tree(C, p->u.t.right);
+	    print_tree(C, p->u.t.right);
     }
 }
 
 elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
 {
     int comp;
+//CONTEXT_t *C = (CONTEXT_t*)LIST;
 
     if (!p) {
         return new_tree(LIST, key);
@@ -120,6 +121,9 @@ elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
         }
     }
     else {
+//printf("merge:\n");
+//P(key);
+//P(p->next);
         p->next = je_merge(key, p->next);
     }
     return balance(p);

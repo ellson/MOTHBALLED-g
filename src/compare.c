@@ -70,6 +70,7 @@ int je_compare(elem_t * a, elem_t * b)
 
 elem_t * je_merge(elem_t * new, elem_t * old)
 {
-    // FIXME - this is just discarding old value
+    old->refs--;
+    new->refs++;
     return new;
 }
