@@ -7,6 +7,10 @@
 extern "C" {
 #endif
 
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
+
 void fatal_printf(const char *format, ...);
 void fatal_perror(const char *s);
 
