@@ -3,6 +3,15 @@
 #ifndef SSLHASH_H
 #define SSLHASH_H
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <openssl/evp.h>
+
+#include "frag.h"
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif

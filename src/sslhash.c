@@ -1,18 +1,5 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdint.h>
-#include <time.h>
-#include <sys/types.h>
-#include <openssl/evp.h>
-#include <assert.h>
-
-#include "libje_private.h"
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 #include "sslhash.h"
 
 static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list);
