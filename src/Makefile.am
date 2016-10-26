@@ -9,58 +9,58 @@ include_HEADERS = \
 	libje.h
 
 noinst_HEADERS = \
-	fatal.h \
-	context.h \
-	dispatch.h \
-	emit.h \
-	emit_act.h \
-	expand.h \
-	grammar.h \
-	hash.h \
-	ikea.h \
-	info.h \
-	inbuf.h \
-	libje_private.h \
-	list.h \
-	frag.h \
-	pattern.h \
-	sameas.h \
-	token.h \
-	tree.h \
     compare.h \
-    reduce.h
+    context.h \
+    dispatch.h \
+    emit.h \
+    emit_act.h \
+    expand.h \
+    fatal.h \
+    frag.h \
+    grammar.h \
+    hash.h \
+    ikea.h \
+    inbuf.h \
+    info.h \
+    libje_private.h \
+    list.h \
+    pattern.h \
+    reduce.h \
+    sameas.h \
+    token.h \
+    tree.h
 
 noinst_LTLIBRARIES = libje_C.la
 lib_LTLIBRARIES = libje.la
 #pkgconfig_DATA = libje.pc
 
 libje_C_la_SOURCES = \
-	fatal.c \
-	grammar.c \
-	libje.c \
-	parse.c \
-	token.c \
-	ikea.c \
-	info.c \
-	inbuf.c \
-	dispatch.c \
-	expand.c \
-	dumpg.c \
-	list.c \
-	frag.c \
-	hash.c \
-	sslhash.c \
-	sameas.c \
-	pattern.c \
-	emit_ikea.c \
-	emit_act.c \
-	emit.c \
-	emit_t.c \
-	emit_g.c \
-	emit_gv.c \
-	tree.c \
-	compare.c \
-	reduce.c
+    compare.c \
+    dispatch.c \
+    dumpg.c \
+    emit.c \
+    emit_act.c \
+    emit_g.c \
+    emit_gv.c \
+    emit_ikea.c \
+    emit_t.c \
+    expand.c \
+    fatal.c \
+    frag.c \
+    grammar.c \
+    hash.c \
+    ikea.c \
+    inbuf.c \
+    info.c \
+    libje.c \
+    list.c \
+    parse.c \
+    pattern.c \
+    reduce.c \
+    sameas.c \
+    sslhash.c \
+    token.c \
+    tree.c
 
 libje_C_la_LIBADD =
 
