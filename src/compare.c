@@ -1,14 +1,6 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
-
-#include "inbuf.h"
-#include "grammar.h"
-#include "list.h"
 #include "compare.h"
-#include "frag.h"
 
 /**
  * compare string value of a and b - recursive function
