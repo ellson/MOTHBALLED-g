@@ -44,7 +44,7 @@ int je_compare(elem_t * a, elem_t * b)
                         b_len = tb_elem->len;
                     }
                 }
-                if (! (a_len && b_len)) {
+                if (! (a_len && b_len)) { // at least one has reached the end
                     break;
                 }
                 if (*a_cp != *b_cp) {    // test if chars match
@@ -55,9 +55,9 @@ int je_compare(elem_t * a, elem_t * b)
                 a_len--;
                 b_len--;
             }
-            if (a_len != b_len) {  // if strings are same length then
+            if (a_len || b_len) {  // if strings are same length then
                                    // both should be 0, we know that one is 0
-                return a_len - b_len;
+                return a_len - b_len;   // longer strings sort later
             }
             // all matched so far, move on to test the next STRING
         }
