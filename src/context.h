@@ -75,7 +75,7 @@ struct context_s {             // context
     pid_t pid;
 };
 
-typedef struct {    // container_context
+typedef struct {                // container_context
     CONTEXT_t *C;               // the input context
     elem_t subject;             // Preceeding ACT's subject, until this ACT's
                                 // SUBJECT has been parsed and processd by sameas()

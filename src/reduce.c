@@ -6,9 +6,9 @@
 
 #include "reduce.h"
 
-void je_reduce(CONTENT_t * CC, elem_t *list)
+void je_reduce(CONTENT_t * CONTENT, elem_t *list)
 {
-    CONTEXT_t *C = CC->C;
+    CONTEXT_t *C = CONTENT->C;
     LIST_t *LIST = (LIST_t*)C;
     elem_t * elem;
     state_t liststate;
@@ -67,13 +67,13 @@ void je_reduce(CONTENT_t * CC, elem_t *list)
 
     switch (subjtype) {
     case NODE:
-        CC->nodes = insert(LIST, CC->nodes, subject->u.l.first); // skip NODEID
+        CONTENT->nodes = insert(LIST, CONTENT->nodes, subject->u.l.first); // skip NODEID
         break;
     case SIBLING:
-        CC->nodes = insert(LIST, CC->nodes, subject->u.l.first->u.l.first); // skip NODEREF NODEID
+        CONTENT->nodes = insert(LIST, CONTENT->nodes, subject->u.l.first->u.l.first); // skip NODEREF NODEID
         break;
     case EDGE:
-        CC->edges = insert(LIST, CC->edges, subject->u.l.first); 
+        CONTENT->edges = insert(LIST, CONTENT->edges, subject->u.l.first); 
         break;
     default:
         assert(0); // that should be all

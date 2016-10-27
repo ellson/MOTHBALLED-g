@@ -8,12 +8,12 @@
 #include "emit_act.h"
 
 // forward declaration
-static void emit_act_func(CONTENT_t * CC, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes);
-static void emit_act_list_r(CONTENT_t *CC, elem_t * list);
+static void emit_act_func(CONTENT_t * CONTENT, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes);
+static void emit_act_list_r(CONTENT_t * CONTENT, elem_t * list);
 static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep);
 static void emit_act_print_shortstr(elem_t * elem, char *sep);
 
-void je_emit_act(CONTENT_t * CC, elem_t *list)
+void je_emit_act(CONTENT_t * CONTENT, elem_t *list)
 {
     elem_t * elem;
     state_t liststate;
@@ -70,13 +70,13 @@ void je_emit_act(CONTENT_t * CC, elem_t *list)
     }
     assert(elem == NULL);
 
-    emit_act_func(CC, verb, subjtype, subject, disambig, attributes);
+    emit_act_func(CONTENT, verb, subjtype, subject, disambig, attributes);
 }
 
 #define DOTLANG 1
-static void emit_act_func(CONTENT_t * CC, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes)
+static void emit_act_func(CONTENT_t * CONTENT, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes)
 {
-    CONTEXT_t *C = CC->C;
+    CONTEXT_t *C = CONTENT->C;
     C->sep = '\0';
 
     switch (verb) {
@@ -97,22 +97,22 @@ static void emit_act_func(CONTENT_t * CC, state_t verb, state_t subjtype, elem_t
     }
     switch (subjtype) {
     case NODE:
-        emit_act_list_r(CC, subject->u.l.first); // skip NODEID
+        emit_act_list_r(CONTENT, subject->u.l.first); // skip NODEID
         break;
     case SIBLING:
-        emit_act_list_r(CC, subject->u.l.first->u.l.first); // skip NODEREF NODEID
+        emit_act_list_r(CONTENT, subject->u.l.first->u.l.first); // skip NODEREF NODEID
         break;
     case EDGE:
 #ifndef DOTLANG
         putc('<', stdout);
-        emit_act_list_r(CC, subject);
+        emit_act_list_r(CONTENT, subject);
         putc('>', stdout);
 #else
-        emit_act_list_r(CC, subject->u.l.first);
+        emit_act_list_r(CONTENT, subject->u.l.first);
         putc('-', stdout);
         putc('-', stdout);
         C->sep = '\0';
-        emit_act_list_r(CC, subject->u.l.first->next);
+        emit_act_list_r(CONTENT, subject->u.l.first->next);
 #endif
         break;
     default:
@@ -123,20 +123,20 @@ static void emit_act_func(CONTENT_t * CC, state_t verb, state_t subjtype, elem_t
 #ifndef DOTLANG
         putc('`', stdout);
         C->sep = '\0';
-        emit_act_list_r(CC, disambig->u.l.first); // skip DISAMBID
+        emit_act_list_r(CONTENT, disambig->u.l.first); // skip DISAMBID
 #endif
     }
     if (attributes) {
         putc('[', stdout);
         C->sep = '\0';
-        emit_act_list_r(CC, attributes);
+        emit_act_list_r(CONTENT, attributes);
         putc(']', stdout);
     }
     putc('\n', stdout);
 }
 
 // recursive function
-static void emit_act_list_r(CONTENT_t *CC, elem_t * list)
+static void emit_act_list_r(CONTENT_t * CONTENT, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;
@@ -147,19 +147,19 @@ static void emit_act_list_r(CONTENT_t *CC, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-        emit_act_print_frags(liststate, elem, &(CC->C->sep));
+        emit_act_print_frags(liststate, elem, &(CONTENT->C->sep));
         break;
     case SHORTSTRELEM:
-        emit_act_print_shortstr(elem, &(CC->C->sep));
+        emit_act_print_shortstr(elem, &(CONTENT->C->sep));
         break;
     case LISTELEM:
         while (elem) {
             if ((state_t)(elem->state) == EQL) {
                 putc('=', stdout);
-                CC->C->sep = '\0';
+                CONTENT->C->sep = '\0';
             }
             else {
-                emit_act_list_r(CC, elem);    // recurse
+                emit_act_list_r(CONTENT, elem);    // recurse
             }
             elem = elem->next;
         }

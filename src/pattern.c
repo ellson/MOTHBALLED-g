@@ -9,7 +9,7 @@
 #include "pattern.h"
 
 static success_t
-je_pattern_r(CONTENT_t * CC, elem_t * subject, elem_t * pattern);
+je_pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern);
 
 /*
  * A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
@@ -44,13 +44,13 @@ je_pattern_r(CONTENT_t * CC, elem_t * subject, elem_t * pattern);
  * and CONTAINER from the pattern.  Finally return for the current
  * subject to be appended with its own ATTRIBUTES and ACTIVITY.
  *
- * @param CC container_context
+ * @param CONTENT container_context
  * @param root of the output tree
  * @param subject to be checked for pattern matches
  */
-void je_pattern(CONTENT_t * CC, elem_t * root, elem_t * subject)
+void je_pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject)
 {
-    CONTEXT_t *C = CC->C;
+    CONTEXT_t *C = CONTENT->C;
     LIST_t * LIST = (LIST_t *)C;
     elem_t *pattern_acts, *pact, *psubj, *pattr;
 
@@ -58,11 +58,11 @@ void je_pattern(CONTENT_t * CC, elem_t * root, elem_t * subject)
     assert(subject);
     assert((state_t) subject->state == SUBJECT);
 
-    if (CC->subject_type == NODE) {
-        pattern_acts = &(CC->node_pattern_acts);
+    if (CONTENT->subject_type == NODE) {
+        pattern_acts = &(CONTENT->node_pattern_acts);
     } else {
-        assert(CC->subject_type == EDGE);
-        pattern_acts = &(CC->edge_pattern_acts);
+        assert(CONTENT->subject_type == EDGE);
+        pattern_acts = &(CONTENT->edge_pattern_acts);
     }
 
     // iterate over available patterns
@@ -74,15 +74,15 @@ void je_pattern(CONTENT_t * CC, elem_t * root, elem_t * subject)
         pattr = psubj->next;
 
         // FIXME - contents from pattern ??
-        if ((je_pattern_r(CC, subject->u.l.first, psubj->u.l.first)) == SUCCESS) {
+        if ((je_pattern_r(CONTENT, subject->u.l.first, psubj->u.l.first)) == SUCCESS) {
             // insert matched attrubutes, contents,
             // and then the subject again
             
             append_list(root, ref_list(LIST, subject));
-            emit_subject(CC, subject);
+            emit_subject(CONTENT, subject);
             if (pattr && (state_t)pattr->state == ATTRIBUTES) {
                 append_list(root, ref_list(LIST, pattr));
-                emit_attributes(CC, pattr);
+                emit_attributes(CONTENT, pattr);
             }
 
             // FIXME -- contents
@@ -100,13 +100,13 @@ void je_pattern(CONTENT_t * CC, elem_t * root, elem_t * subject)
 /**
  * attempt to match one pattern to a subject
  *
- * @param CC container_context
+ * @param CONTENT container_context
  * @param subject 
  * @param pattern 
  * @return success/fail 
  */
 static success_t
-je_pattern_r(CONTENT_t * CC, elem_t * subject, elem_t * pattern)
+je_pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
 {
     elem_t *s_elem, *p_elem, *ts_elem, *tp_elem;
     unsigned char *s_cp, *p_cp;
@@ -133,7 +133,7 @@ je_pattern_r(CONTENT_t * CC, elem_t * subject, elem_t * pattern)
                 ts_elem = ts_elem->next;
                 tp_elem = tp_elem->next;
             }
-            if ((je_pattern_r(CC, s_elem, p_elem)) == FAIL) {  // recurse
+            if ((je_pattern_r(CONTENT, s_elem, p_elem)) == FAIL) {  // recurse
                 return FAIL;
             }
         } else {    // FRAGELEM
@@ -178,14 +178,14 @@ je_pattern_r(CONTENT_t * CC, elem_t * subject, elem_t * pattern)
 /**
  * attempt to match one pattern to a subject
  *
- * @param CC container_context
+ * @param CONTENT container_context
  * @param subject 
  * @param pattern 
  * @return success/fail 
  */
 
 static success_t
-je_pattern_r(CONTENT_t * CC, elem_t * subject, elem_t * pattern)
+je_pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
 {
     elem_t *s_elem, *p_elem, *ts_elem, *tp_elem;
     unsigned char *s_cp, *p_cp;
@@ -210,7 +210,7 @@ je_pattern_r(CONTENT_t * CC, elem_t * subject, elem_t * pattern)
                 ts_elem = ts_elem->next;
                 tp_elem = tp_elem->next;
             }
-            if ((je_pattern_r(CC, s_elem, p_elem)) == FAIL) {  // recurse
+            if ((je_pattern_r(CONTENT, s_elem, p_elem)) == FAIL) {  // recurse
                 return FAIL;
             }
         } else {    // FRAGELEM

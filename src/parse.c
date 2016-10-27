@@ -12,7 +12,7 @@
 
 static success_t parse_nest_r(CONTEXT_t * C, elem_t * name);
 
-static success_t parse_r(CONTENT_t * CC, elem_t * root,
+static success_t parse_r(CONTENT_t * CONTENT, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc);
 
 static success_t parse_more_rep(CONTEXT_t * C, unsigned char prop);
@@ -22,7 +22,7 @@ static success_t parse_more_rep(CONTEXT_t * C, unsigned char prop);
  *
  * This parser recurses at two levels:
  *
- *    je_parse() --> parse_nest_r(C) --> parse_r(CC) -| -|  
+ *    je_parse() --> parse_nest_r(C) --> parse_r(CONTENT) -| -|  
  *                 ^                   ^              |  |
  *                 |                   |              |  |
  *                 |                   -------<-------|  |
@@ -32,7 +32,7 @@ static success_t parse_more_rep(CONTEXT_t * C, unsigned char prop);
  * The outer recursions are through nested containment.
  *
  * The inner recursions are through the grammar state_machine at a single
- * level of containment - maintained in container_context (CC)
+ * level of containment - maintained in container_context (CONTENT)
  *
  * The top-level context (C) is available to both and maintains the input state.
  *
@@ -49,7 +49,7 @@ success_t je_parse(CONTEXT_t *C)
 static success_t parse_nest_r(CONTEXT_t * C, elem_t * name)
 {
     CONTENT_t container_context = { 0 };
-    CONTENT_t *CC = &container_context;
+    CONTENT_t * CONTENT = &container_context;
     elem_t root = { 0 };    // the output parse tree
     success_t rc;
 #if 0
@@ -60,8 +60,8 @@ static success_t parse_nest_r(CONTEXT_t * C, elem_t * name)
     TOKEN_t * TOKEN = (TOKEN_t *)C;
     LIST_t * LIST = (LIST_t *)C;
 
-    CC->C = C;
-    CC->ikea_box = ikea_box_open(C->ikea_store, NULL);
+    CONTENT->C = C;
+    CONTENT->ikea_box = ikea_box_open(C->ikea_store, NULL);
 #if 0
 // old, to be removed
     je_hash_list(&hash, name); // hash name (subject "names" can be very long)
@@ -78,40 +78,40 @@ static success_t parse_nest_r(CONTEXT_t * C, elem_t * name)
             fatal_perror("Error - fopen(): ");
         free(filename);
     }
-    CC->out = hash_elem->out;
+    CONTENT->out = hash_elem->out;
 //==============================================================
 #endif
-CC->out = stdout;
+CONTENT->out = stdout;
 
-    emit_start_activity(CC);
+    emit_start_activity(CONTENT);
     C->containment++;            // containment nesting level
     C->stat_containercount++;    // number of containers
-    if ((rc = parse_r(CC, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+    if ((rc = parse_r(CONTENT, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
             je_token_error(TOKEN, TOKEN->state, "Parse error. Last good state was:");
         }
     }
-    if (CC->nodes) {
+    if (CONTENT->nodes) {
         C->sep = '\0';
-        print_tree(C, CC->nodes);
+        print_tree(C, CONTENT->nodes);
         putc('\n', stdout);
     }
-    if (CC->edges) {
+    if (CONTENT->edges) {
         C->sep = '\0';
-        print_tree(C, CC->edges);
+        print_tree(C, CONTENT->edges);
         putc('\n', stdout);
     }
     C->containment--;
-    emit_end_activity(CC);
+    emit_end_activity(CONTENT);
 
-    ikea_box_close ( CC->ikea_box );
+    ikea_box_close ( CONTENT->ikea_box );
 
     free_list(LIST, &root);
-    free_list(LIST, &(CC->subject));
-    free_list(LIST, &(CC->node_pattern_acts));
-    free_list(LIST, &(CC->edge_pattern_acts));
+    free_list(LIST, &(CONTENT->subject));
+    free_list(LIST, &(CONTENT->node_pattern_acts));
+    free_list(LIST, &(CONTENT->edge_pattern_acts));
 
     return rc;
 }
@@ -119,15 +119,15 @@ CC->out = stdout;
 /** 
  * recurse through state-machine at a single level of containment
  *
- *  @param CC container context
+ *  @param CONTENT container context
  *  @param root of parsed tree
  *  @return success/fail
  */
 static success_t
-parse_r(CONTENT_t * CC, elem_t * root,
+parse_r(CONTENT_t * CONTENT, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc)
 {
-    CONTEXT_t *C = CC->C;
+    CONTEXT_t *C = CONTENT->C;
     TOKEN_t * TOKEN = (TOKEN_t *)C;
     LIST_t * LIST = (LIST_t *)C;
     INBUF_t * INBUF = (INBUF_t *)C;
@@ -140,7 +140,7 @@ parse_r(CONTENT_t * CC, elem_t * root,
     static unsigned char nullstring[] = { '\0' };
 
     rc = SUCCESS;
-    emit_start_state(CC, si, prop, nest, repc);
+    emit_start_state(CONTENT, si, prop, nest, repc);
     branch.state = si;
 
     nest++;
@@ -179,7 +179,7 @@ parse_r(CONTENT_t * CC, elem_t * root,
     case ACTIVITY:          // Recursion into Contained activity
         if (TOKEN->bi == LBE) {    // if not top-level of containment
             TOKEN->bi = NLL;
-            rc = parse_nest_r(C, &CC->subject);    // recursively process contained ACTIVITY in to its own root
+            rc = parse_nest_r(C, &CONTENT->subject);    // recursively process contained ACTIVITY in to its own root
             TOKEN->bi = TOKEN->insi;    // The char class that terminates the ACTIVITY
             goto done;
         }
@@ -227,7 +227,7 @@ parse_r(CONTENT_t * CC, elem_t * root,
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            if ((rc = parse_r(CC, &branch, ni, nprop, nest, 0)) == SUCCESS) {
+            if ((rc = parse_r(CONTENT, &branch, ni, nprop, nest, 0)) == SUCCESS) {
                 break;                  // ALT satisfied
             }
 
@@ -235,19 +235,19 @@ parse_r(CONTENT_t * CC, elem_t * root,
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                if ((parse_r(CC, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
+                if ((parse_r(CONTENT, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
                     while (parse_more_rep(C, nprop) == SUCCESS) {
-                        if (parse_r(CC, &branch, ni, nprop, nest, repc++) == FAIL) {
+                        if (parse_r(CONTENT, &branch, ni, nprop, nest, repc++) == FAIL) {
                             break;
                         }
                     }
                 }
             } else {                    // else not OPTional
-                if ((rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
+                if ((rc = parse_r(CONTENT, &branch, ni, nprop, nest, repc++)) == FAIL) {
                     break;
                 }
                 while (parse_more_rep(C, nprop) == SUCCESS) {
-                    if ((rc = parse_r(CC, &branch, ni, nprop, nest, repc++)) == FAIL) {
+                    if ((rc = parse_r(CONTENT, &branch, ni, nprop, nest, repc++)) == FAIL) {
                         break;
                     }
                 }
@@ -261,30 +261,30 @@ parse_r(CONTENT_t * CC, elem_t * root,
         switch (si) {
         case ACT:
             C->stat_inactcount++;
-            if (CC->is_pattern) {   // flag was set by SUBJECT in previous ACT
+            if (CONTENT->is_pattern) {   // flag was set by SUBJECT in previous ACT
                                     //  save entire previous ACT in a list of pattern_acts
                 C->stat_patternactcount++;
-                if (CC->subject_type == NODE) {
-                    append_list(&(CC->node_pattern_acts), move_list(LIST, &branch));
+                if (CONTENT->subject_type == NODE) {
+                    append_list(&(CONTENT->node_pattern_acts), move_list(LIST, &branch));
 
                 } else {
-                    assert(CC->subject_type == EDGE);
-                    append_list(&(CC->edge_pattern_acts), move_list(LIST, &branch));
+                    assert(CONTENT->subject_type == EDGE);
+                    append_list(&(CONTENT->edge_pattern_acts), move_list(LIST, &branch));
                 }
             } else {
                 C->stat_nonpatternactcount++;
                 append_list(root, move_list(LIST, &branch));
 
                 // dispatch events for the ACT just finished
-                je_dispatch(CC, root);
+                je_dispatch(CONTENT, root);
 
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 elem = root->u.l.first;
                 while (elem) {
                     C->stat_outactcount++;
-//                    je_emit_act(CC, elem);  // primary emitter to graph DB
-                    je_reduce(CC, elem);  // eliminate reduncy by insertion sorting into trees.
+//                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
+                    je_reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 
                     elem = elem->next;
                 }
@@ -307,24 +307,24 @@ parse_r(CONTENT_t * CC, elem_t * root,
 
             // Perform EQL "same as in subject of previous ACT" substitutions
             // Also classifies ACT as NODE or EDGE based on SUBJECT
-            je_sameas(CC, &branch);
+            je_sameas(CONTENT, &branch);
 
 // FIXME - or not, but this is broken
 #if 0
-            je_hash_list(&hash, &(CC->subject));   // generate name hash
+            je_hash_list(&hash, &(CONTENT->subject));   // generate name hash
             (void)je_hash_bucket(C, hash);    // save in bucket list 
 #endif
 
             // If this subject is not itself a pattern, then
             // perform pattern matching and insertion if matched
-            if (!(CC->is_pattern = TOKEN->has_ast)) {
-                je_pattern(CC, root, &branch);
+            if (!(CONTENT->is_pattern = TOKEN->has_ast)) {
+                je_pattern(CONTENT, root, &branch);
             }
 
-            emit_subject(CC, &branch);      // emit hook for rewritten subject
+            emit_subject(CONTENT, &branch);      // emit hook for rewritten subject
             break;
         case ATTRIBUTES:
-            emit_attributes(CC, &branch);   // emit hook for attributes
+            emit_attributes(CONTENT, &branch);   // emit hook for attributes
             break;
         default:
             break;
@@ -340,7 +340,7 @@ parse_r(CONTENT_t * CC, elem_t * root,
     }
     nest--;
     assert(nest >= 0);
-    emit_end_state(CC, si, rc, nest, repc);
+    emit_end_state(CONTENT, si, rc, nest, repc);
 
     return rc;
 }

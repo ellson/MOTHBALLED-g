@@ -7,7 +7,7 @@
 
 #include "sameas.h"
 
-static void je_sameas_r(CONTENT_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist);
+static void je_sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist);
 
 /**
  * rewrite subject into a newsubject
@@ -16,25 +16,25 @@ static void je_sameas_r(CONTENT_t * CC, elem_t * subject, elem_t ** nextold, ele
  *   oldsubject (or error if old not available)
  *      replace subject and oldsubject with newsubject
  *
- * @param CC container context
+ * @param CONTENT container context
  * @param subject a subject tree from the parser (may be multiple object with same attributes)
  */
-void je_sameas(CONTENT_t * CC, elem_t * subject)
+void je_sameas(CONTENT_t * CONTENT, elem_t * subject)
 {
-    LIST_t * LIST = (LIST_t *)(CC->C);
+    LIST_t * LIST = (LIST_t *)(CONTENT->C);
     elem_t *newsubject, *oldsubject, *nextold;
     elem_t subject_rewrite = { 0 };
 
     newsubject = &subject_rewrite;
-    oldsubject = &(CC->subject);
+    oldsubject = &(CONTENT->subject);
     nextold = oldsubject->u.l.first;
 
     assert(subject);
     assert((state_t)subject->state == SUBJECT);
-    CC->subject_type = 0;
+    CONTENT->subject_type = 0;
 
     // rewrite subject into newsubject with any EQL elements substituted from oldsubject
-    je_sameas_r(CC, subject, &nextold, newsubject);
+    je_sameas_r(CONTENT, subject, &nextold, newsubject);
 
     free_list(LIST, subject);     // free original subject ( although refs are retained in other lists )
     free_list(LIST, oldsubject);    // free the previous oldsubject
@@ -51,14 +51,14 @@ void je_sameas(CONTENT_t * CC, elem_t * subject)
 /**
  * rewrite subject into newlist with any EQL elements substituted from oldlist
  *
- * @param CC container context
+ * @param CONTENT container context
  * @param subject
  * @param nextold
  * @param mewlist
  */
-static void je_sameas_r(CONTENT_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist)
+static void je_sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {
-    CONTEXT_t * C = CC->C;
+    CONTEXT_t * C = CONTENT->C;
     TOKEN_t * TOKEN = (TOKEN_t *)C;
     LIST_t * LIST = (LIST_t *)C;
     elem_t *elem, *new, *nextoldelem = NULL;
@@ -82,10 +82,10 @@ if (*nextold) {
         switch (si) {
         case NODE:
         case EDGE:
-            if (CC->subject_type == 0) {
-                CC->subject_type = si;    // record if the ACT has a NODE or EDGE SUBJECT
+            if (CONTENT->subject_type == 0) {
+                CONTENT->subject_type = si;    // record if the ACT has a NODE or EDGE SUBJECT
             } else {
-                if (si != CC->subject_type) {
+                if (si != CONTENT->subject_type) {
                     // all members of the SUBJECT must be of the same type: NODE or EDGE
                     // (this is really a shortcut to avoid extra productions in the grammar)
                     if (si == NODE) {
@@ -109,7 +109,7 @@ if (*nextold) {
                     *nextold = NULL;
                 }
             }
-            je_sameas_r(CC, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
+            je_sameas_r(CONTENT, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
             new = move_list(LIST, &object);
             new->state = si;
             append_list(newlist, new);
@@ -139,7 +139,7 @@ if (*nextold) {
                 nextoldelem = (*nextold)->u.l.first;    // for the recursion
                 *nextold = (*nextold)->next;    // at this level, continue over the elems
             }
-            je_sameas_r(CC, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
+            je_sameas_r(CONTENT, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
             new = move_list(LIST, &object);
             new->state = si;
             append_list(newlist, new);

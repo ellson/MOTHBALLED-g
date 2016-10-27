@@ -47,12 +47,12 @@ static void je_assemble_act(CONTEXT_t *C, elem_t * pelem, elem_t * pattributes, 
  */
 
 /**
- * @param CC container context
+ * @param CONTENT container context
  * @param plist
  */
-void je_dispatch(CONTENT_t * CC, elem_t * plist)
+void je_dispatch(CONTENT_t * CONTENT, elem_t * plist)
 {
-    CONTEXT_t *C = CC->C;
+    CONTEXT_t *C = CONTENT->C;
     LIST_t * LIST = (LIST_t *)C;
     elem_t attributes = { 0 };
     elem_t nodes = { 0 };
@@ -70,7 +70,7 @@ void je_dispatch(CONTENT_t * CC, elem_t * plist)
     //                      for each EDGE, generate new ACT: verb edge attributes
 
     free_list(LIST, plist);  // free old ACT to be replace by these new expanded ACTS
-    switch (CC->subject_type) {
+    switch (CONTENT->subject_type) {
     case NODE:
         pelem = nodes.u.l.first;
         while (pelem) {

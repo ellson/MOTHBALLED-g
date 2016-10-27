@@ -13,25 +13,25 @@
 #include "emit.h"
 
 // forward declaration
-static void ikea_list_r(CONTENT_t *CC, elem_t * list);
+static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list);
 static void ikea_print_frags(ikea_box_t * ikea_box, state_t liststate, elem_t * elem, char *sep);
 
-void je_emit_ikea(CONTENT_t * CC, elem_t *elem)
+void je_emit_ikea(CONTENT_t * CONTENT, elem_t *elem)
 {
-    CC->C->sep = 0; // suppress space before (because preceded by BOF or NL)
+    CONTENT->C->sep = 0; // suppress space before (because preceded by BOF or NL)
     // emit in compact g format
-    ikea_list_r(CC, elem);
-    ikea_box_append(CC->ikea_box, "\n", 1); // NL after each act
+    ikea_list_r(CONTENT, elem);
+    ikea_box_append(CONTENT->ikea_box, "\n", 1); // NL after each act
 }
 
-static void token(CONTENT_t *CC, char *tok)
+static void token(CONTENT_t * CONTENT, char *tok)
 {
-    ikea_box_append(CC->ikea_box, tok, 1);
-    CC->C->sep = 0;
+    ikea_box_append(CONTENT->ikea_box, tok, 1);
+    CONTENT->C->sep = 0;
 }
 
 // recursive function
-static void ikea_list_r(CONTENT_t *CC, elem_t * list)
+static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;
@@ -43,10 +43,10 @@ static void ikea_list_r(CONTENT_t *CC, elem_t * list)
     if (! (elem = list->u.l.first)) {
         switch (liststate) {
         case QRY:
-            token(CC, "?");
+            token(CONTENT, "?");
             break;
         case TLD:
-            token(CC, "~");
+            token(CONTENT, "~");
             break;
         default:
             break;
@@ -56,7 +56,7 @@ static void ikea_list_r(CONTENT_t *CC, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-        ikea_print_frags(CC->ikea_box, liststate, elem, &(CC->C->sep));
+        ikea_print_frags(CONTENT->ikea_box, liststate, elem, &(CONTENT->C->sep));
         break;
     case LISTELEM:
         cnt = 0;
@@ -64,44 +64,44 @@ static void ikea_list_r(CONTENT_t *CC, elem_t * list)
             if (cnt++ == 0) {
                 switch (liststate) {
                 case EDGE:
-                    token(CC, "<");
+                    token(CONTENT, "<");
                     break;
                 case OBJECT_LIST:
                 case ENDPOINTSET:
-                    token(CC, "(");
+                    token(CONTENT, "(");
                     break;
                 case ATTRIBUTES:
-                    token(CC, "[");
+                    token(CONTENT, "[");
                     break;
                 case CONTAINER:
-                    token(CC, "{");
+                    token(CONTENT, "{");
                     break;
                 case VALASSIGN:
-                    token(CC, "=");
+                    token(CONTENT, "=");
                     break;
                 case CHILD:
-                    token(CC, "/");
+                    token(CONTENT, "/");
                     break;
                 default:
                     break;
                 }
             }
-            ikea_list_r(CC, elem);    // recurse
+            ikea_list_r(CONTENT, elem);    // recurse
             elem = elem->next;
         }
         switch (liststate) {
         case EDGE:
-            token(CC, ">");
+            token(CONTENT, ">");
             break;
         case OBJECT_LIST:
         case ENDPOINTSET:
-            token(CC, ")");
+            token(CONTENT, ")");
             break;
         case ATTRIBUTES:
-            token(CC, "]");
+            token(CONTENT, "]");
             break;
         case CONTAINER:
-            token(CC, "}");
+            token(CONTENT, "}");
             break;
         default:
             break;

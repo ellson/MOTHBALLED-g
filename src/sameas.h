@@ -10,7 +10,7 @@ extern "C" {
 #include "list.h"
 #include "context.h"
 
-void je_sameas(CONTENT_t * CC, elem_t * subject);
+void je_sameas(CONTENT_t * CONTENT, elem_t * subject);
 
 #ifdef __cplusplus
 }
