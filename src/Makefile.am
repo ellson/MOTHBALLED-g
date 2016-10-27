@@ -24,6 +24,7 @@ noinst_HEADERS = \
     info.h \
     libje_private.h \
     list.h \
+    parse.h \
     pattern.h \
     reduce.h \
     sameas.h \

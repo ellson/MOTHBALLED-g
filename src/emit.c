@@ -8,8 +8,7 @@
 #include <sys/types.h>
 #include <assert.h>
 
-#include "libje_private.h"
-#include "frag.h"
+#include "emit.h"
 
 // forward declarations
 #if 0

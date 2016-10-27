@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "libje_private.h"
+#include "dispatch.h"
 
 static void je_dispatch_r(CONTEXT_t * C, elem_t * plist, elem_t *pattributes, elem_t * pnodes, elem_t * pedges);
 static void je_assemble_act(CONTEXT_t *C, elem_t * pelem, elem_t * pattributes, elem_t * plist);

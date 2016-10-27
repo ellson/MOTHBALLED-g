@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <assert.h>
 
-#include "libje_private.h"
+#include "pattern.h"
 
 static success_t
 je_pattern_r(container_CONTEXT_t * CC, elem_t * subject, elem_t * pattern);

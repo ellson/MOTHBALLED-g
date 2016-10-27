@@ -1,32 +1,12 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#if 1
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-
-#include "libje_private.h"
-#include "frag.h"
-#include "tree.h"
-
-#else
-
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
-#include "inbuf.h"
-#include "grammar.h"
-#include "list.h"
-#include "token.h"
-
-#endif
-
-#include "emit_act.h"
-#include "reduce.h"
+#include "parse.h"
 
 // forward declarations
 

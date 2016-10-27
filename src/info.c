@@ -1,11 +1,14 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#include <stdio.h>
+#include <stdint.h>
 #include <time.h>
-#include <unistd.h>
 #include <sys/utsname.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include <pwd.h>
 #include <errno.h>
+#include <assert.h>
 
 // include local configuration
 #ifdef HAVE_CONFIG_H

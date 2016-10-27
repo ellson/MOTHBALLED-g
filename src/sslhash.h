@@ -7,10 +7,7 @@
 #include "config.h"
 #endif
 
-#include <openssl/evp.h>
-
 #include "frag.h"
-
 
 #ifdef __cplusplus
 extern "C" {

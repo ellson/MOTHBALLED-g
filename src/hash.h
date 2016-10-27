@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-#include <string.h>
-
 #include "libje.h"
 #include "list.h"
 

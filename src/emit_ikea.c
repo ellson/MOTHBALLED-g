@@ -8,7 +8,9 @@
 #include <sys/types.h>
 #include <assert.h>
 
-#include "libje_private.h"
+#include "ikea.h"
+#include "context.h"
+#include "emit.h"
 
 // forward declaration
 static void ikea_list_r(container_CONTEXT_t *CC, elem_t * list);

@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#include "context.h"
+
 void je_emit_act(container_CONTEXT_t * CC, elem_t *list);
 
 #ifdef __cplusplus

@@ -7,6 +7,9 @@
 extern "C" {
 #endif
 
+#include "list.h"
+#include "context.h"
+
 void je_sameas(container_CONTEXT_t * CC, elem_t * subject);
 
 #ifdef __cplusplus

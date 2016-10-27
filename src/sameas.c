@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "libje_private.h"
+#include "sameas.h"
 
 static void je_sameas_r(container_CONTEXT_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist);
 

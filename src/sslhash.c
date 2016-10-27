@@ -1,5 +1,10 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#include <stdio.h>
+#include <stdint.h>
+#include <openssl/evp.h>
+#include <assert.h>
+
 #include "sslhash.h"
 
 static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list);

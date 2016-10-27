@@ -13,9 +13,6 @@
 #include "config.h"
 #endif
 
-static char *tempdir_template="/tmp/g_XXXXXX";
-static char *tempfile_template="/g_XXXXXX";
-
 #if defined ( _MSC_VER) || defined(__WATCOMC__)
 #include <io.h>
 #ifndef O_ACCMODE
@@ -23,7 +20,6 @@ static char *tempfile_template="/g_XXXXXX";
 #endif
 #endif
 
-#include "fatal.h"
 #include "ikea.h"
 
 /**
@@ -46,6 +42,9 @@ static char *tempfile_template="/g_XXXXXX";
  *        to a compressed tar file.
  *        When g is running, the tree is unpacked into a private tree.
  */
+
+static char *tempdir_template="/tmp/g_XXXXXX";
+static char *tempfile_template="/g_XXXXXX";
 
 // private structs
 struct ikea_store_s {

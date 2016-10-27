@@ -7,7 +7,14 @@
 #include <sys/types.h>
 #include <errno.h>
 
-#include "libje_private.h"
+// private includes
+#include "token.h"
+#include "context.h"
+#include "ikea.h"
+#include "emit.h"
+
+// public include
+#include "libje.h"
 
 /**
  * initiaze context and process file args

@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-#include <assert.h>
-
 #include "fatal.h"
 
 

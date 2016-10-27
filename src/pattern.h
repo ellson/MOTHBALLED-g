@@ -7,6 +7,10 @@
 extern "C" {
 #endif
 
+#include "list.h"
+#include "context.h"
+#include "emit.h"
+
 void je_pattern(container_CONTEXT_t * CC, elem_t * root, elem_t * subject);
 
 #ifdef __cplusplus

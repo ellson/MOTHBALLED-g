@@ -11,6 +11,9 @@ extern "C" {
 #include "config.h"
 #endif
 
+#include <time.h>
+#include <sys/types.h>
+#include <unistd.h>
 #ifdef HAVE_SYSINFO
 #include <sys/sysinfo.h>
 #else
@@ -23,26 +26,15 @@ extern "C" {
 #include "token.h"
 #include "ikea.h"
 
-struct context_s {             // input_context
+struct context_s {             // context
+ 
+//FIXME -- parser context
+
     TOKEN_t TOKEN;             // Must be first (to allow casting from CONTEXT_t)
 
-    char *progname;            // name of program
-    FILE *out;                 // typically stdout for parser debug outputs
-
-    char *username;            // set by first call to g_session
-    char *hostname;            // ditto
     char has_cousin;           // flag set if a COUSIN is found in any EDGE of the ACT
                                //  (forward EDGE to ancestors for processing)
-    char needstats;            // flag set if -s on command line
-    char sep;                  // the next separator
-                               // (either 0, or ' ' if following a STRING that
-                               // requires a separator,  but may be ignored if
-                               // the next character is a token which implicitly separates.)
-    style_t style;             // spacing style in emitted outputs
     int containment;           // depth of containment
-    ikea_store_t *ikea_store;  // persistency
-    ikea_box_t *namehash_buckets[64];
-    elem_t *hash_buckets[64];  // 64 buckets of name hashes and FILE*.
     long stat_inactcount;
     long stat_outactcount;
     long stat_sameas;
@@ -50,6 +42,26 @@ struct context_s {             // input_context
     long stat_nonpatternactcount;
     long stat_patternmatches;
     long stat_containercount;
+
+
+//FIXME -- output context
+
+    FILE *out;                 // typically stdout for parser debug outputs
+    style_t style;             // spacing style in emitted outputs
+    char sep;                  // the next separator
+                               // (either 0, or ' ' if following a STRING that
+                               // requires a separator,  but may be ignored if
+                               // the next character is a token which implicitly separates.)
+    ikea_store_t *ikea_store;  // persistency
+    ikea_box_t *namehash_buckets[64];
+    elem_t *hash_buckets[64];  // 64 buckets of name hashes and FILE*.
+
+// FIXME -- session context
+
+    char needstats;            // flag set if -s on command line
+    char *progname;            // name of program
+    char *username;            // set by first call to g_session
+    char *hostname;            // ditto
 
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe struct - but should be ok for uptime

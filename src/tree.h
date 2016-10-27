@@ -7,6 +7,10 @@
 extern "C" {
 #endif
 
+#include "context.h"
+#include "compare.h"
+#include "frag.h"
+
 elem_t * search(elem_t * p, elem_t * key);
 void print_tree(CONTEXT_t * C, elem_t * p);
 elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key);

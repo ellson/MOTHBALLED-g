@@ -1,24 +1,23 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#ifndef LIBJE_PRIVATE_H
-#define LIBJE_PRIVATE_H
+#ifndef PARSE_H
+#define PARSE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// include public interface
-#include "libje.h"
-
-// private headers
-#include "emit.h"
-#include "hash.h"
+#include "list.h"
 #include "context.h"
-#include "emit.h"
-#include "pattern.h"
+#include "frag.h"
+#include "tree.h"
 #include "sameas.h"
+#include "pattern.h"
 #include "dispatch.h"
 #include "expand.h"
+#include "reduce.h"
+#include "emit_act.h"
+#include "emit.h"
 
 #ifdef __cplusplus
 }

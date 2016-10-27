@@ -2,10 +2,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
 
-#include "libje_private.h"
+#include "emit_act.h"
 
 // forward declaration
 static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes);

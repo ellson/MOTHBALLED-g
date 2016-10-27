@@ -5,10 +5,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "libje_private.h"
-
-#include "compare.h"
-#include "frag.h"
 #include "tree.h"
 
 static uint16_t max(uint16_t  a, uint16_t  b)
