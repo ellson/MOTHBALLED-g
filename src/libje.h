@@ -23,18 +23,18 @@ typedef enum {
 
 // libje.c
 PARSE_t *je_initialize( int *argc, char *argv[], int optind );
-void je_finalize( PARSE_t * C );
-void je_interrupt( PARSE_t * C );
+void je_finalize( PARSE_t * PARSE );
+void je_interrupt( PARSE_t * PARSE );
 
 // emit.c
 success_t je_select_emitter(char *name);
 
 // parse.c
-success_t je_parse( PARSE_t * C);
+success_t je_parse( PARSE_t * PARSE);
 
 // info.c
-char * je_session( PARSE_t * C );
-char * je_stats( PARSE_t * C );
+char * je_session( PARSE_t * PARSE );
+char * je_stats( PARSE_t * PARSE );
 
 // dumpg.c
 void set_sstyle( void );

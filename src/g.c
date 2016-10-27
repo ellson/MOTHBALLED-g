@@ -12,14 +12,14 @@
 #include "fatal.h"   // FIXME - so is this public or private?
                      // or should option processing be in a private function?
 
-static PARSE_t *C;  // the input context - needs to be global for intr()
+static PARSE_t * PARSE;  // the input context - needs to be global for intr()
 
 // if interrupted we try to gracefully snapshot the current state 
 static void intr(int s)
 {
     (void) s; // NOTUSED
 
-    je_interrupt(C);
+    je_interrupt(PARSE);
 
     exit (EXIT_FAILURE);
 }
@@ -80,19 +80,19 @@ int main(int argc, char *argv[])
     }
 
     // create the top-level context for processing the inputs
-    C = je_initialize(&argc, argv, optind);
+    PARSE = je_initialize(&argc, argv, optind);
 
     // parse the input 
-    je_parse(C);
+    je_parse(PARSE);
 
     // and stats, if wanted 
     if (needstats) {
         // FIXME - need pretty-printer
-        fprintf (stderr, "%s\n", je_session(C));
-        fprintf (stderr, "%s\n", je_stats(C));
+        fprintf (stderr, "%s\n", je_session(PARSE));
+        fprintf (stderr, "%s\n", je_stats(PARSE));
     }
 
-    je_finalize(C);
+    je_finalize(PARSE);
 
     exit(EXIT_SUCCESS);
 }

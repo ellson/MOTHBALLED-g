@@ -76,8 +76,8 @@ void je_emit_act(CONTENT_t * CONTENT, elem_t *list)
 #define DOTLANG 1
 static void emit_act_func(CONTENT_t * CONTENT, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes)
 {
-    PARSE_t *C = CONTENT->C;
-    C->sep = '\0';
+    PARSE_t * PARSE = CONTENT->PARSE;
+    PARSE->sep = '\0';
 
     switch (verb) {
     case ACTIVITY: break;               // add
@@ -111,7 +111,7 @@ static void emit_act_func(CONTENT_t * CONTENT, state_t verb, state_t subjtype, e
         emit_act_list_r(CONTENT, subject->u.l.first);
         putc('-', stdout);
         putc('-', stdout);
-        C->sep = '\0';
+        PARSE->sep = '\0';
         emit_act_list_r(CONTENT, subject->u.l.first->next);
 #endif
         break;
@@ -122,13 +122,13 @@ static void emit_act_func(CONTENT_t * CONTENT, state_t verb, state_t subjtype, e
     if (disambig) {
 #ifndef DOTLANG
         putc('`', stdout);
-        C->sep = '\0';
+        PARSE->sep = '\0';
         emit_act_list_r(CONTENT, disambig->u.l.first); // skip DISAMBID
 #endif
     }
     if (attributes) {
         putc('[', stdout);
-        C->sep = '\0';
+        PARSE->sep = '\0';
         emit_act_list_r(CONTENT, attributes);
         putc(']', stdout);
     }
@@ -147,16 +147,16 @@ static void emit_act_list_r(CONTENT_t * CONTENT, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-        emit_act_print_frags(liststate, elem, &(CONTENT->C->sep));
+        emit_act_print_frags(liststate, elem, &(CONTENT->PARSE->sep));
         break;
     case SHORTSTRELEM:
-        emit_act_print_shortstr(elem, &(CONTENT->C->sep));
+        emit_act_print_shortstr(elem, &(CONTENT->PARSE->sep));
         break;
     case LISTELEM:
         while (elem) {
             if ((state_t)(elem->state) == EQL) {
                 putc('=', stdout);
-                CONTENT->C->sep = '\0';
+                CONTENT->PARSE->sep = '\0';
             }
             else {
                 emit_act_list_r(CONTENT, elem);    // recurse

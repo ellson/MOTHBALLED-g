@@ -26,13 +26,13 @@
  */
 PARSE_t *je_initialize(int *pargc, char *argv[], int optind)
 {
-    PARSE_t *C;
+    PARSE_t *PARSE;
 
-    if (! (C = calloc(1, sizeof(PARSE_t))))
+    if (! (PARSE = calloc(1, sizeof(PARSE_t))))
         fatal_perror("Error - calloc(): ");
 
-    C->progname = argv[0];
-    C->out = stdout;
+    PARSE->progname = argv[0];
+    PARSE->out = stdout;
 
     argv = &argv[optind];
     *pargc -= optind;
@@ -42,38 +42,38 @@ PARSE_t *je_initialize(int *pargc, char *argv[], int optind)
         *pargc = 1;
     }
 
-    C->TOKEN.pargc = pargc;
-    C->TOKEN.argv = argv;
+    PARSE->TOKEN.pargc = pargc;
+    PARSE->TOKEN.argv = argv;
 
     // gather session info, including starttime.
     //    subsequent calls to je_session() just reuse the info gathered in this first call.
-    je_session(C);
+    je_session(PARSE);
     
     // create (or reopen) store for the containers
-    C->ikea_store = ikea_store_open( NULL );
+    PARSE->ikea_store = ikea_store_open( NULL );
 
-    emit_initialize(C);
+    emit_initialize(PARSE);
 
-    return C;
+    return PARSE;
 }
 
 /**
  * finalize and free context
  *
- * @param C context
+ * @param PARSE context
  */
-void je_finalize( PARSE_t * C )
+void je_finalize( PARSE_t * PARSE )
 {
-   emit_finalize(C);
+   emit_finalize(PARSE);
 
-   ikea_store_snapshot(C->ikea_store);
-   ikea_store_close(C->ikea_store);
+   ikea_store_snapshot(PARSE->ikea_store);
+   ikea_store_close(PARSE->ikea_store);
 
    // free context
-   free(C);
+   free(PARSE);
 }
 
-void je_interrupt( PARSE_t * C )
+void je_interrupt( PARSE_t * PARSE )
 {
-   ikea_store_close(C->ikea_store);
+   ikea_store_close(PARSE->ikea_store);
 }

@@ -11,11 +11,11 @@ extern "C" {
 
 typedef struct {
     char *name;
-    void (*initialize) (PARSE_t * C);
-    void (*finalize) (PARSE_t * C);
+    void (*initialize) (PARSE_t * PARSE);
+    void (*finalize) (PARSE_t * PARSE);
 
-    void (*start_file) (PARSE_t * C);
-    void (*end_file) (PARSE_t * C);
+    void (*start_file) (PARSE_t * PARSE);
+    void (*end_file) (PARSE_t * PARSE);
 
     void (*start_activity) (CONTENT_t * CONTENT);
     void (*end_activity) (CONTENT_t * CONTENT);
@@ -33,21 +33,21 @@ typedef struct {
     void (*subject) (CONTENT_t * CONTENT, elem_t * root);
     void (*attributes) (CONTENT_t * CONTENT, elem_t * root);
 
-    void (*sep) (PARSE_t * C);
-    void (*token) (PARSE_t * C, char token);
-    void (*string) (PARSE_t * C, elem_t * branch);
-    void (*frag) (PARSE_t * C, unsigned char len, unsigned char *frag);
+    void (*sep) (PARSE_t * PARSE);
+    void (*token) (PARSE_t * PARSE, char token);
+    void (*string) (PARSE_t * PARSE, elem_t * branch);
+    void (*frag) (PARSE_t * PARSE, unsigned char len, unsigned char *frag);
 } emit_t;
 
-#define emit_initialize(C) \
-    if (emit->initialize) {emit->initialize(C);}
-#define emit_finalize(C) \
-    if (emit->finalize) {emit->finalize(C);}
+#define emit_initialize(PARSE) \
+    if (emit->initialize) {emit->initialize(PARSE);}
+#define emit_finalize(PARSE) \
+    if (emit->finalize) {emit->finalize(PARSE);}
 
-#define emit_start_file(C) \
-    if (emit->start_file) {emit->start_file(C);}
-#define emit_end_file(C) \
-    if (emit->end_file) {emit->end_file(C);}
+#define emit_start_file(PARSE) \
+    if (emit->start_file) {emit->start_file(PARSE);}
+#define emit_end_file(PARSE) \
+    if (emit->end_file) {emit->end_file(PARSE);}
 
 #define emit_start_activity(CONTENT) \
     if (emit->start_activity) {emit->start_activity(CONTENT);}
@@ -64,10 +64,10 @@ typedef struct {
 #define emit_end_subject(CONTENT) \
     if (emit->end_subject) {emit->end_subject(CONTENT);}
 
-#define emit_start_state(C, class, prop, nest, repc) \
-    if (emit->start_state) {emit->start_state(C, class, prop, nest, repc);}
-#define emit_end_state(C, class, rc, nest, repc) \
-    if (emit->end_state) {emit->end_state(C, class, rc, nest, repc);}
+#define emit_start_state(PARSE, class, prop, nest, repc) \
+    if (emit->start_state) {emit->start_state(PARSE, class, prop, nest, repc);}
+#define emit_end_state(PARSE, class, rc, nest, repc) \
+    if (emit->end_state) {emit->end_state(PARSE, class, rc, nest, repc);}
 #define emit_act(CONTENT, root) \
     if (emit->act) {emit->act(CONTENT, root);}
 #define emit_subject(CONTENT, root) \
@@ -75,14 +75,14 @@ typedef struct {
 #define emit_attributes(CONTENT, root) \
     if (emit->attributes) {emit->attributes(CONTENT, root);}
 
-#define emit_sep(C) \
-    if (emit->sep) {emit->sep(C);}
-#define emit_token(C, token) \
-    if (emit->token) {emit->token(C, token);}
-#define emit_string(C, branch) \
-    if (emit->string) {emit->string(C, branch);}
-#define emit_frag(C, len, frag) \
-    if (emit->frag) {emit->frag(C, len, frag);}
+#define emit_sep(PARSE) \
+    if (emit->sep) {emit->sep(PARSE);}
+#define emit_token(PARSE, token) \
+    if (emit->token) {emit->token(PARSE, token);}
+#define emit_string(PARSE, branch) \
+    if (emit->string) {emit->string(PARSE, branch);}
+#define emit_frag(PARSE, len, frag) \
+    if (emit->frag) {emit->frag(PARSE, len, frag);}
 
 // if we're not providing the function in any api,
 //    then we can avoid the runtime cost of testing for it
@@ -99,17 +99,17 @@ typedef struct {
 #define emit_end_subject(CONTENT, len, frag)
 
 #undef emit_frag
-#define emit_frag(C, len, frag)
+#define emit_frag(PARSE, len, frag)
 
 // emit.c
 extern emit_t *emit;
 extern emit_t g_api, g1_api, g2_api, g3_api, t_api, t1_api, gv_api;
 char je_char_prop(unsigned char prop, char noprop);
-void je_append_token(PARSE_t *C, char **pos, char tok);
-void je_append_string(PARSE_t *C, char **pos, char *string);
-void je_append_ulong(PARSE_t *C, char **pos, uint64_t integer);
-void je_append_runtime(PARSE_t *C, char **pos, uint64_t run_sec, uint64_t run_ns);
-void je_emit_list(PARSE_t * C, FILE * chan, elem_t * subject);
+void je_append_token(PARSE_t * PARSE, char **pos, char tok);
+void je_append_string(PARSE_t * PARSE, char **pos, char *string);
+void je_append_ulong(PARSE_t * PARSE, char **pos, uint64_t integer);
+void je_append_runtime(PARSE_t * PARSE, char **pos, uint64_t run_sec, uint64_t run_ns);
+void je_emit_list(PARSE_t * PARSE, FILE * chan, elem_t * subject);
 void je_emit_ikea(CONTENT_t * CONTENT, elem_t *list);
 
 #ifdef __cplusplus

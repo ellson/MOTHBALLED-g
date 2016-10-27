@@ -14,7 +14,7 @@ uint16_t print_len_frag(FILE * chan, unsigned char *len_frag);
 void print_frags(FILE * chan, state_t state, elem_t * elem, char *sep);
 void print_list(FILE * chan, elem_t * list, int indent, char *sep);
 
-#define P(C, L) {((PARSE_t*)C)->sep = ' ';print_list(stdout, L, 0, &(((PARSE_t*)C)->sep));putc('\n', stdout);}
+#define P(PARSE, L) {((PARSE_t*)C)->sep = ' ';print_list(stdout, L, 0, &(((PARSE_t*)C)->sep));putc('\n', stdout);}
 
 #ifdef __cplusplus
 }

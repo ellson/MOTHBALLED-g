@@ -50,8 +50,8 @@ je_pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern);
  */
 void je_pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject)
 {
-    PARSE_t *C = CONTENT->C;
-    LIST_t * LIST = (LIST_t *)C;
+    PARSE_t * PARSE = CONTENT->PARSE;
+    LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *pattern_acts, *pact, *psubj, *pattr;
 
     assert(root);
@@ -87,7 +87,7 @@ void je_pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject)
 
             // FIXME -- contents
 
-            C->stat_patternmatches++;
+            PARSE->stat_patternmatches++;
         }
     }
 }

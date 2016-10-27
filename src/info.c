@@ -47,10 +47,10 @@
  * is used. It is only filled on the first call,  if session() is
  * called again the same result is used.
  *
- * @param C context
+ * @param PARSE context
  * @return formatted string result
  */
-char * je_session(PARSE_t *C)
+char * je_session(PARSE_t * PARSE)
 {
     static char buf[SESSION_BUF_SIZE];
     static char *pos = &buf[0];  // NB. static. This initalization happens only once
@@ -69,49 +69,49 @@ char * je_session(PARSE_t *C)
         return buf;
     }
 
-    je_append_string  (C, &pos, "stats_fixed");
-    je_append_token   (C, &pos, '[');
+    je_append_string  (PARSE, &pos, "stats_fixed");
+    je_append_token   (PARSE, &pos, '[');
 
-    je_append_string  (C, &pos, "progname");
-    je_append_token   (C, &pos, '=');
-    je_append_string  (C, &pos, C->progname);
+    je_append_string  (PARSE, &pos, "progname");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_string  (PARSE, &pos, PARSE->progname);
 
-    C->pid = getpid();
-    je_append_string  (C, &pos, "pid");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->pid);
+    PARSE->pid = getpid();
+    je_append_string  (PARSE, &pos, "pid");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->pid);
 
     uid = geteuid();
     if (!(pw = getpwuid(uid)))
         fatal_perror("Error - getpwuid(): ");
-    C->username = pw->pw_name;
-    je_append_string  (C, &pos, "username");
-    je_append_token   (C, &pos, '=');
-    je_append_string  (C, &pos, C->username);
+    PARSE->username = pw->pw_name;
+    je_append_string  (PARSE, &pos, "username");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_string  (PARSE, &pos, PARSE->username);
 
     if (uname(&unamebuf))
         fatal_perror("Error - uname(): ");
-    C->hostname = unamebuf.nodename;
-    je_append_string  (C, &pos, "hostname");
-    je_append_token   (C, &pos, '=');
-    je_append_string  (C, &pos, C->hostname);
+    PARSE->hostname = unamebuf.nodename;
+    je_append_string  (PARSE, &pos, "hostname");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_string  (PARSE, &pos, PARSE->hostname);
 
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe function - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (clock_gettime(CLOCK_BOOTTIME, &(C->uptime)))
+    if (clock_gettime(CLOCK_BOOTTIME, &(PARSE->uptime)))
         fatal_perror("Error - clock_gettime(): ");
-    je_append_string  (C, &pos, "uptime");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->uptime.tv_sec);
+    je_append_string  (PARSE, &pos, "uptime");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->uptime.tv_sec);
 #else
     // Y2038-unsafe function - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (gettimeofday(&(C->uptime), NULL))
+    if (gettimeofday(&(PARSE->uptime), NULL))
         fatal_perror("Error - gettimeofday(): ");
-    je_append_string  (C, &pos, "uptime");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->uptime.tv_sec);
+    je_append_string  (PARSE, &pos, "uptime");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->uptime.tv_sec);
 #endif
 
 #if defined(HAVE_CLOCK_GETTIME)
@@ -119,36 +119,36 @@ char * je_session(PARSE_t *C)
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (clock_gettime(CLOCK_REALTIME, &starttime))
         fatal_perror("Error - clock_gettime(): ");
-    je_append_string  (C, &pos, "starttime");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, starttime.tv_sec);
+    je_append_string  (PARSE, &pos, "starttime");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, starttime.tv_sec);
 #else
     // Y2038-unsafe function - FIXME
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (gettimeofday(&starttime, NULL))
         fatal_perror("Error - gettimeofday(): ");
-    je_append_string  (C, &pos, "starttime");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, starttime.tv_sec);
+    je_append_string  (PARSE, &pos, "starttime");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, starttime.tv_sec);
 #endif
 
-    je_append_string  (C, &pos, "inbufsize");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, sizeof(inbuf_t));
+    je_append_string  (PARSE, &pos, "inbufsize");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, sizeof(inbuf_t));
 
-    je_append_string  (C, &pos, "inbufcapacity");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, INBUFIZE);
+    je_append_string  (PARSE, &pos, "inbufcapacity");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, INBUFIZE);
 
-    je_append_string  (C, &pos, "elemsize");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, sizeof(elem_t));
+    je_append_string  (PARSE, &pos, "elemsize");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, sizeof(elem_t));
 
-    je_append_string  (C, &pos, "elemmallocsize");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, LISTALLOCNUM * sizeof(elem_t));
+    je_append_string  (PARSE, &pos, "elemmallocsize");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, LISTALLOCNUM * sizeof(elem_t));
 
-    je_append_token   (C, &pos, ']');
+    je_append_token   (PARSE, &pos, ']');
 
     assert(pos < buf+SESSION_BUF_SIZE);
 
@@ -162,16 +162,16 @@ char * je_session(PARSE_t *C)
 /**
  * format running stats as a string
  *
- * @param C context
+ * @param PARSE context
  * @return formatted string
  */
-char * je_stats(PARSE_t *C)
+char * je_stats(PARSE_t * PARSE)
 {
     static char buf[STATS_BUF_SIZE];
 
     char *pos = &buf[0];  // NB non-static.  stats are updated and re-formatted on each call
     
-    C->sep = '\0';
+    PARSE->sep = '\0';
 #ifdef HAVE_CLOCK_GETTIME
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
@@ -183,8 +183,8 @@ char * je_stats(PARSE_t *C)
 #endif
     long runtime;    // runtime in seconds
 
-    je_append_string  (C, &pos, "stats_running");
-    je_append_token   (C, &pos, '[');
+    je_append_string  (PARSE, &pos, "stats_running");
+    je_append_token   (PARSE, &pos, '[');
 
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe struct - but should be ok for uptime
@@ -192,114 +192,114 @@ char * je_stats(PARSE_t *C)
     if (clock_gettime(CLOCK_BOOTTIME, &nowtime))
         fatal_perror("Error - clock_gettime(): ");
     runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_nsec)
-            - ((uint64_t)(C->uptime.tv_sec) * TEN9 + (uint64_t)(C->uptime.tv_nsec));
+            - ((uint64_t)(PARSE->uptime.tv_sec) * TEN9 + (uint64_t)(PARSE->uptime.tv_nsec));
 #else
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (gettimeofday(&nowtime, NULL))
         fatal_perror("Error - gettimeofday(): ");
     runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_usec) * TEN3
-            - ((uint64_t)(C->uptime.tv_sec) * TEN9 + (uint64_t)(C->uptime.tv_usec) * TEN3);
+            - ((uint64_t)(PARSE->uptime.tv_sec) * TEN9 + (uint64_t)(PARSE->uptime.tv_usec) * TEN3);
 #endif
 
-    je_append_string  (C, &pos, "runtime");
-    je_append_token   (C, &pos, '=');
-    je_append_runtime (C, &pos, runtime/TEN9, runtime%TEN9);
+    je_append_string  (PARSE, &pos, "runtime");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_runtime (PARSE, &pos, runtime/TEN9, runtime%TEN9);
 
-    je_append_string  (C, &pos, "files");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.stat_filecount);
+    je_append_string  (PARSE, &pos, "files");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->TOKEN.stat_filecount);
 
-    je_append_string  (C, &pos, "lines");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, 1 + (C->TOKEN.stat_lfcount ? C->TOKEN.stat_lfcount : C->TOKEN.stat_crcount));
+    je_append_string  (PARSE, &pos, "lines");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, 1 + (PARSE->TOKEN.stat_lfcount ? PARSE->TOKEN.stat_lfcount : PARSE->TOKEN.stat_crcount));
 
-    je_append_string  (C, &pos, "inacts");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->stat_inactcount);
+    je_append_string  (PARSE, &pos, "inacts");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->stat_inactcount);
 
-    je_append_string  (C, &pos, "inacts_per_second");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->stat_inactcount*TEN9/runtime);
+    je_append_string  (PARSE, &pos, "inacts_per_second");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->stat_inactcount*TEN9/runtime);
 
-    je_append_string  (C, &pos, "sameas");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->stat_sameas);
+    je_append_string  (PARSE, &pos, "sameas");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->stat_sameas);
 
-    je_append_string  (C, &pos, "patternacts");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->stat_patternactcount);
+    je_append_string  (PARSE, &pos, "patternacts");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->stat_patternactcount);
 
-    je_append_string  (C, &pos, "nonpatternacts");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->stat_nonpatternactcount);
+    je_append_string  (PARSE, &pos, "nonpatternacts");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->stat_nonpatternactcount);
 
-    je_append_string  (C, &pos, "patternmatches");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->stat_patternmatches);
+    je_append_string  (PARSE, &pos, "patternmatches");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->stat_patternmatches);
 
-    je_append_string  (C, &pos, "outacts");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->stat_outactcount);
+    je_append_string  (PARSE, &pos, "outacts");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->stat_outactcount);
 
-    je_append_string  (C, &pos, "strings");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.stat_stringcount);
+    je_append_string  (PARSE, &pos, "strings");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->TOKEN.stat_stringcount);
 
-    je_append_string  (C, &pos, "fragmentss");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.stat_fragcount);
+    je_append_string  (PARSE, &pos, "fragmentss");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->TOKEN.stat_fragcount);
 
-    je_append_string  (C, &pos, "inchars");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.stat_inchars);
+    je_append_string  (PARSE, &pos, "inchars");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->TOKEN.stat_inchars);
 
-    je_append_string  (C, &pos, "chars_per_second");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.stat_inchars + TEN9 / runtime);
+    je_append_string  (PARSE, &pos, "chars_per_second");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->TOKEN.stat_inchars + TEN9 / runtime);
 
-    je_append_string  (C, &pos, "inbufmax");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.LIST.INBUF.stat_inbufmax);
+    je_append_string  (PARSE, &pos, "inbufmax");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.INBUF.stat_inbufmax);
 
-    je_append_string  (C, &pos, "inbufnow");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.LIST.INBUF.stat_inbufnow);
+    je_append_string  (PARSE, &pos, "inbufnow");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.INBUF.stat_inbufnow);
 
-    je_append_string  (C, &pos, "elemmax");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.LIST.stat_elemmax);
+    je_append_string  (PARSE, &pos, "elemmax");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.stat_elemmax);
 
-    je_append_string  (C, &pos, "elemnow");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.LIST.stat_elemnow);
+    je_append_string  (PARSE, &pos, "elemnow");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.stat_elemnow);
 
-    je_append_string  (C, &pos, "inbufmallocsize");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, INBUFALLOCNUM * sizeof(inbuf_t));
+    je_append_string  (PARSE, &pos, "inbufmallocsize");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, INBUFALLOCNUM * sizeof(inbuf_t));
 
-    je_append_string  (C, &pos, "inbufmalloccount");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.LIST.INBUF.stat_inbufmalloc);
+    je_append_string  (PARSE, &pos, "inbufmalloccount");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.INBUF.stat_inbufmalloc);
 
-    je_append_string  (C, &pos, "inbufmalloctotal");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.LIST.INBUF.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t));
+    je_append_string  (PARSE, &pos, "inbufmalloctotal");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.INBUF.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t));
 
-    je_append_string  (C, &pos, "elemmalloccount");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.LIST.stat_elemmalloc);
+    je_append_string  (PARSE, &pos, "elemmalloccount");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.stat_elemmalloc);
 
-    je_append_string  (C, &pos, "elemmalloctotal");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, C->TOKEN.LIST.stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t));
+    je_append_string  (PARSE, &pos, "elemmalloctotal");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t));
 
-    je_append_string  (C, &pos, "malloctotal");
-    je_append_token   (C, &pos, '=');
-    je_append_ulong   (C, &pos, (C->TOKEN.LIST.stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t))
-                        + (C->TOKEN.LIST.INBUF.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t)));
+    je_append_string  (PARSE, &pos, "malloctotal");
+    je_append_token   (PARSE, &pos, '=');
+    je_append_ulong   (PARSE, &pos, (PARSE->TOKEN.LIST.stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t))
+                        + (PARSE->TOKEN.LIST.INBUF.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t)));
 
-    je_append_token   (C, &pos, ']');
+    je_append_token   (PARSE, &pos, ']');
 
     assert(pos < buf+STATS_BUF_SIZE);
 

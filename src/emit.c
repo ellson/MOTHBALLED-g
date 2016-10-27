@@ -12,7 +12,7 @@
 
 // forward declarations
 #if 0
-static void je_gvrender_list(PARSE_t *C, FILE *chan, elem_t * list);
+static void je_gvrender_list(PARSE_t * PARSE, FILE *chan, elem_t * list);
 #endif
 
 // jump table for available emitters 
@@ -21,20 +21,20 @@ static emit_t *emitters[] =
 
 static void api_act(CONTENT_t * CONTENT, elem_t *elem)
 {
-    PARSE_t *C = CONTENT->C;
+    PARSE_t * PARSE = CONTENT->PARSE;
 
     if (!CONTENT->out)
         return;
 
 #if 0
     // render through libcgraph to svg
-    je_gvrender_list(CONTENT->C, stdout, elem);
+    je_gvrender_list(CONTENT->PARSE, stdout, elem);
     putc('\n', stdout);   // NL after
 #endif
 
-    C->sep = 0;         // suppress space before (because preceded by BOF or NL)
+    PARSE->sep = 0;         // suppress space before (because preceded by BOF or NL)
     // emit in g format
-    je_emit_list(CONTENT->C, CONTENT->out, elem);
+    je_emit_list(CONTENT->PARSE, CONTENT->out, elem);
     putc('\n', CONTENT->out);   // NL after
 }
 
@@ -143,86 +143,86 @@ char je_char_prop(unsigned char prop, char noprop)
     return c;
 }
 
-void je_append_token(PARSE_t *C, char **pos, char tok)
+void je_append_token(PARSE_t * PARSE, char **pos, char tok)
 {
     // FIXME - check available buffer space
                         // ignore sep before
     *(*pos)++ = (unsigned char)tok;    // copy token
     **pos = '\0';       // and replace terminating NULL
-    C->sep = 0;        // no sep required after tokens
+    PARSE->sep = 0;        // no sep required after tokens
 }
 
-void je_append_string(PARSE_t *C, char **pos, char *string)
+void je_append_string(PARSE_t * PARSE, char **pos, char *string)
 {
     int len;
 
     // FIXME - check available buffer space
-    if (C->sep) {
-        *(*pos)++ = C->sep; // sep before, if any
+    if (PARSE->sep) {
+        *(*pos)++ = PARSE->sep; // sep before, if any
     }
     len = sprintf(*pos,"%s",string);  // copy string
     if (len < 0)
         fatal_perror("Error - sprintf(): ");
-    C->sep = ' ';      // sep required after strings 
+    PARSE->sep = ' ';      // sep required after strings 
     *pos += len;
 }
 
-void je_append_ulong(PARSE_t *C, char **pos, uint64_t integer)
+void je_append_ulong(PARSE_t * PARSE, char **pos, uint64_t integer)
 {
     int len;
 
     // FIXME - check available buffer space
-    if (C->sep) {
-        *(*pos)++ = C->sep; // sep before, if any
+    if (PARSE->sep) {
+        *(*pos)++ = PARSE->sep; // sep before, if any
     }
     len = sprintf(*pos,"%lu",integer); // format integer to string
     if (len < 0)
         fatal_perror("Error - sprintf(): ");
-    C->sep = ' ';      // sep required after strings
+    PARSE->sep = ' ';      // sep required after strings
     *pos += len;
 }
 
 // special case formatter for runtime
-void je_append_runtime(PARSE_t *C, char **pos,
+void je_append_runtime(PARSE_t * PARSE, char **pos,
         uint64_t run_sec, uint64_t run_ns)
 {
     int len;
 
     // FIXME - check available buffer space
-    if (C->sep) *(*pos)++ = C->sep; // sep before, if any
+    if (PARSE->sep) *(*pos)++ = PARSE->sep; // sep before, if any
     len = sprintf(*pos,"%lu.%09lu",run_sec, run_ns);
     if (len < 0)
         fatal_perror("Error - sprintf(): ");
-    C->sep = ' ';   // sep required after strings
+    PARSE->sep = ' ';   // sep required after strings
     *pos += len;
 }
 
-static void je_emit_token(PARSE_t *C, FILE *chan, char tok)
+static void je_emit_token(PARSE_t * PARSE, FILE *chan, char tok)
 {
-    if (C->style == SHELL_FRIENDLY_STYLE) {
+    if (PARSE->style == SHELL_FRIENDLY_STYLE) {
         putc('\n', chan);
         putc(tok, chan);
         putc(' ', chan);
     } else {
         putc(tok, chan);
     }
-    C->sep = 0;
+    PARSE->sep = 0;
 }
 
-static void je_emit_close_token(PARSE_t *C, FILE *chan, char tok)
+static void je_emit_close_token(PARSE_t * PARSE, FILE *chan, char tok)
 {
-    if (C->style == SHELL_FRIENDLY_STYLE) {
+    if (PARSE->style == SHELL_FRIENDLY_STYLE) {
         putc('\n', chan);
         putc(tok, chan);
         putc('\n', chan);
     } else {
         putc(tok, chan);
     }
-    C->sep = 0;
+    PARSE->sep = 0;
 }
 
 #if 0
-static void je_gvrender_list(PARSE_t *C, FILE *chan, elem_t * list)
+static void je_gvrender_list(PARSE_t * PARSE, FILE *chan, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;
@@ -234,10 +234,10 @@ static void je_gvrender_list(PARSE_t *C, FILE *chan, elem_t * list)
     if (! (elem = list->u.l.first)) {
         switch (liststate) {
         case QRY:
-//            je_emit_token(C, chan, '?');
+//            je_emit_token(PARSE, chan, '?');
             break;
         case TLD:
-//            je_emit_token(C, chan, '~');
+//            je_emit_token(PARSE, chan, '~');
             break;
         default:
             break;
@@ -247,9 +247,9 @@ static void je_gvrender_list(PARSE_t *C, FILE *chan, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-        C->sep = 0;         // suppress space before (because preceded by BOF or NL)
+        PARSE->sep = 0;         // suppress space before (because preceded by BOF or NL)
         fprintf(chan, "addnode: ");
-        print_frags(chan, liststate, elem, &(C->sep));
+        print_frags(chan, liststate, elem, &(PARSE->sep));
         putc('\n',chan);
         break;
     case LISTELEM:
@@ -259,44 +259,44 @@ static void je_gvrender_list(PARSE_t *C, FILE *chan, elem_t * list)
                 switch (liststate) {
                 case EDGE:
                    fprintf(chan, "addedge: \n");
-//                    je_emit_token(C, chan, '<');
+//                    je_emit_token(PARSE, chan, '<');
                     break;
                 case OBJECT_LIST:
                 case ENDPOINTSET:
-//                    je_emit_token(C, chan, '(');
+//                    je_emit_token(PARSE, chan, '(');
                     break;
                 case ATTRIBUTES:
-//                    je_emit_token(C, chan, '[');
+//                    je_emit_token(PARSE, chan, '[');
                     break;
                 case CONTAINER:
-//                    je_emit_token(C, chan, '{');
+//                    je_emit_token(PARSE, chan, '{');
                     break;
                 case VALASSIGN:
-//                    je_emit_token(C, chan, '=');
+//                    je_emit_token(PARSE, chan, '=');
                     break;
                 case CHILD:
-//                    je_emit_token(C, chan, '/');
+//                    je_emit_token(PARSE, chan, '/');
                     break;
                 default:
                     break;
                 }
             }
-            je_gvrender_list(C, chan, elem);    // recurse
+            je_gvrender_list(PARSE, chan, elem);    // recurse
             elem = elem->next;
         }
         switch (liststate) {
         case EDGE:
-//            je_emit_close_token(C, chan, '>');
+//            je_emit_close_token(PARSE, chan, '>');
             break;
         case OBJECT_LIST:
         case ENDPOINTSET:
-//            je_emit_close_token(C, chan, ')');
+//            je_emit_close_token(PARSE, chan, ')');
             break;
         case ATTRIBUTES:
-//            je_emit_close_token(C, chan, ']');
+//            je_emit_close_token(PARSE, chan, ']');
             break;
         case CONTAINER:
-//            je_emit_close_token(C, chan, '}');
+//            je_emit_close_token(PARSE, chan, '}');
             break;
         default:
             break;
@@ -309,7 +309,7 @@ static void je_gvrender_list(PARSE_t *C, FILE *chan, elem_t * list)
 }
 #endif
 
-void je_emit_list(PARSE_t *C, FILE *chan, elem_t * list)
+void je_emit_list(PARSE_t * PARSE, FILE *chan, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;
@@ -321,10 +321,10 @@ void je_emit_list(PARSE_t *C, FILE *chan, elem_t * list)
     if (! (elem = list->u.l.first)) {
         switch (liststate) {
         case QRY:
-            je_emit_token(C, chan, '?');
+            je_emit_token(PARSE, chan, '?');
             break;
         case TLD:
-            je_emit_token(C, chan, '~');
+            je_emit_token(PARSE, chan, '~');
             break;
         default:
             break;
@@ -334,7 +334,7 @@ void je_emit_list(PARSE_t *C, FILE *chan, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-        print_frags(chan, liststate, elem, &(C->sep));
+        print_frags(chan, liststate, elem, &(PARSE->sep));
         break;
     case LISTELEM:
         cnt = 0;
@@ -342,44 +342,44 @@ void je_emit_list(PARSE_t *C, FILE *chan, elem_t * list)
             if (cnt++ == 0) {
                 switch (liststate) {
                 case EDGE:
-                    je_emit_token(C, chan, '<');
+                    je_emit_token(PARSE, chan, '<');
                     break;
                 case OBJECT_LIST:
                 case ENDPOINTSET:
-                    je_emit_token(C, chan, '(');
+                    je_emit_token(PARSE, chan, '(');
                     break;
                 case ATTRIBUTES:
-                    je_emit_token(C, chan, '[');
+                    je_emit_token(PARSE, chan, '[');
                     break;
                 case CONTAINER:
-                    je_emit_token(C, chan, '{');
+                    je_emit_token(PARSE, chan, '{');
                     break;
                 case VALASSIGN:
-                    je_emit_token(C, chan, '=');
+                    je_emit_token(PARSE, chan, '=');
                     break;
                 case CHILD:
-                    je_emit_token(C, chan, '/');
+                    je_emit_token(PARSE, chan, '/');
                     break;
                 default:
                     break;
                 }
             }
-            je_emit_list(C, chan, elem);    // recurse
+            je_emit_list(PARSE, chan, elem);    // recurse
             elem = elem->next;
         }
         switch (liststate) {
         case EDGE:
-            je_emit_close_token(C, chan, '>');
+            je_emit_close_token(PARSE, chan, '>');
             break;
         case OBJECT_LIST:
         case ENDPOINTSET:
-            je_emit_close_token(C, chan, ')');
+            je_emit_close_token(PARSE, chan, ')');
             break;
         case ATTRIBUTES:
-            je_emit_close_token(C, chan, ']');
+            je_emit_close_token(PARSE, chan, ']');
             break;
         case CONTAINER:
-            je_emit_close_token(C, chan, '}');
+            je_emit_close_token(PARSE, chan, '}');
             break;
         default:
             break;

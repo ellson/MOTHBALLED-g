@@ -8,8 +8,8 @@
 
 void je_reduce(CONTENT_t * CONTENT, elem_t *list)
 {
-    PARSE_t *C = CONTENT->C;
-    LIST_t *LIST = (LIST_t*)C;
+    PARSE_t * PARSE = CONTENT->PARSE;
+    LIST_t *LIST = (LIST_t*)PARSE;
     elem_t * elem;
     state_t liststate;
     state_t verb = 0;

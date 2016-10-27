@@ -21,7 +21,7 @@ static void je_sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold
  */
 void je_sameas(CONTENT_t * CONTENT, elem_t * subject)
 {
-    LIST_t * LIST = (LIST_t *)(CONTENT->C);
+    LIST_t * LIST = (LIST_t *)(CONTENT->PARSE);
     elem_t *newsubject, *oldsubject, *nextold;
     elem_t subject_rewrite = { 0 };
 
@@ -58,9 +58,9 @@ void je_sameas(CONTENT_t * CONTENT, elem_t * subject)
  */
 static void je_sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {
-    PARSE_t * C = CONTENT->C;
-    TOKEN_t * TOKEN = (TOKEN_t *)C;
-    LIST_t * LIST = (LIST_t *)C;
+    PARSE_t * PARSE = CONTENT->PARSE;
+    TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
+    LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *elem, *new, *nextoldelem = NULL;
     elem_t object = { 0 };
     state_t si;
@@ -70,10 +70,10 @@ static void je_sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold
     elem = subject->u.l.first;
 #if 0
 if (*nextold) {
-    C->sep = ' ';
-    print_list(stderr, *nextold, 0, &(C->sep));
+    PARSE->sep = ' ';
+    print_list(stderr, *nextold, 0, &(PARSE->sep));
     fprintf(stderr,"\n");
-    print_list(stderr, elem, 0, &(C->sep));
+    print_list(stderr, elem, 0, &(PARSE->sep));
     fprintf(stderr,"\n\n");
 }    
 #endif
@@ -128,7 +128,7 @@ if (*nextold) {
                 new = ref_list(LIST, *nextold);
                 append_list(newlist, new);
                 *nextold = (*nextold)->next;
-                C->stat_sameas++;
+                PARSE->stat_sameas++;
             } else {
                 je_token_error(TOKEN, si, "No corresponding object found for same-as substitution");
             }

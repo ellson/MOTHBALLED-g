@@ -163,16 +163,16 @@ success_t je_base64_to_long(const char b64string[], uint64_t *hash)
  * Internally the 64bit hashes are stored in 64 hash-buckets, each containing a list of hashes.
  * The least-significant 6 bits of the 64bit hashes are used to index to the hash-bucket.
  *
- * @param C context
+ * @param PARSE context
  * @param hash
  * @return a list element
  */
-hash_elem_t *je_hash_bucket(PARSE_t * C, uint64_t hash)
+hash_elem_t *je_hash_bucket(PARSE_t * PARSE, uint64_t hash)
 {
-    LIST_t * LIST = (LIST_t *)C;
+    LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *elem, **next;
 
-    next = &(C->hash_buckets[(hash & 0x3F)]);
+    next = &(PARSE->hash_buckets[(hash & 0x3F)]);
     while(*next) {
         elem  = *next;
         if (((hash_elem_t*)elem)->hash == hash) {

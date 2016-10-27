@@ -10,19 +10,19 @@
 
 // forward declarations
 
-static success_t parse_nest_r(PARSE_t * C, elem_t * name);
+static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name);
 
 static success_t parse_r(CONTENT_t * CONTENT, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc);
 
-static success_t parse_more_rep(PARSE_t * C, unsigned char prop);
+static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop);
 
 /**
  * parse G syntax input
  *
  * This parser recurses at two levels:
  *
- *    je_parse() --> parse_nest_r(C) --> parse_r(CONTENT) -| -|  
+ *    je_parse() --> parse_nest_r(PARSE) --> parse_r(CONTENT) -| -|  
  *                 ^                   ^              |  |
  *                 |                   |              |  |
  *                 |                   -------<-------|  |
@@ -34,19 +34,19 @@ static success_t parse_more_rep(PARSE_t * C, unsigned char prop);
  * The inner recursions are through the grammar state_machine at a single
  * level of containment - maintained in container_context (CONTENT)
  *
- * The top-level context (C) is available to both and maintains the input state.
+ * The top-level context (PARSE) is available to both and maintains the input state.
  *
- * @param C context
+ * @param PARSE context
  * @param name
  * @return success/fail
  */
 
-success_t je_parse(PARSE_t *C)
+success_t je_parse(PARSE_t * PARSE)
 {
-    return parse_nest_r(C, NULL);
+    return parse_nest_r(PARSE, NULL);
 }
 
-static success_t parse_nest_r(PARSE_t * C, elem_t * name)
+static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
 {
     CONTENT_t container_context = { 0 };
     CONTENT_t * CONTENT = &container_context;
@@ -57,20 +57,20 @@ static success_t parse_nest_r(PARSE_t * C, elem_t * name)
     uint64_t hash;
     char hashname[12], *filename;
 #endif
-    TOKEN_t * TOKEN = (TOKEN_t *)C;
-    LIST_t * LIST = (LIST_t *)C;
+    TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
+    LIST_t * LIST = (LIST_t *)PARSE;
 
-    CONTENT->C = C;
-    CONTENT->ikea_box = ikea_box_open(C->ikea_store, NULL);
+    CONTENT->PARSE = PARSE;
+    CONTENT->ikea_box = ikea_box_open(PARSE->ikea_store, NULL);
 #if 0
 // old, to be removed
     je_hash_list(&hash, name); // hash name (subject "names" can be very long)
-    hash_elem = je_hash_bucket(C, hash);    // save in bucket list 
+    hash_elem = je_hash_bucket(PARSE, hash);    // save in bucket list 
     if (! hash_elem->out) {          // open file, if not already open
         je_long_to_base64(hashname, &hash);
-        if (! (filename = malloc(strlen(C->tempdir) + 1 + strlen(hashname) + 1)))
+        if (! (filename = malloc(strlen(PARSE->tempdir) + 1 + strlen(hashname) + 1)))
             fatal_perror("Error - malloc(): ");
-        strcpy(filename, C->tempdir);
+        strcpy(filename, PARSE->tempdir);
         strcat(filename, "/");
         strcat(filename, hashname);
         hash_elem->out = fopen(filename,"a+b"); //open for binary append writes, + read.
@@ -84,8 +84,8 @@ static success_t parse_nest_r(PARSE_t * C, elem_t * name)
 CONTENT->out = stdout;
 
     emit_start_activity(CONTENT);
-    C->containment++;            // containment nesting level
-    C->stat_containercount++;    // number of containers
+    PARSE->containment++;            // containment nesting level
+    PARSE->stat_containercount++;    // number of containers
     if ((rc = parse_r(CONTENT, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
@@ -94,16 +94,16 @@ CONTENT->out = stdout;
         }
     }
     if (CONTENT->nodes) {
-        C->sep = '\0';
-        print_tree(C, CONTENT->nodes);
+        PARSE->sep = '\0';
+        print_tree(PARSE, CONTENT->nodes);
         putc('\n', stdout);
     }
     if (CONTENT->edges) {
-        C->sep = '\0';
-        print_tree(C, CONTENT->edges);
+        PARSE->sep = '\0';
+        print_tree(PARSE, CONTENT->edges);
         putc('\n', stdout);
     }
-    C->containment--;
+    PARSE->containment--;
     emit_end_activity(CONTENT);
 
     ikea_box_close ( CONTENT->ikea_box );
@@ -127,10 +127,10 @@ static success_t
 parse_r(CONTENT_t * CONTENT, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc)
 {
-    PARSE_t *C = CONTENT->C;
-    TOKEN_t * TOKEN = (TOKEN_t *)C;
-    LIST_t * LIST = (LIST_t *)C;
-    INBUF_t * INBUF = (INBUF_t *)C;
+    PARSE_t * PARSE = CONTENT->PARSE;
+    TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
+    LIST_t * LIST = (LIST_t *)PARSE;
+    INBUF_t * INBUF = (INBUF_t *)PARSE;
     unsigned char nprop;
     char so;        // offset to next state, signed
     state_t ti, ni;
@@ -179,7 +179,7 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
     case ACTIVITY:          // Recursion into Contained activity
         if (TOKEN->bi == LBE) {    // if not top-level of containment
             TOKEN->bi = NLL;
-            rc = parse_nest_r(C, &CONTENT->subject);    // recursively process contained ACTIVITY in to its own root
+            rc = parse_nest_r(PARSE, &CONTENT->subject);    // recursively process contained ACTIVITY in to its own root
             TOKEN->bi = TOKEN->insi;    // The char class that terminates the ACTIVITY
             goto done;
         }
@@ -203,10 +203,10 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
         break;
     case SUBJECT:
         TOKEN->has_ast = 0;     // maintain a flag for an '*' found anywhere in the subject
-        C->has_cousin = 0;  // maintain a flag for any NODEREF to COUSIN (requiring involvement of ancestors)
+        PARSE->has_cousin = 0;  // maintain a flag for any NODEREF to COUSIN (requiring involvement of ancestors)
         break;
     case COUSIN:
-        C->has_cousin = 0;  // maintain a flag for any NODEREF to COUSIN (requiring involvement of ancestors)
+        PARSE->has_cousin = 0;  // maintain a flag for any NODEREF to COUSIN (requiring involvement of ancestors)
         break;
     default:
         break;
@@ -236,7 +236,7 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
             repc = 0;
             if (nprop & OPT) {          // OPTional
                 if ((parse_r(CONTENT, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
-                    while (parse_more_rep(C, nprop) == SUCCESS) {
+                    while (parse_more_rep(PARSE, nprop) == SUCCESS) {
                         if (parse_r(CONTENT, &branch, ni, nprop, nest, repc++) == FAIL) {
                             break;
                         }
@@ -246,7 +246,7 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
                 if ((rc = parse_r(CONTENT, &branch, ni, nprop, nest, repc++)) == FAIL) {
                     break;
                 }
-                while (parse_more_rep(C, nprop) == SUCCESS) {
+                while (parse_more_rep(PARSE, nprop) == SUCCESS) {
                     if ((rc = parse_r(CONTENT, &branch, ni, nprop, nest, repc++)) == FAIL) {
                         break;
                     }
@@ -260,10 +260,10 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
     if (rc == SUCCESS) {
         switch (si) {
         case ACT:
-            C->stat_inactcount++;
+            PARSE->stat_inactcount++;
             if (CONTENT->is_pattern) {   // flag was set by SUBJECT in previous ACT
                                     //  save entire previous ACT in a list of pattern_acts
-                C->stat_patternactcount++;
+                PARSE->stat_patternactcount++;
                 if (CONTENT->subject_type == NODE) {
                     append_list(&(CONTENT->node_pattern_acts), move_list(LIST, &branch));
 
@@ -272,7 +272,7 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
                     append_list(&(CONTENT->edge_pattern_acts), move_list(LIST, &branch));
                 }
             } else {
-                C->stat_nonpatternactcount++;
+                PARSE->stat_nonpatternactcount++;
                 append_list(root, move_list(LIST, &branch));
 
                 // dispatch events for the ACT just finished
@@ -282,7 +282,7 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 elem = root->u.l.first;
                 while (elem) {
-                    C->stat_outactcount++;
+                    PARSE->stat_outactcount++;
 //                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
                     je_reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 
@@ -299,7 +299,7 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
         case HAT:
             // FIXME - this  is all wrong ... maybe it should just close the current box
             // FIXME - close this container's box
-            ikea_store_snapshot(C->ikea_store);
+            ikea_store_snapshot(PARSE->ikea_store);
             // FIXME - open appending container for this box.
             break;
         case SUBJECT: // subject rewrites before adding branch to root
@@ -312,7 +312,7 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
 // FIXME - or not, but this is broken
 #if 0
             je_hash_list(&hash, &(CONTENT->subject));   // generate name hash
-            (void)je_hash_bucket(C, hash);    // save in bucket list 
+            (void)je_hash_bucket(PARSE, hash);    // save in bucket list 
 #endif
 
             // If this subject is not itself a pattern, then
@@ -348,13 +348,13 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
 /**
  * test for more repetitions, emit a separator only if mandated
  *
- * @param C context
+ * @param PARSE context
  * @param prop properties from grammar
  * @return success = more, fail - no more
  */
-static success_t parse_more_rep(PARSE_t * C, unsigned char prop)
+static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop)
 {
-    TOKEN_t * TOKEN = (TOKEN_t *)C;
+    TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
     state_t ei, bi;
 
     if (!(prop & (REP | SREP)))
@@ -370,7 +370,7 @@ static success_t parse_more_rep(PARSE_t * C, unsigned char prop)
         return SUCCESS;    // more repetitions, but additional WS sep is optional
     }
     if (prop & SREP) {
-        emit_sep(C);    // sep is non-optional, emit the minimal sep
+        emit_sep(PARSE);    // sep is non-optional, emit the minimal sep
                         //    .. when low-level emit hook is used.
     }
     return SUCCESS;        // more repetitions

@@ -304,7 +304,7 @@ static tartype_t gztype = {
 /**
  * open a gz compressed tar file for a set of per-container graphs
  *
- * @param C context
+ * @param PARSE context
  * @return list of containers ??
  */
 ikea_store_t * ikea_store_open( const char * oldstore )
@@ -358,7 +358,7 @@ static int glob_err (const char *epath, int eerrno)
 /**
  * restore from snapshot
  * 
- * @param C context
+ * @param PARSE context
  */
 void ikea_store_restore ( ikea_store_t * ikea_store )
 {
@@ -404,7 +404,7 @@ void ikea_store_restore ( ikea_store_t * ikea_store )
                     pglob.gl_pathv[pathc]+len+1);
             exit(EXIT_FAILURE);
         }
-        je_hash_bucket(C, hash); // reinsert into bucket list.
+        je_hash_bucket(PARSE, hash); // reinsert into bucket list.
 #endif
     }
     free(glob_pattern);
@@ -414,7 +414,7 @@ void ikea_store_restore ( ikea_store_t * ikea_store )
 /**
  * close snapshot storage - cleanup of temporary files
  *
- * @param C context
+ * @param PARSE context
  */
 void ikea_store_close ( ikea_store_t * ikea_store )
 {

@@ -76,7 +76,7 @@ struct parse_s {               // parse context
 };
 
 typedef struct {                // container_context
-    PARSE_t *C;               // the input context
+    PARSE_t *PARSE;             // the parser context
     elem_t subject;             // Preceeding ACT's subject, until this ACT's
                                 // SUBJECT has been parsed and processd by sameas()
                                 //   - at which point it becomes this ACT's subject.

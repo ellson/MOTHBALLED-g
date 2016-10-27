@@ -10,7 +10,7 @@ extern "C" {
 #include "context.h"
 #include "emit.h"
 
-char * je_session(PARSE_t *C);
+char * je_session(PARSE_t * PARSE);
 
 #ifdef __cplusplus
 }
