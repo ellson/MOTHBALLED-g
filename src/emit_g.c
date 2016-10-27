@@ -7,7 +7,7 @@
 
 #include "emit.h"
 
-static void api_start_activity(container_CONTEXT_t * CC)
+static void api_start_activity(CONTENT_t * CC)
 {
     CONTEXT_t *C = CC->C;
 
@@ -17,7 +17,7 @@ static void api_start_activity(container_CONTEXT_t * CC)
     }
 }
 
-static void api_end_activity(container_CONTEXT_t * CC)
+static void api_end_activity(CONTENT_t * CC)
 {
     CONTEXT_t *C = CC->C;
 
@@ -30,14 +30,14 @@ static void api_end_activity(container_CONTEXT_t * CC)
     }
 }
 
-static void api_subject(container_CONTEXT_t * CC, elem_t *list)
+static void api_subject(CONTENT_t * CC, elem_t *list)
 {
     CONTEXT_t *C = CC->C;
 
     je_emit_list(C, C->out, list);
 }
 
-static void api_attributes(container_CONTEXT_t * CC, elem_t *list)
+static void api_attributes(CONTENT_t * CC, elem_t *list)
 {
     CONTEXT_t *C = CC->C;
 
@@ -74,7 +74,7 @@ emit_t g_api = { "g",
     /* api_frag */ NULL,
 };
 
-static void api1_end_activity(container_CONTEXT_t * CC)
+static void api1_end_activity(CONTENT_t * CC)
 {
     CONTEXT_t *C = CC->C;
 
@@ -131,7 +131,7 @@ emit_t g1_api = { "g1",
     /* api_frag */ NULL,
 };
 
-static void api2_end_activity(container_CONTEXT_t * CC)
+static void api2_end_activity(CONTENT_t * CC)
 {
     putc('\n', CC->C->out);
 }

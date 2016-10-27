@@ -7,7 +7,7 @@
 
 #include "sameas.h"
 
-static void je_sameas_r(container_CONTEXT_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist);
+static void je_sameas_r(CONTENT_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist);
 
 /**
  * rewrite subject into a newsubject
@@ -19,7 +19,7 @@ static void je_sameas_r(container_CONTEXT_t * CC, elem_t * subject, elem_t ** ne
  * @param CC container context
  * @param subject a subject tree from the parser (may be multiple object with same attributes)
  */
-void je_sameas(container_CONTEXT_t * CC, elem_t * subject)
+void je_sameas(CONTENT_t * CC, elem_t * subject)
 {
     LIST_t * LIST = (LIST_t *)(CC->C);
     elem_t *newsubject, *oldsubject, *nextold;
@@ -56,7 +56,7 @@ void je_sameas(container_CONTEXT_t * CC, elem_t * subject)
  * @param nextold
  * @param mewlist
  */
-static void je_sameas_r(container_CONTEXT_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist)
+static void je_sameas_r(CONTENT_t * CC, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {
     CONTEXT_t * C = CC->C;
     TOKEN_t * TOKEN = (TOKEN_t *)C;

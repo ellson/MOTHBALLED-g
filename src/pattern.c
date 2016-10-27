@@ -9,7 +9,7 @@
 #include "pattern.h"
 
 static success_t
-je_pattern_r(container_CONTEXT_t * CC, elem_t * subject, elem_t * pattern);
+je_pattern_r(CONTENT_t * CC, elem_t * subject, elem_t * pattern);
 
 /*
  * A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
@@ -48,7 +48,7 @@ je_pattern_r(container_CONTEXT_t * CC, elem_t * subject, elem_t * pattern);
  * @param root of the output tree
  * @param subject to be checked for pattern matches
  */
-void je_pattern(container_CONTEXT_t * CC, elem_t * root, elem_t * subject)
+void je_pattern(CONTENT_t * CC, elem_t * root, elem_t * subject)
 {
     CONTEXT_t *C = CC->C;
     LIST_t * LIST = (LIST_t *)C;
@@ -106,7 +106,7 @@ void je_pattern(container_CONTEXT_t * CC, elem_t * root, elem_t * subject)
  * @return success/fail 
  */
 static success_t
-je_pattern_r(container_CONTEXT_t * CC, elem_t * subject, elem_t * pattern)
+je_pattern_r(CONTENT_t * CC, elem_t * subject, elem_t * pattern)
 {
     elem_t *s_elem, *p_elem, *ts_elem, *tp_elem;
     unsigned char *s_cp, *p_cp;
@@ -185,7 +185,7 @@ je_pattern_r(container_CONTEXT_t * CC, elem_t * subject, elem_t * pattern)
  */
 
 static success_t
-je_pattern_r(container_CONTEXT_t * CC, elem_t * subject, elem_t * pattern)
+je_pattern_r(CONTENT_t * CC, elem_t * subject, elem_t * pattern)
 {
     elem_t *s_elem, *p_elem, *ts_elem, *tp_elem;
     unsigned char *s_cp, *p_cp;

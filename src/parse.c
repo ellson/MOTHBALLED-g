@@ -12,7 +12,7 @@
 
 static success_t parse_nest_r(CONTEXT_t * C, elem_t * name);
 
-static success_t parse_r(container_CONTEXT_t * CC, elem_t * root,
+static success_t parse_r(CONTENT_t * CC, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc);
 
 static success_t parse_more_rep(CONTEXT_t * C, unsigned char prop);
@@ -48,8 +48,8 @@ success_t je_parse(CONTEXT_t *C)
 
 static success_t parse_nest_r(CONTEXT_t * C, elem_t * name)
 {
-    container_CONTEXT_t container_context = { 0 };
-    container_CONTEXT_t *CC = &container_context;
+    CONTENT_t container_context = { 0 };
+    CONTENT_t *CC = &container_context;
     elem_t root = { 0 };    // the output parse tree
     success_t rc;
 #if 0
@@ -124,7 +124,7 @@ CC->out = stdout;
  *  @return success/fail
  */
 static success_t
-parse_r(container_CONTEXT_t * CC, elem_t * root,
+parse_r(CONTENT_t * CC, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc)
 {
     CONTEXT_t *C = CC->C;

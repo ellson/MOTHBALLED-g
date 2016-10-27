@@ -99,7 +99,7 @@ typedef struct {    // container_context
 
     // FIXME  - place for fork header for layout process...
 
-} container_CONTEXT_t;
+} CONTENT_t;
 
 #ifdef __cplusplus
 }

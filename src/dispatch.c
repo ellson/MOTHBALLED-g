@@ -50,7 +50,7 @@ static void je_assemble_act(CONTEXT_t *C, elem_t * pelem, elem_t * pattributes, 
  * @param CC container context
  * @param plist
  */
-void je_dispatch(container_CONTEXT_t * CC, elem_t * plist)
+void je_dispatch(CONTENT_t * CC, elem_t * plist)
 {
     CONTEXT_t *C = CC->C;
     LIST_t * LIST = (LIST_t *)C;

@@ -6,7 +6,7 @@
 
 #include "reduce.h"
 
-void je_reduce(container_CONTEXT_t * CC, elem_t *list)
+void je_reduce(CONTENT_t * CC, elem_t *list)
 {
     CONTEXT_t *C = CC->C;
     LIST_t *LIST = (LIST_t*)C;

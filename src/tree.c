@@ -99,7 +99,6 @@ void print_tree(CONTEXT_t *C, elem_t * p)
 elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
 {
     int comp;
-//CONTEXT_t *C = (CONTEXT_t*)LIST;
 
     if (!p) {
         return new_tree(LIST, key);

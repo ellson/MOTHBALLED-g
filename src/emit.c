@@ -19,7 +19,7 @@ static void je_gvrender_list(CONTEXT_t *C, FILE *chan, elem_t * list);
 static emit_t *emitters[] =
     {&g_api, &g1_api, &g2_api, &g3_api, &t_api, &t1_api, &gv_api};
 
-static void api_act(container_CONTEXT_t * CC, elem_t *elem)
+static void api_act(CONTENT_t * CC, elem_t *elem)
 {
     CONTEXT_t *C = CC->C;
 

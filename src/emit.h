@@ -17,21 +17,21 @@ typedef struct {
     void (*start_file) (CONTEXT_t * C);
     void (*end_file) (CONTEXT_t * C);
 
-    void (*start_activity) (container_CONTEXT_t * CC);
-    void (*end_activity) (container_CONTEXT_t * CC);
+    void (*start_activity) (CONTENT_t * CC);
+    void (*end_activity) (CONTENT_t * CC);
 
-    void (*start_act) (container_CONTEXT_t * CC);
-    void (*end_act) (container_CONTEXT_t * CC);
+    void (*start_act) (CONTENT_t * CC);
+    void (*end_act) (CONTENT_t * CC);
 
-    void (*start_subject) (container_CONTEXT_t * CC);
-    void (*end_subject) (container_CONTEXT_t * CC);
+    void (*start_subject) (CONTENT_t * CC);
+    void (*end_subject) (CONTENT_t * CC);
 
-    void (*start_state) (container_CONTEXT_t * CC, char class, unsigned char prop, int nest, int repc);
-    void (*end_state) (container_CONTEXT_t * CC, char class, success_t rc, int nest, int repc);
+    void (*start_state) (CONTENT_t * CC, char class, unsigned char prop, int nest, int repc);
+    void (*end_state) (CONTENT_t * CC, char class, success_t rc, int nest, int repc);
 
-    void (*act) (container_CONTEXT_t * CC, elem_t * root);
-    void (*subject) (container_CONTEXT_t * CC, elem_t * root);
-    void (*attributes) (container_CONTEXT_t * CC, elem_t * root);
+    void (*act) (CONTENT_t * CC, elem_t * root);
+    void (*subject) (CONTENT_t * CC, elem_t * root);
+    void (*attributes) (CONTENT_t * CC, elem_t * root);
 
     void (*sep) (CONTEXT_t * C);
     void (*token) (CONTEXT_t * C, char token);
@@ -110,7 +110,7 @@ void je_append_string(CONTEXT_t *C, char **pos, char *string);
 void je_append_ulong(CONTEXT_t *C, char **pos, uint64_t integer);
 void je_append_runtime(CONTEXT_t *C, char **pos, uint64_t run_sec, uint64_t run_ns);
 void je_emit_list(CONTEXT_t * C, FILE * chan, elem_t * subject);
-void je_emit_ikea(container_CONTEXT_t * CC, elem_t *list);
+void je_emit_ikea(CONTENT_t * CC, elem_t *list);
 
 #ifdef __cplusplus
 }

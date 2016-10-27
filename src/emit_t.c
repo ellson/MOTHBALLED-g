@@ -7,7 +7,7 @@
 
 #include "emit.h"
 
-static void api_start_activity(container_CONTEXT_t * CC)
+static void api_start_activity(CONTENT_t * CC)
 {
     CONTEXT_t *C = CC->C;
     FILE *chan = C->out;
@@ -25,7 +25,7 @@ static void api_start_activity(container_CONTEXT_t * CC)
 }
 
 static void
-api_start_state(container_CONTEXT_t * CC, char class, unsigned char prop, int nest, int repc)
+api_start_state(CONTENT_t * CC, char class, unsigned char prop, int nest, int repc)
 {
     FILE *chan = CC->C->out;
 
@@ -53,7 +53,7 @@ static void api_token(CONTEXT_t * C, char token)
 }
 
 static void
-api_end_state(container_CONTEXT_t * CC, char class, success_t rc, int nest, int repc)
+api_end_state(CONTENT_t * CC, char class, success_t rc, int nest, int repc)
 {
     FILE *chan = CC->C->out;
 
@@ -61,7 +61,7 @@ api_end_state(container_CONTEXT_t * CC, char class, success_t rc, int nest, int 
     print_len_frag(chan, NAMEP(class));
 }
 
-static void api_end_activity(container_CONTEXT_t * CC)
+static void api_end_activity(CONTENT_t * CC)
 {
     CONTEXT_t *C = CC->C;
     FILE *chan = C->out;
@@ -100,7 +100,7 @@ emit_t t_api = { "t",
     /* api_frag */ NULL,
 };
 
-static void api1_act(container_CONTEXT_t * CC, elem_t * tree)
+static void api1_act(CONTENT_t * CC, elem_t * tree)
 {
     FILE *chan = CC->C->out;
     char sep;

@@ -8,12 +8,12 @@
 #include "emit_act.h"
 
 // forward declaration
-static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes);
-static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list);
+static void emit_act_func(CONTENT_t * CC, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes);
+static void emit_act_list_r(CONTENT_t *CC, elem_t * list);
 static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep);
 static void emit_act_print_shortstr(elem_t * elem, char *sep);
 
-void je_emit_act(container_CONTEXT_t * CC, elem_t *list)
+void je_emit_act(CONTENT_t * CC, elem_t *list)
 {
     elem_t * elem;
     state_t liststate;
@@ -74,7 +74,7 @@ void je_emit_act(container_CONTEXT_t * CC, elem_t *list)
 }
 
 #define DOTLANG 1
-static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes)
+static void emit_act_func(CONTENT_t * CC, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes)
 {
     CONTEXT_t *C = CC->C;
     C->sep = '\0';
@@ -136,7 +136,7 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
 }
 
 // recursive function
-static void emit_act_list_r(container_CONTEXT_t *CC, elem_t * list)
+static void emit_act_list_r(CONTENT_t *CC, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;

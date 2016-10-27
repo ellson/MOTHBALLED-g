@@ -7,7 +7,7 @@
 
 #include "emit.h"
 
-static void api_start_activity(container_CONTEXT_t * CC)
+static void api_start_activity(CONTENT_t * CC)
 {
     CONTEXT_t *C = CC->C;
 
@@ -15,7 +15,7 @@ static void api_start_activity(container_CONTEXT_t * CC)
     fprintf(C->out, "graph {\n");
 }
 
-static void api_end_activity(container_CONTEXT_t * CC)
+static void api_end_activity(CONTENT_t * CC)
 {
     CONTEXT_t *C = CC->C;
 
@@ -23,7 +23,7 @@ static void api_end_activity(container_CONTEXT_t * CC)
     fprintf(C->out, "\n}\n");
 }
 
-static void api_list(container_CONTEXT_t * CC, elem_t *list)
+static void api_list(CONTENT_t * CC, elem_t *list)
 {
     CONTEXT_t *C = CC->C;
 

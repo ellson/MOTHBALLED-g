@@ -11,7 +11,7 @@ extern "C" {
 #include "context.h"
 #include "emit.h"
 
-void je_pattern(container_CONTEXT_t * CC, elem_t * root, elem_t * subject);
+void je_pattern(CONTENT_t * CC, elem_t * root, elem_t * subject);
 
 #ifdef __cplusplus
 }

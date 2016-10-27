@@ -13,10 +13,10 @@
 #include "emit.h"
 
 // forward declaration
-static void ikea_list_r(container_CONTEXT_t *CC, elem_t * list);
+static void ikea_list_r(CONTENT_t *CC, elem_t * list);
 static void ikea_print_frags(ikea_box_t * ikea_box, state_t liststate, elem_t * elem, char *sep);
 
-void je_emit_ikea(container_CONTEXT_t * CC, elem_t *elem)
+void je_emit_ikea(CONTENT_t * CC, elem_t *elem)
 {
     CC->C->sep = 0; // suppress space before (because preceded by BOF or NL)
     // emit in compact g format
@@ -24,14 +24,14 @@ void je_emit_ikea(container_CONTEXT_t * CC, elem_t *elem)
     ikea_box_append(CC->ikea_box, "\n", 1); // NL after each act
 }
 
-static void token(container_CONTEXT_t *CC, char *tok)
+static void token(CONTENT_t *CC, char *tok)
 {
     ikea_box_append(CC->ikea_box, tok, 1);
     CC->C->sep = 0;
 }
 
 // recursive function
-static void ikea_list_r(container_CONTEXT_t *CC, elem_t * list)
+static void ikea_list_r(CONTENT_t *CC, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;

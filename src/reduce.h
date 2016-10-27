@@ -10,7 +10,7 @@ extern "C" {
 #include "context.h"
 #include "tree.h"
 
-void je_reduce(container_CONTEXT_t * CC, elem_t *list);
+void je_reduce(CONTENT_t * CC, elem_t *list);
 
 #ifdef __cplusplus
 }
