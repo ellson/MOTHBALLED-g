@@ -16,7 +16,7 @@
  * @param si parser state
  * @param si error message
  */
-void je_token_error(TOKEN_t * TOKEN, state_t si, char *message)
+void token_error(TOKEN_t * TOKEN, state_t si, char *message)
 {
     unsigned char *p, c;
 
@@ -69,7 +69,7 @@ static success_t token_more_in(TOKEN_t * TOKEN)
             //   be more user-friendly to check that we are not in a quote string
             //   whenever EOF occurs.
             if (TOKEN->in_quote) {
-                je_token_error(TOKEN, NLL, "EOF in the middle of a quote string");
+                token_error(TOKEN, NLL, "EOF in the middle of a quote string");
             }
 // FIXME don't close stdin
 // FIXME - stall for more more input   (inotify events ?)
@@ -202,7 +202,7 @@ static success_t token_non_comment(TOKEN_t * TOKEN)
  * @param TOKEN context
  * @return success/fail
  */
-success_t je_token_whitespace(TOKEN_t * TOKEN)
+success_t token_whitespace(TOKEN_t * TOKEN)
 {
     success_t rc;
 
@@ -309,7 +309,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
  * @return success/fail
  */
  
-success_t je_token_string(TOKEN_t * TOKEN, elem_t * fraglist)
+success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist)
 {
     int len, slen;
 
@@ -436,7 +436,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
  * @param fraglist
  * @return success/fail
  */
-success_t je_token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
+success_t token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
 {
     int len, slen;
 
@@ -469,7 +469,7 @@ success_t je_token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
  * @param TOKEN context
  * @return success/fail
  */
-success_t je_token(TOKEN_t * TOKEN)
+success_t token(TOKEN_t * TOKEN)
 {
 // FIXME - compiler complains that token is not used -  seems a bit odd
 //    char token;

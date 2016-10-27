@@ -22,7 +22,7 @@
  * @param optind
  * @return context
  */
-PARSE_t *je_initialize(int *pargc, char *argv[], int optind)
+PARSE_t *initialize(int *pargc, char *argv[], int optind)
 {
     PARSE_t *PARSE;
 
@@ -44,8 +44,8 @@ PARSE_t *je_initialize(int *pargc, char *argv[], int optind)
     PARSE->TOKEN.argv = argv;
 
     // gather session info, including starttime.
-    //    subsequent calls to je_session() just reuse the info gathered in this first call.
-    je_session(PARSE);
+    //    subsequent calls to session() just reuse the info gathered in this first call.
+    session(PARSE);
     
     // create (or reopen) store for the containers
     PARSE->ikea_store = ikea_store_open( NULL );
@@ -60,7 +60,7 @@ PARSE_t *je_initialize(int *pargc, char *argv[], int optind)
  *
  * @param PARSE context
  */
-void je_finalize( PARSE_t * PARSE )
+void finalize( PARSE_t * PARSE )
 {
    emit_finalize(PARSE);
 
@@ -71,7 +71,7 @@ void je_finalize( PARSE_t * PARSE )
    free(PARSE);
 }
 
-void je_interrupt( PARSE_t * PARSE )
+void interrupt( PARSE_t * PARSE )
 {
    ikea_store_close(PARSE->ikea_store);
 }

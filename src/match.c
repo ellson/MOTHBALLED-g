@@ -99,7 +99,7 @@ success_t match(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
  */
 
 static success_t
-je_pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
+pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
 {
     elem_t *s_elem, *p_elem, *ts_elem, *tp_elem;
     unsigned char *s_cp, *p_cp;
@@ -124,7 +124,7 @@ je_pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
                 ts_elem = ts_elem->next;
                 tp_elem = tp_elem->next;
             }
-            if ((je_pattern_r(CONTENT, s_elem, p_elem)) == FAIL) {  // recurse
+            if ((pattern_r(CONTENT, s_elem, p_elem)) == FAIL) {  // recurse
                 return FAIL;
             }
         } else {    // FRAGELEM

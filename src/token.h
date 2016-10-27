@@ -37,11 +37,11 @@ typedef struct {
     long stat_filecount;       // various stats
 } TOKEN_t;
 
-void je_token_error(TOKEN_t * TOKEN, state_t si, char *message);
-success_t je_token_whitespace(TOKEN_t * TOKEN);
-success_t je_token_string(TOKEN_t * TOKEN, elem_t * fraglist);
-success_t je_token_vstring(TOKEN_t * TOKEN, elem_t * fraglist);
-success_t je_token(TOKEN_t * TOKEN);
+void token_error(TOKEN_t * TOKEN, state_t si, char *message);
+success_t token_whitespace(TOKEN_t * TOKEN);
+success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist);
+success_t token_vstring(TOKEN_t * TOKEN, elem_t * fraglist);
+success_t token(TOKEN_t * TOKEN);
 
 #ifdef __cplusplus
 }

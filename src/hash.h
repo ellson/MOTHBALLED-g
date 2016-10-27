@@ -11,11 +11,11 @@ extern "C" {
 #include "list.h"
 
 #if 0
-hash_elem_t * je_hash_bucket(PARSE_t * PARSE, uint64_t hash);
+hash_elem_t * hash_bucket(PARSE_t * PARSE, uint64_t hash);
 #endif
-void je_hash_list(uint64_t *hash, elem_t *list);
-void je_long_to_base64(char *b64string, const uint64_t *hash);
-success_t je_base64_to_long(const char *b64string, uint64_t *hash);
+void hash_list(uint64_t *hash, elem_t *list);
+void long_to_base64(char *b64string, const uint64_t *hash);
+success_t base64_to_long(const char *b64string, uint64_t *hash);
 
 #ifdef __cplusplus
 }

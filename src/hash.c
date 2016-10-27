@@ -30,7 +30,7 @@ static void hash_list_r(uint64_t *hash, elem_t *list);
  * @param hash place for resulting hash
  * @param list - fraglist or list of fraglist to be hashed
  */
-void je_hash_list(uint64_t *hash, elem_t *list)
+void hash_list(uint64_t *hash, elem_t *list)
 {
     assert(sizeof(long) == 8);
     assert(list);
@@ -111,7 +111,7 @@ const static char un_b64[128] = {
  * @param b64string result (caller-provided 12 character buffer for result)
  * @param hash = 64bit integer to be hashed
  */
-void je_long_to_base64(char b64string[], const uint64_t *hash)
+void long_to_base64(char b64string[], const uint64_t *hash)
 {
     int i;
     uint64_t h = *hash;
@@ -131,7 +131,7 @@ void je_long_to_base64(char b64string[], const uint64_t *hash)
  * @param hash result
  * @return success/fail
  */
-success_t je_base64_to_long(const char b64string[], uint64_t *hash)
+success_t base64_to_long(const char b64string[], uint64_t *hash)
 {
     uint64_t h = 0;
     char c;
@@ -167,7 +167,7 @@ success_t je_base64_to_long(const char b64string[], uint64_t *hash)
  * @param hash
  * @return a list element
  */
-hash_elem_t *je_hash_bucket(PARSE_t * PARSE, uint64_t hash)
+hash_elem_t *hash_bucket(PARSE_t * PARSE, uint64_t hash)
 {
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *elem, **next;

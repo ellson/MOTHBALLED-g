@@ -18,7 +18,7 @@ static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list);
  * @param hash place for resulting hash
  * @param list - fraglist or list of fraglist to be hashed
  */
-void je_sslhash_list(uint64_t *hash, elem_t *list)
+void sslhash_list(uint64_t *hash, elem_t *list)
 {
     EVP_MD_CTX *ctx;
 

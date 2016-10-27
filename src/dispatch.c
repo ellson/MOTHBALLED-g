@@ -7,8 +7,8 @@
 
 #include "dispatch.h"
 
-static void je_dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t *pattributes, elem_t * pnodes, elem_t * pedges);
-static void je_assemble_act(PARSE_t * PARSE, elem_t * pelem, elem_t * pattributes, elem_t * plist);
+static void dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t *pattributes, elem_t * pnodes, elem_t * pedges);
+static void assemble_act(PARSE_t * PARSE, elem_t * pelem, elem_t * pattributes, elem_t * plist);
 
 /*
  * Processes an ACT after sameas and pattern substitutions.
@@ -50,7 +50,7 @@ static void je_assemble_act(PARSE_t * PARSE, elem_t * pelem, elem_t * pattribute
  * @param CONTENT container context
  * @param plist
  */
-void je_dispatch(CONTENT_t * CONTENT, elem_t * plist)
+void dispatch(CONTENT_t * CONTENT, elem_t * plist)
 {
     PARSE_t *PARSE = CONTENT->PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
@@ -67,7 +67,7 @@ void je_dispatch(CONTENT_t * CONTENT, elem_t * plist)
     assert(plist->type == (char)LISTELEM);
 
     // expand OBJECT_LIST and ENDPOINTSETS
-    je_dispatch_r(PARSE, plist, &attributes, &nodes, &edges);
+    dispatch_r(PARSE, plist, &attributes, &nodes, &edges);
 
     // if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
@@ -78,7 +78,7 @@ void je_dispatch(CONTENT_t * CONTENT, elem_t * plist)
     case NODE:
         pelem = nodes.u.l.first;
         while (pelem) {
-            je_assemble_act(PARSE,pelem,&attributes,plist);
+            assemble_act(PARSE,pelem,&attributes,plist);
             pelem = pelem->next;
         }
         break;
@@ -90,13 +90,13 @@ void je_dispatch(CONTENT_t * CONTENT, elem_t * plist)
         else {
                 pelem = nodes.u.l.first;
                 while (pelem) {
-                    je_assemble_act(PARSE,pelem,NULL,plist);
+                    assemble_act(PARSE,pelem,NULL,plist);
                     pelem = pelem->next;
                 }
 
                 pelem = edges.u.l.first;
                 while (pelem) {
-                    je_assemble_act(PARSE,pelem,&attributes,plist);
+                    assemble_act(PARSE,pelem,&attributes,plist);
                     pelem = pelem->next;
                 }
         }
@@ -120,7 +120,7 @@ void je_dispatch(CONTENT_t * CONTENT, elem_t * plist)
  * @param pnodes
  * @param pedges
  */
-static void je_dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t * pattributes, elem_t * pnodes, elem_t * pedges)
+static void dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t * pattributes, elem_t * pnodes, elem_t * pedges)
 {
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *pelem, *pnew, *pobject;
@@ -133,7 +133,7 @@ static void je_dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t * pattributes,
         si = (state_t) pelem->state;
         switch (si) {
         case ACT:
-            je_dispatch_r(PARSE, pelem, pattributes, pnodes, pedges);
+            dispatch_r(PARSE, pelem, pattributes, pnodes, pedges);
             break;
         case ATTRIBUTES:
             pnew = ref_list(LIST, pelem);
@@ -143,13 +143,13 @@ static void je_dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t * pattributes,
             pobject = pelem->u.l.first;
             switch ((state_t)pobject->state) {
             case OBJECT:
-                je_dispatch_r(PARSE, pobject, pattributes, pnodes, pedges);
+                dispatch_r(PARSE, pobject, pattributes, pnodes, pedges);
                 break;
             case OBJECT_LIST:
                 pobject = pobject->u.l.first;
                 assert((state_t)pobject->state == OBJECT);
                 while(pobject) {
-                    je_dispatch_r(PARSE, pobject, pattributes, pnodes, pedges);
+                    dispatch_r(PARSE, pobject, pattributes, pnodes, pedges);
                     pobject = pobject->next;
                 }
                 break;
@@ -163,7 +163,7 @@ static void je_dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t * pattributes,
             append_list(pnodes, pnew);
             break;
         case EDGE:
-            je_expand(PARSE, pelem, pnodes, pedges);
+            expand(PARSE, pelem, pnodes, pedges);
             break;
         default:
             break;
@@ -180,7 +180,7 @@ static void je_dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t * pattributes,
  * @param pattributes
  * @param plist - output ACT
  */
-static void je_assemble_act(PARSE_t * PARSE, elem_t *pelem, elem_t *pattributes, elem_t *plist)
+static void assemble_act(PARSE_t * PARSE, elem_t *pelem, elem_t *pattributes, elem_t *plist)
 {
     TOKEN_t * IN = (TOKEN_t *)PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;

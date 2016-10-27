@@ -9,7 +9,7 @@ extern "C" {
 
 #include "emit.h"
 
-char * je_session(PARSE_t * PARSE);
+char * session(PARSE_t * PARSE);
 
 #ifdef __cplusplus
 }

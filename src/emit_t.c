@@ -30,7 +30,7 @@ api_start_state(CONTENT_t * CONTENT, char class, unsigned char prop, int nest, i
     FILE *chan = CONTENT->PARSE->out;
 
     fprintf(chan, "\n   ");
-    putc(je_char_prop(prop, '.'), chan);
+    putc(char_prop(prop, '.'), chan);
     fprintf(chan, "%4d%4d%4d   ", class, nest, repc);
     print_len_frag(chan, NAMEP(class));
 }

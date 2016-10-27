@@ -104,11 +104,11 @@ typedef struct {
 // emit.c
 extern emit_t *emit;
 extern emit_t g_api, g1_api, g2_api, g3_api, t_api, t1_api, gv_api;
-char je_char_prop(unsigned char prop, char noprop);
-void je_append_token(PARSE_t * PARSE, char **pos, char tok);
-void je_append_string(PARSE_t * PARSE, char **pos, char *string);
-void je_append_ulong(PARSE_t * PARSE, char **pos, uint64_t integer);
-void je_append_runtime(PARSE_t * PARSE, char **pos, uint64_t run_sec, uint64_t run_ns);
+char char_prop(unsigned char prop, char noprop);
+void append_token(PARSE_t * PARSE, char **pos, char tok);
+void append_string(PARSE_t * PARSE, char **pos, char *string);
+void append_ulong(PARSE_t * PARSE, char **pos, uint64_t integer);
+void append_runtime(PARSE_t * PARSE, char **pos, uint64_t run_sec, uint64_t run_ns);
 void je_emit_list(PARSE_t * PARSE, FILE * chan, elem_t * subject);
 void je_emit_ikea(CONTENT_t * CONTENT, elem_t *list);
 

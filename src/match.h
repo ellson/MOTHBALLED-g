@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-#include "libje.h"
 #include "context.h"
 
 success_t match(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern);

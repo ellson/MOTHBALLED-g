@@ -7,10 +7,9 @@
 extern "C" {
 #endif
 
-#include "list.h"
 #include "context.h"
 
-void je_sameas(CONTENT_t * CONTENT, elem_t * subject);
+void sameas(CONTENT_t * CONTENT, elem_t * subject);
 
 #ifdef __cplusplus
 }

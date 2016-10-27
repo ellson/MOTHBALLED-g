@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-void je_sslhash_list(uint64_t *hash, elem_t *list);
+void sslhash_list(uint64_t *hash, elem_t *list);
 
 #ifdef __cplusplus
 }

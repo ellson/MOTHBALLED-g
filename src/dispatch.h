@@ -7,11 +7,9 @@
 extern "C" {
 #endif
 
-#include "list.h"
-#include "context.h"
 #include "expand.h"
 
-void je_dispatch(CONTENT_t * CONTENT, elem_t * root);
+void dispatch(CONTENT_t * CONTENT, elem_t * root);
 
 #ifdef __cplusplus
 }

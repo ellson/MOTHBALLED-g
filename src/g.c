@@ -19,7 +19,7 @@ static void intr(int s)
 {
     (void) s; // NOTUSED
 
-    je_interrupt(PARSE);
+    interrupt(PARSE);
 
     exit (EXIT_FAILURE);
 }
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
             optnum = 0;
         switch (opt) {
         case 'T':
-            if (je_select_emitter(optarg) == FAIL)
+            if (select_emitter(optarg) == FAIL)
                 fatal_printf("No back-end found for format: -T%s\n", optarg);
             break;
         case 'd':
@@ -80,19 +80,19 @@ int main(int argc, char *argv[])
     }
 
     // create the top-level context for processing the inputs
-    PARSE = je_initialize(&argc, argv, optind);
+    PARSE = initialize(&argc, argv, optind);
 
     // parse the input 
-    je_parse(PARSE);
+    parse(PARSE);
 
     // and stats, if wanted 
     if (needstats) {
         // FIXME - need pretty-printer
-        fprintf (stderr, "%s\n", je_session(PARSE));
-        fprintf (stderr, "%s\n", je_stats(PARSE));
+        fprintf (stderr, "%s\n", session(PARSE));
+        fprintf (stderr, "%s\n", stats(PARSE));
     }
 
-    je_finalize(PARSE);
+    finalize(PARSE);
 
     exit(EXIT_SUCCESS);
 }

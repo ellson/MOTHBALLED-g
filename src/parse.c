@@ -22,7 +22,7 @@ static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop);
  *
  * This parser recurses at two levels:
  *
- *    je_parse() --> parse_nest_r(PARSE) --> parse_r(CONTENT) -| -|  
+ *    parse() --> parse_nest_r(PARSE) --> parse_r(CONTENT) -| -|  
  *                 ^                   ^              |  |
  *                 |                   |              |  |
  *                 |                   -------<-------|  |
@@ -41,7 +41,7 @@ static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop);
  * @return success/fail
  */
 
-success_t je_parse(PARSE_t * PARSE)
+success_t parse(PARSE_t * PARSE)
 {
     return parse_nest_r(PARSE, NULL);
 }
@@ -65,10 +65,10 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
     CONTENT->ikea_box = ikea_box_open(PARSE->ikea_store, NULL);
 #if 0
 // old, to be removed
-    je_hash_list(&hash, name); // hash name (subject "names" can be very long)
-    hash_elem = je_hash_bucket(PARSE, hash);    // save in bucket list 
+    hash_list(&hash, name); // hash name (subject "names" can be very long)
+    hash_elem = hash_bucket(PARSE, hash);    // save in bucket list 
     if (! hash_elem->out) {          // open file, if not already open
-        je_long_to_base64(hashname, &hash);
+        long_to_base64(hashname, &hash);
         if (! (filename = malloc(strlen(PARSE->tempdir) + 1 + strlen(hashname) + 1)))
             fatal_perror("Error - malloc(): ");
         strcpy(filename, PARSE->tempdir);
@@ -91,7 +91,7 @@ CONTENT->out = stdout;
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
-            je_token_error(TOKEN, TOKEN->state, "Parse error. Last good state was:");
+            token_error(TOKEN, TOKEN->state, "Parse error. Last good state was:");
         }
     }
     if (CONTENT->nodes) {
@@ -166,14 +166,14 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
     TOKEN->ei = TOKEN->insi;    // the char class that ended the last token
 
     // Whitespace
-    if ((rc = je_token_whitespace(TOKEN)) == FAIL) {
+    if ((rc = token_whitespace(TOKEN)) == FAIL) {
         goto done;    // EOF during whitespace
     }
 
     // Special character tokens
     if (si == TOKEN->insi) {    // single character terminals matching state_machine expectation
         TOKEN->bi = TOKEN->insi;
-        rc = je_token(TOKEN);
+        rc = token(TOKEN);
         TOKEN->ei = TOKEN->insi;
         goto done;
     }
@@ -188,13 +188,13 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
         break;
 
     case STRING:            // Strings
-        rc = je_token_string(TOKEN, &branch);
+        rc = token_string(TOKEN, &branch);
         TOKEN->bi = TOKEN->insi;    // the char class that terminates the STRING
         goto done;
         break;
 
     case VSTRING:            // Value Strings
-        rc = je_token_vstring(TOKEN, &branch);
+        rc = token_vstring(TOKEN, &branch);
         TOKEN->bi = TOKEN->insi;    // the char class that terminates the VSTRING
         goto done;
         break;
@@ -278,7 +278,7 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
                 append_list(root, move_list(LIST, &branch));
 
                 // dispatch events for the ACT just finished
-                je_dispatch(CONTENT, root);
+                dispatch(CONTENT, root);
 
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
@@ -310,18 +310,18 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
 
             // Perform EQL "same as in subject of previous ACT" substitutions
             // Also classifies ACT as NODE or EDGE based on SUBJECT
-            je_sameas(CONTENT, &branch);
+            sameas(CONTENT, &branch);
 
 // FIXME - or not, but this is broken
 #if 0
-            je_hash_list(&hash, &(CONTENT->subject));   // generate name hash
-            (void)je_hash_bucket(PARSE, hash);    // save in bucket list 
+            hash_list(&hash, &(CONTENT->subject));   // generate name hash
+            (void)hash_bucket(PARSE, hash);    // save in bucket list 
 #endif
 
             // If this subject is not itself a pattern, then
             // perform pattern matching and insertion if matched
             if (!(CONTENT->is_pattern = TOKEN->has_ast)) {
-                je_pattern(CONTENT, root, &branch);
+                pattern(CONTENT, root, &branch);
             }
 
             emit_subject(CONTENT, &branch);      // emit hook for rewritten subject

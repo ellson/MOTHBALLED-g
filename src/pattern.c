@@ -9,7 +9,7 @@
 #include "pattern.h"
 
 static success_t
-je_pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern);
+pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern);
 
 /*
  * A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
@@ -48,7 +48,7 @@ je_pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern);
  * @param root of the output tree
  * @param subject to be checked for pattern matches
  */
-void je_pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject)
+void pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;

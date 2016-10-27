@@ -18,7 +18,7 @@ static void expand_hub(PARSE_t * PARSE, elem_t *tail, elem_t *head, elem_t *disa
  * @param nodes - resulting nodes
  * @param edges - resulting simple edges
  */
-void je_expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
+void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
 {
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *elem, *epset, *ep, *new, *disambig = NULL;
@@ -154,8 +154,8 @@ static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *d
         if ((! newepset->u.l.first->next) || (newepset->u.l.first->next->next)) {
             // create a special node to represent the hub
     
-            je_hash_list(&hubhash, newepset);
-            je_long_to_base64(hubhash_b64, &hubhash);
+            hash_list(&hubhash, newepset);
+            long_to_base64(hubhash_b64, &hubhash);
     
 // FIXME - this is ugly!
 

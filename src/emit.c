@@ -12,7 +12,7 @@
 
 // forward declarations
 #if 0
-static void je_gvrender_list(PARSE_t * PARSE, FILE *chan, elem_t * list);
+static void gvrender_list(PARSE_t * PARSE, FILE *chan, elem_t * list);
 #endif
 
 // jump table for available emitters 
@@ -28,7 +28,7 @@ static void api_act(CONTENT_t * CONTENT, elem_t *elem)
 
 #if 0
     // render through libcgraph to svg
-    je_gvrender_list(CONTENT->PARSE, stdout, elem);
+    gvrender_list(CONTENT->PARSE, stdout, elem);
     putc('\n', stdout);   // NL after
 #endif
 
@@ -104,7 +104,7 @@ emit_t g3_api = { "g3",
     /* api_frag */ NULL,
 };
 
-success_t je_select_emitter(char *name)
+success_t select_emitter(char *name)
 {
     size_t i;
     emit_t *ep;
@@ -119,7 +119,7 @@ success_t je_select_emitter(char *name)
     return FAIL;
 }
 
-char je_char_prop(unsigned char prop, char noprop)
+char char_prop(unsigned char prop, char noprop)
 {
     char c;
 
@@ -143,7 +143,7 @@ char je_char_prop(unsigned char prop, char noprop)
     return c;
 }
 
-void je_append_token(PARSE_t * PARSE, char **pos, char tok)
+void append_token(PARSE_t * PARSE, char **pos, char tok)
 {
     // FIXME - check available buffer space
                         // ignore sep before
@@ -152,7 +152,7 @@ void je_append_token(PARSE_t * PARSE, char **pos, char tok)
     PARSE->sep = 0;        // no sep required after tokens
 }
 
-void je_append_string(PARSE_t * PARSE, char **pos, char *string)
+void append_string(PARSE_t * PARSE, char **pos, char *string)
 {
     int len;
 
@@ -167,7 +167,7 @@ void je_append_string(PARSE_t * PARSE, char **pos, char *string)
     *pos += len;
 }
 
-void je_append_ulong(PARSE_t * PARSE, char **pos, uint64_t integer)
+void append_ulong(PARSE_t * PARSE, char **pos, uint64_t integer)
 {
     int len;
 
@@ -183,7 +183,7 @@ void je_append_ulong(PARSE_t * PARSE, char **pos, uint64_t integer)
 }
 
 // special case formatter for runtime
-void je_append_runtime(PARSE_t * PARSE, char **pos,
+void append_runtime(PARSE_t * PARSE, char **pos,
         uint64_t run_sec, uint64_t run_ns)
 {
     int len;
@@ -222,7 +222,7 @@ static void je_emit_close_token(PARSE_t * PARSE, FILE *chan, char tok)
 }
 
 #if 0
-static void je_gvrender_list(PARSE_t * PARSE, FILE *chan, elem_t * list)
+static void gvrender_list(PARSE_t * PARSE, FILE *chan, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;
@@ -281,7 +281,7 @@ static void je_gvrender_list(PARSE_t * PARSE, FILE *chan, elem_t * list)
                     break;
                 }
             }
-            je_gvrender_list(PARSE, chan, elem);    // recurse
+            gvrender_list(PARSE, chan, elem);    // recurse
             elem = elem->next;
         }
         switch (liststate) {

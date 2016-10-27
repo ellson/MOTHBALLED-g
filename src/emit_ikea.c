@@ -15,7 +15,7 @@
 static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list);
 static void ikea_print_frags(ikea_box_t * ikea_box, state_t liststate, elem_t * elem, char *sep);
 
-void je_emit_ikea(CONTENT_t * CONTENT, elem_t *elem)
+void emit_ikea(CONTENT_t * CONTENT, elem_t *elem)
 {
     CONTENT->PARSE->sep = 0; // suppress space before (because preceded by BOF or NL)
     // emit in compact g format
@@ -23,7 +23,7 @@ void je_emit_ikea(CONTENT_t * CONTENT, elem_t *elem)
     ikea_box_append(CONTENT->ikea_box, "\n", 1); // NL after each act
 }
 
-static void token(CONTENT_t * CONTENT, char *tok)
+static void ikea_token(CONTENT_t * CONTENT, char *tok)
 {
     ikea_box_append(CONTENT->ikea_box, tok, 1);
     CONTENT->PARSE->sep = 0;
@@ -42,10 +42,10 @@ static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list)
     if (! (elem = list->u.l.first)) {
         switch (liststate) {
         case QRY:
-            token(CONTENT, "?");
+            ikea_token(CONTENT, "?");
             break;
         case TLD:
-            token(CONTENT, "~");
+            ikea_token(CONTENT, "~");
             break;
         default:
             break;
@@ -63,23 +63,23 @@ static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list)
             if (cnt++ == 0) {
                 switch (liststate) {
                 case EDGE:
-                    token(CONTENT, "<");
+                    ikea_token(CONTENT, "<");
                     break;
                 case OBJECT_LIST:
                 case ENDPOINTSET:
-                    token(CONTENT, "(");
+                    ikea_token(CONTENT, "(");
                     break;
                 case ATTRIBUTES:
-                    token(CONTENT, "[");
+                    ikea_token(CONTENT, "[");
                     break;
                 case CONTAINER:
-                    token(CONTENT, "{");
+                    ikea_token(CONTENT, "{");
                     break;
                 case VALASSIGN:
-                    token(CONTENT, "=");
+                    ikea_token(CONTENT, "=");
                     break;
                 case CHILD:
-                    token(CONTENT, "/");
+                    ikea_token(CONTENT, "/");
                     break;
                 default:
                     break;
@@ -90,17 +90,17 @@ static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list)
         }
         switch (liststate) {
         case EDGE:
-            token(CONTENT, ">");
+            ikea_token(CONTENT, ">");
             break;
         case OBJECT_LIST:
         case ENDPOINTSET:
-            token(CONTENT, ")");
+            ikea_token(CONTENT, ")");
             break;
         case ATTRIBUTES:
-            token(CONTENT, "]");
+            ikea_token(CONTENT, "]");
             break;
         case CONTAINER:
-            token(CONTENT, "}");
+            ikea_token(CONTENT, "}");
             break;
         default:
             break;

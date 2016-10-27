@@ -399,12 +399,12 @@ void ikea_store_restore ( ikea_store_t * ikea_store )
     }
     for (pathc=0; pathc < pglob.gl_pathc; pathc++) {
 #if 0
-        if (je_base64_to_long(pglob.gl_pathv[pathc]+len+1, &hash) == FAIL) {
-            fprintf(stderr, "Error - je_base64_to_long():  invalid base64 name \"%s\"\n",
+        if (base64_to_long(pglob.gl_pathv[pathc]+len+1, &hash) == FAIL) {
+            fprintf(stderr, "Error - base64_to_long():  invalid base64 name \"%s\"\n",
                     pglob.gl_pathv[pathc]+len+1);
             exit(EXIT_FAILURE);
         }
-        je_hash_bucket(PARSE, hash); // reinsert into bucket list.
+        hash_bucket(PARSE, hash); // reinsert into bucket list.
 #endif
     }
     free(glob_pattern);

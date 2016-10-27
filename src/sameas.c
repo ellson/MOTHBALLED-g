@@ -7,7 +7,7 @@
 
 #include "sameas.h"
 
-static void je_sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist);
+static void sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist);
 
 /**
  * rewrite subject into a newsubject
@@ -19,7 +19,7 @@ static void je_sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold
  * @param CONTENT container context
  * @param subject a subject tree from the parser (may be multiple object with same attributes)
  */
-void je_sameas(CONTENT_t * CONTENT, elem_t * subject)
+void sameas(CONTENT_t * CONTENT, elem_t * subject)
 {
     LIST_t * LIST = (LIST_t *)(CONTENT->PARSE);
     elem_t *newsubject, *oldsubject, *nextold;
@@ -36,7 +36,7 @@ void je_sameas(CONTENT_t * CONTENT, elem_t * subject)
     CONTENT->subject_type = 0;
 
     // rewrite subject into newsubject with any EQL elements substituted from oldsubject
-    je_sameas_r(CONTENT, subject, &nextold, newsubject);
+    sameas_r(CONTENT, subject, &nextold, newsubject);
 
     free_list(LIST, subject);     // free original subject ( although refs are retained in other lists )
     free_list(LIST, oldsubject);    // free the previous oldsubject
@@ -58,7 +58,7 @@ void je_sameas(CONTENT_t * CONTENT, elem_t * subject)
  * @param nextold
  * @param newlist
  */
-static void je_sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist)
+static void sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
@@ -93,9 +93,9 @@ if (*nextold) {
                     // all members of the SUBJECT must be of the same type: NODE or EDGE
                     // (this is really a shortcut to avoid extra productions in the grammar)
                     if (si == NODE) {
-                        je_token_error(TOKEN, si, "EDGE subject includes");
+                        token_error(TOKEN, si, "EDGE subject includes");
                     } else {
-                        je_token_error(TOKEN, si, "NODE subject includes");
+                        token_error(TOKEN, si, "NODE subject includes");
                     }
                 }
             }
@@ -113,7 +113,7 @@ if (*nextold) {
                     *nextold = NULL;
                 }
             }
-            je_sameas_r(CONTENT, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
+            sameas_r(CONTENT, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
             new = move_list(LIST, &object);
             new->state = si;
             append_list(newlist, new);
@@ -134,7 +134,7 @@ if (*nextold) {
                 *nextold = (*nextold)->next;
                 PARSE->stat_sameas++;
             } else {
-                je_token_error(TOKEN, si, "No corresponding object found for same-as substitution");
+                token_error(TOKEN, si, "No corresponding object found for same-as substitution");
             }
             break;
         default:
@@ -143,7 +143,7 @@ if (*nextold) {
                 nextoldelem = (*nextold)->u.l.first;    // for the recursion
                 *nextold = (*nextold)->next;    // at this level, continue over the elems
             }
-            je_sameas_r(CONTENT, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
+            sameas_r(CONTENT, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
             new = move_list(LIST, &object);
             new->state = si;
             append_list(newlist, new);
