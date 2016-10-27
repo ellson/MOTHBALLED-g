@@ -17,7 +17,7 @@
 #include "libje.h"
 
 /**
- * initiaze context and process file args
+ * initialize context and process file args
  *
  * @param pargc
  * @param argv
