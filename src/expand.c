@@ -184,7 +184,6 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
         newedge.state = EDGE;
         newlegs.state = ENDPOINTSET;
         if (nendpoint) { // if we have a hub at this point, then we are to split into simple 2-node <tail head> edges
-//P(nendpoint);
             ep = newepset->u.l.first;
             if (ep) {
                 expand_hub(C, ep, nendpoint, disambig, edges);  // first leg is the tail
@@ -212,7 +211,6 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
             }
             // and append the new simplified edge to the result
             new = move_list(LIST, &newedge);
-// P(new);
             append_list(edges, new);
         }
     }
@@ -238,6 +236,5 @@ static void expand_hub(CONTEXT_t *C, elem_t *tail, elem_t *head, elem_t *disambi
         append_list(&newedge, new);
     }
     new = move_list(LIST, &newedge);
-// P(new);
     append_list(edges, new);
 }

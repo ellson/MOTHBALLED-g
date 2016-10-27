@@ -65,25 +65,15 @@ void je_pattern(container_CONTEXT_t * CC, elem_t * root, elem_t * subject)
         pattern_acts = &(CC->edge_pattern_acts);
     }
 
-#if 0
-P(pattern_acts);
-#endif
-
     // iterate over available patterns
     for ( pact = pattern_acts->u.l.first; pact; pact = pact->next) {
         assert((state_t) pact->state == ACT);
-
-#if 0
-P(pact);
-#endif
         psubj = pact->u.l.first;
         assert(psubj);
         assert((state_t) psubj->state == SUBJECT);
-
         pattr = psubj->next;
 
         // FIXME - contents from pattern ??
-
         if ((je_pattern_r(CC, subject->u.l.first, psubj->u.l.first)) == SUCCESS) {
             // insert matched attrubutes, contents,
             // and then the subject again
@@ -100,9 +90,6 @@ P(pact);
             C->stat_patternmatches++;
         }
     }
-#if 0
-P(root);
-#endif
 }
 
 #if 1

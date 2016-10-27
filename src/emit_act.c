@@ -97,11 +97,9 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
     }
     switch (subjtype) {
     case NODE:
-//P(subject->u.l.first);
         emit_act_list_r(CC, subject->u.l.first); // skip NODEID
         break;
     case SIBLING:
-//P(subject->u.l.first->u.l.first);
         emit_act_list_r(CC, subject->u.l.first->u.l.first); // skip NODEREF NODEID
         break;
     case EDGE:
@@ -124,7 +122,6 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
     if (disambig) {
 #ifndef DOTLANG
         putc('`', stdout);
-//P(disambig->u.l.first);
         C->sep = '\0';
         emit_act_list_r(CC, disambig->u.l.first); // skip DISAMBID
 #endif
@@ -132,7 +129,6 @@ static void emit_act_func(container_CONTEXT_t * CC, state_t verb, state_t subjty
     if (attributes) {
         putc('[', stdout);
         C->sep = '\0';
-//P(attributes);
         emit_act_list_r(CC, attributes);
         putc(']', stdout);
     }

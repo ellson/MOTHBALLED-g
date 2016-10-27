@@ -60,7 +60,6 @@ void je_dispatch(container_CONTEXT_t * CC, elem_t * plist)
     elem_t *pelem;
     
     assert(plist);
-// P(plist);
     assert(plist->type == (char)LISTELEM);
 
     // expand OBJECT_LIST and ENDPOINTSETS
