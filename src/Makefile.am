@@ -22,7 +22,6 @@ noinst_HEADERS = \
     ikea.h \
     inbuf.h \
     info.h \
-    libje_private.h \
     list.h \
     parse.h \
     pattern.h \
