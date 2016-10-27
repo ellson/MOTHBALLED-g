@@ -22,7 +22,6 @@ extern "C" {
 #endif
 #endif
 
-#include "libje.h"
 #include "token.h"
 #include "ikea.h"
 
