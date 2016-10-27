@@ -96,12 +96,12 @@ CONTENT->out = stdout;
     }
     if (CONTENT->nodes) {
         PARSE->sep = '\0';
-        print_tree(PARSE, CONTENT->nodes);
+        print_tree(LIST, CONTENT->nodes);
         putc('\n', stdout);
     }
     if (CONTENT->edges) {
         PARSE->sep = '\0';
-        print_tree(PARSE, CONTENT->edges);
+        print_tree(LIST, CONTENT->edges);
         putc('\n', stdout);
     }
     PARSE->containment--;

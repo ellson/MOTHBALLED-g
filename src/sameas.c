@@ -56,7 +56,7 @@ void je_sameas(CONTENT_t * CONTENT, elem_t * subject)
  * @param CONTENT container context
  * @param subject
  * @param nextold
- * @param mewlist
+ * @param newlist
  */
 static void je_sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {

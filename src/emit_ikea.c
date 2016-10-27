@@ -9,7 +9,6 @@
 #include <assert.h>
 
 #include "ikea.h"
-#include "context.h"
 #include "emit.h"
 
 // forward declaration

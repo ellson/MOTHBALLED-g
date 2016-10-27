@@ -85,14 +85,14 @@ elem_t * search(elem_t * p, elem_t * key)
     return p;        
 }
 
-void print_tree(PARSE_t * PARSE, elem_t * p)
+void print_tree(LIST_t * LIST, elem_t * p)
 {
     if (p->u.t.left) {
-	    print_tree(PARSE, p->u.t.left);
+	    print_tree(LIST, p->u.t.left);
     }
-    print_frags(stdout, 0, p->next->u.l.first->u.l.first, &(PARSE->sep));
+    print_frags(stdout, 0, p->next->u.l.first->u.l.first, &(((PARSE_t*)LIST)->sep));
     if (p->u.t.right) {
-	    print_tree(PARSE, p->u.t.right);
+	    print_tree(LIST, p->u.t.right);
     }
 }
 

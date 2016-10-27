@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-#include "context.h"
 #include "emit.h"
 
 char * je_session(PARSE_t * PARSE);

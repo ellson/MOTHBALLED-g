@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-#include "list.h"
-#include "context.h"
 #include "emit.h"
 #include "match.h"
 
