@@ -7,13 +7,6 @@
 extern "C" {
 #endif
 
-#include <time.h>
-#include <unistd.h>
-#include <sys/utsname.h>
-#include <sys/types.h>
-#include <pwd.h>
-#include <errno.h>
-
 #include "context.h"
 #include "emit.h"
 

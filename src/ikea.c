@@ -1,6 +1,17 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#include "ikea.h"
+#include <string.h>
+#include <openssl/evp.h>
+#include <errno.h>
+#include <zlib.h>
+#include <libtar.h>
+#include <fcntl.h>
+#include <glob.h>
+#include <assert.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 static char *tempdir_template="/tmp/g_XXXXXX";
 static char *tempfile_template="/g_XXXXXX";
@@ -11,6 +22,9 @@ static char *tempfile_template="/g_XXXXXX";
 # define O_ACCMODE 0x0003
 #endif
 #endif
+
+#include "fatal.h"
+#include "ikea.h"
 
 /**
  * ikea.c   (the container store )

@@ -1,5 +1,25 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#include <time.h>
+#include <unistd.h>
+#include <sys/utsname.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <errno.h>
+
+// include local configuration
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef HAVE_SYSINFO
+#include <sys/sysinfo.h>
+#else
+#ifndef HAVE_CLOCK_GETTIME
+#include <sys/time.h>
+#endif
+#endif
+
 #include "info.h"
 
 #define SESSION_BUF_SIZE 1024

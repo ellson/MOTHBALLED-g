@@ -7,6 +7,18 @@
 extern "C" {
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef HAVE_SYSINFO
+#include <sys/sysinfo.h>
+#else
+#ifndef HAVE_CLOCK_GETTIME
+#include <sys/time.h>
+#endif
+#endif
+
 #include "libje.h"
 #include "token.h"
 #include "ikea.h"
