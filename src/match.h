@@ -7,9 +7,11 @@
 extern "C" {
 #endif
 
+#include "libje.h"
 #include "frag.h"
+#include "context.h"
 
-int compare(elem_t * a, elem_t * b);
+success_t match(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern);
 
 #ifdef __cplusplus
 }

@@ -13,7 +13,7 @@
  * @param b 
  * @return <0, 0 >0
  */
-int je_compare(elem_t * a, elem_t * b)
+int compare(elem_t * a, elem_t * b)
 {
     elem_t *a_elem, *b_elem, *ta_elem, *tb_elem;
     unsigned char *a_cp, *b_cp;
@@ -26,7 +26,7 @@ int je_compare(elem_t * a, elem_t * b)
         ta_elem = a_elem;
         tb_elem = b_elem;
         if ((elemtype_t) (a_elem->type) == LISTELEM) {
-            return je_compare(a_elem, b_elem);
+            return compare(a_elem, b_elem);
         } else {    // FRAGELEM
             a_cp = ta_elem->u.f.frag;
             a_len = ta_elem->len;
@@ -69,11 +69,4 @@ int je_compare(elem_t * a, elem_t * b)
         b_elem = b_elem->next;
     }
     return 0;   // if we get here, then the strings match
-}
-
-elem_t * je_merge(elem_t * new, elem_t * old)
-{
-    old->refs--;
-    new->refs++;
-    return new;
 }

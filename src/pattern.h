@@ -10,6 +10,7 @@ extern "C" {
 #include "list.h"
 #include "context.h"
 #include "emit.h"
+#include "match.h"
 
 void je_pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject);
 

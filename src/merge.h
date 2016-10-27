@@ -9,7 +9,7 @@ extern "C" {
 
 #include "frag.h"
 
-int compare(elem_t * a, elem_t * b);
+elem_t * merge(elem_t * new, elem_t * old);
 
 #ifdef __cplusplus
 }

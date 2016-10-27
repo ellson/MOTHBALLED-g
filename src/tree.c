@@ -73,7 +73,7 @@ elem_t * search(elem_t * p, elem_t * key)
     if (!p) {
         return NULL;
     }
-    comp = je_compare(key, p->next);
+    comp = compare(key, p->next);
     if (comp) {
         if (comp < 0) {
             return search(p->u.t.left, key);
@@ -103,7 +103,7 @@ elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
     if (!p) {
         return new_tree(LIST, key);
     }
-    comp = je_compare(key, p->next);
+    comp = compare(key, p->next);
     if (comp) {
         if (comp < 0) {
             p->u.t.left = insert(LIST, p->u.t.left, key);
@@ -113,7 +113,7 @@ elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
         }
     }
     else {
-        p->next = je_merge(key, p->next);
+        p->next = merge(key, p->next);
     }
     return balance(p);
 }
@@ -143,7 +143,7 @@ elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key)
     if (!p) {
         return NULL;
     }
-    comp = je_compare(key, p->next);
+    comp = compare(key, p->next);
     if (comp) {
         if (comp < 0) {
             p->u.t.left = remove_item(LIST, p->u.t.left, key);

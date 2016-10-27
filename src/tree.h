@@ -9,6 +9,7 @@ extern "C" {
 
 #include "context.h"
 #include "compare.h"
+#include "merge.h"
 #include "frag.h"
 
 elem_t * search(elem_t * p, elem_t * key);

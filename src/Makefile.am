@@ -23,6 +23,8 @@ noinst_HEADERS = \
     inbuf.h \
     info.h \
     list.h \
+    match.h \
+    merge.h \
     parse.h \
     pattern.h \
     reduce.h \
@@ -54,6 +56,8 @@ libje_C_la_SOURCES = \
     info.c \
     libje.c \
     list.c \
+    match.c \
+    merge.c \
     parse.c \
     pattern.c \
     reduce.c \
