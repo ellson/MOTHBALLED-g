@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 //opaque structs from the public interface
-typedef struct context_s CONTEXT_t;
+typedef struct parse_s PARSE_t;
 
 typedef enum {
     SUCCESS,
@@ -22,19 +22,19 @@ typedef enum {
 } style_t;
 
 // libje.c
-CONTEXT_t *je_initialize( int *argc, char *argv[], int optind );
-void je_finalize( CONTEXT_t * C );
-void je_interrupt( CONTEXT_t * C );
+PARSE_t *je_initialize( int *argc, char *argv[], int optind );
+void je_finalize( PARSE_t * C );
+void je_interrupt( PARSE_t * C );
 
 // emit.c
 success_t je_select_emitter(char *name);
 
 // parse.c
-success_t je_parse( CONTEXT_t * C);
+success_t je_parse( PARSE_t * C);
 
 // info.c
-char * je_session( CONTEXT_t * C );
-char * je_stats( CONTEXT_t * C );
+char * je_session( PARSE_t * C );
+char * je_stats( PARSE_t * C );
 
 // dumpg.c
 void set_sstyle( void );

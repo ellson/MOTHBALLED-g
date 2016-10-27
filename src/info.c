@@ -50,7 +50,7 @@
  * @param C context
  * @return formatted string result
  */
-char * je_session(CONTEXT_t *C)
+char * je_session(PARSE_t *C)
 {
     static char buf[SESSION_BUF_SIZE];
     static char *pos = &buf[0];  // NB. static. This initalization happens only once
@@ -165,7 +165,7 @@ char * je_session(CONTEXT_t *C)
  * @param C context
  * @return formatted string
  */
-char * je_stats(CONTEXT_t *C)
+char * je_stats(PARSE_t *C)
 {
     static char buf[STATS_BUF_SIZE];
 

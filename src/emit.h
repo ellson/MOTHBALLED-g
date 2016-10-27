@@ -11,11 +11,11 @@ extern "C" {
 
 typedef struct {
     char *name;
-    void (*initialize) (CONTEXT_t * C);
-    void (*finalize) (CONTEXT_t * C);
+    void (*initialize) (PARSE_t * C);
+    void (*finalize) (PARSE_t * C);
 
-    void (*start_file) (CONTEXT_t * C);
-    void (*end_file) (CONTEXT_t * C);
+    void (*start_file) (PARSE_t * C);
+    void (*end_file) (PARSE_t * C);
 
     void (*start_activity) (CONTENT_t * CONTENT);
     void (*end_activity) (CONTENT_t * CONTENT);
@@ -33,10 +33,10 @@ typedef struct {
     void (*subject) (CONTENT_t * CONTENT, elem_t * root);
     void (*attributes) (CONTENT_t * CONTENT, elem_t * root);
 
-    void (*sep) (CONTEXT_t * C);
-    void (*token) (CONTEXT_t * C, char token);
-    void (*string) (CONTEXT_t * C, elem_t * branch);
-    void (*frag) (CONTEXT_t * C, unsigned char len, unsigned char *frag);
+    void (*sep) (PARSE_t * C);
+    void (*token) (PARSE_t * C, char token);
+    void (*string) (PARSE_t * C, elem_t * branch);
+    void (*frag) (PARSE_t * C, unsigned char len, unsigned char *frag);
 } emit_t;
 
 #define emit_initialize(C) \
@@ -105,11 +105,11 @@ typedef struct {
 extern emit_t *emit;
 extern emit_t g_api, g1_api, g2_api, g3_api, t_api, t1_api, gv_api;
 char je_char_prop(unsigned char prop, char noprop);
-void je_append_token(CONTEXT_t *C, char **pos, char tok);
-void je_append_string(CONTEXT_t *C, char **pos, char *string);
-void je_append_ulong(CONTEXT_t *C, char **pos, uint64_t integer);
-void je_append_runtime(CONTEXT_t *C, char **pos, uint64_t run_sec, uint64_t run_ns);
-void je_emit_list(CONTEXT_t * C, FILE * chan, elem_t * subject);
+void je_append_token(PARSE_t *C, char **pos, char tok);
+void je_append_string(PARSE_t *C, char **pos, char *string);
+void je_append_ulong(PARSE_t *C, char **pos, uint64_t integer);
+void je_append_runtime(PARSE_t *C, char **pos, uint64_t run_sec, uint64_t run_ns);
+void je_emit_list(PARSE_t * C, FILE * chan, elem_t * subject);
 void je_emit_ikea(CONTENT_t * CONTENT, elem_t *list);
 
 #ifdef __cplusplus

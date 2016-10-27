@@ -85,7 +85,7 @@ elem_t * search(elem_t * p, elem_t * key)
     return p;        
 }
 
-void print_tree(CONTEXT_t *C, elem_t * p)
+void print_tree(PARSE_t *C, elem_t * p)
 {
     if (p->u.t.left) {
 	    print_tree(C, p->u.t.left);

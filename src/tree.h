@@ -12,7 +12,7 @@ extern "C" {
 #include "frag.h"
 
 elem_t * search(elem_t * p, elem_t * key);
-void print_tree(CONTEXT_t * C, elem_t * p);
+void print_tree(PARSE_t * C, elem_t * p);
 elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key);
 elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key);
 

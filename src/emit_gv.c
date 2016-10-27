@@ -9,7 +9,7 @@
 
 static void api_start_activity(CONTENT_t * CONTENT)
 {
-    CONTEXT_t *C = CONTENT->C;
+    PARSE_t *C = CONTENT->C;
 
     C->sep = 0;
     fprintf(C->out, "graph {\n");
@@ -17,7 +17,7 @@ static void api_start_activity(CONTENT_t * CONTENT)
 
 static void api_end_activity(CONTENT_t * CONTENT)
 {
-    CONTEXT_t *C = CONTENT->C;
+    PARSE_t *C = CONTENT->C;
 
     C->sep = 0;
     fprintf(C->out, "\n}\n");
@@ -25,7 +25,7 @@ static void api_end_activity(CONTENT_t * CONTENT)
 
 static void api_list(CONTENT_t * CONTENT, elem_t *list)
 {
-    CONTEXT_t *C = CONTENT->C;
+    PARSE_t *C = CONTENT->C;
 
     je_emit_list(C, C->out, list);
 }

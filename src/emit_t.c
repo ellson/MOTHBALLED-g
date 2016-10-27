@@ -9,7 +9,7 @@
 
 static void api_start_activity(CONTENT_t * CONTENT)
 {
-    CONTEXT_t *C = CONTENT->C;
+    PARSE_t *C = CONTENT->C;
     FILE *chan = C->out;
 
     C->sep = 0;
@@ -35,7 +35,7 @@ api_start_state(CONTENT_t * CONTENT, char class, unsigned char prop, int nest, i
     print_len_frag(chan, NAMEP(class));
 }
 
-static void api_string(CONTEXT_t * C, elem_t * branch)
+static void api_string(PARSE_t * C, elem_t * branch)
 {
     FILE *chan = C->out;
     char sep;
@@ -45,7 +45,7 @@ static void api_string(CONTEXT_t * C, elem_t * branch)
     print_list(chan, branch, -1, &sep);
 }
 
-static void api_token(CONTEXT_t * C, char token)
+static void api_token(PARSE_t * C, char token)
 {
     FILE *chan = C->out;
 
@@ -63,7 +63,7 @@ api_end_state(CONTENT_t * CONTENT, char class, success_t rc, int nest, int repc)
 
 static void api_end_activity(CONTENT_t * CONTENT)
 {
-    CONTEXT_t *C = CONTENT->C;
+    PARSE_t *C = CONTENT->C;
     FILE *chan = C->out;
 
     C->sep = 0;

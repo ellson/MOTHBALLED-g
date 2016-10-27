@@ -10,12 +10,12 @@
 
 // forward declarations
 
-static success_t parse_nest_r(CONTEXT_t * C, elem_t * name);
+static success_t parse_nest_r(PARSE_t * C, elem_t * name);
 
 static success_t parse_r(CONTENT_t * CONTENT, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc);
 
-static success_t parse_more_rep(CONTEXT_t * C, unsigned char prop);
+static success_t parse_more_rep(PARSE_t * C, unsigned char prop);
 
 /**
  * parse G syntax input
@@ -41,12 +41,12 @@ static success_t parse_more_rep(CONTEXT_t * C, unsigned char prop);
  * @return success/fail
  */
 
-success_t je_parse(CONTEXT_t *C)
+success_t je_parse(PARSE_t *C)
 {
     return parse_nest_r(C, NULL);
 }
 
-static success_t parse_nest_r(CONTEXT_t * C, elem_t * name)
+static success_t parse_nest_r(PARSE_t * C, elem_t * name)
 {
     CONTENT_t container_context = { 0 };
     CONTENT_t * CONTENT = &container_context;
@@ -127,7 +127,7 @@ static success_t
 parse_r(CONTENT_t * CONTENT, elem_t * root,
     state_t si, unsigned char prop, int nest, int repc)
 {
-    CONTEXT_t *C = CONTENT->C;
+    PARSE_t *C = CONTENT->C;
     TOKEN_t * TOKEN = (TOKEN_t *)C;
     LIST_t * LIST = (LIST_t *)C;
     INBUF_t * INBUF = (INBUF_t *)C;
@@ -352,7 +352,7 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
  * @param prop properties from grammar
  * @return success = more, fail - no more
  */
-static success_t parse_more_rep(CONTEXT_t * C, unsigned char prop)
+static success_t parse_more_rep(PARSE_t * C, unsigned char prop)
 {
     TOKEN_t * TOKEN = (TOKEN_t *)C;
     state_t ei, bi;

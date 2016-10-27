@@ -7,8 +7,8 @@
 
 #include "dispatch.h"
 
-static void je_dispatch_r(CONTEXT_t * C, elem_t * plist, elem_t *pattributes, elem_t * pnodes, elem_t * pedges);
-static void je_assemble_act(CONTEXT_t *C, elem_t * pelem, elem_t * pattributes, elem_t * plist);
+static void je_dispatch_r(PARSE_t * C, elem_t * plist, elem_t *pattributes, elem_t * pnodes, elem_t * pedges);
+static void je_assemble_act(PARSE_t *C, elem_t * pelem, elem_t * pattributes, elem_t * plist);
 
 /*
  * Processes an ACT after sameas and pattern substitutions.
@@ -52,7 +52,7 @@ static void je_assemble_act(CONTEXT_t *C, elem_t * pelem, elem_t * pattributes, 
  */
 void je_dispatch(CONTENT_t * CONTENT, elem_t * plist)
 {
-    CONTEXT_t *C = CONTENT->C;
+    PARSE_t *C = CONTENT->C;
     LIST_t * LIST = (LIST_t *)C;
     elem_t attributes = { 0 };
     elem_t nodes = { 0 };
@@ -116,7 +116,7 @@ void je_dispatch(CONTENT_t * CONTENT, elem_t * plist)
  * @param pnodes
  * @param pedges
  */
-static void je_dispatch_r(CONTEXT_t * C, elem_t * plist, elem_t * pattributes, elem_t * pnodes, elem_t * pedges)
+static void je_dispatch_r(PARSE_t * C, elem_t * plist, elem_t * pattributes, elem_t * pnodes, elem_t * pedges)
 {
     LIST_t * LIST = (LIST_t *)C;
     elem_t *pelem, *pnew, *pobject;
@@ -176,7 +176,7 @@ static void je_dispatch_r(CONTEXT_t * C, elem_t * plist, elem_t * pattributes, e
  * @param pattributes
  * @param plist - output ACT
  */
-static void je_assemble_act(CONTEXT_t *C, elem_t *pelem, elem_t *pattributes, elem_t *plist)
+static void je_assemble_act(PARSE_t *C, elem_t *pelem, elem_t *pattributes, elem_t *plist)
 {
     TOKEN_t * IN = (TOKEN_t *)C;
     LIST_t * LIST = (LIST_t *)C;

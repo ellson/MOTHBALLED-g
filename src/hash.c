@@ -167,7 +167,7 @@ success_t je_base64_to_long(const char b64string[], uint64_t *hash)
  * @param hash
  * @return a list element
  */
-hash_elem_t *je_hash_bucket(CONTEXT_t * C, uint64_t hash)
+hash_elem_t *je_hash_bucket(PARSE_t * C, uint64_t hash)
 {
     LIST_t * LIST = (LIST_t *)C;
     elem_t *elem, **next;

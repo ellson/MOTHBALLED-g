@@ -76,7 +76,7 @@ void je_emit_act(CONTENT_t * CONTENT, elem_t *list)
 #define DOTLANG 1
 static void emit_act_func(CONTENT_t * CONTENT, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes)
 {
-    CONTEXT_t *C = CONTENT->C;
+    PARSE_t *C = CONTENT->C;
     C->sep = '\0';
 
     switch (verb) {

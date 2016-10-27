@@ -11,7 +11,7 @@ extern "C" {
 #include "list.h"
 
 #if 0
-hash_elem_t * je_hash_bucket(CONTEXT_t * C, uint64_t hash);
+hash_elem_t * je_hash_bucket(PARSE_t * C, uint64_t hash);
 #endif
 void je_hash_list(uint64_t *hash, elem_t *list);
 void je_long_to_base64(char *b64string, const uint64_t *hash);

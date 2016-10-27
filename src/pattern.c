@@ -50,7 +50,7 @@ je_pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern);
  */
 void je_pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject)
 {
-    CONTEXT_t *C = CONTENT->C;
+    PARSE_t *C = CONTENT->C;
     LIST_t * LIST = (LIST_t *)C;
     elem_t *pattern_acts, *pact, *psubj, *pattr;
 

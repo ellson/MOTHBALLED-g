@@ -24,11 +24,11 @@
  * @param optind
  * @return context
  */
-CONTEXT_t *je_initialize(int *pargc, char *argv[], int optind)
+PARSE_t *je_initialize(int *pargc, char *argv[], int optind)
 {
-    CONTEXT_t *C;
+    PARSE_t *C;
 
-    if (! (C = calloc(1, sizeof(CONTEXT_t))))
+    if (! (C = calloc(1, sizeof(PARSE_t))))
         fatal_perror("Error - calloc(): ");
 
     C->progname = argv[0];
@@ -62,7 +62,7 @@ CONTEXT_t *je_initialize(int *pargc, char *argv[], int optind)
  *
  * @param C context
  */
-void je_finalize( CONTEXT_t * C )
+void je_finalize( PARSE_t * C )
 {
    emit_finalize(C);
 
@@ -73,7 +73,7 @@ void je_finalize( CONTEXT_t * C )
    free(C);
 }
 
-void je_interrupt( CONTEXT_t * C )
+void je_interrupt( PARSE_t * C )
 {
    ikea_store_close(C->ikea_store);
 }

@@ -58,7 +58,7 @@ void je_sameas(CONTENT_t * CONTENT, elem_t * subject)
  */
 static void je_sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {
-    CONTEXT_t * C = CONTENT->C;
+    PARSE_t * C = CONTENT->C;
     TOKEN_t * TOKEN = (TOKEN_t *)C;
     LIST_t * LIST = (LIST_t *)C;
     elem_t *elem, *new, *nextoldelem = NULL;

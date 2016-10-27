@@ -26,11 +26,11 @@ extern "C" {
 #include "token.h"
 #include "ikea.h"
 
-struct context_s {             // context
+struct parse_s {               // parse context
  
 //FIXME -- parser context
 
-    TOKEN_t TOKEN;             // Must be first (to allow casting from CONTEXT_t)
+    TOKEN_t TOKEN;             // Must be first (to allow casting from PARSE_t)
 
     char has_cousin;           // flag set if a COUSIN is found in any EDGE of the ACT
                                //  (forward EDGE to ancestors for processing)
@@ -76,7 +76,7 @@ struct context_s {             // context
 };
 
 typedef struct {                // container_context
-    CONTEXT_t *C;               // the input context
+    PARSE_t *C;               // the input context
     elem_t subject;             // Preceeding ACT's subject, until this ACT's
                                 // SUBJECT has been parsed and processd by sameas()
                                 //   - at which point it becomes this ACT's subject.

@@ -11,7 +11,7 @@ extern "C" {
 #include "frag.h"
 
 typedef struct {
-    LIST_t LIST;             // Must be first (to allow casting from CONTEXT_t)
+    LIST_t LIST;             // Must be first (to allow casting from PARSE_t)
 
     int *pargc;                // remaining filenames from command line
     char **argv;

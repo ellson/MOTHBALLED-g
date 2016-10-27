@@ -7,8 +7,8 @@
 
 #include "expand.h"
 
-static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges);
-static void expand_hub(CONTEXT_t *C, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges);  // two node edge
+static void expand_r(PARSE_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges);
+static void expand_hub(PARSE_t *C, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges);  // two node edge
 
 /**
  * this function expands and dispatches EDGEs
@@ -18,7 +18,7 @@ static void expand_hub(CONTEXT_t *C, elem_t *tail, elem_t *head, elem_t *disambi
  * @param nodes - resulting nodes
  * @param edges - resulting simple edges
  */
-void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
+void je_expand(PARSE_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
 {
     LIST_t * LIST = (LIST_t *)C;
     elem_t *elem, *epset, *ep, *new, *disambig = NULL;
@@ -99,7 +99,7 @@ void je_expand(CONTEXT_t *C, elem_t *list, elem_t *nodes, elem_t *edges)
  * @param epset
  * @param edges
  */
-static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges)
+static void expand_r(PARSE_t *C, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges)
 {
     LIST_t * LIST = (LIST_t *)C;
     elem_t newedge = { 0 };
@@ -216,7 +216,7 @@ static void expand_r(CONTEXT_t *C, elem_t *newepset, elem_t *epset, elem_t *disa
     }
 }
 
-static void expand_hub(CONTEXT_t *C, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges)
+static void expand_hub(PARSE_t *C, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges)
 {
     LIST_t * LIST = (LIST_t *)C;
     elem_t newedge = { 0 };
