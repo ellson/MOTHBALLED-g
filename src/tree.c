@@ -1,3 +1,5 @@
+/* vim:set shiftwidth=4 ts=8 expandtab: */
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
