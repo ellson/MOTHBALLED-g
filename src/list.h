@@ -42,7 +42,7 @@ struct elem_s {
         } h;
     } u;
     uint16_t height;        // (belongs to u.t.) height of elem in tree
-    uint16_t refs;          // (belongs to u.l.) don't free this list until refs == 0
+    int16_t refs;           // (belongs to u.l.) don't free this list until refs == 0
     uint16_t len;           // (shared by u.l. u.f. u.s.)
     char state;             // state_machine state that generated this elem
     char type;              // just this *has* to be outside of union
@@ -70,6 +70,8 @@ elem_t *ref_list(LIST_t * LIST, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);
 void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem);
 void free_list(LIST_t * LIST, elem_t * list);
+void free_tree(LIST_t *LIST, elem_t * p);
+void free_tree_item(LIST_t *LIST, elem_t * p);
 
 #ifdef __cplusplus
 }

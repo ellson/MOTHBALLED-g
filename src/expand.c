@@ -25,6 +25,9 @@ void je_expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
     elem_t newlist = { 0 };
     elem_t newepset = { 0 };
 
+    newlist.refs = 1; // prevent deletion
+    newepset.refs = 1;
+
     assert(list);
     elem = list->u.l.first;
     while (elem) {
@@ -113,6 +116,9 @@ static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *d
     elem_t *ep, *eplast, *new;
     uint64_t hubhash;
     char hubhash_b64[12];
+
+    newedge.refs = 1; // prevent deletion
+    newlegs.refs = 1;
 
     if (epset) {
         ep = epset->u.l.first;
@@ -222,6 +228,9 @@ static void expand_hub(PARSE_t * PARSE, elem_t *tail, elem_t *head, elem_t *disa
     elem_t newedge = { 0 };
     elem_t newlegs = { 0 };
     elem_t *new;
+
+    newedge.refs = 1; // prevent deletion
+    newlegs.refs = 1;
 
     newedge.state = EDGE;
     newlegs.state = ENDPOINTSET;

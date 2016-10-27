@@ -59,6 +59,7 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
 #endif
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
+    root.refs=1; // prevent deletion
 
     CONTENT->PARSE = PARSE;
     CONTENT->ikea_box = ikea_box_open(PARSE->ikea_store, NULL);
@@ -142,6 +143,7 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
     rc = SUCCESS;
     emit_start_state(CONTENT, si, prop, nest, repc);
     branch.state = si;
+    branch.refs = 1;  //prevent removal attempts
 
     nest++;
     assert(nest >= 0);    // catch overflows
@@ -283,8 +285,9 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
                 elem = root->u.l.first;
                 while (elem) {
                     PARSE->stat_outactcount++;
+//P(PARSE,elem);
 //                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
-                    je_reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
+                    reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 
                     elem = elem->next;
                 }

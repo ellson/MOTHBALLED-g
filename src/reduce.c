@@ -6,7 +6,7 @@
 
 #include "reduce.h"
 
-void je_reduce(CONTENT_t * CONTENT, elem_t *list)
+void reduce(CONTENT_t * CONTENT, elem_t *list)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t *LIST = (LIST_t*)PARSE;

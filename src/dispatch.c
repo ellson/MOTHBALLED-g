@@ -59,6 +59,10 @@ void je_dispatch(CONTENT_t * CONTENT, elem_t * plist)
     elem_t edges = { 0 };
     elem_t *pelem;
     
+    attributes.refs = 1; // prevent deletion
+    nodes.refs = 1;
+    edges.refs = 1;
+
     assert(plist);
     assert(plist->type == (char)LISTELEM);
 
@@ -183,6 +187,9 @@ static void je_assemble_act(PARSE_t * PARSE, elem_t *pelem, elem_t *pattributes,
     elem_t act = { 0 };
     elem_t verb = { 0 };
     elem_t *pnew;
+
+    act.refs = 1; // prevent deletion
+    verb.refs = 1;
 
     act.state = ACT;
 

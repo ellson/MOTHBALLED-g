@@ -109,6 +109,18 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
     return elem;
 }
 
+void free_tree_item(LIST_t *LIST, elem_t * p)
+{
+    assert(p->next == (char)LISTELEM);
+    p->next->refs--;
+    free_list(LIST, p->next);
+
+    // return p to the freelist
+    p->next = LIST->free_elem_list;
+    LIST->free_elem_list = p;
+    LIST->stat_elemnow--;    // maintain stats
+}
+
 void free_tree(LIST_t *LIST, elem_t * p)
 {
     if ( !p ) {
@@ -117,14 +129,7 @@ void free_tree(LIST_t *LIST, elem_t * p)
     assert(p->type = (char)TREEELEM);
     free_tree(LIST, p->u.t.left);
     free_tree(LIST, p->u.t.right);
-
-    assert(p->next == (char)LISTELEM);
-    free_list(LIST, p->next);
-
-    // insert p at beginning of freelist
-    p->next = LIST->free_elem_list;
-    LIST->free_elem_list = p;
-    LIST->stat_elemnow--;    // maintain stats
+    free_tree_item(LIST, p);
 }
 
 /**
@@ -358,8 +363,7 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
 }
 
 /**
- * Free the list contents, but not the list header.
- * This function can be used on statically or callstack allocated list headers.
+ * Free the list contents, and free the empty list if it is not referenced.
  *  
  * If it is a list of lists, then the refence count in the first elem_t is
  * decremented and the elements are freed only if the references are  zero.
@@ -380,6 +384,7 @@ void free_list(LIST_t * LIST, elem_t * list)
 
     assert(list);
     assert(list->type == (char)LISTELEM);
+    assert(list->refs >= 0);
 
     // free list of elem, but really just put them back
     // on the elem_freelist (declared at the top of this file)`
@@ -407,20 +412,25 @@ void free_list(LIST_t * LIST, elem_t * list)
             assert(0);  // should not be here
             break;
         }
-
         // insert elem at beginning of freelist
         elem->next = LIST->free_elem_list;
         LIST->free_elem_list = elem;
-
         LIST->stat_elemnow--;    // maintain stats
 
         elem = next;
     }
-
  done:
-    // clean up emptied list
-    list->u.l.first = NULL;
-    list->u.l.last = NULL;
-    // Note: ref count of the header is not modified.
-    // It may be still referenced, even though it is now empty.
+//    if (list->refs) {
+        // clean up emptied list
+        list->u.l.first = NULL;
+        list->u.l.last = NULL;
+        // Note: ref count of the empty list is not modified.
+        // It may be still referenced, even though it is now empty.
+//    }
+//    else {
+//        // no remaining references, so return list to the freelist
+//        list->next = LIST->free_elem_list;
+//        LIST->free_elem_list = list;
+//        LIST->stat_elemnow--;    // maintain stats
+//    }
 }

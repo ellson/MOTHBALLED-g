@@ -25,6 +25,8 @@ void je_sameas(CONTENT_t * CONTENT, elem_t * subject)
     elem_t *newsubject, *oldsubject, *nextold;
     elem_t subject_rewrite = { 0 };
 
+    subject_rewrite.refs = 1; // prevent deletion
+
     newsubject = &subject_rewrite;
     oldsubject = &(CONTENT->subject);
     nextold = oldsubject->u.l.first;
@@ -64,6 +66,8 @@ static void je_sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold
     elem_t *elem, *new, *nextoldelem = NULL;
     elem_t object = { 0 };
     state_t si;
+
+    object.refs = 1; // prevent deletion
 
     assert (subject->type == (char)LISTELEM);
 
