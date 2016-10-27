@@ -8,7 +8,6 @@
 #include <errno.h>
 
 // private includes
-#include "token.h"
 #include "context.h"
 #include "ikea.h"
 #include "emit.h"

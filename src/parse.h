@@ -7,15 +7,11 @@
 extern "C" {
 #endif
 
-#include "list.h"
-#include "context.h"
-#include "frag.h"
-#include "tree.h"
-#include "sameas.h"
 #include "pattern.h"
 #include "dispatch.h"
 #include "expand.h"
 #include "reduce.h"
+#include "sameas.h"
 #include "emit_act.h"
 #include "emit.h"
 

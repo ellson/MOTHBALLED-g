@@ -10,10 +10,9 @@ extern "C" {
 #include "context.h"
 #include "compare.h"
 #include "merge.h"
-#include "frag.h"
 
 elem_t * search(elem_t * p, elem_t * key);
-void print_tree(PARSE_t * PARSE, elem_t * p);
+void print_tree(PARSE_t * LIST_t, elem_t * p);
 elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key);
 elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key);
 
