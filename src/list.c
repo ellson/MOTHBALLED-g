@@ -225,71 +225,7 @@ elem_t *new_hashname(LIST_t * LIST, unsigned char* hash, size_t hash_len)
 }
 
 /**
- * Private function to clone a list header to a new elem.
- *
- * The old list header is not modified, so could have been be statically or
- * dynamically created.
- *
- * The ref count in the first elem is not updated for this clone, so
- * this function must only be used by move_list() or ref_list(), which
- * make appropriate fixes to the ref counts.
- *
- * @param LIST the top-level context in which all lists are managed
- * @param list a header to a list to be cloned
- * @return a new intialized elem_t
- */
-static elem_t *clone_list(LIST_t * LIST, elem_t * list)
-{
-    elem_t *elem;
-
-    assert(list->type == (char)LISTELEM);
-
-    elem = new_elem_sub(LIST);
-
-    elem->type = LISTELEM;       // type
-    elem->next = NULL;           // clear next
-    elem->state = list->state;
-    elem->u.l.first = list->u.l.first; // copy details
-    elem->u.l.last = list->u.l.last;
-    elem->refs = 0;
-    elem->len = list->len;
-    return elem;
-}
-
-/**
- * Move a list's content to a new list.
- * Typically used to move a list from a call stack header into an elem_t header
- * so the list can be in a lists of lists.
- *
- * Implemented using clone_list. Clone_list didn't increase the ref count
- * in the first elem_t, so no need to deref.
- *
- * Clean up the old list header so it no longer references the list elems.
- *
- * @param LIST the top-level context in which all lists are managed
- * @param list a header to a list to be moved
- * @return a new intialized elem_t which is now the header of the moved list
- */
-elem_t *move_list(LIST_t * LIST, elem_t * list)
-{
-    elem_t *elem;
-
-    elem = clone_list(LIST, list);
-
-    list->u.l.first = NULL;    // reset old header
-    list->u.l.last = NULL;
-    list->state = 0;
-
-    return elem;
-}
-
-/**
- * Reference a list's content from a new list.
- * Implement as a clone_list with a ref count adjustment
- *
- * If there is a first elem and if it is a LISTELEM, then
- * increment the first elem's ref count.  (NB, not the ref_count in this
- * new elem_t)
+ * Create a new list with the same content, by reference, as the input list.
  *
  * @param LIST the top-level context in which all lists are managed
  * @param list a header to a list to be referenced
@@ -299,8 +235,17 @@ elem_t *ref_list(LIST_t * LIST, elem_t * list)
 {
     elem_t *elem;
 
-    elem = clone_list(LIST, list);
+    assert(list->type == (char)LISTELEM);
 
+    elem = new_elem_sub(LIST);
+
+    elem->type = LISTELEM;       // type
+    elem->next = NULL;           // clear next
+    elem->refs = 0;              // no refs to this yet
+    elem->state = list->state;
+    elem->u.l.first = list->u.l.first; // copy details
+    elem->u.l.last = list->u.l.last;
+    elem->len = list->len;
     if (list->u.l.first && list->u.l.first->type == LISTELEM) {
         list->u.l.first->refs++;    // increment ref count
     }

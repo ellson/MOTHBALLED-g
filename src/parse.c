@@ -268,15 +268,15 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
                                     //  save entire previous ACT in a list of pattern_acts
                 PARSE->stat_patternactcount++;
                 if (CONTENT->subject_type == NODE) {
-                    append_list(&(CONTENT->node_pattern_acts), move_list(LIST, branch));
+                    append_list(&(CONTENT->node_pattern_acts), branch);
 
                 } else {
                     assert(CONTENT->subject_type == EDGE);
-                    append_list(&(CONTENT->edge_pattern_acts), move_list(LIST, branch));
+                    append_list(&(CONTENT->edge_pattern_acts), branch);
                 }
             } else {
                 PARSE->stat_nonpatternactcount++;
-                append_list(root, move_list(LIST, branch));
+                append_list(root, branch);
 
                 // dispatch events for the ACT just finished
                 dispatch(CONTENT, root);
@@ -339,14 +339,12 @@ P(PARSE,elem);
                 // - except for STRINGs which use state for quoting info
                 branch->state = si;
             }
-            append_list(root, move_list(LIST, branch));
+            append_list(root, branch);
         }
     }
     nest--;
     assert(nest >= 0);
     emit_end_state(CONTENT, si, rc, nest, repc);
-
-    free_list(LIST, branch);
 
     return rc;
 }

@@ -65,7 +65,6 @@ elem_t *new_list(LIST_t * LIST, char state);
 elem_t *new_tree(LIST_t * LIST, elem_t *key);
 elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag);
 elem_t *new_shortstr(LIST_t * LIST, char state, char *str);
-elem_t *move_list(LIST_t * LIST, elem_t * list);
 elem_t *ref_list(LIST_t * LIST, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);
 void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem);
