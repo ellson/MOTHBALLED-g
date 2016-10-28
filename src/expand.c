@@ -8,6 +8,7 @@
 #include "expand.h"
 
 static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges);
+
 static void expand_hub(PARSE_t * PARSE, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges);  // two node edge
 
 /**
@@ -22,8 +23,8 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
 {
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *elem, *epset, *ep, *new, *disambig = NULL;
-    elem_t *newlist = new_list(LIST, 0);
     elem_t *newepset = new_list(LIST, ENDPOINTSET);
+    elem_t *newlist = new_list(LIST, ENDPOINTSET);
 
     assert(list);
     elem = list->u.l.first;
@@ -37,8 +38,9 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
             epset = elem->u.l.first;
             new = ref_list(LIST, epset);
             if ((state_t)epset->state == ENDPOINT) { // put singletons into lists too
-                append_list(newepset, new);
-                new = move_list(LIST, newepset);
+                epset = new_list(LIST, ENDPOINTSET);
+                append_list(epset, new);
+                new = epset;
             }
             append_list(newlist, new);
     
@@ -85,8 +87,8 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
     if (disambig) {
         free_list_content(LIST, disambig);
     }
-    free_list(LIST, newlist);
     free_list(LIST, newepset);
+    free_list(LIST, newlist);
 }
 
 /**

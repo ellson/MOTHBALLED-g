@@ -286,9 +286,9 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
                 elem = root->u.l.first;
                 while (elem) {
                     PARSE->stat_outactcount++;
-//P(PARSE,elem);
+P(PARSE,elem);
 //                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
-                    reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
+//                    reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 
                     elem = elem->next;
                 }

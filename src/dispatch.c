@@ -169,7 +169,7 @@ static void dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t * pattributes, el
 }
 
 /**
- * This function reassembles ACTS with no containment  -- FIXME improve on this
+ * This function assembles ACTS with simplified SUBJECT and no CONTAINER
  *
  * @param PARSE context
  * @param pelem   -- node or edge object
@@ -182,13 +182,12 @@ static void assemble_act(PARSE_t * PARSE, elem_t *pelem, elem_t *pattributes, el
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *pnew;
     elem_t *act = new_list(LIST, ACT);
-    elem_t *verb = new_list(LIST, IN->verb);
 
     // verb
     switch(IN->verb) {
     case QRY:
     case TLD:
-        pnew = move_list(LIST, verb);
+        pnew = new_list(LIST, IN->verb);
         append_list(act, pnew);
         break;
     default:
@@ -205,12 +204,8 @@ static void assemble_act(PARSE_t * PARSE, elem_t *pelem, elem_t *pattributes, el
         append_list(act, pnew);
     }
 
-    // no container ever because contains are in their own streams
+    // no container ever because containers are in their own streams
 
-    pnew = move_list(LIST, act);
-    append_list(plist, pnew);
-
-    free_list(LIST, verb);
-    free_list(LIST, act);
+    append_list(plist, act);
 }
 
