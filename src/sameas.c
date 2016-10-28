@@ -61,7 +61,7 @@ static void sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, e
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *elem, *new, *nextoldelem = NULL;
-    elem_t *object = new_list(LIST, OBJECT);
+    elem_t *object;
     state_t si;
 
     assert (subject->type == (char)LISTELEM);
@@ -108,10 +108,9 @@ if (*nextold) {
                     *nextold = NULL;
                 }
             }
+            object = new_list(LIST, si);
             sameas_r(CONTENT, elem, &nextoldelem, object);    // recurse, adding result to a sublist
-            new = move_list(LIST, object);
-            new->state = si;
-            append_list(newlist, new);
+            append_list(newlist, object);
             break;
         case DISAMBIG:
         case NODEID:
@@ -138,14 +137,11 @@ if (*nextold) {
                 nextoldelem = (*nextold)->u.l.first;    // for the recursion
                 *nextold = (*nextold)->next;    // at this level, continue over the elems
             }
+            object = new_list(LIST, si);
             sameas_r(CONTENT, elem, &nextoldelem, object);    // recurse, adding result to a sublist
-            new = move_list(LIST, object);
-            new->state = si;
-            append_list(newlist, new);
+            append_list(newlist, object);
             break;
         }
         elem = elem->next;
     }
-
-    free_list(LIST, object);
 }

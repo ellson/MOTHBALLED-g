@@ -31,7 +31,7 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
     while (elem) {
         switch ((state_t)elem->state) {
         case DISAMBIG:
-            disambig = move_list(LIST, elem);
+            disambig = elem;
             break;
         case LEG:
             // build a leg list with endpointsets for each leg
@@ -115,8 +115,8 @@ static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *d
     elem_t *ep, *eplast, *new;
     uint64_t hubhash;
     char hubhash_b64[12];
-    elem_t *newedge = new_list(LIST, EDGE);
-    elem_t *newlegs = new_list(LIST, ENDPOINTSET);
+    elem_t *newedge;
+    elem_t *newlegs;
 
     if (epset) {
         ep = epset->u.l.first;
@@ -198,26 +198,24 @@ static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *d
             free_list_content(LIST, nendpoint);
         }
         else {
+            newedge = new_list(LIST, EDGE);
+            newlegs = new_list(LIST, ENDPOINTSET);
             ep = newepset->u.l.first;
             while (ep) {
                 new = ref_list(LIST, ep);
                 append_list(newlegs, new);
                 ep = ep->next;
             }
-            new = move_list(LIST, newlegs);
-            append_list(newedge, new);
+            append_list(newedge, newlegs);
     
             if (disambig) {
                 new = ref_list(LIST, disambig);
                 append_list(newedge, new);
             }
             // and append the new simplified edge to the result
-            new = move_list(LIST, newedge);
-            append_list(edges, new);
+            append_list(edges, newedge);
         }
     }
-    free_list(LIST, newedge);
-    free_list(LIST, newlegs);
 }
 
 static void expand_hub(PARSE_t * PARSE, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges)
@@ -231,15 +229,10 @@ static void expand_hub(PARSE_t * PARSE, elem_t *tail, elem_t *head, elem_t *disa
     append_list(newlegs, new);
     new = ref_list(LIST, head);
     append_list(newlegs, new);
-    new = move_list(LIST, newlegs);
-    append_list(newedge, new);
+    append_list(newedge, newlegs);
     if (disambig) {
         new = ref_list(LIST, disambig);
         append_list(newedge, new);
     }
-    new = move_list(LIST, newedge);
-    append_list(edges, new);
-
-    free_list(LIST, newedge);
-    free_list(LIST, newlegs);
+    append_list(edges, newedge);
 }
