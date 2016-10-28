@@ -22,12 +22,9 @@ static void sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, e
 void sameas(CONTENT_t * CONTENT, elem_t * subject)
 {
     LIST_t * LIST = (LIST_t *)(CONTENT->PARSE);
-    elem_t *newsubject, *oldsubject, *nextold;
-    elem_t subject_rewrite = { 0 };
+    elem_t *oldsubject, *nextold;
+    elem_t *newsubject = new_list(LIST, SUBJECT);
 
-    subject_rewrite.refs = 1; // prevent deletion
-
-    newsubject = &subject_rewrite;
     oldsubject = &(CONTENT->subject);
     nextold = oldsubject->u.l.first;
 
@@ -64,10 +61,8 @@ static void sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, e
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *elem, *new, *nextoldelem = NULL;
-    elem_t object = { 0 };
+    elem_t *object = new_list(LIST, OBJECT);
     state_t si;
-
-    object.refs = 1; // prevent deletion
 
     assert (subject->type == (char)LISTELEM);
 
@@ -113,8 +108,8 @@ if (*nextold) {
                     *nextold = NULL;
                 }
             }
-            sameas_r(CONTENT, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
-            new = move_list(LIST, &object);
+            sameas_r(CONTENT, elem, &nextoldelem, object);    // recurse, adding result to a sublist
+            new = move_list(LIST, object);
             new->state = si;
             append_list(newlist, new);
             break;
@@ -143,12 +138,14 @@ if (*nextold) {
                 nextoldelem = (*nextold)->u.l.first;    // for the recursion
                 *nextold = (*nextold)->next;    // at this level, continue over the elems
             }
-            sameas_r(CONTENT, elem, &nextoldelem, &object);    // recurse, adding result to a sublist
-            new = move_list(LIST, &object);
+            sameas_r(CONTENT, elem, &nextoldelem, object);    // recurse, adding result to a sublist
+            new = move_list(LIST, object);
             new->state = si;
             append_list(newlist, new);
             break;
         }
         elem = elem->next;
     }
+
+    free_list(LIST, object);
 }

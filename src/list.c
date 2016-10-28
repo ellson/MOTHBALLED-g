@@ -255,7 +255,7 @@ static elem_t *clone_list(LIST_t * LIST, elem_t * list)
 }
 
 /**
- * Move a list to a new elem.
+ * Move a list's content to a new list.
  * Typically used to move a list from a call stack header into an elem_t header
  * so the list can be in a lists of lists.
  *
@@ -282,7 +282,7 @@ elem_t *move_list(LIST_t * LIST, elem_t * list)
 }
 
 /**
- * Reference a list from a new elem_t.
+ * Reference a list's content from a new list.
  * Implement as a clone_list with a ref count adjustment
  *
  * If there is a first elem and if it is a LISTELEM, then
@@ -363,7 +363,7 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
 }
 
 /**
- * Free list contents of a list, but not the list itself
+ * Free the contents of a list, but not the list itself
  *  
  * If it is a list of lists, then the refence count in the first elem_t is
  * decremented and the elements are freed only if the references are  zero.
@@ -408,7 +408,7 @@ void free_list_content(LIST_t * LIST, elem_t * list)
         case SHORTSTRELEM:
             // these are self contained, nothing else to clean up
             break;
-        case TREEELEM:
+        case TREEELEM:  // FIXME - we will need this
         case HASHNAMEELEM:
             assert(0);  // should not be here
             break;

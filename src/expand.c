@@ -22,11 +22,8 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
 {
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *elem, *epset, *ep, *new, *disambig = NULL;
-    elem_t newlist = { 0 };
-    elem_t newepset = { 0 };
-
-    newlist.refs = 1; // prevent deletion
-    newepset.refs = 1;
+    elem_t *newlist = new_list(LIST, 0);
+    elem_t *newepset = new_list(LIST, ENDPOINTSET);
 
     assert(list);
     elem = list->u.l.first;
@@ -40,11 +37,10 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
             epset = elem->u.l.first;
             new = ref_list(LIST, epset);
             if ((state_t)epset->state == ENDPOINT) { // put singletons into lists too
-                newepset.state = ENDPOINTSET;
-                append_list(&newepset, new);
-                new = move_list(LIST, &newepset);
+                append_list(newepset, new);
+                new = move_list(LIST, newepset);
             }
-            append_list(&newlist, new);
+            append_list(newlist, new);
     
             // induce all sibling nodes....
             assert((state_t)new->state == ENDPOINTSET);
@@ -84,12 +80,13 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
     }
 
     // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
-    expand_r(PARSE, &newepset, newlist.u.l.first, disambig, nodes, edges);
+    expand_r(PARSE, newepset, newlist->u.l.first, disambig, nodes, edges);
 
     if (disambig) {
         free_list_content(LIST, disambig);
     }
-    free_list_content(LIST, &newlist);
+    free_list(LIST, newlist);
+    free_list(LIST, newepset);
 }
 
 /**
@@ -105,8 +102,6 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
 static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges)
 {
     LIST_t * LIST = (LIST_t *)PARSE;
-    elem_t newedge = { 0 };
-    elem_t newlegs = { 0 };
     elem_t * nendpoint = NULL;
     elem_t * nnode;
     elem_t * nnoderef;
@@ -116,9 +111,8 @@ static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *d
     elem_t *ep, *eplast, *new;
     uint64_t hubhash;
     char hubhash_b64[12];
-
-    newedge.refs = 1; // prevent deletion
-    newlegs.refs = 1;
+    elem_t *newedge = new_list(LIST, EDGE);
+    elem_t *newlegs = new_list(LIST, ENDPOINTSET);
 
     if (epset) {
         ep = epset->u.l.first;
@@ -187,8 +181,6 @@ static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *d
 #endif
 
         // if no more epsets, then we can create a new edge with the current newepset and dismbig
-        newedge.state = EDGE;
-        newlegs.state = ENDPOINTSET;
         if (nendpoint) { // if we have a hub at this point, then we are to split into simple 2-node <tail head> edges
             ep = newepset->u.l.first;
             if (ep) {
@@ -205,45 +197,45 @@ static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *d
             ep = newepset->u.l.first;
             while (ep) {
                 new = ref_list(LIST, ep);
-                append_list(&newlegs, new);
+                append_list(newlegs, new);
                 ep = ep->next;
             }
-            new = move_list(LIST, &newlegs);
-            append_list(&newedge, new);
+            new = move_list(LIST, newlegs);
+            append_list(newedge, new);
     
             if (disambig) {
                 new = ref_list(LIST, disambig);
-                append_list(&newedge, new);
+                append_list(newedge, new);
             }
             // and append the new simplified edge to the result
-            new = move_list(LIST, &newedge);
+            new = move_list(LIST, newedge);
             append_list(edges, new);
         }
     }
+    free_list(LIST, newedge);
+    free_list(LIST, newlegs);
 }
 
 static void expand_hub(PARSE_t * PARSE, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges)
 {
     LIST_t * LIST = (LIST_t *)PARSE;
-    elem_t newedge = { 0 };
-    elem_t newlegs = { 0 };
     elem_t *new;
+    elem_t *newedge = new_list(LIST, EDGE);
+    elem_t *newlegs = new_list(LIST, ENDPOINTSET);
 
-    newedge.refs = 1; // prevent deletion
-    newlegs.refs = 1;
-
-    newedge.state = EDGE;
-    newlegs.state = ENDPOINTSET;
     new = ref_list(LIST, tail);
-    append_list(&newlegs, new);
+    append_list(newlegs, new);
     new = ref_list(LIST, head);
-    append_list(&newlegs, new);
-    new = move_list(LIST, &newlegs);
-    append_list(&newedge, new);
+    append_list(newlegs, new);
+    new = move_list(LIST, newlegs);
+    append_list(newedge, new);
     if (disambig) {
         new = ref_list(LIST, disambig);
-        append_list(&newedge, new);
+        append_list(newedge, new);
     }
-    new = move_list(LIST, &newedge);
+    new = move_list(LIST, newedge);
     append_list(edges, new);
+
+    free_list(LIST, newedge);
+    free_list(LIST, newlegs);
 }

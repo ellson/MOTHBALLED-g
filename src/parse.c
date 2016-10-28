@@ -50,7 +50,6 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
 {
     CONTENT_t container_context = { 0 };
     CONTENT_t * CONTENT = &container_context;
-    elem_t root = { 0 };    // the output parse tree
     success_t rc;
 #if 0
     hash_elem_t *hash_elem;
@@ -59,7 +58,7 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
 #endif
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
-    root.refs=1; // prevent deletion
+    elem_t *root = new_list(LIST, 0);    // the output parse tree
 
     CONTENT->PARSE = PARSE;
     CONTENT->ikea_box = ikea_box_open(PARSE->ikea_store, NULL);
@@ -87,7 +86,7 @@ CONTENT->out = stdout;
     emit_start_activity(CONTENT);
     PARSE->containment++;            // containment nesting level
     PARSE->stat_containercount++;    // number of containers
-    if ((rc = parse_r(CONTENT, &root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+    if ((rc = parse_r(CONTENT, root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
@@ -109,7 +108,7 @@ CONTENT->out = stdout;
 
     ikea_box_close ( CONTENT->ikea_box );
 
-    free_list_content(LIST, &root);
+    free_list(LIST, root);
     free_list_content(LIST, &(CONTENT->subject));
     free_list_content(LIST, &(CONTENT->node_pattern_acts));
     free_list_content(LIST, &(CONTENT->edge_pattern_acts));
@@ -136,14 +135,14 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
     char so;        // offset to next state, signed
     state_t ti, ni;
     success_t rc;
-    elem_t branch = { 0 };
+    elem_t *branch;
     elem_t *elem;
     static unsigned char nullstring[] = { '\0' };
 
     rc = SUCCESS;
     emit_start_state(CONTENT, si, prop, nest, repc);
-    branch.state = si;
-    branch.refs = 1;  //prevent removal attempts
+
+    branch = new_list(LIST, si);
 
     nest++;
     assert(nest >= 0);    // catch overflows
@@ -188,13 +187,13 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
         break;
 
     case STRING:            // Strings
-        rc = token_string(TOKEN, &branch);
+        rc = token_string(TOKEN, branch);
         TOKEN->bi = TOKEN->insi;    // the char class that terminates the STRING
         goto done;
         break;
 
     case VSTRING:            // Value Strings
-        rc = token_vstring(TOKEN, &branch);
+        rc = token_vstring(TOKEN, branch);
         TOKEN->bi = TOKEN->insi;    // the char class that terminates the VSTRING
         goto done;
         break;
@@ -229,7 +228,7 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            if ((rc = parse_r(CONTENT, &branch, ni, nprop, nest, 0)) == SUCCESS) {
+            if ((rc = parse_r(CONTENT, branch, ni, nprop, nest, 0)) == SUCCESS) {
                 break;                  // ALT satisfied
             }
 
@@ -237,19 +236,19 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                if ((parse_r(CONTENT, &branch, ni, nprop, nest, repc++)) == SUCCESS) {
+                if ((parse_r(CONTENT, branch, ni, nprop, nest, repc++)) == SUCCESS) {
                     while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                        if (parse_r(CONTENT, &branch, ni, nprop, nest, repc++) == FAIL) {
+                        if (parse_r(CONTENT, branch, ni, nprop, nest, repc++) == FAIL) {
                             break;
                         }
                     }
                 }
             } else {                    // else not OPTional
-                if ((rc = parse_r(CONTENT, &branch, ni, nprop, nest, repc++)) == FAIL) {
+                if ((rc = parse_r(CONTENT, branch, ni, nprop, nest, repc++)) == FAIL) {
                     break;
                 }
                 while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                    if ((rc = parse_r(CONTENT, &branch, ni, nprop, nest, repc++)) == FAIL) {
+                    if ((rc = parse_r(CONTENT, branch, ni, nprop, nest, repc++)) == FAIL) {
                         break;
                     }
                 }
@@ -267,15 +266,15 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
                                     //  save entire previous ACT in a list of pattern_acts
                 PARSE->stat_patternactcount++;
                 if (CONTENT->subject_type == NODE) {
-                    append_list(&(CONTENT->node_pattern_acts), move_list(LIST, &branch));
+                    append_list(&(CONTENT->node_pattern_acts), move_list(LIST, branch));
 
                 } else {
                     assert(CONTENT->subject_type == EDGE);
-                    append_list(&(CONTENT->edge_pattern_acts), move_list(LIST, &branch));
+                    append_list(&(CONTENT->edge_pattern_acts), move_list(LIST, branch));
                 }
             } else {
                 PARSE->stat_nonpatternactcount++;
-                append_list(root, move_list(LIST, &branch));
+                append_list(root, move_list(LIST, branch));
 
                 // dispatch events for the ACT just finished
                 dispatch(CONTENT, root);
@@ -306,11 +305,11 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
             // FIXME - open appending container for this box.
             break;
         case SUBJECT: // subject rewrites before adding branch to root
-            branch.state = si;
+            branch->state = si;
 
             // Perform EQL "same as in subject of previous ACT" substitutions
             // Also classifies ACT as NODE or EDGE based on SUBJECT
-            sameas(CONTENT, &branch);
+            sameas(CONTENT, branch);
 
 // FIXME - or not, but this is broken
 #if 0
@@ -321,29 +320,31 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
             // If this subject is not itself a pattern, then
             // perform pattern matching and insertion if matched
             if (!(CONTENT->is_pattern = TOKEN->has_ast)) {
-                pattern(CONTENT, root, &branch);
+                pattern(CONTENT, root, branch);
             }
 
-            emit_subject(CONTENT, &branch);      // emit hook for rewritten subject
+            emit_subject(CONTENT, branch);      // emit hook for rewritten subject
             break;
         case ATTRIBUTES:
-            emit_attributes(CONTENT, &branch);   // emit hook for attributes
+            emit_attributes(CONTENT, branch);   // emit hook for attributes
             break;
         default:
             break;
         }
-        if (branch.u.l.first != NULL || si == EQL) {    // mostly ignore empty lists
-            if (branch.u.l.first && branch.u.l.first->type != FRAGELEM) {
+        if (branch->u.l.first != NULL || si == EQL) {    // mostly ignore empty lists
+            if (branch->u.l.first && branch->u.l.first->type != FRAGELEM) {
                 // record state generating this tree
                 // - except for STRINGs which use state for quoting info
-                branch.state = si;
+                branch->state = si;
             }
-            append_list(root, move_list(LIST, &branch));
+            append_list(root, move_list(LIST, branch));
         }
     }
     nest--;
     assert(nest >= 0);
     emit_end_state(CONTENT, si, rc, nest, repc);
+
+    free_list(LIST, branch);
 
     return rc;
 }

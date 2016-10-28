@@ -54,20 +54,16 @@ void dispatch(CONTENT_t * CONTENT, elem_t * plist)
 {
     PARSE_t *PARSE = CONTENT->PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
-    elem_t attributes = { 0 };
-    elem_t nodes = { 0 };
-    elem_t edges = { 0 };
     elem_t *pelem;
+    elem_t *attributes = new_list(LIST, 0);
+    elem_t *nodes = new_list(LIST, 0);
+    elem_t *edges = new_list(LIST, 0);
     
-    attributes.refs = 1; // prevent deletion
-    nodes.refs = 1;
-    edges.refs = 1;
-
     assert(plist);
     assert(plist->type == (char)LISTELEM);
 
     // expand OBJECT_LIST and ENDPOINTSETS
-    dispatch_r(PARSE, plist, &attributes, &nodes, &edges);
+    dispatch_r(PARSE, plist, attributes, nodes, edges);
 
     // if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
@@ -76,9 +72,9 @@ void dispatch(CONTENT_t * CONTENT, elem_t * plist)
     free_list_content(LIST, plist);  // free old ACT to be replace by these new expanded ACTS
     switch (CONTENT->subject_type) {
     case NODE:
-        pelem = nodes.u.l.first;
+        pelem = nodes->u.l.first;
         while (pelem) {
-            assemble_act(PARSE,pelem,&attributes,plist);
+            assemble_act(PARSE,pelem,attributes,plist);
             pelem = pelem->next;
         }
         break;
@@ -88,15 +84,15 @@ void dispatch(CONTENT_t * CONTENT, elem_t * plist)
             fprintf(stdout,"EDGE has COUSIN\n");
         }
         else {
-                pelem = nodes.u.l.first;
+                pelem = nodes->u.l.first;
                 while (pelem) {
                     assemble_act(PARSE,pelem,NULL,plist);
                     pelem = pelem->next;
                 }
 
-                pelem = edges.u.l.first;
+                pelem = edges->u.l.first;
                 while (pelem) {
-                    assemble_act(PARSE,pelem,&attributes,plist);
+                    assemble_act(PARSE,pelem,attributes,plist);
                     pelem = pelem->next;
                 }
         }
@@ -106,9 +102,9 @@ void dispatch(CONTENT_t * CONTENT, elem_t * plist)
         break;
     }
 
-    free_list_content(LIST, &attributes);
-    free_list_content(LIST, &nodes);
-    free_list_content(LIST, &edges);
+    free_list(LIST, attributes);
+    free_list(LIST, nodes);
+    free_list(LIST, edges);
 }
 
 /**
@@ -184,22 +180,16 @@ static void assemble_act(PARSE_t * PARSE, elem_t *pelem, elem_t *pattributes, el
 {
     TOKEN_t * IN = (TOKEN_t *)PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
-    elem_t act = { 0 };
-    elem_t verb = { 0 };
     elem_t *pnew;
-
-    act.refs = 1; // prevent deletion
-    verb.refs = 1;
-
-    act.state = ACT;
+    elem_t *act = new_list(LIST, ACT);
+    elem_t *verb = new_list(LIST, IN->verb);
 
     // verb
     switch(IN->verb) {
     case QRY:
     case TLD:
-        verb.state = IN->verb;
-        pnew = move_list(LIST, &verb);
-        append_list(&act, pnew);
+        pnew = move_list(LIST, verb);
+        append_list(act, pnew);
         break;
     default:
         break;
@@ -207,17 +197,20 @@ static void assemble_act(PARSE_t * PARSE, elem_t *pelem, elem_t *pattributes, el
 
     // subject
     pnew = ref_list(LIST, pelem);
-    append_list(&act, pnew);
+    append_list(act, pnew);
 
     // attributes
     if (pattributes && pattributes->u.l.first) {
         pnew = ref_list(LIST, pattributes->u.l.first);
-        append_list(&act, pnew);
+        append_list(act, pnew);
     }
 
     // no container ever because contains are in their own streams
 
-    pnew = move_list(LIST, &act);
+    pnew = move_list(LIST, act);
     append_list(plist, pnew);
+
+    free_list(LIST, verb);
+    free_list(LIST, act);
 }
 
