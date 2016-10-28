@@ -113,7 +113,7 @@ void free_tree_item(LIST_t *LIST, elem_t * p)
 {
     assert(p->next == (char)LISTELEM);
     p->next->refs--;
-    free_list(LIST, p->next);
+    free_list_comtent(LIST, p->next);
 
     // return p to the freelist
     p->next = LIST->free_elem_list;
@@ -359,7 +359,7 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
         list->u.l.last = elem;               // then elem is the new last (or NULL)
     }
     list->len--;                         // list has one less elem
-    free_list(LIST, old);                // free the removed elem
+    free_list_comtent(LIST, old);                // free the removed elem
 }
 
 /**
@@ -377,7 +377,7 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
  * @param LIST the top-level context in which all lists are managed
  * @param list a header to the list to be freed.
  */
-void free_list(LIST_t * LIST, elem_t * list)
+void free_list_comtent(LIST_t * LIST, elem_t * list)
 {
     INBUF_t * INBUF = &(LIST->INBUF);
     elem_t *elem, *next;
@@ -394,10 +394,10 @@ void free_list(LIST_t * LIST, elem_t * list)
         switch ((elemtype_t)(elem->type)) {
         case LISTELEM:
             assert(elem->refs > 0);
-            if (--(elem->refs) > 0) {
+            if (--(elem->refs)) {
                 goto done;    // stop at any point with additional refs
             }
-            free_list(LIST, elem); // recursively free lists that have no references
+            free_list_comtent(LIST, elem); // recursively free lists that have no references
             break;
         case FRAGELEM:
             assert(elem->u.f.inbuf->refs > 0);
@@ -408,6 +408,7 @@ void free_list(LIST_t * LIST, elem_t * list)
         case SHORTSTRELEM:
             // these are self contained, nothing else to clean up
             break;
+        case TREEELEM:
         case HASHNAMEELEM:
             assert(0);  // should not be here
             break;
@@ -419,18 +420,10 @@ void free_list(LIST_t * LIST, elem_t * list)
 
         elem = next;
     }
- done:
-//    if (list->refs) {
-        // clean up emptied list
-        list->u.l.first = NULL;
-        list->u.l.last = NULL;
-        // Note: ref count of the empty list is not modified.
-        // It may be still referenced, even though it is now empty.
-//    }
-//    else {
-//        // no remaining references, so return list to the freelist
-//        list->next = LIST->free_elem_list;
-//        LIST->free_elem_list = list;
-//        LIST->stat_elemnow--;    // maintain stats
-//    }
+done:
+    // clean up emptied list
+    list->u.l.first = NULL;
+    list->u.l.last = NULL;
+    // Note: ref count of the empty list is not modified.
+    // It may be still referenced, even though it is now empty.
 }

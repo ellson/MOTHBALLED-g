@@ -125,9 +125,6 @@ static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list)
  */
 static void ikea_print_frags(ikea_box_t *ikea_box, state_t liststate, elem_t * elem, char *sep)
 {
-    unsigned char *frag;
-    int len;
-
     assert(sep);
     if (*sep) {
 	ikea_box_append(ikea_box, sep, 1);
@@ -159,4 +156,3 @@ static void ikea_print_frags(ikea_box_t *ikea_box, state_t liststate, elem_t * e
     }
     *sep = ' ';
 }
-

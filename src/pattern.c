@@ -8,9 +8,6 @@
 
 #include "pattern.h"
 
-static success_t
-pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern);
-
 /*
  * A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
  * The AST is a wild-card that matches any substring of zero or more 

@@ -38,8 +38,8 @@ void sameas(CONTENT_t * CONTENT, elem_t * subject)
     // rewrite subject into newsubject with any EQL elements substituted from oldsubject
     sameas_r(CONTENT, subject, &nextold, newsubject);
 
-    free_list(LIST, subject);     // free original subject ( although refs are retained in other lists )
-    free_list(LIST, oldsubject);    // free the previous oldsubject
+    free_list_comtent(LIST, subject);     // free original subject ( although refs are retained in other lists )
+    free_list_comtent(LIST, oldsubject);    // free the previous oldsubject
 
     newsubject->state = SUBJECT;  
     *oldsubject = *newsubject;    // save the newsubject as oldsubject

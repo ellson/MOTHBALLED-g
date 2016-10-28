@@ -152,6 +152,7 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep)
         print_shortstr(chan, elem, sep);
         break;
     case HASHNAMEELEM:
+    case TREEELEM:
         assert(0);  // should not be here
         break;
     }

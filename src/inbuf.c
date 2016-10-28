@@ -1,5 +1,6 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 

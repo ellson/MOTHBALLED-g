@@ -140,7 +140,7 @@ static void emit_act_list_r(CONTENT_t * CONTENT, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;
-    state_t liststate;
+    state_t liststate = 0;
 
     assert(list);
     elem = list->u.l.first;
