@@ -73,7 +73,7 @@ void dispatch(CONTENT_t * CONTENT, elem_t * plist)
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
     //                      for each EDGE, generate new ACT: verb edge attributes
 
-    free_list_comtent(LIST, plist);  // free old ACT to be replace by these new expanded ACTS
+    free_list_content(LIST, plist);  // free old ACT to be replace by these new expanded ACTS
     switch (CONTENT->subject_type) {
     case NODE:
         pelem = nodes.u.l.first;
@@ -106,9 +106,9 @@ void dispatch(CONTENT_t * CONTENT, elem_t * plist)
         break;
     }
 
-    free_list_comtent(LIST, &attributes);
-    free_list_comtent(LIST, &nodes);
-    free_list_comtent(LIST, &edges);
+    free_list_content(LIST, &attributes);
+    free_list_content(LIST, &nodes);
+    free_list_content(LIST, &edges);
 }
 
 /**

@@ -69,7 +69,8 @@ elem_t *move_list(LIST_t * LIST, elem_t * list);
 elem_t *ref_list(LIST_t * LIST, elem_t * list);
 void append_list(elem_t * list, elem_t * elem);
 void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem);
-void free_list_comtent(LIST_t * LIST, elem_t * list);
+void free_list_content(LIST_t * LIST, elem_t * list);
+void free_list(LIST_t * LIST, elem_t * elem);
 void free_tree(LIST_t *LIST, elem_t * p);
 void free_tree_item(LIST_t *LIST, elem_t * p);
 

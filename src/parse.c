@@ -109,10 +109,10 @@ CONTENT->out = stdout;
 
     ikea_box_close ( CONTENT->ikea_box );
 
-    free_list_comtent(LIST, &root);
-    free_list_comtent(LIST, &(CONTENT->subject));
-    free_list_comtent(LIST, &(CONTENT->node_pattern_acts));
-    free_list_comtent(LIST, &(CONTENT->edge_pattern_acts));
+    free_list_content(LIST, &root);
+    free_list_content(LIST, &(CONTENT->subject));
+    free_list_content(LIST, &(CONTENT->node_pattern_acts));
+    free_list_content(LIST, &(CONTENT->edge_pattern_acts));
 
     return rc;
 }
@@ -292,7 +292,7 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
                     elem = elem->next;
                 }
 
-                free_list_comtent(LIST, root);  // that's all folks.  move on to the next ACT.
+                free_list_content(LIST, root);  // that's all folks.  move on to the next ACT.
             }
             break;
         case TLD:

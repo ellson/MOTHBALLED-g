@@ -113,7 +113,7 @@ void free_tree_item(LIST_t *LIST, elem_t * p)
 {
     assert(p->next == (char)LISTELEM);
     p->next->refs--;
-    free_list_comtent(LIST, p->next);
+    free_list_content(LIST, p->next);
 
     // return p to the freelist
     p->next = LIST->free_elem_list;
@@ -359,11 +359,11 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
         list->u.l.last = elem;               // then elem is the new last (or NULL)
     }
     list->len--;                         // list has one less elem
-    free_list_comtent(LIST, old);                // free the removed elem
+    free_list_content(LIST, old);                // free the removed elem
 }
 
 /**
- * Free the list contents, and free the empty list if it is not referenced.
+ * Free list contents of a list, but not the list itself
  *  
  * If it is a list of lists, then the refence count in the first elem_t is
  * decremented and the elements are freed only if the references are  zero.
@@ -377,7 +377,7 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
  * @param LIST the top-level context in which all lists are managed
  * @param list a header to the list to be freed.
  */
-void free_list_comtent(LIST_t * LIST, elem_t * list)
+void free_list_content(LIST_t * LIST, elem_t * list)
 {
     INBUF_t * INBUF = &(LIST->INBUF);
     elem_t *elem, *next;
@@ -397,7 +397,7 @@ void free_list_comtent(LIST_t * LIST, elem_t * list)
             if (--(elem->refs)) {
                 goto done;    // stop at any point with additional refs
             }
-            free_list_comtent(LIST, elem); // recursively free lists that have no references
+            free_list_content(LIST, elem); // recursively free lists that have no references
             break;
         case FRAGELEM:
             assert(elem->u.f.inbuf->refs > 0);
@@ -426,4 +426,24 @@ done:
     list->u.l.last = NULL;
     // Note: ref count of the empty list is not modified.
     // It may be still referenced, even though it is now empty.
+}
+
+
+/**
+ * Free list - free contents, then free the emmpty list,
+ * (the elem_t heading the list) but only if its ref count is 0
+ *  
+ *
+ * @param LIST the top-level context in which all lists are managed
+ * @param elem - a list header
+ */
+void free_list(LIST_t * LIST, elem_t * elem)
+{
+    free_list_content(LIST, elem);
+    if (elem->refs == 0) {
+        // insert elem at beginning of freelist
+        elem->next = LIST->free_elem_list;
+        LIST->free_elem_list = elem;
+        LIST->stat_elemnow--;    // maintain stats
+    }
 }
