@@ -7,21 +7,45 @@
 
 #include "tree.h"
 
+/**
+ * return the larger of two ints
+ *
+ * @param a
+ * @param b
+ * @return the larger of a or b
+ */
 static uint16_t max(uint16_t  a, uint16_t  b)
 {
     return a > b ? a : b;
 }
 
+/**
+ * return the height o p in the tree, or 0 if p is null
+ *
+ * @param p
+ * @return p's height, or 0
+ */
 static uint16_t  height(elem_t * p)
 {
     return p ? p->height : 0;
 }
 
+/**
+ * calculate and update the height of p from the max of left & right, +1
+ *
+ * @param p the elem whose height is to be recalcualted
+ */
 static void recalc(elem_t * p)
 {
     p->height = 1 + max(height(p->u.t.left), height(p->u.t.right));
 }
 
+/**
+ * rotate p to the right, recalc heights, and return its old left elem
+ *
+ * @param p the old root before rotating
+ * @return the new root after rotating right
+ */
 static elem_t * rotate_right(elem_t * p)
 {
     elem_t * q;
@@ -34,6 +58,12 @@ static elem_t * rotate_right(elem_t * p)
     return q;
 }
 
+/**
+ * rotate p to the left, recalc heights, and return its old right elem
+ *
+ * @param p the old root before rotating
+ * @return the new root after rotating left
+ */
 static elem_t * rotate_left(elem_t * p)
 {
     elem_t * q;
@@ -46,6 +76,12 @@ static elem_t * rotate_left(elem_t * p)
     return q;
 }
 
+/**
+ * rotate root left or right as needed to rebalce the tree
+ *
+ * @param p the old root before rebalancing
+ * @return the new root after rebalancing
+ */
 static elem_t * balance(elem_t * p)
 {
     recalc(p);
@@ -66,6 +102,13 @@ static elem_t * balance(elem_t * p)
     return p;
 }
 
+/**
+ * search for an element that matches the key
+ *
+ * @param p the root of the tree
+ * @param key the element to be found
+ * @return the matching element, or NULL if not found
+ */
 elem_t * search(elem_t * p, elem_t * key)
 {
     int comp;
@@ -85,6 +128,12 @@ elem_t * search(elem_t * p, elem_t * key)
     return p;        
 }
 
+/**
+ * print the tree in ASCII sort order
+ *
+ * @param LIST the context of the tree
+ * @param p the root of the tree (should be in the middle of the resulting list)
+ */
 void print_tree(LIST_t * LIST, elem_t * p)
 {
     if (p->u.t.left) {
@@ -96,6 +145,14 @@ void print_tree(LIST_t * LIST, elem_t * p)
     }
 }
 
+/**
+ * insert an elem into the tree in its ASCII sorted position
+ * if the elem matches an existing elem in the tree, then is value is merged
+ *
+ * @param LIST the context of the tree
+ * @param p the root of the tree
+ * @param key the elem to be inserted
+ */
 elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
 {
     int comp;
@@ -118,6 +175,13 @@ elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
     return balance(p);
 }
 
+/**
+ * recursively find the minimum elem from the left branch
+ *  or maybe p is the min
+ *
+ * @param p the root of the tree
+ * @return the minimum elem (the first elem in ASCI sort order)
+ */
 static elem_t * find_min(elem_t * p)
 {
     if (p->u.t.left != NULL) {
@@ -126,6 +190,12 @@ static elem_t * find_min(elem_t * p)
     return p;
 }
 
+/**
+ * remove the min element, and rebalance the tree
+ *
+ * @param p the root of the tree
+ * @return the minimum elem (the first elem in ASCI sort order)
+ */
 static elem_t * remove_min(elem_t * p)
 {
     if (p->u.t.left == NULL) {
@@ -135,6 +205,13 @@ static elem_t * remove_min(elem_t * p)
     return balance(p);
 }
 
+/**
+ * search for key in the tree, and remove if found
+ *
+ * @param LIST the context of the tree
+ * @param p the root of the tree
+ * @param key the elem to be removed
+ */
 elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key)
 {
     elem_t  *l, *r, *m;
