@@ -324,7 +324,11 @@ E(PARSE,"parse_list_r3");
 
             // Perform EQL "same as in subject of previous ACT" substitutions
             // Also classifies ACT as NODE or EDGE based on SUBJECT
+E(LIST,"    parse_list_r4");     
+P(LIST,branch);
             sameas(CONTENT, branch);
+E(LIST,"    parse_list_r5");
+P(LIST,branch);
 
 // FIXME - or not, but this is broken
 #if 0
@@ -359,7 +363,7 @@ E(PARSE,"parse_list_r3");
     assert(nest >= 0);
     emit_end_state(CONTENT, si, rc, nest, repc);
 
-E(LIST,"    parse_list_r4");
+E(LIST,"    parse_list_r6");
     return rc;
 }
 
