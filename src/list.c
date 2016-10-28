@@ -220,7 +220,7 @@ elem_t *new_hashname(LIST_t * LIST, unsigned char* hash, size_t hash_len)
     elem->state = 0;            // state_machine state that created this shortstr
     elem->u.h.hashname = hash;  // the hash value  //FIXME do base64 here ?
     elem->u.h.out = NULL;       // open later
-    elem->len = len;            // FIXME - is this used?
+    elem->len = hash_len;       // FIXME - is this used?
     return elem;
 }
 
