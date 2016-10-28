@@ -22,12 +22,12 @@ static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop);
  *
  * This parser recurses at two levels:
  *
- *    parse() --> parse_nest_r(PARSE) --> parse_r(CONTENT) -| -|  
- *                 ^                   ^              |  |
- *                 |                   |              |  |
- *                 |                   -------<-------|  |
- *                 |                                     |
- *                 -------------------<------------------|
+ *    parse(PARSE) --> parse_nest_r(PARSE) --> parse_r(CONTENT) -| -|  
+ *                      ^                   ^              |  |
+ *                      |                   |              |  |
+ *                      |                   -------<-------|  |
+ *                      |                                     |
+ *                      -------------------<------------------|
  *
  * The outer recursions are through nested containment.
  *
@@ -37,10 +37,8 @@ static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop);
  * The top-level context (PARSE) is available to both and maintains the input state.
  *
  * @param PARSE context
- * @param name
  * @return success/fail
  */
-
 success_t parse(PARSE_t * PARSE)
 {
     return parse_nest_r(PARSE, NULL);
@@ -121,6 +119,10 @@ CONTENT->out = stdout;
  *
  *  @param CONTENT container context
  *  @param root of parsed tree
+ *  @param si input state
+ *  @param prop grammar properties
+ *  @param nest recursion nesting level (containment level)
+ *  @param repc sequence member counter
  *  @return success/fail
  */
 static success_t

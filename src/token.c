@@ -14,7 +14,7 @@
  *
  * @param TOKEN context
  * @param si parser state
- * @param si error message
+ * @param message error description
  */
 void token_error(TOKEN_t * TOKEN, state_t si, char *message)
 {

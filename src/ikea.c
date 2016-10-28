@@ -1,6 +1,7 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
 #include <string.h>
+#include <stdargs.h>
 #include <openssl/evp.h>
 #include <errno.h>
 #include <zlib.h>
@@ -198,9 +199,8 @@ static gzFile gzf;
 /**
  * open a gz compressed file
  *
- * @param pathname
+ * @param pathname of ikea_store tgz to be opened
  * @param oflags
- * @param VARARGS
  * @return filedescriptor, or -1=fail
  */
 static int ikea_gzopen(const char *pathname, int oflags, ...)
@@ -304,14 +304,16 @@ static tartype_t gztype = {
 /**
  * open a gz compressed tar file for a set of per-container graphs
  *
- * @param PARSE context
- * @return list of containers ??
+ * @param oldstore
+ * @return an opened ikea_store
  */
 ikea_store_t * ikea_store_open( const char * oldstore )
 {
     ikea_store_t * ikea_store;
     char *td;
 
+    // FIXME - what are we doing with oldstore ?
+ 
     // allocate a new store
     if ((ikea_store = calloc(1, sizeof(ikea_store_t))) == NULL)
         fatal_perror("Error - calloc() ");
@@ -358,7 +360,7 @@ static int glob_err (const char *epath, int eerrno)
 /**
  * restore from snapshot
  * 
- * @param PARSE context
+ * @param ikea_store context
  */
 void ikea_store_restore ( ikea_store_t * ikea_store )
 {
@@ -414,7 +416,7 @@ void ikea_store_restore ( ikea_store_t * ikea_store )
 /**
  * close snapshot storage - cleanup of temporary files
  *
- * @param PARSE context
+ * @param ikea_store store to be close
  */
 void ikea_store_close ( ikea_store_t * ikea_store )
 {

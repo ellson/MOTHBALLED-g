@@ -118,7 +118,7 @@ static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list)
  * The composite string is quoted as necessary to comply with g syntax
  * (although not necessarily in the same way as in the original input).
  *
- * @param chan output FILE*
+ * @param ikea_box 
  * @param liststate an indicator if the string is to be quoted
  * @param elem the first frag of the fragllist
  * @param sep if not NULL then a character to be printed first

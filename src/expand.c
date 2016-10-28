@@ -91,13 +91,15 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
 
 /**
  * this function expands ENDPOINTSETs
- * expands edges like:    <(a b) c>`x
- * into:                  <a c>`x <b c>`x
+ * expands edges like:    <(a b c) d>`x
+ * into:                  <a d>`x <b d>`x <c d>`x
  *
  * @param PARSE context
  * @param newepset
  * @param epset
- * @param edges
+ * @param disambig
+ * @param nodes - list of nodes
+ * @param edges - list of edges
  */
 static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges)
 {

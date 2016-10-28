@@ -205,6 +205,7 @@ elem_t *new_shortstr(LIST_t * LIST, char state, char * str)
  *
  * @param LIST the top-level context in which all lists are managed
  * @param hash a long containing a hash value
+ * @param hash_len  
  * @return a new intialized elem_t
  */
 elem_t *new_hashname(LIST_t * LIST, unsigned char* hash, size_t hash_len)
@@ -219,6 +220,7 @@ elem_t *new_hashname(LIST_t * LIST, unsigned char* hash, size_t hash_len)
     elem->state = 0;            // state_machine state that created this shortstr
     elem->u.h.hashname = hash;  // the hash value  //FIXME do base64 here ?
     elem->u.h.out = NULL;       // open later
+    elem->len = len;            // FIXME - is this used?
     return elem;
 }
 
@@ -336,6 +338,7 @@ void append_list(elem_t * list, elem_t * elem)
  *
  *  The removed element is freed.
  *
+ * @param LIST the top-level context in which all lists are managed
  * @param list header of the list to be shortened
  * @param elem the elem preceeding the elem to be removed (or NULL to remove 1st elem)
  */
