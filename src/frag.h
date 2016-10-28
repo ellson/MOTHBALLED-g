@@ -16,6 +16,8 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep);
 
 #define P(C, L) {((PARSE_t*)C)->sep = ' ';print_list(stdout, L, 0, &(((PARSE_t*)C)->sep));putc('\n', stdout);}
 
+#define E(C,loc) {printf("elemnow at %s is %d\n", loc, ((LIST_t*)C)->stat_elemnow);}
+
 #ifdef __cplusplus
 }
 #endif

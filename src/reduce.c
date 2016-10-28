@@ -10,13 +10,13 @@ void reduce(CONTENT_t * CONTENT, elem_t *list)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t *LIST = (LIST_t*)PARSE;
-    elem_t * elem;
-    state_t liststate;
-    state_t verb = 0;
-    state_t subjtype = 0;
-    elem_t *subject, *attributes = NULL, *disambig = NULL;
+    state_t liststate, verb = 0, subjtype = 0;
+    elem_t *elem, *subject, *attributes = NULL, *disambig = NULL;
 
     assert(list);
+
+//E(LIST,"reduce1");
+
     elem = list->u.l.first;
     assert(elem); // must always be a subject
     liststate = (state_t) elem->state;
@@ -85,4 +85,6 @@ void reduce(CONTENT_t * CONTENT, elem_t *list)
     if (attributes) {
         //FIXME - what to do with this?
     }
+
+//E(LIST,"reduce2");
 }

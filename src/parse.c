@@ -12,8 +12,7 @@
 
 static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name);
 
-static success_t parse_r(CONTENT_t * CONTENT, elem_t * root,
-    state_t si, unsigned char prop, int nest, int repc);
+static success_t parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop, int nest, int repc);
 
 static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop);
 
@@ -22,12 +21,12 @@ static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop);
  *
  * This parser recurses at two levels:
  *
- *    parse(PARSE) --> parse_nest_r(PARSE) --> parse_r(CONTENT) -| -|  
- *                      ^                   ^              |  |
- *                      |                   |              |  |
- *                      |                   -------<-------|  |
- *                      |                                     |
- *                      -------------------<------------------|
+ * parse() --> parse_nest_r() --> parse_list_r() -| -|  
+ *           ^                  ^                 |  |
+ *           |                  |                 |  |
+ *           |                  ---------<--------|  |
+ *           |                                       |
+ *           --------------------<-------------------|
  *
  * The outer recursions are through nested containment.
  *
@@ -41,7 +40,12 @@ static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop);
  */
 success_t parse(PARSE_t * PARSE)
 {
-    return parse_nest_r(PARSE, NULL);
+    success_t rc;
+
+E(PARSE,"parse1");
+    rc = parse_nest_r(PARSE, NULL);
+E(PARSE,"parse2");
+    return rc;
 }
 
 static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
@@ -56,7 +60,7 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
 #endif
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
-    elem_t *root = new_list(LIST, 0);    // the output parse tree
+    elem_t *root;
 
     CONTENT->PARSE = PARSE;
     CONTENT->ikea_box = ikea_box_open(PARSE->ikea_store, NULL);
@@ -79,12 +83,15 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
     CONTENT->out = hash_elem->out;
 //==============================================================
 #endif
-CONTENT->out = stdout;
+    CONTENT->out = stdout;
 
+E(LIST,"  parse_nest_r1");
+
+    root = new_list(LIST, 0);    // the output parse tree
     emit_start_activity(CONTENT);
     PARSE->containment++;            // containment nesting level
     PARSE->stat_containercount++;    // number of containers
-    if ((rc = parse_r(CONTENT, root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+    if ((rc = parse_list_r(CONTENT, root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
@@ -95,11 +102,13 @@ CONTENT->out = stdout;
         PARSE->sep = '\0';
         print_tree(LIST, CONTENT->nodes);
         putc('\n', stdout);
+        free_tree(LIST, CONTENT->nodes);
     }
     if (CONTENT->edges) {
         PARSE->sep = '\0';
         print_tree(LIST, CONTENT->edges);
         putc('\n', stdout);
+        free_tree(LIST, CONTENT->edges);
     }
     PARSE->containment--;
     emit_end_activity(CONTENT);
@@ -110,6 +119,8 @@ CONTENT->out = stdout;
     free_list_content(LIST, &(CONTENT->subject));
     free_list_content(LIST, &(CONTENT->node_pattern_acts));
     free_list_content(LIST, &(CONTENT->edge_pattern_acts));
+
+E(LIST,"  parse_nest_r2");
 
     return rc;
 }
@@ -126,8 +137,7 @@ CONTENT->out = stdout;
  *  @return success/fail
  */
 static success_t
-parse_r(CONTENT_t * CONTENT, elem_t * root,
-    state_t si, unsigned char prop, int nest, int repc)
+parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop, int nest, int repc)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
@@ -141,10 +151,12 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
     elem_t *elem;
     static unsigned char nullstring[] = { '\0' };
 
-    rc = SUCCESS;
-    emit_start_state(CONTENT, si, prop, nest, repc);
+E(LIST,"    parse_list_r1");
 
     branch = new_list(LIST, si);
+
+    rc = SUCCESS;
+    emit_start_state(CONTENT, si, prop, nest, repc);
 
     nest++;
     assert(nest >= 0);    // catch overflows
@@ -230,7 +242,7 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            if ((rc = parse_r(CONTENT, branch, ni, nprop, nest, 0)) == SUCCESS) {
+            if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, 0)) == SUCCESS) {
                 break;                  // ALT satisfied
             }
 
@@ -238,19 +250,19 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                if ((parse_r(CONTENT, branch, ni, nprop, nest, repc++)) == SUCCESS) {
+                if ((parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) == SUCCESS) {
                     while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                        if (parse_r(CONTENT, branch, ni, nprop, nest, repc++) == FAIL) {
+                        if (parse_list_r(CONTENT, branch, ni, nprop, nest, repc++) == FAIL) {
                             break;
                         }
                     }
                 }
             } else {                    // else not OPTional
-                if ((rc = parse_r(CONTENT, branch, ni, nprop, nest, repc++)) == FAIL) {
+                if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) == FAIL) {
                     break;
                 }
                 while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                    if ((rc = parse_r(CONTENT, branch, ni, nprop, nest, repc++)) == FAIL) {
+                    if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) == FAIL) {
                         break;
                     }
                 }
@@ -269,7 +281,6 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
                 PARSE->stat_patternactcount++;
                 if (CONTENT->subject_type == NODE) {
                     append_list(&(CONTENT->node_pattern_acts), branch);
-
                 } else {
                     assert(CONTENT->subject_type == EDGE);
                     append_list(&(CONTENT->edge_pattern_acts), branch);
@@ -284,9 +295,10 @@ parse_r(CONTENT_t * CONTENT, elem_t * root,
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 elem = root->u.l.first;
+E(PARSE,"parse_list_r2");
                 while (elem) {
+P(PARSE,root);
                     PARSE->stat_outactcount++;
-P(PARSE,elem);
 //                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
 //                    reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 
@@ -294,6 +306,7 @@ P(PARSE,elem);
                 }
 
                 free_list_content(LIST, root);  // that's all folks.  move on to the next ACT.
+E(PARSE,"parse_list_r3");
             }
             break;
         case TLD:
@@ -346,6 +359,7 @@ P(PARSE,elem);
     assert(nest >= 0);
     emit_end_state(CONTENT, si, rc, nest, repc);
 
+E(LIST,"    parse_list_r4");
     return rc;
 }
 

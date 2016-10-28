@@ -1,0 +1,33 @@
+1. find elem leak
+
+2. complete merge.c for attribute merging
+
+3. need some kind of print_edge_name
+- for compare and for ikea ...
+- needs logical space between str elems, and between legs and disambig
+-- maybe insert real: < > `
+
+4. breakout PARSE_t from CONTEXT_t
+
+5. common match code for patterns and queries
+5.a extend match patterns
+- currently suffix matching only
+- can we find a syntax for REs that fits?
+- at least want prefix matching
+
+6. thread model
+
+7. queries
+- return multiple results from applying a match
+- edge queries
+- meta queries:  ?^g ?^p  ?^s  ?^n    (graph, patterns, stats, net)
+
+8. persistence
+
+9. container updates
+
+10. separate threads/processes for layout computation
+
+11. distribution
+
+

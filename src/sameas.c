@@ -23,7 +23,11 @@ void sameas(CONTENT_t * CONTENT, elem_t * subject)
 {
     LIST_t * LIST = (LIST_t *)(CONTENT->PARSE);
     elem_t *oldsubject, *nextold;
-    elem_t *newsubject = new_list(LIST, SUBJECT);
+    elem_t *newsubject;
+
+E(LIST,"sameas1");
+
+    newsubject  = new_list(LIST, SUBJECT);
 
     oldsubject = &(CONTENT->subject);
     nextold = oldsubject->u.l.first;
@@ -45,6 +49,8 @@ void sameas(CONTENT_t * CONTENT, elem_t * subject)
 
     newsubject->u.l.first->refs++;    // and increase its reference count
     *subject = *newsubject; //    to also save as the rewritten current subject
+
+E(LIST,"sameas2");
 }
 
 /**

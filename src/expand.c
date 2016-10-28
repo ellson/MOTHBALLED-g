@@ -23,10 +23,14 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
 {
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *elem, *epset, *ep, *new, *disambig = NULL;
-    elem_t *newepset = new_list(LIST, ENDPOINTSET);
-    elem_t *newlist = new_list(LIST, ENDPOINTSET);
+    elem_t *newepset;
+    elem_t *newlist;
+
+//E(LIST,"expand1");
 
     assert(list);
+    newepset = new_list(LIST, ENDPOINTSET);
+    newlist = new_list(LIST, ENDPOINTSET);
     elem = list->u.l.first;
     while (elem) {
         switch ((state_t)elem->state) {
@@ -89,6 +93,8 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
     }
     free_list(LIST, newepset);
     free_list(LIST, newlist);
+
+//E(LIST,"expand1");
 }
 
 /**

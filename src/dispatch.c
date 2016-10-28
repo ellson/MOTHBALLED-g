@@ -54,13 +54,16 @@ void dispatch(CONTENT_t * CONTENT, elem_t * plist)
 {
     PARSE_t *PARSE = CONTENT->PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
-    elem_t *pelem;
-    elem_t *attributes = new_list(LIST, 0);
-    elem_t *nodes = new_list(LIST, 0);
-    elem_t *edges = new_list(LIST, 0);
+    elem_t *pelem, *nodes, *edges, *attributes;
     
     assert(plist);
     assert(plist->type == (char)LISTELEM);
+
+E(LIST,"dispatch1");
+
+    nodes = new_list(LIST, 0);
+    edges = new_list(LIST, 0);
+    attributes = new_list(LIST, 0);
 
     // expand OBJECT_LIST and ENDPOINTSETS
     dispatch_r(PARSE, plist, attributes, nodes, edges);
@@ -105,6 +108,8 @@ void dispatch(CONTENT_t * CONTENT, elem_t * plist)
     free_list(LIST, attributes);
     free_list(LIST, nodes);
     free_list(LIST, edges);
+
+E(LIST,"dispatch2");
 }
 
 /**

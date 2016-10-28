@@ -55,6 +55,8 @@ void pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject)
     assert(subject);
     assert((state_t) subject->state == SUBJECT);
 
+//E(LIST,"pattern1");
+
     if (CONTENT->subject_type == NODE) {
         pattern_acts = &(CONTENT->node_pattern_acts);
     } else {
@@ -87,4 +89,6 @@ void pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject)
             PARSE->stat_patternmatches++;
         }
     }
+
+//E(LIST,"pattern2");
 }
