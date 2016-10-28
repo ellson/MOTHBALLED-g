@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "compare.h"
+#include "merge.h"
 
 /**
  * merge old and new attributes
