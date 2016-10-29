@@ -7,8 +7,13 @@
 
 #include "dispatch.h"
 
-static void dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t *pattributes, elem_t * pnodes, elem_t * pedges);
-static void assemble_act(PARSE_t * PARSE, elem_t * pelem, elem_t * pattributes, elem_t * plist);
+static void
+dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t *pattributes,
+        elem_t * pnodes, elem_t * pedges);
+
+static void
+assemble_act(PARSE_t * PARSE, elem_t * pelem, elem_t * pattributes,
+        elem_t * plist);
 
 /*
  * Processes an ACT after sameas and pattern substitutions.
@@ -59,7 +64,7 @@ void dispatch(CONTENT_t * CONTENT, elem_t * plist)
     assert(plist);
     assert(plist->type == (char)LISTELEM);
 
-E(LIST,"dispatch1");
+//E(LIST,"dispatch1");
 
     nodes = new_list(LIST, 0);
     edges = new_list(LIST, 0);
@@ -109,7 +114,7 @@ E(LIST,"dispatch1");
     free_list(LIST, nodes);
     free_list(LIST, edges);
 
-E(LIST,"dispatch2");
+//E(LIST,"dispatch2");
 }
 
 /**
@@ -121,7 +126,9 @@ E(LIST,"dispatch2");
  * @param pnodes
  * @param pedges
  */
-static void dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t * pattributes, elem_t * pnodes, elem_t * pedges)
+static void
+dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t * pattributes,
+        elem_t * pnodes, elem_t * pedges)
 {
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *pelem, *pnew, *pobject;
@@ -167,6 +174,7 @@ static void dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t * pattributes, el
             expand(PARSE, pelem, pnodes, pedges);
             break;
         default:
+            assert(0);
             break;
         }
         pelem = pelem->next;
@@ -181,7 +189,9 @@ static void dispatch_r(PARSE_t * PARSE, elem_t * plist, elem_t * pattributes, el
  * @param pattributes
  * @param plist - output ACT
  */
-static void assemble_act(PARSE_t * PARSE, elem_t *pelem, elem_t *pattributes, elem_t *plist)
+static void
+assemble_act(PARSE_t * PARSE, elem_t *pelem, elem_t *pattributes,
+        elem_t *plist)
 {
     TOKEN_t * IN = (TOKEN_t *)PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;

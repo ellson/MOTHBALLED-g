@@ -42,9 +42,9 @@ success_t parse(PARSE_t * PARSE)
 {
     success_t rc;
 
-E(PARSE,"parse1");
+//E(PARSE,"parse1");
     rc = parse_nest_r(PARSE, NULL);
-E(PARSE,"parse2");
+//E(PARSE,"parse2");
     return rc;
 }
 
@@ -85,7 +85,7 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
 #endif
     CONTENT->out = stdout;
 
-E(LIST,"  parse_nest_r1");
+//E(LIST,"  parse_nest_r1");
 
     root = new_list(LIST, 0);    // the output parse tree
     emit_start_activity(CONTENT);
@@ -120,7 +120,7 @@ E(LIST,"  parse_nest_r1");
     free_list_content(LIST, &(CONTENT->node_pattern_acts));
     free_list_content(LIST, &(CONTENT->edge_pattern_acts));
 
-E(LIST,"  parse_nest_r2");
+//E(LIST,"  parse_nest_r2");
 
     return rc;
 }
@@ -151,7 +151,7 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop,
     elem_t *elem;
     static unsigned char nullstring[] = { '\0' };
 
-E(LIST,"    parse_list_r1");
+//E(LIST,"    parse_list_r1");
 
     branch = new_list(LIST, si);
 
@@ -295,10 +295,11 @@ E(LIST,"    parse_list_r1");
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 elem = root->u.l.first;
-E(PARSE,"parse_list_r2");
-                while (elem) {
+//E(PARSE,"parse_list_r2");
 P(PARSE,root);
+                while (elem) {
                     PARSE->stat_outactcount++;
+//P(PARSE,elem);
 //                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
 //                    reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 
@@ -306,7 +307,7 @@ P(PARSE,root);
                 }
 
                 free_list_content(LIST, root);  // that's all folks.  move on to the next ACT.
-E(PARSE,"parse_list_r3");
+//E(PARSE,"parse_list_r3");
             }
             break;
         case TLD:
@@ -324,11 +325,11 @@ E(PARSE,"parse_list_r3");
 
             // Perform EQL "same as in subject of previous ACT" substitutions
             // Also classifies ACT as NODE or EDGE based on SUBJECT
-E(LIST,"    parse_list_r4");     
-P(LIST,branch);
+//E(LIST,"    parse_list_r4");     
+//P(LIST,branch);
             sameas(CONTENT, branch);
-E(LIST,"    parse_list_r5");
-P(LIST,branch);
+//E(LIST,"    parse_list_r5");
+//P(LIST,branch);
 
 // FIXME - or not, but this is broken
 #if 0
@@ -363,7 +364,7 @@ P(LIST,branch);
     assert(nest >= 0);
     emit_end_state(CONTENT, si, rc, nest, repc);
 
-E(LIST,"    parse_list_r6");
+//E(LIST,"    parse_list_r6");
     return rc;
 }
 
