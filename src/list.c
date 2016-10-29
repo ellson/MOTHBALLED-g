@@ -7,6 +7,8 @@
 
 #include "list.h"
 
+static void free_list_r(LIST_t * LIST, elem_t * list);
+
 /**
  * Private function to manage the allocation an elem_t
  *
@@ -77,6 +79,83 @@ elem_t *new_list(LIST_t * LIST, char state)
 }
 
 /**
+ * Free list - for each elem in list: free contents, then free the emmpty list,
+ * (the elem_t heading the list) but only if its ref count is 0
+ *  
+ *
+ * @param LIST the top-level context in which all lists are managed
+ * @param elem - a list header
+ */
+void free_list(LIST_t * LIST, elem_t * elem)
+{
+    elem_t *next;
+
+    while (elem) {
+        next = elem->next;
+        switch ((elemtype_t)(elem->type)) {
+        case LISTELEM:
+            assert(elem->refs > 0);
+            if (--(elem->refs)) {
+                return;    // stop at any point with additional refs
+            }
+            free_list_r(LIST, elem); // recursively free lists that have no references
+            break;
+        case FRAGELEM:
+            assert(elem->u.f.inbuf->refs > 0);
+            if (--(elem->u.f.inbuf->refs) == 0) {
+                free_inbuf(&(LIST->INBUF), elem->u.f.inbuf);
+            }
+            break;
+        case SHORTSTRELEM:
+            // these are self contained singletons,  nothing else to clean up
+            next = NULL;
+            break;
+        case TREEELEM:  // FIXME - we will need this
+        case HASHNAMEELEM:
+            assert(0);  // should not be here
+            break;
+        }
+        // insert elem at beginning of freelist
+        elem->next = LIST->free_elem_list;
+        LIST->free_elem_list = elem;
+        LIST->stat_elemnow--;    // maintain stats
+
+        elem = next;
+    }
+}
+
+/**
+ * Free the contents of a list, but not the list itself
+ *  
+ * If it is a list of lists, then the refence count in the first elem_t is
+ * decremented and the elements are freed only if the references are  zero.
+ *
+ * If it is a list of fragments, then the reference count to the fragments'
+ * inbufs are decremented and the inbuf freed if there are no more fragments
+ * in use.
+ *
+ * Lists of hashes are not allowed to be freed.
+ *
+ * @param LIST the top-level context in which all lists are managed
+ * @param list a header to the list to be freed.
+ */
+static void free_list_r(LIST_t * LIST, elem_t * list)
+{
+    assert(list);
+    assert(list->type == (char)LISTELEM);
+
+    // free list of elem, but really just put them back
+    // on the elem_freelist (declared at the top of this file)`
+    free_list(LIST, list->u.l.first);
+
+    // clean/ up emptied list
+    list->u.l.first = NULL;
+    list->u.l.last = NULL;
+    // Note: ref count of the empty list is not modified.
+    // It may be still referenced, even though it is now empty.
+}
+
+/**
  * Return a pointer to an elem_t which is a tree node with a key (reference too a list)
  * The elem_t is memory managed without caller involvement.
  *
@@ -113,7 +192,7 @@ void free_tree_item(LIST_t *LIST, elem_t * p)
 {
     assert(p->next == (char)LISTELEM);
     p->next->refs--;
-    free_list_content(LIST, p->next);
+    free_list_r(LIST, p->next);
 
     // return p to the freelist
     p->next = LIST->free_elem_list;
@@ -307,83 +386,5 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
         list->u.l.last = elem;               // then elem is the new last (or NULL)
     }
     list->len--;                             // list has one less elem
-    free_list_content(LIST, old);            // free the removed elem
-}
-
-/**
- * Free the contents of a list, but not the list itself
- *  
- * If it is a list of lists, then the refence count in the first elem_t is
- * decremented and the elements are freed only if the references are  zero.
- *
- * If it is a list of fragments, then the reference count to the fragments'
- * inbufs are decremented and the inbuf freed if there are no more fragments
- * in use.
- *
- * Lists of hashes are not allowed to be freed.
- *
- * @param LIST the top-level context in which all lists are managed
- * @param list a header to the list to be freed.
- */
-void free_list_content(LIST_t * LIST, elem_t * list)
-{
-    assert(list);
-    assert(list->type == (char)LISTELEM);
-
-    // free list of elem, but really just put them back
-    // on the elem_freelist (declared at the top of this file)`
-    free_list(LIST, list->u.l.first);
-
-    // clean up emptied list
-    list->u.l.first = NULL;
-    list->u.l.last = NULL;
-    // Note: ref count of the empty list is not modified.
-    // It may be still referenced, even though it is now empty.
-}
-
-
-/**
- * Free list - for each elem in list: free contents, then free the emmpty list,
- * (the elem_t heading the list) but only if its ref count is 0
- *  
- *
- * @param LIST the top-level context in which all lists are managed
- * @param elem - a list header
- */
-void free_list(LIST_t * LIST, elem_t * elem)
-{
-    elem_t *next;
-
-    while (elem) {
-        next = elem->next;
-        switch ((elemtype_t)(elem->type)) {
-        case LISTELEM:
-            assert(elem->refs > 0);
-            if (--(elem->refs)) {
-                return;    // stop at any point with additional refs
-            }
-            free_list_content(LIST, elem); // recursively free lists that have no references
-            break;
-        case FRAGELEM:
-            assert(elem->u.f.inbuf->refs > 0);
-            if (--(elem->u.f.inbuf->refs) == 0) {
-                free_inbuf(&(LIST->INBUF), elem->u.f.inbuf);
-            }
-            break;
-        case SHORTSTRELEM:
-            // these are self contained singletons,  nothing else to clean up
-            next = NULL;
-            break;
-        case TREEELEM:  // FIXME - we will need this
-        case HASHNAMEELEM:
-            assert(0);  // should not be here
-            break;
-        }
-        // insert elem at beginning of freelist
-        elem->next = LIST->free_elem_list;
-        LIST->free_elem_list = elem;
-        LIST->stat_elemnow--;    // maintain stats
-
-        elem = next;
-    }
+    free_list_r(LIST, old);                  // free the removed elem
 }
