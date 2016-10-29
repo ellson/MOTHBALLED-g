@@ -10,7 +10,7 @@ extern "C" {
 #include "expand.h"
 #include "context.h"
 
-void dispatch(CONTENT_t * CONTENT, elem_t **proot);
+elem_t * dispatch(CONTENT_t * CONTENT, elem_t *act);
 
 #ifdef __cplusplus
 }

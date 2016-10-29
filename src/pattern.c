@@ -42,20 +42,24 @@
  * subject to be appended with its own ATTRIBUTES and ACTIVITY.
  *
  * @param CONTENT container_context
- * @param root of the output tree
  * @param subject to be checked for pattern matches
+ * @return newacts - with list of matched acts, or NULL
  */
-void pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject)
+
+// FIXME, this tacks a SUBJECT and returns a list of SUBJECTS
+//      better if they were the same type
+elem_t *
+pattern(CONTENT_t * CONTENT, elem_t * subject)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
-    elem_t *pattern_acts, *pact, *psubj, *pattr;
+    elem_t *newacts = NULL, *pattern_acts, *act, *subj, *attr;
 
-    assert(root);
     assert(subject);
     assert((state_t) subject->state == SUBJECT);
 
 //E(LIST);
+//P(LIST, subject);
 
     assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
     if (CONTENT->subject_type == NODE) {
@@ -65,23 +69,26 @@ void pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject)
     }
 
     // iterate over available patterns
-    for ( pact = pattern_acts->u.l.first; pact; pact = pact->next) {
-        assert((state_t) pact->state == ACT);
-        psubj = pact->u.l.first;
-        assert(psubj);
-        assert((state_t) psubj->state == SUBJECT);
-        pattr = psubj->next;
+    for ( act = pattern_acts->u.l.first; act; act = act->next) {
+        assert((state_t) act->state == ACT);
+        subj = act->u.l.first;
+        assert(subj);
+        assert((state_t) subj->state == SUBJECT);
+        attr = subj->next;
 
         // FIXME - contents from pattern ??
-        if ((match(CONTENT, subject->u.l.first, psubj->u.l.first)) == SUCCESS) {
+        if ((match(CONTENT, subject->u.l.first, subj->u.l.first)) == SUCCESS) {
             // insert matched attrubutes, contents,
             // and then the subject again
             
-            append_list(root, ref_list(LIST, subject));
+            if (! newacts) {
+                newacts = new_list(LIST, ACT);
+            }
+            append_list(newacts, ref_list(LIST, subject));
             emit_subject(CONTENT, subject);
-            if (pattr && (state_t)pattr->state == ATTRIBUTES) {
-                append_list(root, ref_list(LIST, pattr));
-                emit_attributes(CONTENT, pattr);
+            if (attr && (state_t)attr->state == ATTRIBUTES) {
+                append_list(newacts, ref_list(LIST, attr));
+                emit_attributes(CONTENT, attr);
             }
 
             // FIXME -- contents
@@ -91,4 +98,5 @@ void pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject)
     }
 
 //E(LIST);
+    return newacts;
 }

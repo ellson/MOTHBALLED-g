@@ -13,9 +13,8 @@
 static success_t
 parse_nest_r(PARSE_t * PARSE, elem_t * subject);
 
-static success_t
-parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si,
-        unsigned char prop, int nest, int repc);
+static elem_t *
+parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int repc);
 
 static success_t
 parse_more_rep(PARSE_t * PARSE, unsigned char prop);
@@ -93,15 +92,12 @@ E(LIST);
     CONTENT->out = hash_elem->out;
 //==============================================================
 #endif
-    root = new_list(LIST, 0);    // the output parse tree
-P(LIST,root);
-
     emit_start_activity(CONTENT);
     PARSE->containment++;            // containment nesting level
     PARSE->stat_containercount++;    // number of containers
 
-    rc = parse_list_r(CONTENT, root, ACTIVITY, SREP, 0, 0);
-    if (rc != SUCCESS) {
+    root = parse_list_r(CONTENT, ACTIVITY, SREP, 0, 0);
+    if (root) {
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
@@ -109,6 +105,7 @@ P(LIST,root);
         }
     }
 P(LIST,root);
+
     if (CONTENT->nodes) {
         PARSE->sep = '\0';
         print_tree(LIST, CONTENT->nodes);
@@ -139,16 +136,14 @@ E(LIST);
  * recurse through state-machine at a single level of containment
  *
  *  @param CONTENT container context
- *  @param root of parsed tree
  *  @param si input state
  *  @param prop grammar properties
  *  @param nest recursion nesting level (containment level)
  *  @param repc sequence member counter
- *  @return success/fail
+ *  @return resulting parsed branch
  */
-static success_t
-parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si,
-        unsigned char prop, int nest, int repc)
+static elem_t *
+parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int repc)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
@@ -163,7 +158,7 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si,
 
 //E(LIST);
 
-    branch = new_list(LIST, si);
+    branch = new_list(LIST, si);  // return list
 
     rc = SUCCESS;
     emit_start_state(CONTENT, si, prop, nest, repc);
@@ -254,32 +249,43 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si,
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            rc = parse_list_r(CONTENT, branch, ni, nprop, nest, 0);
-            if (rc == SUCCESS) {
+            new = parse_list_r(CONTENT, ni, nprop, nest, 0);
+            if (new) {
+                append_list(branch, new);
+                rc = SUCCESS;
                 break;                  // ALT satisfied
             }
             // we failed an ALT so continue iteration to try next ALT
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++);
-                if (rc == SUCCESS) {
+                new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
+                if (new) {
+                    append_list(branch, new);
                     while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                        rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++);
-                        if (rc == FAIL) {
+                        new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
+                        if (new) {
+                            append_list(branch, new);
+                        } else {
                             break;
                         }
                     }
                 }
-                rc = SUCCESS;           // OPTs always successfull
+                rc = SUCCESS;           // OPTs always successful
             } else {                    // else not OPTional
-                rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++);
-                if (rc == FAIL) {
+                new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
+                if (new) {
+                    append_list(branch, new);
+                    rc = SUCCESS;           // OPTs always successful
+                } else {
                     break;
                 }
                 while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                    rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++);
-                    if (rc == FAIL) {
+                    new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
+                    if (new) {
+                        append_list(branch, new);
+                        rc = SUCCESS;           // OPTs always successful
+                    } else {
                         break;
                     }
                 }
@@ -292,7 +298,7 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si,
     if (rc == SUCCESS) {
         switch (si) {
         case ACT:
-P(PARSE, root);
+P(LIST, branch);
             PARSE->stat_inactcount++;
             if (CONTENT->is_pattern) {   // flag was set by SUBJECT in previous ACT
                                          //  save entire previous ACT in a list of pattern_acts
@@ -303,28 +309,29 @@ P(PARSE, root);
                 } else {
                     append_list(CONTENT->edge_pattern_acts, branch);
                 }
+                // FIXME - should the branch be freed here?
             } else {
                 PARSE->stat_nonpatternactcount++;
-                append_list(root, branch);
 
-P(PARSE, branch);
-P(PARSE, root);
+P(LIST, branch);
                 // dispatch events for the ACT just finished
-                dispatch(CONTENT, &root);
-P(PARSE, root);
+                new = dispatch(CONTENT, branch);
+                free_list(LIST, branch);
+                branch = new;
+P(LIST, branch);
 
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
-                elem = root->u.l.first;
+                elem = branch->u.l.first;
                 while (elem) {
                     PARSE->stat_outactcount++;
-P(PARSE,elem);
+P(LIST,elem);
 //                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
 //                    reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 
                     elem = elem->next;
                 }
-                free_list_content(LIST, root);
+                // FIXME - should the branch be freed here?
             }
             break;
         case TLD:
@@ -357,7 +364,11 @@ P(LIST, branch);
             // If this subject is not itself a pattern, then
             // perform pattern matching and insertion if matched
             if (!(CONTENT->is_pattern = TOKEN->has_ast)) {
-                pattern(CONTENT, root, branch);
+                new = pattern(CONTENT, branch);
+                if (new) {
+                    free_list(LIST, branch);
+                    branch = new;
+                }
             }
 
             emit_subject(CONTENT, branch);      // emit hook for rewritten subject
@@ -374,17 +385,19 @@ P(LIST, branch);
                 // - except for STRINGs which use state for quoting info
                 branch->state = si;
             }
-            append_list(root, branch);
         }
     }
     nest--;
     assert(nest >= 0);
-    free_list(LIST, branch);
 
     emit_end_state(CONTENT, si, rc, nest, repc);
 
+    if (rc == FAIL) {
+        return NULL;
+    }
+
 //E(LIST);
-    return rc;
+    return branch;
 }
 
 /**

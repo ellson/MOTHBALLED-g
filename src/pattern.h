@@ -10,7 +10,8 @@ extern "C" {
 #include "emit.h"
 #include "match.h"
 
-void pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject);
+elem_t *
+pattern(CONTENT_t * CONTENT, elem_t * subject);
 
 #ifdef __cplusplus
 }

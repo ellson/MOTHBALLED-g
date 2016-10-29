@@ -11,9 +11,8 @@ static void
 dispatch_r(LIST_t * LIST, elem_t * list, elem_t *attributes,
         elem_t * nodes, elem_t * edges);
 
-static void
-assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes,
-        elem_t * list);
+static elem_t *
+assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes);
 
 /*
  * Processes an ACT after sameas and pattern substitutions.
@@ -53,42 +52,42 @@ assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes,
 
 /**
  * @param CONTENT container context
- * @param list
+ * @param an ACT
+ * @return new list of ACTS
  */
-void dispatch(CONTENT_t * CONTENT, elem_t **plist)
+elem_t *
+dispatch(CONTENT_t * CONTENT, elem_t * act)
 {
     PARSE_t *PARSE = CONTENT->PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
-    elem_t *list, *elem, *nodes, *edges, *attributes;
+    elem_t *new, *newacts, *elem, *nodes, *edges, *attributes;
     
-    assert(plist);
-    list = *plist;
-
-    assert(list);
-    assert(list->type == (char)LISTELEM);
+    assert(act);
+    assert(act->type == (char)LISTELEM);
+    assert((state_t) act->state == ACT);
 
 //E(LIST);
-//P(LIST, list);
+//P(LIST, act);
+
+    newacts = new_list(LIST, 0); // return list
 
     nodes = new_list(LIST, 0);
     edges = new_list(LIST, 0);
     attributes = new_list(LIST, 0);
 
     // expand OBJECT_LIST and ENDPOINTSETS
-    dispatch_r(LIST, list, attributes, nodes, edges);
+    dispatch_r(LIST, act, attributes, nodes, edges);
 
     // if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
     //                      for each EDGE, generate new ACT: verb edge attributes
 
-    free_list(LIST, list);  // free old ACT to be replace by these new expanded ACTS
-    *plist = list = new_list(LIST, 0);
-
     switch (CONTENT->subject_type) {
     case NODE:
         elem = nodes->u.l.first;
         while (elem) {
-            assemble_act(LIST,elem,attributes,list);
+            new = assemble_act(LIST, elem, attributes);
+            append_list(newacts, new);
             elem = elem->next;
         }
         break;
@@ -100,13 +99,16 @@ void dispatch(CONTENT_t * CONTENT, elem_t **plist)
         else {
                 elem = nodes->u.l.first;
                 while (elem) {
-                    assemble_act(LIST,elem,NULL,list);
+                    // inducing nodes from NODEREFS - no attriibutes from these
+                    new = assemble_act(LIST, elem, NULL);
+                    append_list(newacts, new);
                     elem = elem->next;
                 }
 
                 elem = edges->u.l.first;
                 while (elem) {
-                    assemble_act(LIST,elem,attributes,list);
+                    new = assemble_act(LIST, elem, attributes);
+                    append_list(newacts, new);
                     elem = elem->next;
                 }
         }
@@ -116,21 +118,25 @@ void dispatch(CONTENT_t * CONTENT, elem_t **plist)
         break;
     }
 
-    free_list(LIST, attributes);
     free_list(LIST, nodes);
     free_list(LIST, edges);
+    free_list(LIST, attributes);
 
 //E(LIST);
+//P(LIST, newacts);
+    return(newacts);
 }
 
 /**
- * This function expands OBJECT_LIST of NODES or EDGES, and then expands ENPOINTSETS in EDGES
+ * This function expands OBJECT_LIST of NODES or EDGES,
+ *     then expands ENPOINTSETS in EDGES,
+ *     and returns the expansion as list of simple nodes and edges
  *
  * @param LIST context
- * @param list   -- object-list
- * @param attributes
- * @param nodes
- * @param edges
+ * @param list of object -- not modified
+ * @param attributes -- appended
+ * @param nodes -- appended
+ * @param edges -- appended
  */
 static void
 dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
@@ -146,7 +152,6 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
     while (elem) {
         switch ((state_t) elem->state) {
         case ACT:
-        case OBJECT:
             dispatch_r(LIST, elem, attributes, nodes, edges);
             break;
         case ATTRIBUTES:
@@ -161,8 +166,8 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
                 break;
             case OBJECT_LIST:
                 object = object->u.l.first;
-                assert((state_t)object->state == OBJECT);
                 while(object) {
+                    assert((state_t)object->state == OBJECT);
                     dispatch_r(LIST, object, attributes, nodes, edges);
                     object = object->next;
                 }
@@ -191,22 +196,22 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
 }
 
 /**
- * This function assembles ACTS with simplified SUBJECT and no CONTAINER
+ * This function assembles ACTs with simplified SUBJECT and no CONTAINER
+ * The act VERB is copied from the current input ACTIVITY verb
  *
  * @param LIST context
- * @param elem   -- node or edge object
- * @param attributes
- * @param list - output ACT
+ * @param elem   -- node or edge object -- not modified
+ * @param attributes -- not modified
+ * @return a node act
  */
-static void
-assemble_act(LIST_t * LIST, elem_t *elem, elem_t *attributes,
-        elem_t *list)
+static elem_t *
+assemble_act(LIST_t * LIST, elem_t *elem, elem_t *attributes)
 {
     TOKEN_t * IN = (TOKEN_t *)LIST;
     elem_t *new;
     elem_t *act;
 
-    act = new_list(LIST, ACT);
+    act = new_list(LIST, ACT);  // return list
 
     // verb
     switch(IN->verb) {
@@ -231,7 +236,5 @@ assemble_act(LIST_t * LIST, elem_t *elem, elem_t *attributes,
 
     // no container ever because contents are handled in a parse_nest_r() recursion.
 
-    append_list(list, act);
-
-    free_list(LIST, act);
+    return act;
 }

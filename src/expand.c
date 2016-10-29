@@ -12,10 +12,12 @@ static void expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset, elem_t *dis
 static void expand_hub(LIST_t * LIST, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges);  // two node edge
 
 /**
- * this function expands and dispatches EDGEs
+ * this function expands EDGEs into:
+ *    a list of nodes reference by the edge
+ *    a list of simple edges, each with the same disambiguation as the compound edge
  * 
  * @param LIST context
- * @param list - tree representing edge(s)
+ * @param list - a simple or compound edge
  * @param nodes - resulting nodes
  * @param edges - resulting simple edges
  */
