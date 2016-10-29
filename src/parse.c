@@ -10,11 +10,15 @@
 
 // forward declarations
 
-static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name);
+static success_t
+parse_nest_r(PARSE_t * PARSE, elem_t * name);
 
-static success_t parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop, int nest, int repc);
+static success_t
+parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si,
+        unsigned char prop, int nest, int repc);
 
-static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop);
+static success_t
+parse_more_rep(PARSE_t * PARSE, unsigned char prop);
 
 /**
  * parse G syntax input
@@ -62,6 +66,8 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *root;
 
+//E(LIST,"parse_nest_r1");
+
     CONTENT->PARSE = PARSE;
     CONTENT->ikea_box = ikea_box_open(PARSE->ikea_store, NULL);
 #if 0
@@ -84,9 +90,6 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
 //==============================================================
 #endif
     CONTENT->out = stdout;
-
-//E(LIST,"  parse_nest_r1");
-
     root = new_list(LIST, 0);    // the output parse tree
     emit_start_activity(CONTENT);
     PARSE->containment++;            // containment nesting level
@@ -120,8 +123,7 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
     free_list_content(LIST, &(CONTENT->node_pattern_acts));
     free_list_content(LIST, &(CONTENT->edge_pattern_acts));
 
-//E(LIST,"  parse_nest_r2");
-
+//E(LIST,"parse_nest_r2");
     return rc;
 }
 
@@ -137,7 +139,8 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
  *  @return success/fail
  */
 static success_t
-parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop, int nest, int repc)
+parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si,
+        unsigned char prop, int nest, int repc)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
@@ -151,7 +154,7 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop,
     elem_t *elem;
     static unsigned char nullstring[] = { '\0' };
 
-//E(LIST,"    parse_list_r1");
+//E(LIST,"  parse_list_r1");
 
     branch = new_list(LIST, si);
 
@@ -159,69 +162,71 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop,
     emit_start_state(CONTENT, si, prop, nest, repc);
 
     nest++;
-    assert(nest >= 0);    // catch overflows
+    assert(nest >= 0);            // catch overflows
 
-    if (!INBUF->inbuf) {    // state_machine just started
-        TOKEN->bi = WS;        // pretend preceeded by WS to satisfy toplevel SREP or REP
-                        // (Note, first REP of a sequence *can*
-                        // be preceeded by WS, just not the
-                        // rest of the REPs. )
-        TOKEN->in = nullstring;    // fake it;
-        TOKEN->insi = NLL;    // pretend last input was the EOF of
-                        // a prior file.
+    if (!INBUF->inbuf) {          // state_machine just started
+        TOKEN->bi = WS;           // pretend preceeded by WS to satisfy toplevel SREP or REP
+                                  // (Note, first REP of a sequence *can* be preceeded
+                                  // by WS, just not the rest of the REPs. )
+        TOKEN->in = nullstring;   // fake it;
+        TOKEN->insi = NLL;        // pretend last input was the EOF of a prior file.
     }
 
     // Entering state
-    TOKEN->state = si;        // record of last state entered, for error messages.
+    TOKEN->state = si;            // record of last state entered, for error messages.
 
     // deal with "terminal" states: Whitespace, Tokens, and Contained activity, Strings
 
-    TOKEN->ei = TOKEN->insi;    // the char class that ended the last token
+    TOKEN->ei = TOKEN->insi;      // the char class that ended the last token
 
     // Whitespace
     if ((rc = token_whitespace(TOKEN)) == FAIL) {
-        goto done;    // EOF during whitespace
+        goto done;                // EOF during whitespace
     }
 
     // Special character tokens
-    if (si == TOKEN->insi) {    // single character terminals matching state_machine expectation
+    if (si == TOKEN->insi) {      // single character terminals matching
+                                  //  state_machine expectation
         TOKEN->bi = TOKEN->insi;
         rc = token(TOKEN);
         TOKEN->ei = TOKEN->insi;
         goto done;
     }
     switch (si) {
-    case ACTIVITY:          // Recursion into Contained activity
-        if (TOKEN->bi == LBE) {    // if not top-level of containment
+    case ACTIVITY:                // Recursion into Contained activity
+        if (TOKEN->bi == LBE) {   // if not top-level of containment
             TOKEN->bi = NLL;
-            rc = parse_nest_r(PARSE, &CONTENT->subject);    // recursively process contained ACTIVITY in to its own root
-            TOKEN->bi = TOKEN->insi;    // The char class that terminates the ACTIVITY
+            // recursively process contained ACTIVITY in to its own root
+            rc = parse_nest_r(PARSE, &CONTENT->subject);
+            TOKEN->bi = TOKEN->insi; // The char class that terminates the ACTIVITY
             goto done;
         }
         break;
 
-    case STRING:            // Strings
+    case STRING:                  // Strings
         rc = token_string(TOKEN, branch);
-        TOKEN->bi = TOKEN->insi;    // the char class that terminates the STRING
+        TOKEN->bi = TOKEN->insi;  // the char class that terminates the STRING
         goto done;
         break;
 
-    case VSTRING:            // Value Strings
+    case VSTRING:                 // Value Strings
         rc = token_vstring(TOKEN, branch);
-        TOKEN->bi = TOKEN->insi;    // the char class that terminates the VSTRING
+        TOKEN->bi = TOKEN->insi;  // the char class that terminates the VSTRING
         goto done;
         break;
 
     // the remainder of the switch() is just state initialization
     case ACT:
-        TOKEN->verb = 0;        // initialize verb to default "add"
+        TOKEN->verb = 0;          // initialize verb to default "add"
         break;
     case SUBJECT:
-        TOKEN->has_ast = 0;     // maintain a flag for an '*' found anywhere in the subject
-        PARSE->has_cousin = 0;  // maintain a flag for any NODEREF to COUSIN (requiring involvement of ancestors)
+        TOKEN->has_ast = 0;       // maintain flag for '*' found anywhere in the subject
+        PARSE->has_cousin = 0;    // maintain flag for any NODEREF to COUSIN
+                                  //  (requiring involvement of ancestors)
         break;
     case COUSIN:
-        PARSE->has_cousin = 0;  // maintain a flag for any NODEREF to COUSIN (requiring involvement of ancestors)
+        PARSE->has_cousin = 1;    // maintain a flag for any NODEREF to COUSIN
+                                  //  (requiring involvement of ancestors)
         break;
     default:
         break;
@@ -230,9 +235,9 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop,
     // If it wasn't a terminal state, then use the state_machine to
     // iterate through ALTs or sequences, and then recursively process next the state
 
-    rc = FAIL;        // init rc to FAIL in case no ALT is satisfied
+    rc = FAIL;                          // init rc to FAIL in case no ALT is satisfied
     ti = si;
-    while ((so = state_machine[ti])) {    // iterate over ALTs or sequences
+    while ((so = state_machine[ti])) {  // iterate over ALTs or sequences
         nprop = state_props[ti];        // get the props for the transition
                                         // from the current state (OPT, ALT, REP etc)
 
@@ -245,9 +250,8 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop,
             if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, 0)) == SUCCESS) {
                 break;                  // ALT satisfied
             }
-
-                                        // we failed an ALT so continue iteration to try next ALT
-        } else {                        // else it is a sequence (or the last ALT, same thing)
+            // we failed an ALT so continue iteration to try next ALT
+         } else {                       // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
                 if ((parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) == SUCCESS) {
@@ -277,12 +281,12 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop,
         case ACT:
             PARSE->stat_inactcount++;
             if (CONTENT->is_pattern) {   // flag was set by SUBJECT in previous ACT
-                                    //  save entire previous ACT in a list of pattern_acts
+                                         //  save entire previous ACT in a list of pattern_acts
                 PARSE->stat_patternactcount++;
+                assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
                 if (CONTENT->subject_type == NODE) {
                     append_list(&(CONTENT->node_pattern_acts), branch);
                 } else {
-                    assert(CONTENT->subject_type == EDGE);
                     append_list(&(CONTENT->edge_pattern_acts), branch);
                 }
             } else {
@@ -296,10 +300,10 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop,
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 elem = root->u.l.first;
 //E(PARSE,"parse_list_r2");
-P(PARSE,root);
+//P(PARSE,root);
                 while (elem) {
                     PARSE->stat_outactcount++;
-//P(PARSE,elem);
+P(PARSE,elem);
 //                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
 //                    reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 
@@ -364,7 +368,7 @@ P(PARSE,root);
     assert(nest >= 0);
     emit_end_state(CONTENT, si, rc, nest, repc);
 
-//E(LIST,"    parse_list_r6");
+//E(LIST,"  parse_list_r6");
     return rc;
 }
 
@@ -385,7 +389,7 @@ static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop)
 
     ei = TOKEN->ei;
     if (ei == RPN || ei == RAN || ei == RBR || ei == RBE) {
-        return FAIL;    // no more repetitions
+        return FAIL;       // no more repetitions
     }
     bi = TOKEN->bi;
     if (bi == RPN || bi == RAN || bi == RBR || bi == RBE
@@ -393,8 +397,8 @@ static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop)
         return SUCCESS;    // more repetitions, but additional WS sep is optional
     }
     if (prop & SREP) {
-        emit_sep(PARSE);    // sep is non-optional, emit the minimal sep
-                        //    .. when low-level emit hook is used.
+        emit_sep(PARSE);   // sep is non-optional, emit the minimal sep
+                           //    .. when low-level emit hook is used.
     }
     return SUCCESS;        // more repetitions
 }
