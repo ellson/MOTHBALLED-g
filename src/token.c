@@ -471,10 +471,6 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
  */
 success_t token(TOKEN_t * TOKEN)
 {
-// FIXME - compiler complains that token is not used -  seems a bit odd
-//    char token;
-//
-//    token = state_token[TOKEN->insi];
     TOKEN->insi = char2state[*++(TOKEN->in)];
     return SUCCESS;
 }
