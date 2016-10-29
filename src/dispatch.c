@@ -143,6 +143,7 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
         elem_t * nodes, elem_t * edges)
 {
     elem_t *elem, *new, *object;
+    state_t si;
 
     assert(list->type == (char)LISTELEM);
 //E(LIST);
@@ -150,7 +151,8 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
 
     elem = list->u.l.first;
     while (elem) {
-        switch ((state_t) elem->state) {
+        si = (state_t) elem->state;
+        switch (si) {
         case ACT:
             dispatch_r(LIST, elem, attributes, nodes, edges);
             break;
@@ -160,7 +162,8 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
             break;
         case SUBJECT:
             object = elem->u.l.first;
-            switch ((state_t)object->state) {
+            si = (state_t)object->state;
+            switch (si) {
             case OBJECT:
                 dispatch_r(LIST, object, attributes, nodes, edges);
                 break;
@@ -173,7 +176,7 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
                 }
                 break;
             default:
-                fprintf(stderr, "unexpected object->state: %d\n", object->state);
+                S(si);
                 assert(0); //should never get here
                 break;
             }
@@ -186,7 +189,7 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
             expand(LIST, elem, nodes, edges);
             break;
         default:
-            fprintf(stderr, "unexpected elem->state: %d\n", elem->state);
+            S(si);
             assert(0);
             break;
         }

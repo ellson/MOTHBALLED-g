@@ -26,6 +26,7 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
     elem_t *elem, *epset, *ep, *new, *disambig = NULL;
     elem_t *newepset;
     elem_t *newlist;
+    state_t si1, si2;
 
 //E(LIST);
 
@@ -34,7 +35,8 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
     newlist = new_list(LIST, ENDPOINTSET);
     elem = list->u.l.first;
     while (elem) {
-        switch ((state_t)elem->state) {
+        si1 = (state_t)elem->state;
+        switch (si1) {
         case DISAMBIG:
             disambig = elem;
             break;
@@ -54,7 +56,8 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
             ep = new->u.l.first;
             while(ep) {
                 assert((state_t)ep->state == ENDPOINT);                    
-                switch (ep->u.l.first->state) {
+                si2 = ep->u.l.first->state;
+                switch (si2) {
                 case SIBLING:
                     new = ref_list(LIST, ep->u.l.first);
                     append_list(nodes, new);
@@ -73,6 +76,7 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
                     append_list(nodes, new);
                     break;
                 default:
+                    S(si2);
                     assert(0);  // shouldn't happen  
                     break;
                 }
@@ -80,7 +84,7 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
             }
             break;
         default:
-            fprintf(stderr, "unexpected elem->state: %d\n", elem->state);
+            S(si1);
             assert(0);  // shouldn't be here
             break;
         }

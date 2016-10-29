@@ -192,6 +192,10 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
         TOKEN->bi = TOKEN->insi;
         rc = token(TOKEN);
         TOKEN->ei = TOKEN->insi;
+
+S(si);
+
+        // FIXME we want to ignore (i.e. no append to branch) 
         goto done;
     }
     switch (si) {
@@ -294,11 +298,11 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
         ti++;        // next ALT (if not yet satisfied), or next sequence item
     }
 
- done: // State exit processing
+done: // State exit processing
+//P(LIST, branch);
     if (rc == SUCCESS) {
         switch (si) {
         case ACT:
-//P(LIST, branch);
             PARSE->stat_inactcount++;
             if (CONTENT->is_pattern) {   // flag was set by SUBJECT in previous ACT
                                          //  save entire previous ACT in a list of pattern_acts

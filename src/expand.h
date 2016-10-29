@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "list.h"
+#include "frag.h"
 #include "grammar.h"
 
 void expand(LIST_t * LIST, elem_t *elem, elem_t *nodes, elem_t *edges);
