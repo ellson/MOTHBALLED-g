@@ -80,6 +80,7 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
             }
             break;
         default:
+            fprintf(stderr, "unexpected elem->state: %d\n", elem->state);
             assert(0);  // shouldn't be here
             break;
         }

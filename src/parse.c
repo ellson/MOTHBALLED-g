@@ -65,7 +65,7 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *root;
 
-E(LIST);
+//E(LIST);
 
     CONTENT->PARSE = PARSE;
     CONTENT->subject = new_list(LIST, SUBJECT);
@@ -104,7 +104,7 @@ E(LIST);
             token_error(TOKEN, TOKEN->state, "Parse error. Last good state was:");
         }
     }
-P(LIST,root);
+//P(LIST,root);
 
     if (CONTENT->nodes) {
         PARSE->sep = '\0';
@@ -128,7 +128,7 @@ P(LIST,root);
     free_list(LIST, CONTENT->node_pattern_acts);
     free_list(LIST, CONTENT->edge_pattern_acts);
 
-E(LIST);
+//E(LIST);
     return rc;
 }
 
@@ -298,7 +298,7 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
     if (rc == SUCCESS) {
         switch (si) {
         case ACT:
-P(LIST, branch);
+//P(LIST, branch);
             PARSE->stat_inactcount++;
             if (CONTENT->is_pattern) {   // flag was set by SUBJECT in previous ACT
                                          //  save entire previous ACT in a list of pattern_acts
@@ -313,7 +313,7 @@ P(LIST, branch);
             } else {
                 PARSE->stat_nonpatternactcount++;
 
-P(LIST, branch);
+//P(LIST, branch);
                 // dispatch events for the ACT just finished
                 new = dispatch(CONTENT, branch);
                 free_list(LIST, branch);
@@ -325,7 +325,7 @@ P(LIST, branch);
                 elem = branch->u.l.first;
                 while (elem) {
                     PARSE->stat_outactcount++;
-P(LIST,elem);
+//P(LIST,elem);
 //                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
 //                    reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 
@@ -349,11 +349,11 @@ P(LIST,elem);
 
             // Perform EQL "same as in subject of previous ACT" substitutions
             // Also classifies ACT as NODE or EDGE based on SUBJECT
-P(LIST, branch);
+//P(LIST, branch);
             new = sameas(CONTENT, branch);
             free_list(LIST, branch);
             branch = new;
-P(LIST, branch);
+//P(LIST, branch);
 
 // FIXME - or not, but this is broken
 #if 0
