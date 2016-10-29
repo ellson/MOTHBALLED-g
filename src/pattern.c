@@ -57,10 +57,10 @@ void pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject)
 
 //E(LIST,"pattern1");
 
+    assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
     if (CONTENT->subject_type == NODE) {
         pattern_acts = &(CONTENT->node_pattern_acts);
     } else {
-        assert(CONTENT->subject_type == EDGE);
         pattern_acts = &(CONTENT->edge_pattern_acts);
     }
 
