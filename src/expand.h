@@ -7,9 +7,10 @@
 extern "C" {
 #endif
 
-#include "context.h"
+#include "list.h"
+#include "grammar.h"
 
-void expand(PARSE_t * PARSE, elem_t *elem, elem_t *nodes, elem_t *edges);
+void expand(LIST_t * LIST, elem_t *elem, elem_t *nodes, elem_t *edges);
 
 #ifdef __cplusplus
 }

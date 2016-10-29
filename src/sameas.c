@@ -18,14 +18,17 @@ sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newl
  *      replace subject and oldsubject with newsubject
  *
  * @param CONTENT container context
- * @param psubject a subject tree from the parser (may be multiple object with same attributes)
+ * @param subject a subject tree from the parser (may be multiple object with same attributes)
+ * @return rewritten with samas ('=') substituted
  */
-void sameas(CONTENT_t * CONTENT, elem_t **psubject)
+elem_t *
+sameas(CONTENT_t * CONTENT, elem_t * subject)
 {
     LIST_t * LIST = (LIST_t *)(CONTENT->PARSE);
-    elem_t *subject, *oldsubject, *nextold, *newsubject;
+    elem_t *oldsubject, *nextold, *newsubject;
 
-E(LIST,"sameas1");
+//E(LIST);
+//P(LIST,subject);
 
     newsubject = new_list(LIST, SUBJECT);
 
@@ -34,8 +37,6 @@ E(LIST,"sameas1");
 
     nextold = oldsubject->u.l.first;
 
-    assert(psubject);
-    subject = *psubject;
     assert(subject);
     assert((state_t)subject->state == SUBJECT);
     CONTENT->subject_type = 0;
@@ -44,15 +45,16 @@ E(LIST,"sameas1");
     sameas_r(CONTENT, subject, &nextold, newsubject);
     assert(newsubject->u.l.first);
 
-    free_list(LIST, subject);      // free original subject ( although refs are retained in other lists )
     free_list(LIST, oldsubject);   // free the previous oldsubject
 
     CONTENT->subject = newsubject; // save the newsubject as oldsubject
-
     newsubject->u.l.first->refs++; // and increase its reference count
-    *psubject = newsubject;        //    to also save as the rewritten current subject
 
-E(LIST,"sameas2");
+
+//E(LIST);
+//P(LIST,newsubject);
+
+    return newsubject;        //    to also save as the rewritten current subject
 }
 
 /**
@@ -63,7 +65,8 @@ E(LIST,"sameas2");
  * @param nextold
  * @param newlist
  */
-static void sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist)
+static void
+sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;

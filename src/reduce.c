@@ -15,7 +15,7 @@ void reduce(CONTENT_t * CONTENT, elem_t *list)
 
     assert(list);
 
-//E(LIST,"reduce1");
+//E(LIST);
 
     elem = list->u.l.first;
     assert(elem); // must always be a subject
@@ -86,5 +86,5 @@ void reduce(CONTENT_t * CONTENT, elem_t *list)
         //FIXME - what to do with this?
     }
 
-//E(LIST,"reduce2");
+//E(LIST);
 }

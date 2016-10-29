@@ -46,9 +46,9 @@ success_t parse(PARSE_t * PARSE)
 {
     success_t rc;
 
-//E(PARSE,"parse1");
+//E(PARSE);
     rc = parse_nest_r(PARSE, NULL);
-//E(PARSE,"parse2");
+//E(PARSE);
     return rc;
 }
 
@@ -66,7 +66,7 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *root;
 
-//E(LIST,"parse_nest_r1");
+E(LIST);
 
     CONTENT->PARSE = PARSE;
     CONTENT->subject = new_list(LIST, SUBJECT);
@@ -94,16 +94,21 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
 //==============================================================
 #endif
     root = new_list(LIST, 0);    // the output parse tree
+P(LIST,root);
+
     emit_start_activity(CONTENT);
     PARSE->containment++;            // containment nesting level
     PARSE->stat_containercount++;    // number of containers
-    if ((rc = parse_list_r(CONTENT, root, ACTIVITY, SREP, 0, 0)) != SUCCESS) {
+
+    rc = parse_list_r(CONTENT, root, ACTIVITY, SREP, 0, 0);
+    if (rc != SUCCESS) {
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
             token_error(TOKEN, TOKEN->state, "Parse error. Last good state was:");
         }
     }
+P(LIST,root);
     if (CONTENT->nodes) {
         PARSE->sep = '\0';
         print_tree(LIST, CONTENT->nodes);
@@ -126,7 +131,7 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
     free_list(LIST, CONTENT->node_pattern_acts);
     free_list(LIST, CONTENT->edge_pattern_acts);
 
-//E(LIST,"parse_nest_r2");
+E(LIST);
     return rc;
 }
 
@@ -153,11 +158,10 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si,
     char so;        // offset to next state, signed
     state_t ti, ni;
     success_t rc;
-    elem_t *branch;
-    elem_t *elem;
+    elem_t *branch, *elem, *new;
     static unsigned char nullstring[] = { '\0' };
 
-E(LIST,"  parse_list_r1");
+//E(LIST);
 
     branch = new_list(LIST, si);
 
@@ -250,26 +254,32 @@ E(LIST,"  parse_list_r1");
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, 0)) == SUCCESS) {
+            rc = parse_list_r(CONTENT, branch, ni, nprop, nest, 0);
+            if (rc == SUCCESS) {
                 break;                  // ALT satisfied
             }
             // we failed an ALT so continue iteration to try next ALT
-         } else {                       // else it is a sequence (or the last ALT, same thing)
+        } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                if ((parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) == SUCCESS) {
+                rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++);
+                if (rc == SUCCESS) {
                     while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                        if (parse_list_r(CONTENT, branch, ni, nprop, nest, repc++) == FAIL) {
+                        rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++);
+                        if (rc == FAIL) {
                             break;
                         }
                     }
                 }
+                rc = SUCCESS;           // OPTs always successfull
             } else {                    // else not OPTional
-                if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) == FAIL) {
+                rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++);
+                if (rc == FAIL) {
                     break;
                 }
                 while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                    if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) == FAIL) {
+                    rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++);
+                    if (rc == FAIL) {
                         break;
                     }
                 }
@@ -282,6 +292,7 @@ E(LIST,"  parse_list_r1");
     if (rc == SUCCESS) {
         switch (si) {
         case ACT:
+P(PARSE, root);
             PARSE->stat_inactcount++;
             if (CONTENT->is_pattern) {   // flag was set by SUBJECT in previous ACT
                                          //  save entire previous ACT in a list of pattern_acts
@@ -296,15 +307,15 @@ E(LIST,"  parse_list_r1");
                 PARSE->stat_nonpatternactcount++;
                 append_list(root, branch);
 
-//P(PARSE, root);
+P(PARSE, branch);
+P(PARSE, root);
                 // dispatch events for the ACT just finished
                 dispatch(CONTENT, &root);
+P(PARSE, root);
 
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 elem = root->u.l.first;
-//E(PARSE,"parse_list_r2");
-//P(PARSE,root);
                 while (elem) {
                     PARSE->stat_outactcount++;
 P(PARSE,elem);
@@ -313,9 +324,7 @@ P(PARSE,elem);
 
                     elem = elem->next;
                 }
-
-                free_list(LIST, root);  // that's all folks.  move on to the next ACT.
-//E(PARSE,"parse_list_r3");
+                free_list_content(LIST, root);
             }
             break;
         case TLD:
@@ -333,11 +342,11 @@ P(PARSE,elem);
 
             // Perform EQL "same as in subject of previous ACT" substitutions
             // Also classifies ACT as NODE or EDGE based on SUBJECT
-//E(LIST,"    parse_list_r4");     
-//P(LIST,branch);
-            sameas(CONTENT, &branch);
-//E(LIST,"    parse_list_r5");
-//P(LIST,branch);
+P(LIST, branch);
+            new = sameas(CONTENT, branch);
+            free_list(LIST, branch);
+            branch = new;
+P(LIST, branch);
 
 // FIXME - or not, but this is broken
 #if 0
@@ -370,10 +379,11 @@ P(PARSE,elem);
     }
     nest--;
     assert(nest >= 0);
-    emit_end_state(CONTENT, si, rc, nest, repc);
     free_list(LIST, branch);
 
-E(LIST,"  parse_list_r6");
+    emit_end_state(CONTENT, si, rc, nest, repc);
+
+//E(LIST);
     return rc;
 }
 

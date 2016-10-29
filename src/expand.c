@@ -7,26 +7,25 @@
 
 #include "expand.h"
 
-static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges);
+static void expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges);
 
-static void expand_hub(PARSE_t * PARSE, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges);  // two node edge
+static void expand_hub(LIST_t * LIST, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges);  // two node edge
 
 /**
  * this function expands and dispatches EDGEs
  * 
- * @param PARSE context
+ * @param LIST context
  * @param list - tree representing edge(s)
  * @param nodes - resulting nodes
  * @param edges - resulting simple edges
  */
-void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
+void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
 {
-    LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *elem, *epset, *ep, *new, *disambig = NULL;
     elem_t *newepset;
     elem_t *newlist;
 
-//E(LIST,"expand1");
+//E(LIST);
 
     assert(list);
     newepset = new_list(LIST, ENDPOINTSET);
@@ -86,7 +85,7 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
     }
 
     // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
-    expand_r(PARSE, newepset, newlist->u.l.first, disambig, nodes, edges);
+    expand_r(LIST, newepset, newlist->u.l.first, disambig, nodes, edges);
 
     if (disambig) {
         free_list(LIST, disambig);
@@ -94,7 +93,7 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
     free_list(LIST, newepset);
     free_list(LIST, newlist);
 
-//E(LIST,"expand1");
+//E(LIST);
 }
 
 /**
@@ -102,25 +101,17 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
  * expands edges like:    <(a b c) d>`x
  * into:                  <a d>`x <b d>`x <c d>`x
  *
- * @param PARSE context
+ * @param LIST context
  * @param newepset
  * @param epset
  * @param disambig
  * @param nodes - list of nodes
  * @param edges - list of edges
  */
-static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges)
+static void expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges)
 {
-    LIST_t * LIST = (LIST_t *)PARSE;
-    elem_t * nendpoint = NULL;
-    elem_t * nnode;
-    elem_t * nnoderef;
-    elem_t * nnodeid;
-    elem_t * nnodestr;
-    elem_t * nshortstr;
     elem_t *ep, *eplast, *new;
-    uint64_t hubhash;
-    char hubhash_b64[12];
+    elem_t * nendpoint = NULL;
     elem_t *newedge;
     elem_t *newlegs;
 
@@ -135,7 +126,7 @@ static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *d
             append_list(newepset, new);
             
             // recursively process the rest of the epsets
-            expand_r(PARSE, newepset, epset->next, disambig, nodes, edges);
+            expand_r(LIST, newepset, epset->next, disambig, nodes, edges);
 
             remove_next_from_list(LIST, newepset, eplast);
 
@@ -153,6 +144,14 @@ static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *d
 //    always compute these hub nodes, then store them with
 //    the edge, like disambig. so that the renderers can
 //    choose to use or not use.
+
+        elem_t * nnode;
+        elem_t * nnoderef;
+        elem_t * nnodeid;
+        elem_t * nnodestr;
+        elem_t * nshortstr;
+        uint64_t hubhash;
+        char hubhash_b64[12];
 
         // if edge has 1 leg, or has >2 legs
         if ((! newepset->u.l.first->next) || (newepset->u.l.first->next->next)) {
@@ -194,11 +193,11 @@ static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *d
         if (nendpoint) { // if we have a hub at this point, then we are to split into simple 2-node <tail head> edges
             ep = newepset->u.l.first;
             if (ep) {
-                expand_hub(PARSE, ep, nendpoint, disambig, edges);  // first leg is the tail
+                expand_hub(LIST, ep, nendpoint, disambig, edges);  // first leg is the tail
                 ep = ep->next;
             }
             while (ep) {
-                expand_hub(PARSE, nendpoint, ep, disambig, edges);  // all other legs are head
+                expand_hub(LIST, nendpoint, ep, disambig, edges);  // all other legs are head
                 ep = ep->next;
             }
             free_list(LIST, nendpoint);
@@ -224,9 +223,8 @@ static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *d
     }
 }
 
-static void expand_hub(PARSE_t * PARSE, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges)
+static void expand_hub(LIST_t * LIST, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges)
 {
-    LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *new;
     elem_t *newedge = new_list(LIST, EDGE);
     elem_t *newlegs = new_list(LIST, ENDPOINTSET);

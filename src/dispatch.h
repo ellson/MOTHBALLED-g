@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "expand.h"
+#include "context.h"
 
 void dispatch(CONTENT_t * CONTENT, elem_t **proot);
 

@@ -8,11 +8,11 @@
 #include "dispatch.h"
 
 static void
-dispatch_r(PARSE_t * PARSE, elem_t * list, elem_t *attributes,
+dispatch_r(LIST_t * LIST, elem_t * list, elem_t *attributes,
         elem_t * nodes, elem_t * edges);
 
 static void
-assemble_act(PARSE_t * PARSE, elem_t * elem, elem_t * attributes,
+assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes,
         elem_t * list);
 
 /*
@@ -67,15 +67,15 @@ void dispatch(CONTENT_t * CONTENT, elem_t **plist)
     assert(list);
     assert(list->type == (char)LISTELEM);
 
-E(LIST,"dispatch1");
-P(LIST, list);
+//E(LIST);
+//P(LIST, list);
 
     nodes = new_list(LIST, 0);
     edges = new_list(LIST, 0);
     attributes = new_list(LIST, 0);
 
     // expand OBJECT_LIST and ENDPOINTSETS
-    dispatch_r(PARSE, list, attributes, nodes, edges);
+    dispatch_r(LIST, list, attributes, nodes, edges);
 
     // if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
@@ -88,7 +88,7 @@ P(LIST, list);
     case NODE:
         elem = nodes->u.l.first;
         while (elem) {
-            assemble_act(PARSE,elem,attributes,list);
+            assemble_act(LIST,elem,attributes,list);
             elem = elem->next;
         }
         break;
@@ -100,13 +100,13 @@ P(LIST, list);
         else {
                 elem = nodes->u.l.first;
                 while (elem) {
-                    assemble_act(PARSE,elem,NULL,list);
+                    assemble_act(LIST,elem,NULL,list);
                     elem = elem->next;
                 }
 
                 elem = edges->u.l.first;
                 while (elem) {
-                    assemble_act(PARSE,elem,attributes,list);
+                    assemble_act(LIST,elem,attributes,list);
                     elem = elem->next;
                 }
         }
@@ -120,35 +120,34 @@ P(LIST, list);
     free_list(LIST, nodes);
     free_list(LIST, edges);
 
-E(LIST,"dispatch2");
+//E(LIST);
 }
 
 /**
  * This function expands OBJECT_LIST of NODES or EDGES, and then expands ENPOINTSETS in EDGES
  *
- * @param PARSE context
+ * @param LIST context
  * @param list   -- object-list
  * @param attributes
  * @param nodes
  * @param edges
  */
 static void
-dispatch_r(PARSE_t * PARSE, elem_t * list, elem_t * attributes,
+dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
         elem_t * nodes, elem_t * edges)
 {
-    LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *elem, *new, *object;
 
     assert(list->type == (char)LISTELEM);
-E(LIST,"  dispatch_r1");
+//E(LIST);
+//P(LIST, list);
 
     elem = list->u.l.first;
     while (elem) {
         switch ((state_t) elem->state) {
         case ACT:
         case OBJECT:
-            object = elem->u.l.first;
-            dispatch_r(PARSE, object, attributes, nodes, edges);
+            dispatch_r(LIST, elem, attributes, nodes, edges);
             break;
         case ATTRIBUTES:
             new = ref_list(LIST, elem);
@@ -158,13 +157,13 @@ E(LIST,"  dispatch_r1");
             object = elem->u.l.first;
             switch ((state_t)object->state) {
             case OBJECT:
-                dispatch_r(PARSE, object, attributes, nodes, edges);
+                dispatch_r(LIST, object, attributes, nodes, edges);
                 break;
             case OBJECT_LIST:
                 object = object->u.l.first;
                 assert((state_t)object->state == OBJECT);
                 while(object) {
-                    dispatch_r(PARSE, object, attributes, nodes, edges);
+                    dispatch_r(LIST, object, attributes, nodes, edges);
                     object = object->next;
                 }
                 break;
@@ -179,7 +178,7 @@ E(LIST,"  dispatch_r1");
             append_list(nodes, new);
             break;
         case EDGE:
-            expand(PARSE, elem, nodes, edges);
+            expand(LIST, elem, nodes, edges);
             break;
         default:
             fprintf(stderr, "unexpected elem->state: %d\n", elem->state);
@@ -188,25 +187,26 @@ E(LIST,"  dispatch_r1");
         }
         elem = elem->next;
     }
-E(LIST,"  dispatch_r2");
+//E(LIST);
 }
 
 /**
  * This function assembles ACTS with simplified SUBJECT and no CONTAINER
  *
- * @param PARSE context
+ * @param LIST context
  * @param elem   -- node or edge object
  * @param attributes
  * @param list - output ACT
  */
 static void
-assemble_act(PARSE_t * PARSE, elem_t *elem, elem_t *attributes,
+assemble_act(LIST_t * LIST, elem_t *elem, elem_t *attributes,
         elem_t *list)
 {
-    TOKEN_t * IN = (TOKEN_t *)PARSE;
-    LIST_t * LIST = (LIST_t *)PARSE;
+    TOKEN_t * IN = (TOKEN_t *)LIST;
     elem_t *new;
-    elem_t *act = new_list(LIST, ACT);
+    elem_t *act;
+
+    act = new_list(LIST, ACT);
 
     // verb
     switch(IN->verb) {
@@ -229,8 +229,9 @@ assemble_act(PARSE_t * PARSE, elem_t *elem, elem_t *attributes,
         append_list(act, new);
     }
 
-    // no container ever because containers are in their own streams
+    // no container ever because contents are handled in a parse_nest_r() recursion.
 
     append_list(list, act);
-}
 
+    free_list(LIST, act);
+}
