@@ -76,7 +76,7 @@ struct parse_s {               // parse context
 
 typedef struct {                // container_context
     PARSE_t *PARSE;             // the parser context
-    elem_t subject;             // Preceeding ACT's subject, until this ACT's
+    elem_t *subject;            // Preceeding ACT's subject, until this ACT's
                                 // SUBJECT has been parsed and processd by sameas()
                                 //   - at which point it becomes this ACT's subject.
                                 // (So: in SUBJECT parsing it is the previous ACT's
@@ -88,8 +88,8 @@ typedef struct {                // container_context
     state_t subject_type;       // set by sameas() to record if the SUBJECT is NODE(s),
                                 //   or EDGE(s), and to check that it is not a mix
                                 //   of NODE(s) and EDGE(s).
-    elem_t node_pattern_acts;   // complete ACTs where the NODE subject contains an "*"
-    elem_t edge_pattern_acts;   // complete ACTs where the EDGE subject contains an "*"
+    elem_t *node_pattern_acts;  // complete ACTs where the NODE subject contains an "*"
+    elem_t *edge_pattern_acts;  // complete ACTs where the EDGE subject contains an "*"
     elem_t *nodes;              // tree of unique nodes
     elem_t *edges;              // tree of unique edges
 

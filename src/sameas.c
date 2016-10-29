@@ -7,7 +7,8 @@
 
 #include "sameas.h"
 
-static void sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist);
+static void
+sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist);
 
 /**
  * rewrite subject into a newsubject
@@ -17,40 +18,41 @@ static void sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, e
  *      replace subject and oldsubject with newsubject
  *
  * @param CONTENT container context
- * @param subject a subject tree from the parser (may be multiple object with same attributes)
+ * @param psubject a subject tree from the parser (may be multiple object with same attributes)
  */
-void sameas(CONTENT_t * CONTENT, elem_t * subject)
+void sameas(CONTENT_t * CONTENT, elem_t **psubject)
 {
     LIST_t * LIST = (LIST_t *)(CONTENT->PARSE);
-    elem_t *oldsubject, *nextold;
-    elem_t *newsubject;
+    elem_t *subject, *oldsubject, *nextold, *newsubject;
 
-//E(LIST,"sameas1");
+E(LIST,"sameas1");
 
-    newsubject  = new_list(LIST, SUBJECT);
+    newsubject = new_list(LIST, SUBJECT);
 
-    oldsubject = &(CONTENT->subject);
+    oldsubject = CONTENT->subject;
+    assert(oldsubject);
+
     nextold = oldsubject->u.l.first;
 
+    assert(psubject);
+    subject = *psubject;
     assert(subject);
     assert((state_t)subject->state == SUBJECT);
     CONTENT->subject_type = 0;
 
     // rewrite subject into newsubject with any EQL elements substituted from oldsubject
     sameas_r(CONTENT, subject, &nextold, newsubject);
-
-    free_list_content(LIST, subject);     // free original subject ( although refs are retained in other lists )
-    free_list_content(LIST, oldsubject);    // free the previous oldsubject
-
-    newsubject->state = SUBJECT;  
-    *oldsubject = *newsubject;    // save the newsubject as oldsubject
-
     assert(newsubject->u.l.first);
 
-    newsubject->u.l.first->refs++;    // and increase its reference count
-    *subject = *newsubject; //    to also save as the rewritten current subject
+    free_list(LIST, subject);      // free original subject ( although refs are retained in other lists )
+    free_list(LIST, oldsubject);   // free the previous oldsubject
 
-//E(LIST,"sameas2");
+    CONTENT->subject = newsubject; // save the newsubject as oldsubject
+
+    newsubject->u.l.first->refs++; // and increase its reference count
+    *psubject = newsubject;        //    to also save as the rewritten current subject
+
+E(LIST,"sameas2");
 }
 
 /**
@@ -84,6 +86,7 @@ if (*nextold) {
 #endif
     while (elem) {
         si = (state_t) elem->state;
+        object = new_list(LIST, si);
         switch (si) {
         case NODE:
         case EDGE:
@@ -114,7 +117,6 @@ if (*nextold) {
                     *nextold = NULL;
                 }
             }
-            object = new_list(LIST, si);
             sameas_r(CONTENT, elem, &nextoldelem, object);    // recurse, adding result to a sublist
             append_list(newlist, object);
             break;
@@ -143,11 +145,11 @@ if (*nextold) {
                 nextoldelem = (*nextold)->u.l.first;    // for the recursion
                 *nextold = (*nextold)->next;    // at this level, continue over the elems
             }
-            object = new_list(LIST, si);
             sameas_r(CONTENT, elem, &nextoldelem, object);    // recurse, adding result to a sublist
             append_list(newlist, object);
             break;
         }
+        free_list(LIST,object);
         elem = elem->next;
     }
 }

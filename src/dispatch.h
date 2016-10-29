@@ -9,7 +9,7 @@ extern "C" {
 
 #include "expand.h"
 
-void dispatch(CONTENT_t * CONTENT, elem_t * root);
+void dispatch(CONTENT_t * CONTENT, elem_t **proot);
 
 #ifdef __cplusplus
 }

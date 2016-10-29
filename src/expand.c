@@ -89,7 +89,7 @@ void expand(PARSE_t * PARSE, elem_t *list, elem_t *nodes, elem_t *edges)
     expand_r(PARSE, newepset, newlist->u.l.first, disambig, nodes, edges);
 
     if (disambig) {
-        free_list_content(LIST, disambig);
+        free_list(LIST, disambig);
     }
     free_list(LIST, newepset);
     free_list(LIST, newlist);
@@ -201,7 +201,7 @@ static void expand_r(PARSE_t * PARSE, elem_t *newepset, elem_t *epset, elem_t *d
                 expand_hub(PARSE, nendpoint, ep, disambig, edges);  // all other legs are head
                 ep = ep->next;
             }
-            free_list_content(LIST, nendpoint);
+            free_list(LIST, nendpoint);
         }
         else {
             newedge = new_list(LIST, EDGE);

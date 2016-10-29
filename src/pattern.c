@@ -59,9 +59,9 @@ void pattern(CONTENT_t * CONTENT, elem_t * root, elem_t * subject)
 
     assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
     if (CONTENT->subject_type == NODE) {
-        pattern_acts = &(CONTENT->node_pattern_acts);
+        pattern_acts = CONTENT->node_pattern_acts;
     } else {
-        pattern_acts = &(CONTENT->edge_pattern_acts);
+        pattern_acts = CONTENT->edge_pattern_acts;
     }
 
     // iterate over available patterns

@@ -11,7 +11,7 @@
 // forward declarations
 
 static success_t
-parse_nest_r(PARSE_t * PARSE, elem_t * name);
+parse_nest_r(PARSE_t * PARSE, elem_t * subject);
 
 static success_t
 parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si,
@@ -52,7 +52,7 @@ success_t parse(PARSE_t * PARSE)
     return rc;
 }
 
-static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
+static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
 {
     CONTENT_t container_context = { 0 };
     CONTENT_t * CONTENT = &container_context;
@@ -69,7 +69,11 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
 //E(LIST,"parse_nest_r1");
 
     CONTENT->PARSE = PARSE;
+    CONTENT->subject = new_list(LIST, SUBJECT);
+    CONTENT->node_pattern_acts = new_list(LIST, 0);
+    CONTENT->edge_pattern_acts = new_list(LIST, 0);
     CONTENT->ikea_box = ikea_box_open(PARSE->ikea_store, NULL);
+    CONTENT->out = stdout;
 #if 0
 // old, to be removed
     hash_list(&hash, name); // hash name (subject "names" can be very long)
@@ -89,7 +93,6 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
     CONTENT->out = hash_elem->out;
 //==============================================================
 #endif
-    CONTENT->out = stdout;
     root = new_list(LIST, 0);    // the output parse tree
     emit_start_activity(CONTENT);
     PARSE->containment++;            // containment nesting level
@@ -119,9 +122,9 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * name)
     ikea_box_close ( CONTENT->ikea_box );
 
     free_list(LIST, root);
-    free_list_content(LIST, &(CONTENT->subject));
-    free_list_content(LIST, &(CONTENT->node_pattern_acts));
-    free_list_content(LIST, &(CONTENT->edge_pattern_acts));
+    free_list(LIST, CONTENT->subject);
+    free_list(LIST, CONTENT->node_pattern_acts);
+    free_list(LIST, CONTENT->edge_pattern_acts);
 
 //E(LIST,"parse_nest_r2");
     return rc;
@@ -154,7 +157,7 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si,
     elem_t *elem;
     static unsigned char nullstring[] = { '\0' };
 
-//E(LIST,"  parse_list_r1");
+E(LIST,"  parse_list_r1");
 
     branch = new_list(LIST, si);
 
@@ -197,7 +200,7 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si,
         if (TOKEN->bi == LBE) {   // if not top-level of containment
             TOKEN->bi = NLL;
             // recursively process contained ACTIVITY in to its own root
-            rc = parse_nest_r(PARSE, &CONTENT->subject);
+            rc = parse_nest_r(PARSE, CONTENT->subject);
             TOKEN->bi = TOKEN->insi; // The char class that terminates the ACTIVITY
             goto done;
         }
@@ -285,16 +288,17 @@ parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si,
                 PARSE->stat_patternactcount++;
                 assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
                 if (CONTENT->subject_type == NODE) {
-                    append_list(&(CONTENT->node_pattern_acts), branch);
+                    append_list(CONTENT->node_pattern_acts, branch);
                 } else {
-                    append_list(&(CONTENT->edge_pattern_acts), branch);
+                    append_list(CONTENT->edge_pattern_acts, branch);
                 }
             } else {
                 PARSE->stat_nonpatternactcount++;
                 append_list(root, branch);
 
+//P(PARSE, root);
                 // dispatch events for the ACT just finished
-                dispatch(CONTENT, root);
+                dispatch(CONTENT, &root);
 
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
@@ -310,7 +314,7 @@ P(PARSE,elem);
                     elem = elem->next;
                 }
 
-                free_list_content(LIST, root);  // that's all folks.  move on to the next ACT.
+                free_list(LIST, root);  // that's all folks.  move on to the next ACT.
 //E(PARSE,"parse_list_r3");
             }
             break;
@@ -331,7 +335,7 @@ P(PARSE,elem);
             // Also classifies ACT as NODE or EDGE based on SUBJECT
 //E(LIST,"    parse_list_r4");     
 //P(LIST,branch);
-            sameas(CONTENT, branch);
+            sameas(CONTENT, &branch);
 //E(LIST,"    parse_list_r5");
 //P(LIST,branch);
 
@@ -367,8 +371,9 @@ P(PARSE,elem);
     nest--;
     assert(nest >= 0);
     emit_end_state(CONTENT, si, rc, nest, repc);
+    free_list(LIST, branch);
 
-//E(LIST,"  parse_list_r6");
+E(LIST,"  parse_list_r6");
     return rc;
 }
 

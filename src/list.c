@@ -71,7 +71,7 @@ elem_t *new_list(LIST_t * LIST, char state)
     elem->u.l.first = NULL; // new list is empty
     elem->u.l.last = NULL;
     elem->len = 0;
-    elem->refs = 0;
+    elem->refs = 1;
 
     return elem;
 }
@@ -295,19 +295,19 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
     assert(list->type == (char)LISTELEM);
     assert(list->u.l.last);                  // must be at least one elem in the list
 
-    if (! elem) {                        // if removing the first elem
+    if (! elem) {                            // if removing the first elem
         old = list->u.l.first;
         list->u.l.first = list->u.l.first->next; // skip the elem being removed
     }
     else {
         old = elem->next;
-        elem->next = elem->next->next;   // skip the elem being removed
+        elem->next = elem->next->next;       // skip the elem being removed
     }
     if (list->u.l.last == old) {             // if removing the last element
         list->u.l.last = elem;               // then elem is the new last (or NULL)
     }
-    list->len--;                         // list has one less elem
-    free_list_content(LIST, old);                // free the removed elem
+    list->len--;                             // list has one less elem
+    free_list_content(LIST, old);            // free the removed elem
 }
 
 /**
@@ -327,34 +327,52 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
  */
 void free_list_content(LIST_t * LIST, elem_t * list)
 {
-    INBUF_t * INBUF = &(LIST->INBUF);
-    elem_t *elem, *next;
-
     assert(list);
     assert(list->type == (char)LISTELEM);
-    assert(list->refs >= 0);
 
     // free list of elem, but really just put them back
     // on the elem_freelist (declared at the top of this file)`
-    elem = list->u.l.first;
+    free_list(LIST, list->u.l.first);
+
+    // clean up emptied list
+    list->u.l.first = NULL;
+    list->u.l.last = NULL;
+    // Note: ref count of the empty list is not modified.
+    // It may be still referenced, even though it is now empty.
+}
+
+
+/**
+ * Free list - for each elem in list: free contents, then free the emmpty list,
+ * (the elem_t heading the list) but only if its ref count is 0
+ *  
+ *
+ * @param LIST the top-level context in which all lists are managed
+ * @param elem - a list header
+ */
+void free_list(LIST_t * LIST, elem_t * elem)
+{
+    elem_t *next;
+
     while (elem) {
         next = elem->next;
         switch ((elemtype_t)(elem->type)) {
         case LISTELEM:
             assert(elem->refs > 0);
             if (--(elem->refs)) {
-                goto done;    // stop at any point with additional refs
+                return;    // stop at any point with additional refs
             }
             free_list_content(LIST, elem); // recursively free lists that have no references
             break;
         case FRAGELEM:
             assert(elem->u.f.inbuf->refs > 0);
             if (--(elem->u.f.inbuf->refs) == 0) {
-                free_inbuf(INBUF, elem->u.f.inbuf);
+                free_inbuf(&(LIST->INBUF), elem->u.f.inbuf);
             }
             break;
         case SHORTSTRELEM:
-            // these are self contained, nothing else to clean up
+            // these are self contained singletons,  nothing else to clean up
+            next = NULL;
             break;
         case TREEELEM:  // FIXME - we will need this
         case HASHNAMEELEM:
@@ -367,31 +385,5 @@ void free_list_content(LIST_t * LIST, elem_t * list)
         LIST->stat_elemnow--;    // maintain stats
 
         elem = next;
-    }
-done:
-    // clean up emptied list
-    list->u.l.first = NULL;
-    list->u.l.last = NULL;
-    // Note: ref count of the empty list is not modified.
-    // It may be still referenced, even though it is now empty.
-}
-
-
-/**
- * Free list - free contents, then free the emmpty list,
- * (the elem_t heading the list) but only if its ref count is 0
- *  
- *
- * @param LIST the top-level context in which all lists are managed
- * @param elem - a list header
- */
-void free_list(LIST_t * LIST, elem_t * elem)
-{
-    free_list_content(LIST, elem);
-    if (elem->refs == 0) {
-        // insert elem at beginning of freelist
-        elem->next = LIST->free_elem_list;
-        LIST->free_elem_list = elem;
-        LIST->stat_elemnow--;    // maintain stats
     }
 }
