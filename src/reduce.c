@@ -16,7 +16,7 @@ void reduce(CONTENT_t * CONTENT, elem_t *list)
     assert(list);
 
 //E(LIST);
-//P(LIST, list);
+P(LIST, list);
 
     elem = list->u.l.first;
     assert(elem); // must always be a subject
@@ -77,7 +77,7 @@ void reduce(CONTENT_t * CONTENT, elem_t *list)
         CONTENT->nodes = insert(LIST, CONTENT->nodes, subject->u.l.first->u.l.first); // skip NODEREF NODEID
         break;
     case EDGE:
-        CONTENT->edges = insert(LIST, CONTENT->edges, subject->u.l.first); 
+        CONTENT->edges = insert(LIST, CONTENT->edges, subject); 
         break;
     default:
         S(subjtype);

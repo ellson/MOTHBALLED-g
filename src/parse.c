@@ -93,6 +93,10 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
         print_tree(LIST, CONTENT->edges);
         putc('\n', stdout);
     }
+
+// FIXME - don't forget to include NODE and EDGE patterns, after NODES and EDGES
+//   (Paterns are in effect now, but may not have been at the creation of existing objects.)
+
     PARSE->containment--;
     emit_end_activity(CONTENT);
 
@@ -106,7 +110,11 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
     free_list(LIST, CONTENT->node_pattern_acts);
     free_list(LIST, CONTENT->edge_pattern_acts);
 
-    assert(LIST->stat_elemnow == 0);   // check for elem leaks
+    if (LIST->stat_elemnow) {
+        E(LIST);
+        assert(LIST->stat_elemnow == 0);   // check for elem leaks
+    }
+
 //E(LIST);
     return rc;
 }
