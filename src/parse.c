@@ -60,7 +60,7 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *root;
 
-//E(LIST);
+E(LIST);
 
     CONTENT->PARSE = PARSE;
     CONTENT->subject = new_list(LIST, SUBJECT);
@@ -81,6 +81,7 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
         }
     }
 //P(LIST,root);
+E(LIST);
 
     if (CONTENT->nodes) {
         PARSE->sep = '\0';
@@ -99,12 +100,13 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
 
     ikea_box_close ( CONTENT->ikea_box );
 
+E(LIST);
     free_list(LIST, root);
     free_list(LIST, CONTENT->subject);
     free_list(LIST, CONTENT->node_pattern_acts);
     free_list(LIST, CONTENT->edge_pattern_acts);
 
-//E(LIST);
+E(LIST);
     return rc;
 }
 
@@ -132,7 +134,7 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
     elem_t *branch, *elem, *new;
     static unsigned char nullstring[] = { '\0' };
 
-//E(LIST);
+E(LIST);
 
     branch = new_list(LIST, si);  // return list
 
@@ -227,7 +229,7 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
         if (nprop & ALT) {              // look for ALT
             new = parse_list_r(CONTENT, ni, nprop, nest, 0);
             if (new) {
-                append_list(branch, new);
+                append_list_move(branch, new);
                 rc = SUCCESS;
                 break;                  // ALT satisfied
             }
@@ -237,11 +239,11 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
             if (nprop & OPT) {          // OPTional
                 new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
                 if (new) {
-                    append_list(branch, new);
+                    append_list_move(branch, new);
                     while (parse_more_rep(PARSE, nprop) == SUCCESS) {
                         new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
                         if (new) {
-                            append_list(branch, new);
+                            append_list_move(branch, new);
                         } else {
                             break;
                         }
@@ -251,7 +253,7 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
             } else {                    // else not OPTional
                 new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
                 if (new) {
-                    append_list(branch, new);
+                    append_list_move(branch, new);
                     rc = SUCCESS;           // OPTs always successful
                 } else {
                     break;
@@ -259,7 +261,7 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
                 while (parse_more_rep(PARSE, nprop) == SUCCESS) {
                     new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
                     if (new) {
-                        append_list(branch, new);
+                        append_list_move(branch, new);
                         rc = SUCCESS;           // OPTs always successful
                     } else {
                         break;
@@ -281,27 +283,27 @@ done: // State exit processing
                 PARSE->stat_patternactcount++;
                 assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
                 if (CONTENT->subject_type == NODE) {
-                    append_list(CONTENT->node_pattern_acts, branch);
+                    append_list_move(CONTENT->node_pattern_acts, branch);
                 } else {
-                    append_list(CONTENT->edge_pattern_acts, branch);
+                    append_list_move(CONTENT->edge_pattern_acts, branch);
                 }
-                // FIXME - should the branch be freed here?
+                branch = NULL;
             } else {
                 PARSE->stat_nonpatternactcount++;
 
-//P(LIST, branch);
+P(LIST, branch);
                 // dispatch events for the ACT just finished
                 new = dispatch(CONTENT, branch);
                 free_list(LIST, branch);
                 branch = new;
-//P(LIST, branch);
+P(LIST, branch);
 
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 elem = branch->u.l.first;
                 while (elem) {
                     PARSE->stat_outactcount++;
-//P(LIST,elem);
+P(LIST,elem);
 //                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
                     reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 
@@ -366,7 +368,7 @@ done: // State exit processing
         return NULL;
     }
 
-//E(LIST);
+E(LIST);
     return branch;
 }
 

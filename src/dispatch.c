@@ -89,7 +89,7 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
         elem = nodes->u.l.first;
         while (elem) {
             new = assemble_act(LIST, elem, attributes);
-            append_list(newacts, new);
+            append_list_move(newacts, new);
             elem = elem->u.l.next;
         }
         break;
@@ -103,14 +103,14 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
                 while (elem) {
                     // inducing nodes from NODEREFS - no attriibutes from these
                     new = assemble_act(LIST, elem, NULL);
-                    append_list(newacts, new);
+                    append_list_move(newacts, new);
                     elem = elem->u.l.next;
                 }
 
                 elem = edges->u.l.first;
                 while (elem) {
                     new = assemble_act(LIST, elem, attributes);
-                    append_list(newacts, new);
+                    append_list_move(newacts, new);
                     elem = elem->u.l.next;
                 }
         }
@@ -161,7 +161,7 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
             break;
         case ATTRIBUTES:
             new = ref_list(LIST, elem);
-            append_list(attributes, new);
+            append_list_move(attributes, new);
             break;
         case SUBJECT:
             object = elem->u.l.first;
@@ -186,7 +186,7 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
             break;
         case NODE:
             new = ref_list(LIST, elem);
-            append_list(nodes, new);
+            append_list_move(nodes, new);
             break;
         case EDGE:
             expand(LIST, elem, nodes, edges);
@@ -226,7 +226,7 @@ assemble_act(LIST_t * LIST, elem_t *elem, elem_t *attributes)
     case QRY:
     case TLD:
         new = new_list(LIST, IN->verb);
-        append_list(act, new);
+        append_list_move(act, new);
         break;
     case 0:  // default is add
         break;
@@ -237,12 +237,12 @@ assemble_act(LIST_t * LIST, elem_t *elem, elem_t *attributes)
 
     // subject
     new = ref_list(LIST, elem);
-    append_list(act, new);
+    append_list_move(act, new);
 
     // attributes
     if (attributes && attributes->u.l.first) {
         new = ref_list(LIST, attributes->u.l.first);
-        append_list(act, new);
+        append_list_move(act, new);
     }
 
     // no container ever because contents are handled in a parse_nest_r() recursion.

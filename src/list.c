@@ -289,7 +289,7 @@ elem_t *ref_list(LIST_t * LIST, elem_t * list)
     elem = new_elem_sub(LIST);
 
     elem->type = LISTELEM;       // type
-    elem->refs = 0;              // no refs to this yet
+    elem->refs = 1;
     elem->state = list->state;
     elem->u.l.next = NULL;       // clear next
     elem->u.l.first = list->u.l.first; // copy details
@@ -299,6 +299,25 @@ elem_t *ref_list(LIST_t * LIST, elem_t * list)
         list->u.l.first->refs++;    // increment ref count
     }
     return elem;
+}
+
+/**
+ *  Append a list elem_t to the end of the list of lists, transferring ownership
+ *
+ *  The reference count in the appended element not changed.
+ *
+ * @param list the header of the list to be appended
+ * @param elem the element to be appended (must be a LISTELEM)
+ */
+void append_list_move(elem_t * list, elem_t * elem)
+{
+    if (list->u.l.first) {
+        list->u.l.last->u.l.next = elem;
+    } else {
+        list->u.l.first = elem;
+    }
+    list->len++;
+    list->u.l.last = elem;
 }
 
 /**
@@ -314,13 +333,8 @@ void append_list(elem_t * list, elem_t * elem)
 {
     assert(list->type == (char)LISTELEM);
 
-    if (list->u.l.first) {
-        list->u.l.last->u.l.next = elem;
-    } else {
-        list->u.l.first = elem;
-    }
-    list->len++;
-    list->u.l.last = elem;
+    append_list_move(list, elem);
+
     if (elem->type == (char)LISTELEM) {
         elem->refs++; 
         assert(elem->refs > 0);
