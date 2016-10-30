@@ -187,7 +187,8 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
 
 void free_tree_item(LIST_t *LIST, elem_t * p)
 {
-    assert(p->u.t.key == (char)LISTELEM);
+    assert(p->u.t.key);
+    assert(p->u.t.key->type == (char)LISTELEM);
     p->u.t.key->refs--;
     free_list_r(LIST, p->u.t.key);
 
