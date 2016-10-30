@@ -10,54 +10,58 @@ void reduce(CONTENT_t * CONTENT, elem_t *list)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t *LIST = (LIST_t*)PARSE;
-    state_t liststate, verb = 0, subjtype = 0;
+    state_t si, verb = 0, subjtype = 0;
     elem_t *elem, *subject, *attributes = NULL, *disambig = NULL;
 
     assert(list);
 
 //E(LIST);
+P(LIST, list);
 
     elem = list->u.l.first;
     assert(elem); // must always be a subject
-    liststate = (state_t) elem->state;
+    si = (state_t) elem->state;
     if (! (elem->u.l.first)) { // is the first elem just a tag?
-        switch (liststate) {
+        switch (si) {
         case QRY:
         case TLD:
-            verb = liststate; // override default: 0 = add
+            verb = si; // override default: 0 = add
             break;
         default:
+            S(si);
             assert(0); // verb must be query (QRY),  or delete (TLD), (or add if no verb)
             break;
         }
         elem = elem->u.l.next;
     }
    
-    liststate = (state_t) elem->state;
-    switch (liststate) {
+    si = (state_t) elem->state;
+    switch (si) {
     case NODE:
     case SIBLING:
         subject = elem;
-        subjtype = liststate; // NODE or SIBLING
+        subjtype = si; // NODE or SIBLING
         break;
     case EDGE:
         subject = elem->u.l.first;  // ENDPOINTS (legs)
         disambig = subject->u.l.next; // DISAMBIG (may be NULL)
-        subjtype = liststate; // EDGE
+        subjtype = si; // EDGE
         break;
     default:
+        S(si);
         assert(0); // SUBJECT must be NODE,SIBLING, or EDGE
         break;
     }
     elem = elem->u.l.next;
 
     if (elem) {
-        liststate = (state_t) elem->state;
-        switch (liststate) {
+        si = (state_t) elem->state;
+        switch (si) {
         case ATTRIBUTES:
             attributes = elem;
             break;
         default:
+            S(si);
             assert(0); // that should be all
             break;
         }
@@ -76,6 +80,7 @@ void reduce(CONTENT_t * CONTENT, elem_t *list)
         CONTENT->edges = insert(LIST, CONTENT->edges, subject->u.l.first); 
         break;
     default:
+        S(subjtype);
         assert(0); // that should be all
         break;
     }

@@ -23,7 +23,7 @@ static void expand_hub(LIST_t * LIST, elem_t *tail, elem_t *head, elem_t *disamb
  */
 void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
 {
-    elem_t *elem, *epset, *ep, *new, *disambig = NULL;
+    elem_t *elem, *epset, *ep, *np, *new, *disambig = NULL;
     elem_t *newepset, *newleglist, *singletonepset = NULL;
     state_t si1, si2, si3;
 
@@ -59,24 +59,16 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
                 case ENDPOINT:
                     new = ref_list(LIST, ep);
                     append_addref(epset, new);
-                    si3 = ep->u.l.first->state;
+                    np = ep->u.l.first;
+                    si3 = np->state;
                     switch (si3) {
                     case SIBLING:
-                        new = ref_list(LIST, ep);
+                        new = ref_list(LIST, np);
                         append_addref(nodes, new);
                         // FIXME - induce CHILDren in this node's container
                         break;
                     case COUSIN:
                         // FIXME - route to ancestors
-                        break;
-                    case ENDPOINT:
-                        // FIXME  - if we're going to induce nodes or route to ancestor, then
-                        //     this has to be broken down further.
-                        // this case occurs if '=' matches an epset
-                        //     <(a b) c>
-                        //     <= d>
-                        new = ref_list(LIST, ep);
-                        append_addref(nodes, new);
                         break;
                     default:
                         S(si3);

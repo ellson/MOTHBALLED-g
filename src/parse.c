@@ -292,21 +292,21 @@ done: // State exit processing
             } else {
                 PARSE->stat_nonpatternactcount++;
 
-//P(LIST, branch);
+P(LIST, branch);
                 // dispatch events for the ACT just finished
                 new = dispatch(CONTENT, branch);
                 if (new) {
                     free_list(LIST, branch);
                     branch = new;
                 }
-//P(LIST, branch);
+P(LIST, branch);
 
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 elem = branch->u.l.first;
                 while (elem) {
                     PARSE->stat_outactcount++;
-//P(LIST,elem);
+P(LIST,elem);
 //                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
                     reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 
