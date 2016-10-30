@@ -27,7 +27,7 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep);
 
 // macro to print a stat_t in is text form.
 #define S(state) { \
-    printf("statei at: %s:%d is: ", __FILE__, __LINE__); \
+    printf("state at: %s:%d is: ", __FILE__, __LINE__); \
     print_len_frag(stdout, NAMEP(state)); \
     putc('\n', stdout);}
 

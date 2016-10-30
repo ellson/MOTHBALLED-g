@@ -192,10 +192,6 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
         TOKEN->bi = TOKEN->insi;
         rc = token(TOKEN);
         TOKEN->ei = TOKEN->insi;
-
-S(si);
-
-        // FIXME we want to ignore (i.e. no append to branch) 
         goto done;
     }
     switch (si) {

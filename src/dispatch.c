@@ -60,6 +60,7 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
 {
     PARSE_t *PARSE = CONTENT->PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
+    state_t si;
     elem_t *new, *newacts, *elem, *nodes, *edges, *attributes;
     
     assert(act);
@@ -82,7 +83,8 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
     //                      for each EDGE, generate new ACT: verb edge attributes
 
-    switch (CONTENT->subject_type) {
+    si = CONTENT->subject_type;
+    switch (si) {
     case NODE:
         elem = nodes->u.l.first;
         while (elem) {
@@ -114,6 +116,7 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
         }
         break;
     default:
+        S(si);
         assert(0);  // shouldn't happen
         break;
     }
@@ -143,7 +146,7 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
         elem_t * nodes, elem_t * edges)
 {
     elem_t *elem, *new, *object;
-    state_t si;
+    state_t si1, si2;
 
     assert(list->type == (char)LISTELEM);
 //E(LIST);
@@ -151,8 +154,8 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
 
     elem = list->u.l.first;
     while (elem) {
-        si = (state_t) elem->state;
-        switch (si) {
+        si1 = (state_t) elem->state;
+        switch (si1) {
         case ACT:
             dispatch_r(LIST, elem, attributes, nodes, edges);
             break;
@@ -162,8 +165,8 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
             break;
         case SUBJECT:
             object = elem->u.l.first;
-            si = (state_t)object->state;
-            switch (si) {
+            si2 = (state_t)object->state;
+            switch (si2) {
             case OBJECT:
                 dispatch_r(LIST, object, attributes, nodes, edges);
                 break;
@@ -176,7 +179,7 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
                 }
                 break;
             default:
-                S(si);
+                S(si2);
                 assert(0); //should never get here
                 break;
             }
@@ -188,9 +191,11 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
         case EDGE:
             expand(LIST, elem, nodes, edges);
             break;
+        case VERB:  // ignore - already dealt with
+            break;
         default:
-            S(si);
-            assert(0);
+            S(si1);
+            assert(0);  // should never get here
             break;
         }
         elem = elem->next;
@@ -223,7 +228,10 @@ assemble_act(LIST_t * LIST, elem_t *elem, elem_t *attributes)
         new = new_list(LIST, IN->verb);
         append_list(act, new);
         break;
+    case 0:  // default is add
+        break;
     default:
+        assert(0); //should never get here
         break;
     }
 

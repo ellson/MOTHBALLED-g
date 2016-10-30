@@ -26,7 +26,7 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
     elem_t *elem, *epset, *ep, *new, *disambig = NULL;
     elem_t *newepset;
     elem_t *newlist;
-    state_t si1, si2;
+    state_t si1, si2, si3;
 
 //E(LIST);
 
@@ -55,37 +55,51 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
             assert((state_t)new->state == ENDPOINTSET);
             ep = new->u.l.first;
             while(ep) {
-                assert((state_t)ep->state == ENDPOINT);                    
-                si2 = ep->u.l.first->state;
+                si2 = (state_t)ep->state;
                 switch (si2) {
-                case SIBLING:
-                    new = ref_list(LIST, ep->u.l.first);
-                    append_list(nodes, new);
-                    // FIXME - induce CHILDren in this node's container
-                    break;
-                case COUSIN:
-                    // FIXME - route to ancestors
-                    break;
                 case ENDPOINT:
-                    // FIXME  - if we're going to induce nodes or route to ancestor, then
-                    //     this has to be broken down further.
-                    // this case occurs if '=' matches an epset
-                    //     <(a b) c>
-                    //     <= d>
-                    new = ref_list(LIST, ep->u.l.first);
-                    append_list(nodes, new);
+                    si3 = ep->u.l.first->state;
+                    switch (si3) {
+                    case SIBLING:
+                        new = ref_list(LIST, ep);
+                        append_list(nodes, new);
+                        // FIXME - induce CHILDren in this node's container
+                        break;
+                    case COUSIN:
+                        // FIXME - route to ancestors
+                        break;
+                    case ENDPOINT:
+                        // FIXME  - if we're going to induce nodes or route to ancestor, then
+                        //     this has to be broken down further.
+                        // this case occurs if '=' matches an epset
+                        //     <(a b) c>
+                        //     <= d>
+                        new = ref_list(LIST, ep);
+                        append_list(nodes, new);
+                        break;
+                    default:
+                        S(si3);
+                        assert(0);  // should never get here
+                        break;
+                    }
+                    break;
+                case LPN:  // ignore
+                case RPN:  // ignore
                     break;
                 default:
                     S(si2);
-                    assert(0);  // shouldn't happen  
+                    assert(0);  // should never get here
                     break;
                 }
                 ep = ep->next;
             }
             break;
+        case LAN:  // ignore
+        case RAN:  // ignore
+            break;
         default:
             S(si1);
-            assert(0);  // shouldn't be here
+            assert(0);  // should never get here
             break;
         }
         elem = elem->next;
