@@ -107,6 +107,10 @@ void free_list(LIST_t * LIST, elem_t * elem)
             free_list_r(LIST, elem); // recursively free lists that have no references
             break;
         case FRAGELEM:
+            assert(elem->refs > 0);
+            if (--(elem->refs)) {
+                return;    // stop at any point with additional refs
+            }
             assert(elem->u.f.inbuf->refs > 0);
             if (--(elem->u.f.inbuf->refs) == 0) {
                 free_inbuf(&(LIST->INBUF), elem->u.f.inbuf);
@@ -114,9 +118,15 @@ void free_list(LIST_t * LIST, elem_t * elem)
             break;
         case SHORTSTRELEM:
             // these are self contained singletons,  nothing else to clean up
+            assert(elem->refs > 0);
+            if (--(elem->refs)) {
+                return;    // stop at any point with additional refs
+            }
             next = NULL;
             break;
-        case TREEELEM:  // FIXME - we will need this
+        case TREEELEM:
+            free_tree(LIST, elem);
+            next = NULL;
             break;
         }
         // insert elem at beginning of freelist
@@ -176,9 +186,9 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
     elem->u.t.left = NULL; // new tree is empty so far
     elem->u.t.right = NULL;
     elem->height = 1;
+    elem->refs = 1;        // init, but don't use since tree root changes during balancing
     elem->state = 0;       // notused
     elem->len = 0;         // notused
-    elem->refs = 0;        // notused
 
     return elem;
 }
@@ -237,7 +247,7 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
     elem->u.f.inbuf = INBUF->inbuf; // record inbuf for ref counting
     elem->u.f.frag = frag;  // pointer to begging of frag
     elem->len = len;        // length of frag
-    elem->refs = 0;         // notused
+    elem->refs = 1;         // initial ref count
     elem->height = 0;       // notused
 
     INBUF->inbuf->refs++;   // increment reference count in inbuf.
@@ -269,9 +279,9 @@ elem_t *new_shortstr(LIST_t * LIST, char state, char * str)
     for (len = 0; len < sizeof(((elem_t*)0)->u.s.str) && (c = str[len]) != '\0'; len++) {
         elem->u.s.str[len] = c;
     }
-    elem->len = len;
+    elem->len = len;        // length of stored string
+    elem->refs = 1;         // initial ref count
     elem->state = 0;        // notused
-    elem->refs = 0;         // notused
     elem->height = 0;       // notused
     return elem;
 }

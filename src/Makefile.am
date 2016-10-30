@@ -12,6 +12,7 @@ noinst_HEADERS = \
     compare.h \
     context.h \
     dispatch.h \
+    doact.h \
     emit.h \
     emit_act.h \
     expand.h \
@@ -39,6 +40,7 @@ lib_LTLIBRARIES = libje.la
 libje_C_la_SOURCES = \
     compare.c \
     dispatch.c \
+    doact.c \
     dumpg.c \
     emit.c \
     emit_act.c \

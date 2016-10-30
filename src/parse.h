@@ -7,11 +7,7 @@
 extern "C" {
 #endif
 
-#include "pattern.h"
-#include "dispatch.h"
-#include "reduce.h"
-#include "sameas.h"
-#include "emit_act.h"
+#include "doact.h"
 
 #ifdef __cplusplus
 }

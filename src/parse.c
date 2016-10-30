@@ -24,12 +24,13 @@ parse_more_rep(PARSE_t * PARSE, unsigned char prop);
  *
  * This parser recurses at two levels:
  *
- * parse() --> parse_nest_r() --> parse_list_r() -| -|  
- *           ^                  ^                 |  |
- *           |                  |                 |  |
- *           |                  ---------<--------|  |
- *           |                                       |
- *           --------------------<-------------------|
+ * parse() --> parse_nest_r() --> parse_list_r() --| -|  
+ *           ^                  ^     |            |  |
+ *           |                  |     -> doact()   |  |
+ *           |                  |                  |  |
+ *           |                  ----------<--------|  |
+ *           |                                        |
+ *           --------------------<--------------------|
  *
  * The outer recursions are through nested containment.
  *
@@ -140,7 +141,7 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
     char so;        // offset to next state, signed
     state_t ti, ni;
     success_t rc;
-    elem_t *branch, *elem, *new;
+    elem_t *branch, *new;
     static unsigned char nullstring[] = { '\0' };
 
 //E(LIST);
@@ -282,104 +283,17 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
     }
 
 done: // State exit processing
-//P(LIST, branch);
-    if (rc == SUCCESS) {
-        switch (si) {
-        case ACT:
-            PARSE->stat_inactcount++;
-            if (CONTENT->is_pattern) {   // flag was set by SUBJECT in previous ACT
-                                         //  save entire previous ACT in a list of pattern_acts
-                PARSE->stat_patternactcount++;
-                assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
-                if (CONTENT->subject_type == NODE) {
-                    append_transfer(CONTENT->node_pattern_acts, branch);
-                } else {
-                    append_transfer(CONTENT->edge_pattern_acts, branch);
-                }
-                branch = NULL;
-            } else {
-                PARSE->stat_nonpatternactcount++;
-
-//P(LIST, branch);
-                // dispatch events for the ACT just finished
-                new = dispatch(CONTENT, branch);
-                if (new) {
-                    free_list(LIST, branch);
-                    branch = new;
-                }
-//P(LIST, branch);
-
-// and this is where we actually emit the fully processed acts!
-//  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
-                elem = branch->u.l.first;
-                while (elem) {
-                    PARSE->stat_outactcount++;
-//P(LIST,elem);
-//                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
-                    reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
-
-                    elem = elem->u.l.next;
-                }
-            }
-            break;
-        case TLD:
-        case QRY:
-            TOKEN->verb = si;  // record verb prefix, if not default
-            break;
-        case HAT:
-            // FIXME - this  is all wrong ... maybe it should just close the current box
-            // FIXME - close this container's box
-            ikea_store_snapshot(PARSE->ikea_store);
-            // FIXME - open appending container for this box.
-            break;
-        case SUBJECT: // subject rewrites before adding branch to root
-            branch->state = si;
-
-            // Perform EQL "same as in subject of previous ACT" substitutions
-            // Also classifies ACT as NODE or EDGE based on SUBJECT
-//P(LIST, branch);
-            new = sameas(CONTENT, branch);
-            free_list(LIST, branch);
-            branch = new;
-//P(LIST, branch);
-
-            // If this subject is not itself a pattern, then
-            // perform pattern matching and insertion if matched
-            if (!(CONTENT->is_pattern = TOKEN->has_ast)) {
-                new = pattern(CONTENT, branch);
-                if (new) {
-                    free_list(LIST, branch);
-                    branch = new;
-                }
-            }
-
-            emit_subject(CONTENT, branch);      // emit hook for rewritten subject
-            break;
-        case ATTRIBUTES:
-            emit_attributes(CONTENT, branch);   // emit hook for attributes
-            break;
-        default:
-            break;
-        }
-        if (branch->u.l.first != NULL || si == EQL) {    // mostly ignore empty lists
-            if (branch->u.l.first && branch->u.l.first->type != FRAGELEM) {
-                // record state generating this tree
-                // - except for STRINGs which use state for quoting info
-                branch->state = si;
-            }
-        }
+    if (rc == SUCCESS && si == ACT && branch) {
+        rc = doact(CONTENT, branch);
+    } 
+    if (rc == FAIL && branch) {
+        free_list(LIST, branch);
+        branch = NULL;
     }
     nest--;
     assert(nest >= 0);
 
     emit_end_state(CONTENT, si, rc, nest, repc);
-
-    if (rc == FAIL) {
-        if (branch) {
-            free_list(LIST, branch);
-        }
-        return NULL;
-    }
 
 //E(LIST);
     return branch;
