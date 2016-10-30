@@ -60,7 +60,7 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *root;
 
-E(LIST);
+//E(LIST);
 
     CONTENT->PARSE = PARSE;
     CONTENT->subject = new_list(LIST, SUBJECT);
@@ -81,7 +81,7 @@ E(LIST);
         }
     }
 //P(LIST,root);
-E(LIST);
+//E(LIST);
 
     if (CONTENT->nodes) {
         PARSE->sep = '\0';
@@ -100,13 +100,14 @@ E(LIST);
 
     ikea_box_close ( CONTENT->ikea_box );
 
-E(LIST);
+//E(LIST);
     free_list(LIST, root);
     free_list(LIST, CONTENT->subject);
     free_list(LIST, CONTENT->node_pattern_acts);
     free_list(LIST, CONTENT->edge_pattern_acts);
 
-E(LIST);
+    assert(LIST->stat_elemnow == 0);   // check for elem leaks
+//E(LIST);
     return rc;
 }
 
@@ -134,7 +135,7 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
     elem_t *branch, *elem, *new;
     static unsigned char nullstring[] = { '\0' };
 
-E(LIST);
+//E(LIST);
 
     branch = new_list(LIST, si);  // return list
 
@@ -305,7 +306,7 @@ done: // State exit processing
                 elem = branch->u.l.first;
                 while (elem) {
                     PARSE->stat_outactcount++;
-P(LIST,elem);
+//P(LIST,elem);
 //                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
                     reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 
@@ -366,10 +367,13 @@ P(LIST,elem);
     emit_end_state(CONTENT, si, rc, nest, repc);
 
     if (rc == FAIL) {
+        if (branch) {
+            free_list(LIST, branch);
+        }
         return NULL;
     }
 
-E(LIST);
+//E(LIST);
     return branch;
 }
 
