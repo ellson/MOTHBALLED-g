@@ -16,7 +16,7 @@ void reduce(CONTENT_t * CONTENT, elem_t *list)
     assert(list);
 
 //E(LIST);
-P(LIST, list);
+//P(LIST, list);
 
     elem = list->u.l.first;
     assert(elem); // must always be a subject

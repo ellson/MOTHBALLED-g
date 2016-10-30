@@ -176,9 +176,9 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
     elem->u.t.left = NULL; // new tree is empty so far
     elem->u.t.right = NULL;
     elem->height = 1;
-    elem->state = 0; //notused
-    elem->len = 0;   //notused
-    elem->refs = 0;  //notused
+    elem->state = 0;       // notused
+    elem->len = 0;         // notused
+    elem->refs = 0;        // notused
 
     return elem;
 }
@@ -236,7 +236,9 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
     elem->u.f.next = NULL;  // clear next
     elem->u.f.inbuf = INBUF->inbuf; // record inbuf for ref counting
     elem->u.f.frag = frag;  // pointer to begging of frag
-    elem->len = len;    // length of frag
+    elem->len = len;        // length of frag
+    elem->refs = 0;         // notused
+    elem->height = 0;       // notused
 
     INBUF->inbuf->refs++;   // increment reference count in inbuf.
     return elem;
@@ -256,7 +258,7 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
 elem_t *new_shortstr(LIST_t * LIST, char state, char * str)
 {
     elem_t *elem;
-    int i;
+    int len;
     char c;
 
     elem = new_elem_sub(LIST);
@@ -264,10 +266,13 @@ elem_t *new_shortstr(LIST_t * LIST, char state, char * str)
     // complete frag elem initialization
     elem->type = SHORTSTRELEM; // type
     elem->state = state;       // state_machine state that created this shortstr
-    for (i = 0; i < sizeof(((elem_t*)0)->u.s.str) && (c = str[i]) != '\0'; i++) {
-        elem->u.s.str[i] = c;
+    for (len = 0; len < sizeof(((elem_t*)0)->u.s.str) && (c = str[len]) != '\0'; len++) {
+        elem->u.s.str[len] = c;
     }
-    elem->len = i;
+    elem->len = len;
+    elem->state = 0;        // notused
+    elem->refs = 0;         // notused
+    elem->height = 0;       // notused
     return elem;
 }
 

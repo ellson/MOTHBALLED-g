@@ -87,13 +87,11 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
         PARSE->sep = '\0';
         print_tree(LIST, CONTENT->nodes);
         putc('\n', stdout);
-        free_tree(LIST, CONTENT->nodes);
     }
     if (CONTENT->edges) {
         PARSE->sep = '\0';
         print_tree(LIST, CONTENT->edges);
         putc('\n', stdout);
-        free_tree(LIST, CONTENT->edges);
     }
     PARSE->containment--;
     emit_end_activity(CONTENT);
@@ -102,6 +100,8 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
 
 //E(LIST);
     free_list(LIST, root);
+    free_tree(LIST, CONTENT->nodes);
+    free_tree(LIST, CONTENT->edges);
     free_list(LIST, CONTENT->subject);
     free_list(LIST, CONTENT->node_pattern_acts);
     free_list(LIST, CONTENT->edge_pattern_acts);
@@ -292,21 +292,21 @@ done: // State exit processing
             } else {
                 PARSE->stat_nonpatternactcount++;
 
-P(LIST, branch);
+//P(LIST, branch);
                 // dispatch events for the ACT just finished
                 new = dispatch(CONTENT, branch);
                 if (new) {
                     free_list(LIST, branch);
                     branch = new;
                 }
-P(LIST, branch);
+//P(LIST, branch);
 
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
                 elem = branch->u.l.first;
                 while (elem) {
                     PARSE->stat_outactcount++;
-P(LIST,elem);
+//P(LIST,elem);
 //                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
                     reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 

@@ -144,7 +144,8 @@ void print_tree(LIST_t * LIST, elem_t * p)
     if (p->u.t.left) {
 	    print_tree(LIST, p->u.t.left);
     }
-    print_frags(stdout, 0, p->u.t.key->u.l.first->u.l.first, &(((PARSE_t*)LIST)->sep));
+//    print_frags(stdout, 0, p->u.t.key->u.l.first->u.l.first, &(((PARSE_t*)LIST)->sep));
+P(LIST, p->u.t.key);
     if (p->u.t.right) {
 	    print_tree(LIST, p->u.t.right);
     }
