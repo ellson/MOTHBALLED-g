@@ -37,13 +37,13 @@ int compare(elem_t * a, elem_t * b)
                 // the same so manage ta_elem and tb_elem
                 // separately
                 if (a_len == 0) {    // if we reached the end of "a" frag
-                    if ((ta_elem = ta_elem->next)) { // try the next frag
+                    if ((ta_elem = ta_elem->u.f.next)) { // try the next frag
                         a_cp = ta_elem->u.f.frag;
                         a_len = ta_elem->len;
                     }
                 }
                 if (b_len == 0) {    // if we reached the end of "b" frag
-                    if ((tb_elem = tb_elem->next)) { // try the next frag
+                    if ((tb_elem = tb_elem->u.f.next)) { // try the next frag
                         b_cp = tb_elem->u.f.frag;
                         b_len = tb_elem->len;
                     }
@@ -65,8 +65,8 @@ int compare(elem_t * a, elem_t * b)
             }
             // all matched so far, move on to test the next STRING
         }
-        a_elem = a_elem->next;
-        b_elem = b_elem->next;
+        a_elem = a_elem->u.l.next;
+        b_elem = b_elem->u.l.next;
     }
     return 0;   // if we get here, then the strings match
 }

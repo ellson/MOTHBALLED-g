@@ -116,7 +116,7 @@ elem_t * search(elem_t * p, elem_t * key)
     if (!p) {
         return NULL;
     }
-    comp = compare(key, p->next);
+    comp = compare(key, p->u.t.key);
     if (comp) {
         if (comp < 0) {
             return search(p->u.t.left, key);
@@ -136,10 +136,15 @@ elem_t * search(elem_t * p, elem_t * key)
  */
 void print_tree(LIST_t * LIST, elem_t * p)
 {
+    assert(p);
+    assert(p->u.t.key);
+    assert(p->u.t.key->u.l.first);
+    assert(p->u.t.key->u.l.first->u.l.first);
+
     if (p->u.t.left) {
 	    print_tree(LIST, p->u.t.left);
     }
-    print_frags(stdout, 0, p->next->u.l.first->u.l.first, &(((PARSE_t*)LIST)->sep));
+    print_frags(stdout, 0, p->u.t.key->u.l.first->u.l.first, &(((PARSE_t*)LIST)->sep));
     if (p->u.t.right) {
 	    print_tree(LIST, p->u.t.right);
     }
@@ -157,10 +162,15 @@ elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
 {
     int comp;
 
+    assert(key);
+    assert(key->type == (char)LISTELEM);
+    assert(key->u.l.first);
+    assert(key->u.l.first->u.l.first);
+
     if (!p) {
         return new_tree(LIST, key);
     }
-    comp = compare(key, p->next);
+    comp = compare(key, p->u.t.key);
     if (comp) {
         if (comp < 0) {
             p->u.t.left = insert(LIST, p->u.t.left, key);
@@ -170,7 +180,7 @@ elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
         }
     }
     else {
-        p->next = merge(key, p->next);
+        p->u.t.key = merge(key, p->u.t.key);
     }
     return balance(p);
 }
@@ -220,7 +230,7 @@ elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key)
     if (!p) {
         return NULL;
     }
-    comp = compare(key, p->next);
+    comp = compare(key, p->u.t.key);
     if (comp) {
         if (comp < 0) {
             p->u.t.left = remove_item(LIST, p->u.t.left, key);

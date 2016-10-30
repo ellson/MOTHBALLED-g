@@ -13,33 +13,30 @@ typedef enum {
     LISTELEM = 0,           // must be 0 for static or calloc allocation of list headers
     FRAGELEM = 1,
     SHORTSTRELEM = 2,
-    TREEELEM = 3,
-    HASHNAMEELEM = 4
+    TREEELEM = 3
 } elemtype_t;
 
 typedef struct elem_s elem_t;
 struct elem_s { 
-    elem_t *next;                  // next elem in parent's list
     union {
         struct {
+            elem_t *next;          // next elem in parent's list
             elem_t *first;         // first elem in this list (or NULL)
             elem_t *last;          // last elem in this list (or NULL)
         } l;
         struct {
+            elem_t *next;          // next frag in fraglist list
             inbuf_t *inbuf;        // inbuf containing frag - for memory management
             unsigned char *frag;   // pointer to beginning of frag
         } f;
         struct {
-            unsigned char str[16]; // the short string
+            unsigned char str[24]; // the short string
         } s;
         struct {
+            elem_t *key;           // a list containg the key for this node in the tree
             elem_t *left;          // left elem of tree
             elem_t *right;         // left elem of tree
         } t;
-        struct {
-            unsigned char *hashname;// a filename constructed from a hash of the subject
-            FILE *out;             // file handle, or NULL if not opened yet.
-        } h;
     } u;
     uint16_t height;        // (belongs to u.t.) height of elem in tree
     int16_t refs;           // (belongs to u.l.) don't free this list until refs == 0
@@ -60,7 +57,6 @@ typedef struct {
 
 #define LISTALLOCNUM 512
 
-elem_t *new_hashname(LIST_t * LIST, unsigned char *hash, size_t hash_len);
 elem_t *new_list(LIST_t * LIST, char state);
 elem_t *new_tree(LIST_t * LIST, elem_t *key);
 elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag);

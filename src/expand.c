@@ -24,7 +24,7 @@ static void expand_hub(LIST_t * LIST, elem_t *tail, elem_t *head, elem_t *disamb
 void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
 {
     elem_t *elem, *epset, *ep, *new, *disambig = NULL;
-    elem_t *newepset, *newlist, *newleglist, *singletonepset = NULL;
+    elem_t *newepset, *newleglist, *singletonepset = NULL;
     state_t si1, si2, si3;
 
 //E(LIST);
@@ -49,7 +49,6 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
                 new = ref_list(LIST, singletonepset);
             }
     
-P(LIST,new);
             // induce all sibling nodes, and gather a cleaned up epset for each leg
             assert((state_t)new->state == ENDPOINTSET);
             epset = new_list(LIST, ENDPOINTSET);
@@ -93,7 +92,7 @@ P(LIST,new);
                     assert(0);  // should never get here
                     break;
                 }
-                ep = ep->next;
+                ep = ep->u.l.next;
             }
             new = ref_list(LIST, epset);
             append_list(newleglist, new);
@@ -107,7 +106,7 @@ P(LIST,new);
             assert(0);  // should never get here
             break;
         }
-        elem = elem->next;
+        elem = elem->u.l.next;
     }
 
     // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
@@ -155,12 +154,12 @@ static void expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset, elem_t *dis
             append_list(newepset, new);
             
             // recursively process the rest of the epsets
-            expand_r(LIST, newepset, epset->next, disambig, nodes, edges);
+            expand_r(LIST, newepset, epset->u.l.next, disambig, nodes, edges);
 
             remove_next_from_list(LIST, newepset, eplast);
 
             // and iterate to next ep for this epset
-            ep = ep->next;
+            ep = ep->u.l.next;
         }
     }
     else {
@@ -183,7 +182,8 @@ static void expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset, elem_t *dis
         char hubhash_b64[12];
 
         // if edge has 1 leg, or has >2 legs
-        if ((! newepset->u.l.first->next) || (newepset->u.l.first->next->next)) {
+        if ((! newepset->u.l.first->u.l.next)
+                || (newepset->u.l.first->u.l.next->u.l.next)) {
             // create a special node to represent the hub
     
             hash_list(&hubhash, newepset);
@@ -223,11 +223,11 @@ static void expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset, elem_t *dis
             ep = newepset->u.l.first;
             if (ep) {
                 expand_hub(LIST, ep, nendpoint, disambig, edges);  // first leg is the tail
-                ep = ep->next;
+                ep = ep->u.l.next;
             }
             while (ep) {
                 expand_hub(LIST, nendpoint, ep, disambig, edges);  // all other legs are head
-                ep = ep->next;
+                ep = ep->u.l.next;
             }
             free_list(LIST, nendpoint);
         }
@@ -238,7 +238,7 @@ static void expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset, elem_t *dis
             while (ep) {
                 new = ref_list(LIST, ep);
                 append_list(newlegs, new);
-                ep = ep->next;
+                ep = ep->u.l.next;
             }
             append_list(newedge, newlegs);
     

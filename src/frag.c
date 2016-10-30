@@ -78,7 +78,7 @@ void print_frags(FILE * chan, state_t state, elem_t * elem, char *sep)
         else {
             print_one_frag(chan, len, frag);
         }
-        elem = elem->next;
+        elem = elem->u.f.next;
     }
     if (state == DQT) {
         putc('"', chan);
@@ -145,13 +145,12 @@ void print_list(FILE * chan, elem_t * list, int indent, char *sep)
             width = print_len_frag(chan, NAMEP(elem->state));
             ind = indent + width + 1;;
             print_list(chan, elem, ind, sep);    // recurse
-            elem = elem->next;
+            elem = elem->u.l.next;
         }
         break;
     case SHORTSTRELEM:
         print_shortstr(chan, elem, sep);
         break;
-    case HASHNAMEELEM:
     case TREEELEM:
         assert(0);  // should not be here
         break;

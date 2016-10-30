@@ -69,12 +69,12 @@ pattern(CONTENT_t * CONTENT, elem_t * subject)
     }
 
     // iterate over available patterns
-    for ( act = pattern_acts->u.l.first; act; act = act->next) {
+    for ( act = pattern_acts->u.l.first; act; act = act->u.l.next) {
         assert((state_t) act->state == ACT);
         subj = act->u.l.first;
         assert(subj);
         assert((state_t) subj->state == SUBJECT);
-        attr = subj->next;
+        attr = subj->u.l.next;
 
         // FIXME - contents from pattern ??
         if ((match(CONTENT, subject->u.l.first, subj->u.l.first)) == SUCCESS) {

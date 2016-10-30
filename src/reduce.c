@@ -30,7 +30,7 @@ void reduce(CONTENT_t * CONTENT, elem_t *list)
             assert(0); // verb must be query (QRY),  or delete (TLD), (or add if no verb)
             break;
         }
-        elem = elem->next;
+        elem = elem->u.l.next;
     }
    
     liststate = (state_t) elem->state;
@@ -42,14 +42,14 @@ void reduce(CONTENT_t * CONTENT, elem_t *list)
         break;
     case EDGE:
         subject = elem->u.l.first;  // ENDPOINTS (legs)
-        disambig = subject->next; // DISAMBIG (may be NULL)
+        disambig = subject->u.l.next; // DISAMBIG (may be NULL)
         subjtype = liststate; // EDGE
         break;
     default:
         assert(0); // SUBJECT must be NODE,SIBLING, or EDGE
         break;
     }
-    elem = elem->next;
+    elem = elem->u.l.next;
 
     if (elem) {
         liststate = (state_t) elem->state;
@@ -61,7 +61,7 @@ void reduce(CONTENT_t * CONTENT, elem_t *list)
             assert(0); // that should be all
             break;
         }
-        elem = elem->next;
+        elem = elem->u.l.next;
     }
     assert(elem == NULL);
 

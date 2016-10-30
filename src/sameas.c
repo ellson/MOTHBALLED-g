@@ -113,7 +113,7 @@ if (*nextold) {
                     // ... as long as no further substitutions are needed
                     nextoldelem = (*nextold)->u.l.first;    // in the recursion, iterate over
                     // the parts of the NODE or EDGE 
-                    *nextold = (*nextold)->next;    // at this level, continue over the NODES or EDGES
+                    *nextold = (*nextold)->u.l.next;    // at this level, continue over the NODES or EDGES
                 } else    // else we have no old, just ignore it
                 {
                     nextoldelem = NULL;
@@ -129,14 +129,14 @@ if (*nextold) {
             append_list(newlist, new);
             if (*nextold) {    // doesn't matter if old is shorter
                 // ... as long as no further substitutions are needed
-                *nextold = (*nextold)->next;
+                *nextold = (*nextold)->u.l.next;
             }
             break;
         case EQL:
             if (*nextold) {
                 new = ref_list(LIST, *nextold);
                 append_list(newlist, new);
-                *nextold = (*nextold)->next;
+                *nextold = (*nextold)->u.l.next;
                 PARSE->stat_sameas++;
             } else {
                 token_error(TOKEN, si, "No corresponding object found for same-as substitution");
@@ -146,13 +146,13 @@ if (*nextold) {
             if (*nextold) {    // doesn't matter if old is shorter
                 // ... as long as no further substitutions are needed
                 nextoldelem = (*nextold)->u.l.first;    // for the recursion
-                *nextold = (*nextold)->next;    // at this level, continue over the elems
+                *nextold = (*nextold)->u.l.next;    // at this level, continue over the elems
             }
             sameas_r(CONTENT, elem, &nextoldelem, object);    // recurse, adding result to a sublist
             append_list(newlist, object);
             break;
         }
         free_list(LIST,object);
-        elem = elem->next;
+        elem = elem->u.l.next;
     }
 }

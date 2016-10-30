@@ -86,7 +86,7 @@ static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list)
                 }
             }
             ikea_list_r(CONTENT, elem);    // recurse
-            elem = elem->next;
+            elem = elem->u.l.next;
         }
         switch (liststate) {
         case EDGE:
@@ -149,7 +149,7 @@ static void ikea_print_frags(ikea_box_t *ikea_box, state_t liststate, elem_t * e
         else {
 	    ikea_box_append(ikea_box, (char*)(elem->u.f.frag), elem->len);
         }
-       elem = elem->next;
+        elem = elem->u.f.next;
     }
     if (liststate == DQT) {
 	ikea_box_append(ikea_box, "\"", 1);

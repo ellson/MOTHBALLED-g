@@ -44,8 +44,8 @@ success_t match(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
                 if (!(ts_elem && tp_elem)) {
                     return FAIL;    // no match if the number of elems ism't the same
                 }
-                ts_elem = ts_elem->next;
-                tp_elem = tp_elem->next;
+                ts_elem = ts_elem->u.l.next;
+                tp_elem = tp_elem->u.l.next;
             }
             if ((match(CONTENT, s_elem, p_elem)) == FAIL) {  // recurse
                 return FAIL;
@@ -59,13 +59,13 @@ success_t match(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
                         // of a subject frag, try the next frag
                     s_cp = ts_elem->u.f.frag;
                     s_len = ts_elem->len;
-                    ts_elem = ts_elem->next;
+                    ts_elem = ts_elem->u.f.next;
                 }
                 if (p_len == 0) {    // if we reached the end
                         // of a pattern frag, try the next frag
                     p_cp = tp_elem->u.f.frag;
                     p_len = tp_elem->len;
-                    tp_elem = tp_elem->next;
+                    tp_elem = tp_elem->u.f.next;
                 }
                 s_len--;
                 p_len--;
@@ -83,8 +83,8 @@ success_t match(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
         if (p_len) {  //must match the entire pattern
                 return FAIL;
         }
-        s_elem = s_elem->next;
-        p_elem = p_elem->next;
+        s_elem = s_elem->u.l.next;
+        p_elem = p_elem->u.l.next;
     }
     return SUCCESS;
 }
@@ -121,8 +121,8 @@ pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
                 if (!(ts_elem && tp_elem)) {
                     return FAIL;    // no match if the number of elems ism't the same
                 }
-                ts_elem = ts_elem->next;
-                tp_elem = tp_elem->next;
+                ts_elem = ts_elem->u.l.next;
+                tp_elem = tp_elem->u.l.next;
             }
             if ((pattern_r(CONTENT, s_elem, p_elem)) == FAIL) {  // recurse
                 return FAIL;
@@ -137,13 +137,13 @@ pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
                 // the same so manage ts_elem and tp_elem
                 // separately
                 if (s_len == 0) {    // if we reached the end of "a" frag
-                    if ((ts_elem = ts_elem->next)) { // try the next frag
+                    if ((ts_elem = ts_elem->u.f.next)) { // try the next frag
                         s_cp = ts_elem->u.f.frag;
                         s_len = ts_elem->len;
                     }
                 }
                 if (p_len == 0) {    // if we reached the end of "b" frag
-                    if ((tp_elem = tp_elem->next)) { // try the next frag
+                    if ((tp_elem = tp_elem->u.f.next)) { // try the next frag
                         p_cp = tp_elem->u.f.frag;
                         p_len = tp_elem->len;
                     }
@@ -169,8 +169,8 @@ pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
         if (p_len) {  //must match the entire pattern
             return FAIL;
         }
-        s_elem = s_elem->next;
-        p_elem = p_elem->next;
+        s_elem = s_elem->u.l.next;
+        p_elem = p_elem->u.l.next;
     }
     return SUCCESS;
 }

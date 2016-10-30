@@ -57,13 +57,13 @@ static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list)
             while (elem) {
                 if ((EVP_DigestUpdate(ctx, elem->u.f.frag, elem->len)) != 1)
                     fatal_perror("Error - EVP_DigestUpdate() ");
-                elem = elem->next;
+                elem = elem->u.l.next;
             }
             break;
         case LISTELEM:
             while (elem) {
                 hash_list_r(ctx, elem);    // recurse
-                elem = elem->next;
+                elem = elem->u.l.next;
             }
             break;
         default:

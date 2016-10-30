@@ -67,13 +67,13 @@ static void hash_list_r(uint64_t *hash, elem_t *list)
                     // multiply by the magic number
                     *hash *= FNV_PRIME;
                 }
-                elem = elem->next;
+                elem = elem->u.f.next;
             }
             break;
         case LISTELEM:
             while (elem) {
                 hash_list_r(hash, elem);    // recurse
-                elem = elem->next;
+                elem = elem->u.l.next;
             }
             break;
         default:
@@ -154,34 +154,3 @@ success_t base64_to_long(const char b64string[], uint64_t *hash)
     *hash = h;
     return SUCCESS;
 }
-
-// FIXME - or not,  but this is broken
-#if 0
-/**
- * Store the hash in a bucket-list
- *
- * Internally the 64bit hashes are stored in 64 hash-buckets, each containing a list of hashes.
- * The least-significant 6 bits of the 64bit hashes are used to index to the hash-bucket.
- *
- * @param PARSE context
- * @param hash
- * @return a list element
- */
-hash_elem_t *hash_bucket(PARSE_t * PARSE, uint64_t hash)
-{
-    LIST_t * LIST = (LIST_t *)PARSE;
-    elem_t *elem, **next;
-
-    next = &(PARSE->hash_buckets[(hash & 0x3F)]);
-    while(*next) {
-        elem  = *next;
-        if (((hash_elem_t*)elem)->hash == hash) {
-            return (hash_elem_t*)elem;
-        }
-        next = &(elem->next);
-    }
-    elem = new_hash(LIST, hash);
-    *next = elem;
-    return (hash_elem_t*)elem;
-}
-#endif

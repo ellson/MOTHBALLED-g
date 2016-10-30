@@ -90,7 +90,7 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
         while (elem) {
             new = assemble_act(LIST, elem, attributes);
             append_list(newacts, new);
-            elem = elem->next;
+            elem = elem->u.l.next;
         }
         break;
     case EDGE:
@@ -104,14 +104,14 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
                     // inducing nodes from NODEREFS - no attriibutes from these
                     new = assemble_act(LIST, elem, NULL);
                     append_list(newacts, new);
-                    elem = elem->next;
+                    elem = elem->u.l.next;
                 }
 
                 elem = edges->u.l.first;
                 while (elem) {
                     new = assemble_act(LIST, elem, attributes);
                     append_list(newacts, new);
-                    elem = elem->next;
+                    elem = elem->u.l.next;
                 }
         }
         break;
@@ -175,7 +175,7 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
                 while(object) {
                     assert((state_t)object->state == OBJECT);
                     dispatch_r(LIST, object, attributes, nodes, edges);
-                    object = object->next;
+                    object = object->u.l.next;
                 }
                 break;
             default:
@@ -198,7 +198,7 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
             assert(0);  // should never get here
             break;
         }
-        elem = elem->next;
+        elem = elem->u.l.next;
     }
 //E(LIST);
 }

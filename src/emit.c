@@ -282,7 +282,7 @@ static void gvrender_list(PARSE_t * PARSE, FILE *chan, elem_t * list)
                 }
             }
             gvrender_list(PARSE, chan, elem);    // recurse
-            elem = elem->next;
+            elem = elem->u.l.next;
         }
         switch (liststate) {
         case EDGE:
@@ -365,7 +365,7 @@ void je_emit_list(PARSE_t * PARSE, FILE *chan, elem_t * list)
                 }
             }
             je_emit_list(PARSE, chan, elem);    // recurse
-            elem = elem->next;
+            elem = elem->u.l.next;
         }
         switch (liststate) {
         case EDGE:

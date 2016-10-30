@@ -35,7 +35,7 @@ void je_emit_act(CONTENT_t * CONTENT, elem_t *list)
             assert(0); // verb must be query (QRY),  or delete (TLD), (or add if no verb)
             break;
         }
-        elem = elem->next;
+        elem = elem->u.l.next;
     }
    
     liststate = (state_t) elem->state;
@@ -47,14 +47,14 @@ void je_emit_act(CONTENT_t * CONTENT, elem_t *list)
         break;
     case EDGE:
         subject = elem->u.l.first;  // ENDPOINTS (legs)
-        disambig = subject->next; // DISAMBIG (may be NULL)
+        disambig = subject->u.l.next; // DISAMBIG (may be NULL)
         subjtype = liststate; // EDGE
         break;
     default:
         assert(0); // SUBJECT must be NODE,SIBLING, or EDGE
         break;
     }
-    elem = elem->next;
+    elem = elem->u.l.next;
 
     if (elem) {
         liststate = (state_t) elem->state;
@@ -66,7 +66,7 @@ void je_emit_act(CONTENT_t * CONTENT, elem_t *list)
             assert(0); // that should be all
             break;
         }
-        elem = elem->next;
+        elem = elem->u.l.next;
     }
     assert(elem == NULL);
 
@@ -112,7 +112,7 @@ static void emit_act_func(CONTENT_t * CONTENT, state_t verb, state_t subjtype, e
         putc('-', stdout);
         putc('-', stdout);
         PARSE->sep = '\0';
-        emit_act_list_r(CONTENT, subject->u.l.first->next);
+        emit_act_list_r(CONTENT, subject->u.l.first->u.l.next);
 #endif
         break;
     default:
@@ -161,7 +161,7 @@ static void emit_act_list_r(CONTENT_t * CONTENT, elem_t * list)
             else {
                 emit_act_list_r(CONTENT, elem);    // recurse
             }
-            elem = elem->next;
+            elem = elem->u.l.next;
         }
         break;
     default:
@@ -206,7 +206,7 @@ static void emit_act_print_frags(state_t liststate, elem_t * elem, char *sep)
         else {
             fwrite(elem->u.f.frag,1,elem->len,stdout);
         }
-       elem = elem->next;
+       elem = elem->u.f.next;
     }
     if (liststate == DQT) {
         putc('"', stdout);

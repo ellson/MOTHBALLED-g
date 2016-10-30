@@ -56,11 +56,6 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
     CONTENT_t container_context = { 0 };
     CONTENT_t * CONTENT = &container_context;
     success_t rc;
-#if 0
-    hash_elem_t *hash_elem;
-    uint64_t hash;
-    char hashname[12], *filename;
-#endif
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *root;
@@ -73,25 +68,6 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
     CONTENT->edge_pattern_acts = new_list(LIST, 0);
     CONTENT->ikea_box = ikea_box_open(PARSE->ikea_store, NULL);
     CONTENT->out = stdout;
-#if 0
-// old, to be removed
-    hash_list(&hash, name); // hash name (subject "names" can be very long)
-    hash_elem = hash_bucket(PARSE, hash);    // save in bucket list 
-    if (! hash_elem->out) {          // open file, if not already open
-        long_to_base64(hashname, &hash);
-        if (! (filename = malloc(strlen(PARSE->tempdir) + 1 + strlen(hashname) + 1)))
-            fatal_perror("Error - malloc(): ");
-        strcpy(filename, PARSE->tempdir);
-        strcat(filename, "/");
-        strcat(filename, hashname);
-        hash_elem->out = fopen(filename,"a+b"); //open for binary append writes, + read.
-        if (! hash_elem->out)
-            fatal_perror("Error - fopen(): ");
-        free(filename);
-    }
-    CONTENT->out = hash_elem->out;
-//==============================================================
-#endif
     emit_start_activity(CONTENT);
     PARSE->containment++;            // containment nesting level
     PARSE->stat_containercount++;    // number of containers
@@ -318,7 +294,7 @@ done: // State exit processing
                 new = dispatch(CONTENT, branch);
                 free_list(LIST, branch);
                 branch = new;
-P(LIST, branch);
+//P(LIST, branch);
 
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
@@ -327,9 +303,9 @@ P(LIST, branch);
                     PARSE->stat_outactcount++;
 //P(LIST,elem);
 //                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
-//                    reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
+                    reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
 
-                    elem = elem->next;
+                    elem = elem->u.l.next;
                 }
                 // FIXME - should the branch be freed here?
             }
@@ -354,12 +330,6 @@ P(LIST, branch);
             free_list(LIST, branch);
             branch = new;
 //P(LIST, branch);
-
-// FIXME - or not, but this is broken
-#if 0
-            hash_list(&hash, &(CONTENT->subject));   // generate name hash
-            (void)hash_bucket(PARSE, hash);    // save in bucket list 
-#endif
 
             // If this subject is not itself a pattern, then
             // perform pattern matching and insertion if matched
