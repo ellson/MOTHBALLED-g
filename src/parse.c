@@ -291,12 +291,14 @@ done: // State exit processing
             } else {
                 PARSE->stat_nonpatternactcount++;
 
-P(LIST, branch);
+//P(LIST, branch);
                 // dispatch events for the ACT just finished
                 new = dispatch(CONTENT, branch);
-                free_list(LIST, branch);
-                branch = new;
-P(LIST, branch);
+                if (new) {
+                    free_list(LIST, branch);
+                    branch = new;
+                }
+//P(LIST, branch);
 
 // and this is where we actually emit the fully processed acts!
 //  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
@@ -309,7 +311,6 @@ P(LIST,elem);
 
                     elem = elem->u.l.next;
                 }
-                // FIXME - should the branch be freed here?
             }
             break;
         case TLD:

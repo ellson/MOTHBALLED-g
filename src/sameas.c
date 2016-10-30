@@ -48,7 +48,7 @@ sameas(CONTENT_t * CONTENT, elem_t * subject)
     free_list(LIST, oldsubject);   // free the previous oldsubject
 
     CONTENT->subject = newsubject; // save the newsubject as oldsubject
-    newsubject->u.l.first->refs++; // and increase its reference count
+    newsubject->refs++;            // and increase its reference count
 
 
 //E(LIST);
