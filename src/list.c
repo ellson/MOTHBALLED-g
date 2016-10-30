@@ -82,6 +82,12 @@ elem_t *new_list(LIST_t * LIST, char state)
  * Free list - for each elem in list: free contents, then free the emmpty list,
  * (the elem_t heading the list) but only if its ref count is 0
  *  
+ * If it is a list of lists, then the refence count in the first elem_t is
+ * decremented and the elements are freed only if the references are  zero.
+ *
+ * If it is a list of fragments, then the reference count to the fragments'
+ * inbufs are decremented and the inbuf freed if there are no more fragments
+ * in use.
  *
  * @param LIST the top-level context in which all lists are managed
  * @param elem - a list header
@@ -111,7 +117,6 @@ void free_list(LIST_t * LIST, elem_t * elem)
             next = NULL;
             break;
         case TREEELEM:  // FIXME - we will need this
-            assert(0);  // should not be here
             break;
         }
         // insert elem at beginning of freelist
@@ -126,15 +131,8 @@ void free_list(LIST_t * LIST, elem_t * elem)
 /**
  * Free the contents of a list, but not the list itself
  *  
- * If it is a list of lists, then the refence count in the first elem_t is
- * decremented and the elements are freed only if the references are  zero.
- *
- * If it is a list of fragments, then the reference count to the fragments'
- * inbufs are decremented and the inbuf freed if there are no more fragments
- * in use.
- *
  * @param LIST the top-level context in which all lists are managed
- * @param list a header to the list to be freed.
+ * @param list elem whose contents are to be freed
  */
 static void free_list_r(LIST_t * LIST, elem_t * list)
 {
@@ -145,7 +143,7 @@ static void free_list_r(LIST_t * LIST, elem_t * list)
     // on the elem_freelist (declared at the top of this file)`
     free_list(LIST, list->u.l.first);
 
-    // clean/ up emptied list
+    // clean up emptied list
     list->u.l.first = NULL;
     list->u.l.last = NULL;
     // Note: ref count of the empty list is not modified.

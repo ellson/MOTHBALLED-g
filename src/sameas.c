@@ -30,26 +30,22 @@ sameas(CONTENT_t * CONTENT, elem_t * subject)
 //E(LIST);
 //P(LIST,subject);
 
-    newsubject = new_list(LIST, SUBJECT);
-
-    oldsubject = CONTENT->subject;
-    assert(oldsubject);
-
-    nextold = oldsubject->u.l.first;
-
+    assert(CONTENT->subject);
     assert(subject);
     assert((state_t)subject->state == SUBJECT);
-    CONTENT->subject_type = 0;
+
+    newsubject = new_list(LIST, SUBJECT);
+
+    nextold = CONTENT->subject->u.l.first;
+    CONTENT->subject_type = 0;  // will be set by sameas_r()
 
     // rewrite subject into newsubject with any EQL elements substituted from oldsubject
     sameas_r(CONTENT, subject, &nextold, newsubject);
     assert(newsubject->u.l.first);
 
-    free_list(LIST, oldsubject);   // free the previous oldsubject
-
+    free_list(LIST, CONTENT->subject);   // free the previous oldsubject
     CONTENT->subject = newsubject; // save the newsubject as oldsubject
     newsubject->refs++;            // and increase its reference count
-
 
 //E(LIST);
 //P(LIST,newsubject);
@@ -78,15 +74,6 @@ sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newl
     assert (subject->type == (char)LISTELEM);
 
     elem = subject->u.l.first;
-#if 0
-if (*nextold) {
-    PARSE->sep = ' ';
-    print_list(stderr, *nextold, 0, &(PARSE->sep));
-    fprintf(stderr,"\n");
-    print_list(stderr, elem, 0, &(PARSE->sep));
-    fprintf(stderr,"\n\n");
-}    
-#endif
     while (elem) {
         si = (state_t) elem->state;
         object = new_list(LIST, si);
@@ -107,15 +94,13 @@ if (*nextold) {
                 }
             }
             if (*nextold) {
-                if (si == (state_t) (*nextold)->state)    // old subject matches NODE or EDGE type
-                {
+                if (si == (state_t) (*nextold)->state) {  // old subject matches NODE or EDGE type
                     // doesn't matter if old is shorter
                     // ... as long as no further substitutions are needed
                     nextoldelem = (*nextold)->u.l.first;    // in the recursion, iterate over
                     // the parts of the NODE or EDGE 
                     *nextold = (*nextold)->u.l.next;    // at this level, continue over the NODES or EDGES
-                } else    // else we have no old, just ignore it
-                {
+                } else {  // else we have no old, just ignore it
                     nextoldelem = NULL;
                     *nextold = NULL;
                 }
@@ -126,7 +111,7 @@ if (*nextold) {
         case DISAMBIG:
         case NODEID:
             new = ref_list(LIST, elem);
-            append_addref(newlist, new);
+            append_transfer(newlist, new);
             if (*nextold) {    // doesn't matter if old is shorter
                 // ... as long as no further substitutions are needed
                 *nextold = (*nextold)->u.l.next;
@@ -135,7 +120,7 @@ if (*nextold) {
         case EQL:
             if (*nextold) {
                 new = ref_list(LIST, *nextold);
-                append_addref(newlist, new);
+                append_transfer(newlist, new);
                 *nextold = (*nextold)->u.l.next;
                 PARSE->stat_sameas++;
             } else {
