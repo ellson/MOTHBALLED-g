@@ -229,7 +229,7 @@ E(LIST);
         if (nprop & ALT) {              // look for ALT
             new = parse_list_r(CONTENT, ni, nprop, nest, 0);
             if (new) {
-                append_list_move(branch, new);
+                append_transfer(branch, new);
                 rc = SUCCESS;
                 break;                  // ALT satisfied
             }
@@ -239,11 +239,11 @@ E(LIST);
             if (nprop & OPT) {          // OPTional
                 new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
                 if (new) {
-                    append_list_move(branch, new);
+                    append_transfer(branch, new);
                     while (parse_more_rep(PARSE, nprop) == SUCCESS) {
                         new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
                         if (new) {
-                            append_list_move(branch, new);
+                            append_transfer(branch, new);
                         } else {
                             break;
                         }
@@ -253,7 +253,7 @@ E(LIST);
             } else {                    // else not OPTional
                 new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
                 if (new) {
-                    append_list_move(branch, new);
+                    append_transfer(branch, new);
                     rc = SUCCESS;           // OPTs always successful
                 } else {
                     break;
@@ -261,7 +261,7 @@ E(LIST);
                 while (parse_more_rep(PARSE, nprop) == SUCCESS) {
                     new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
                     if (new) {
-                        append_list_move(branch, new);
+                        append_transfer(branch, new);
                         rc = SUCCESS;           // OPTs always successful
                     } else {
                         break;
@@ -283,9 +283,9 @@ done: // State exit processing
                 PARSE->stat_patternactcount++;
                 assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
                 if (CONTENT->subject_type == NODE) {
-                    append_list_move(CONTENT->node_pattern_acts, branch);
+                    append_transfer(CONTENT->node_pattern_acts, branch);
                 } else {
-                    append_list_move(CONTENT->edge_pattern_acts, branch);
+                    append_transfer(CONTENT->edge_pattern_acts, branch);
                 }
                 branch = NULL;
             } else {

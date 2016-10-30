@@ -309,7 +309,7 @@ elem_t *ref_list(LIST_t * LIST, elem_t * list)
  * @param list the header of the list to be appended
  * @param elem the element to be appended (must be a LISTELEM)
  */
-void append_list_move(elem_t * list, elem_t * elem)
+void append_transfer(elem_t * list, elem_t * elem)
 {
     if (list->u.l.first) {
         list->u.l.last->u.l.next = elem;
@@ -329,11 +329,11 @@ void append_list_move(elem_t * list, elem_t * elem)
  * @param list the header of the list to be appended
  * @param elem the element to be appended (must be a LISTELEM)
  */
-void append_list(elem_t * list, elem_t * elem)
+void append_addref(elem_t * list, elem_t * elem)
 {
     assert(list->type == (char)LISTELEM);
 
-    append_list_move(list, elem);
+    append_transfer(list, elem);
 
     if (elem->type == (char)LISTELEM) {
         elem->refs++; 

@@ -84,10 +84,10 @@ pattern(CONTENT_t * CONTENT, elem_t * subject)
             if (! newacts) {
                 newacts = new_list(LIST, ACT);
             }
-            append_list(newacts, ref_list(LIST, subject));
+            append_addref(newacts, ref_list(LIST, subject));
             emit_subject(CONTENT, subject);
             if (attr && (state_t)attr->state == ATTRIBUTES) {
-                append_list(newacts, ref_list(LIST, attr));
+                append_addref(newacts, ref_list(LIST, attr));
                 emit_attributes(CONTENT, attr);
             }
 

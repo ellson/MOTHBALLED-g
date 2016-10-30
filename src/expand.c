@@ -45,7 +45,7 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
             new = ref_list(LIST, epset);
             if ((state_t)epset->state == ENDPOINT) { // put singletons into lists too
                 singletonepset = new_list(LIST, ENDPOINTSET);
-                append_list(singletonepset, new);
+                append_addref(singletonepset, new);
                 new = ref_list(LIST, singletonepset);
             }
     
@@ -58,12 +58,12 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
                 switch (si2) {
                 case ENDPOINT:
                     new = ref_list(LIST, ep);
-                    append_list(epset, new);
+                    append_addref(epset, new);
                     si3 = ep->u.l.first->state;
                     switch (si3) {
                     case SIBLING:
                         new = ref_list(LIST, ep);
-                        append_list(nodes, new);
+                        append_addref(nodes, new);
                         // FIXME - induce CHILDren in this node's container
                         break;
                     case COUSIN:
@@ -76,7 +76,7 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
                         //     <(a b) c>
                         //     <= d>
                         new = ref_list(LIST, ep);
-                        append_list(nodes, new);
+                        append_addref(nodes, new);
                         break;
                     default:
                         S(si3);
@@ -95,7 +95,7 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
                 ep = ep->u.l.next;
             }
             new = ref_list(LIST, epset);
-            append_list(newleglist, new);
+            append_addref(newleglist, new);
             free_list(LIST, epset);
             break;
         case LAN:  // ignore
@@ -151,7 +151,7 @@ static void expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset, elem_t *dis
 
             // append the next ep for this epset
             new = ref_list(LIST, ep); 
-            append_list(newepset, new);
+            append_addref(newepset, new);
             
             // recursively process the rest of the epsets
             expand_r(LIST, newepset, epset->u.l.next, disambig, nodes, edges);
@@ -194,27 +194,27 @@ static void expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset, elem_t *dis
             // create a string fragment with the hash string
             nshortstr = new_shortstr(LIST, EDGE, hubhash_b64);
             nnodestr = new_list(LIST, ABC);
-            append_list(nnodestr, nshortstr);
+            append_addref(nnodestr, nshortstr);
 
             // new nodeid
             nnodeid = new_list(LIST, NODEID);
-            append_list(nnodeid, nnodestr);
+            append_addref(nnodeid, nnodestr);
 
             // new noderef
             nnoderef = new_list(LIST, NODEREF);
-            append_list(nnoderef, nnodeid);
+            append_addref(nnoderef, nnodeid);
 
             // new node
             nnode = new_list(LIST, NODE);
-            append_list(nnode, nnoderef);
+            append_addref(nnode, nnoderef);
 
             // add node to list of nodes for this act
             new = ref_list(LIST, nnode);
-            append_list(nodes, new);
+            append_addref(nodes, new);
 
             //new endpoint
             nendpoint = new_list(LIST, ENDPOINT);
-            append_list(nendpoint, nnode);
+            append_addref(nendpoint, nnode);
         }
 #endif
 
@@ -237,17 +237,17 @@ static void expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset, elem_t *dis
             ep = newepset->u.l.first;
             while (ep) {
                 new = ref_list(LIST, ep);
-                append_list(newlegs, new);
+                append_addref(newlegs, new);
                 ep = ep->u.l.next;
             }
-            append_list(newedge, newlegs);
+            append_addref(newedge, newlegs);
     
             if (disambig) {
                 new = ref_list(LIST, disambig);
-                append_list(newedge, new);
+                append_addref(newedge, new);
             }
             // and append the new simplified edge to the result
-            append_list(edges, newedge);
+            append_addref(edges, newedge);
         }
     }
 }
@@ -259,13 +259,13 @@ static void expand_hub(LIST_t * LIST, elem_t *tail, elem_t *head, elem_t *disamb
     elem_t *newlegs = new_list(LIST, ENDPOINTSET);
 
     new = ref_list(LIST, tail);
-    append_list(newlegs, new);
+    append_addref(newlegs, new);
     new = ref_list(LIST, head);
-    append_list(newlegs, new);
-    append_list(newedge, newlegs);
+    append_addref(newlegs, new);
+    append_addref(newedge, newlegs);
     if (disambig) {
         new = ref_list(LIST, disambig);
-        append_list(newedge, new);
+        append_addref(newedge, new);
     }
-    append_list(edges, newedge);
+    append_addref(edges, newedge);
 }

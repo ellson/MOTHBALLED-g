@@ -121,12 +121,12 @@ if (*nextold) {
                 }
             }
             sameas_r(CONTENT, elem, &nextoldelem, object);    // recurse, adding result to a sublist
-            append_list(newlist, object);
+            append_addref(newlist, object);
             break;
         case DISAMBIG:
         case NODEID:
             new = ref_list(LIST, elem);
-            append_list(newlist, new);
+            append_addref(newlist, new);
             if (*nextold) {    // doesn't matter if old is shorter
                 // ... as long as no further substitutions are needed
                 *nextold = (*nextold)->u.l.next;
@@ -135,7 +135,7 @@ if (*nextold) {
         case EQL:
             if (*nextold) {
                 new = ref_list(LIST, *nextold);
-                append_list(newlist, new);
+                append_addref(newlist, new);
                 *nextold = (*nextold)->u.l.next;
                 PARSE->stat_sameas++;
             } else {
@@ -149,7 +149,7 @@ if (*nextold) {
                 *nextold = (*nextold)->u.l.next;    // at this level, continue over the elems
             }
             sameas_r(CONTENT, elem, &nextoldelem, object);    // recurse, adding result to a sublist
-            append_list(newlist, object);
+            append_addref(newlist, object);
             break;
         }
         free_list(LIST,object);

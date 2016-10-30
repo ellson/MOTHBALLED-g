@@ -295,7 +295,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
         } else {
             break;
         }
-        append_list_move(fraglist, elem);
+        append_transfer(fraglist, elem);
         TOKEN->stat_fragcount++;
     }
     return slen;
@@ -423,7 +423,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
         } else {
             break;
         }
-        append_list_move(fraglist, elem);
+        append_transfer(fraglist, elem);
         TOKEN->stat_fragcount++;
     }
     return slen;
