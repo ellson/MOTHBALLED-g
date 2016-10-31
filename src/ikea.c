@@ -124,14 +124,14 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
     assert(ikea_store);
 
     if ((ikea_box = calloc(1, sizeof(ikea_box_t))) == NULL)
-        fatal_perror("Error - calloc() ");
+        FATAL("calloc()");
 
 #ifndef HAVE_EVP_MD_CTX_NEW
     if ((ikea_box->ctx = calloc(1, sizeof(EVP_MD_CTX))) == NULL)
-        fatal_perror("Error - calloc() ");
+        FATAL("calloc()");
 #else
     if ((ikea_box->ctx = EVP_MD_CTX_new()) == NULL)
-        fatal_perror("Error - EVP_MD_CTX_new() ");
+        FATAL("EVP_MD_CTX_new()");
 #endif
     ikea_box->ikea_store = ikea_store;
 
@@ -141,15 +141,15 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
 
     // make a temporary file 
     if ((fd = mkstemp(ikea_box->tempfile)) == -1)
-        fatal_perror("Error - mkstemp(): ");
+        FATAL("mkstemp()");
 
     // convert to FILE*
     if ((ikea_box->fh = fdopen(fd, "w")) == NULL)
-        fatal_perror("Error - fdopen(): ");
+        FATAL("fdopen()");
 
     // initialize contenthash accumulation
     if ((EVP_DigestInit_ex(ikea_box->ctx, EVP_sha1(), NULL)) != 1)
-        fatal_perror("Error - EVP_DigestInit_ex() ");
+        FATAL("EVP_DigestInit_ex()");
 
     // return handle
     return ikea_box;
@@ -158,9 +158,9 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
 void ikea_box_append(ikea_box_t* ikea_box, const char *data, size_t data_len)
 {
     if (fwrite(data, 1, data_len, ikea_box->fh) != data_len)
-        fatal_perror("Error - fwrite() ");
+        FATAL("fwrite()");
     if ((EVP_DigestUpdate(ikea_box->ctx, data, data_len)) != 1)
-        fatal_perror("Error - EVP_DigestUpdate() ");
+        FATAL("EVP_DigestUpdate()");
 }
 
 char * ikea_box_close(ikea_box_t* ikea_box) 
@@ -173,9 +173,9 @@ char * ikea_box_close(ikea_box_t* ikea_box)
     ikea_store_t * ikea_store = ikea_box->ikea_store;
 
     if (fclose(ikea_box->fh))
-        fatal_perror("Error - fclose() ");
+        FATAL("fclose()");
     if ((EVP_DigestFinal_ex(ikea_box->ctx, digest, &digest_len)) != 1)
-        fatal_perror("Error - EVP_DigestFinal_ex() ");
+        FATAL("EVP_DigestFinal_ex()");
     // convert to string suitable for filename
     base64(digest, digest_len, contenthash, sizeof(contenthash));
 
@@ -186,7 +186,7 @@ char * ikea_box_close(ikea_box_t* ikea_box)
 
     // rename the file
     if ((rename(ikea_box->tempfile, contentpathname)) == -1)
-        fatal_perror("Error - rename() ");
+        FATAL("rename()");
 
     // free resources
     free(ikea_box);
@@ -318,13 +318,13 @@ ikea_store_t * ikea_store_open( const char * oldstore )
  
     // allocate a new store
     if ((ikea_store = calloc(1, sizeof(ikea_store_t))) == NULL)
-        fatal_perror("Error - calloc() ");
+        FATAL("calloc() ");
 
     strcpy(ikea_store->tempdir, tempdir_template);
 
     // make a temporary directory 
     if ((td = mkdtemp(ikea_store->tempdir)) == NULL)
-        fatal_perror("Error - mkdtemp(): ");
+        FATAL("mkdtemp()");
 
     return ikea_store;
 }
@@ -337,13 +337,13 @@ void ikea_store_snapshot ( ikea_store_t * ikea_store )
     char *extractTo = ".";
 
     if (tar_open(&pTar, tarFilename, &gztype, O_WRONLY | O_CREAT | O_TRUNC, 0600, TAR_GNU) == -1)
-        fatal_perror("Error - tar_open(): ");
+        FATAL("tar_open()");
     if (tar_append_tree(pTar, ikea_store->tempdir, extractTo) == -1)
-        fatal_perror("Error - tar_append_tree(): ");
+        FATAL("tar_append_tree()");
     if (tar_append_eof(pTar) == -1)
-        fatal_perror("Error - tar_append_eof(): ");
+        FATAL("tar_append_eof()");
     if (tar_close(pTar) == -1)
-        fatal_perror("Error - tar_close(): ");
+        FATAL("tar_close()");
 }
 
 /**
@@ -355,7 +355,7 @@ void ikea_store_snapshot ( ikea_store_t * ikea_store )
  */
 static int glob_err (const char *epath, int eerrno)
 {
-    fprintf(stderr,"Error - glob(): \"%s\" %s\n", epath, strerror(eerrno));
+    fprintf(stderr,"glob(): \"%s\" %s\n", epath, strerror(eerrno));
     return -1;
 }
 
@@ -377,26 +377,26 @@ void ikea_store_restore ( ikea_store_t * ikea_store )
 #endif
 
     if (tar_open(&pTar, tarFilename, &gztype, O_RDONLY, 0600, TAR_GNU) == -1)
-        fatal_perror("Error - tar_open(): ");
+        FATAL("tar_open()");
     if (tar_extract_all(pTar, ikea_store->tempdir) == -1)
-        fatal_perror("Error - tar_extract_all(): ");
+        FATAL("tar_extract_all()");
     if (tar_close(pTar) == -1)
-        fatal_perror("Error - tar_close(): ");
+        FATAL("tar_close()");
     len = strlen(ikea_store->tempdir);
     if ((glob_pattern = malloc(len + 2)) == NULL)
-        fatal_perror("Error - malloc(): ");
+        FATAL("malloc()");
     strcpy(glob_pattern, ikea_store->tempdir);
     strcat(glob_pattern, "/*");
     if ((rc = glob(glob_pattern, 0, glob_err, &pglob))) {
         switch (rc) {
         case GLOB_NOSPACE:
-            fprintf(stderr,"Error - glob(): no memory available (GLOB_NOSPACE)");
+            FATAL("glob(): no memory available (GLOB_NOSPACE)");
             break;
         case GLOB_ABORTED:
-            fprintf(stderr,"Error - glob(): read error (GLOB_ABORTED)");
+            FATAL("glob(): read error (GLOB_ABORTED)");
             break;
         case GLOB_NOMATCH:
-            fprintf(stderr,"Error - glob(): no matches found (GLOB_NOMATCH)");
+            FATAL("glob(): no matches found (GLOB_NOMATCH)");
             break;
         }
         exit(EXIT_FAILURE);
@@ -446,13 +446,13 @@ void ikea_store_close ( ikea_store_t * ikea_store )
     }
     for (pathc=0; pathc < pglob.gl_pathc; pathc++) {
         if ((unlink(pglob.gl_pathv[pathc])) == -1)
-            fatal_perror("Error - unlink(): ");
+            FATAL("unlink()");
     }
     globfree(&pglob);
 
     // rmdir the temporary directory
     if (rmdir(ikea_store->tempdir) == -1)
-        fatal_perror("Error - rmdir(): ");
+        FATAL("rmdir()");
 
     free(ikea_store);
 }
