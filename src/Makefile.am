@@ -9,6 +9,7 @@ include_HEADERS = \
 	libje.h
 
 noinst_HEADERS = \
+    attribute.h \
     compare.h \
     context.h \
     dispatch.h \
@@ -38,6 +39,7 @@ lib_LTLIBRARIES = libje.la
 #pkgconfig_DATA = libje.pc
 
 libje_C_la_SOURCES = \
+    attribute.c \
     compare.c \
     dispatch.c \
     doact.c \

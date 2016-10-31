@@ -43,12 +43,14 @@ void pattern_update(CONTENT_t * CONTENT, elem_t * subject, state_t verb)
  //           remove_item(LIST, CONTENT->node_pattern_acts, obj);
         } else {
  //           insert_item(LIST, CONTENT->node_pattern_acts, obj);
+            append_transfer(CONTENT->node_pattern_acts, subject);
         }
     } else {
         if (verb == (char)TLD) {
  //           remove_item(LIST, CONTENT->edge_pattern_acts, obj);
         } else {
  //           insert_item(LIST, CONTENT->edge_pattern_acts, obj);
+            append_transfer(CONTENT->edge_pattern_acts, subject);
         }
     }
 }

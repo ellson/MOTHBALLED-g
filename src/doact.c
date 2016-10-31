@@ -12,8 +12,8 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t *LIST = (LIST_t*)PARSE;
-    elem_t *subj, *obj, *attr, *valu, *elem, *new;
-    state_t si, verb = 0;
+    elem_t *subj, *obj, *new;
+    state_t verb = 0;
 
     assert(act);
     assert(act->u.l.first);  // minimaly, an ACT must have a SUBJECT
@@ -43,6 +43,7 @@ P(LIST, act);
 //             SUBJECT OBJECT NODE NODEID ABC a
 //
 // Here:   SUBJECT OBJECT NODE NODEID ABC a
+//----------------------- 
 // P(LIST, subj);
 
    
@@ -76,40 +77,8 @@ P(LIST, act);
 
 
 //======================= process ATTRIBUTES (if any)
-    attr = subj->u.l.next;
-    if (attr) {
-        // ATTRID are stored in a sorted list of all ATTRID encountered
-        // VALUE are stored in a list sorted by ATTRID for this ACT
-        elem = attr->u.l.first;
-        while (elem) {
-            si = (state_t)elem->state;
-            switch (si) {
-            case LBR:
-            case RBR:
-                break; // ignore
-            case ATTR:
-                // don't look!
-                attr = elem->u.l.first;
-                valu = attr->u.l.next->u.l.first->u.l.next->u.l.first;
-                attr = attr->u.l.first;
-                // phew!
-P(LIST, attr);
-P(LIST, valu);
-                // FIXME - need a version that keeps old on match
-                if (CONTENT->subject_type == NODE) {
-//                    CONTENT->node_attrid = insert_item(LIST, CONTENT->node_attrid, attr);
-                } else {
-//                    CONTENT->edge_attrid = insert_item(LIST, CONTENT->edge_attrid, attr);
-                }
-                break;
-            default:
-                S(si);
-                assert(0); // shouldn't be here
-                break;
-            }
-            elem = elem->u.l.next;
-        }
-    }
+    attribute_update(CONTENT, subj->u.l.next, verb);
+    // Later we reattach the attributes to the reassembled acts
 //----------------------- example
 // G:       a[foo=bar abc=xyz]
 //
