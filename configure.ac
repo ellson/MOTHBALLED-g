@@ -108,6 +108,7 @@ AC_FUNC_MALLOC
 AC_CHECK_FUNCS([ \
     clock_gettime \
     sysinfo \
+    mkstemp \
     strerror \
     uname \
 ])
