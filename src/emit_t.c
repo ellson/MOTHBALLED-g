@@ -102,13 +102,12 @@ emit_t t_api = { "t",
 
 static void api1_act(CONTENT_t * CONTENT, elem_t * tree)
 {
-    LIST_t *LIST = (LIST_t*)(CONTENT->PARSE);
     FILE *chan = CONTENT->PARSE->out;
     char sep;
 
     sep = ' ';
     fprintf(chan, "%3d ACT", CONTENT->PARSE->containment);
-    print_elem(LIST, tree, 7, &sep);
+    print_elem(chan, tree, 7, &sep);
 }
 
 emit_t t1_api = { "t1",

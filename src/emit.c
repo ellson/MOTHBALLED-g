@@ -175,7 +175,7 @@ void append_ulong(PARSE_t * PARSE, char **pos, uint64_t integer)
     if (PARSE->sep) {
         *(*pos)++ = PARSE->sep; // sep before, if any
     }
-    len = sprintf(*pos,"%lu",integer); // format integer to string
+    len = sprintf(*pos,"%llu",integer); // format integer to string
     if (len < 0)
         fatal_perror("Error - sprintf(): ");
     PARSE->sep = ' ';      // sep required after strings
@@ -190,7 +190,7 @@ void append_runtime(PARSE_t * PARSE, char **pos,
 
     // FIXME - check available buffer space
     if (PARSE->sep) *(*pos)++ = PARSE->sep; // sep before, if any
-    len = sprintf(*pos,"%lu.%09lu",run_sec, run_ns);
+    len = sprintf(*pos,"%llu.%09llu",run_sec, run_ns);
     if (len < 0)
         fatal_perror("Error - sprintf(): ");
     PARSE->sep = ' ';   // sep required after strings

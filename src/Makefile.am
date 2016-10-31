@@ -89,9 +89,9 @@ g_static_SOURCES = g.c
 g_static_CPPFLAGS = 
 g_static_LDADD = libje_C.la @LIBS@
 
-grammar.h: grammar.c
+grammar.h grammar.c: grammar.ebnf
 
-grammar.c grammar.ebnf grammar.gv: grammar.g gacc.sh
+grammar.ebnf grammar.gv: grammar.g gacc.sh
 	./gacc.sh grammar.g
 
 grammar.svg: grammar.gv
@@ -106,4 +106,4 @@ libje.3.pdf: $(srcdir)/libje.3
 #EXTRA_DIST = g.1 g.1.pdf libje.3 libje.3.pdf gacc.sh grammar.g
 EXTRA_DIST = gacc.sh grammar.g
 
-DISTCLEANFILES = g.1.pdf libje.3.pdf
+DISTCLEANFILES = g.1.pdf libje.3.pdf grammar.h grammar.c grammar.ebnf grammar.gv grammar.svg
