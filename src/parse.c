@@ -275,7 +275,7 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
 
 done: // State exit processing
     if (rc == SUCCESS && si == ACT && branch) {
-        rc = doact(CONTENT, branch);
+        rc = doact(CONTENT, branch);              // ACT is complete, process it
     } 
     if (rc == FAIL && branch) {
         free_list(LIST, branch);

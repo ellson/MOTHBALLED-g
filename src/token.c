@@ -23,7 +23,8 @@ void token_error(TOKEN_t * TOKEN, state_t si, char *message)
     fprintf(stderr, "Error: %s ", message);
     print_len_frag(stderr, NAMEP(si));
     fprintf(stderr, "\n      in \"%s\" line: %ld just before: \"",
-        TOKEN->filename, (TOKEN->stat_lfcount ?  TOKEN->stat_lfcount : TOKEN->stat_crcount) - TOKEN->linecount_at_start + 1);
+        TOKEN->filename,
+        (TOKEN->stat_lfcount ?  TOKEN->stat_lfcount : TOKEN->stat_crcount) - TOKEN->linecount_at_start + 1);
     p = TOKEN->in;
     while ((c = *p++)) {
         if (c == '\n' || c == '\r') {
