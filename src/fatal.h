@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-void fatal_printf(const char *format, ...);
-void fatal_perror(const char *s);
 void fatal(const char *file, int line, const char *format, ...);
 
 #define FATAL(...) {fatal(__FILE__,__LINE__,__VA_ARGS__);}

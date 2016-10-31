@@ -9,8 +9,7 @@
 #include <sys/types.h>
 
 #include "libje.h"
-#include "fatal.h"   // FIXME - so is this public or private?
-                     // or should option processing be in a private function?
+#include "fatal.h" 
 
 static PARSE_t * PARSE;  // the input context - needs to be global for intr()
 
@@ -38,7 +37,7 @@ int main(int argc, char *argv[])
         switch (opt) {
         case 'T':
             if (select_emitter(optarg) == FAIL)
-                fatal_printf("No back-end found for format: -T%s\n", optarg);
+                FATAL("No back-end found for format: -T%s\n", optarg);
             break;
         case 'd':
             switch (optnum) {
@@ -51,7 +50,7 @@ int main(int argc, char *argv[])
                 exit(EXIT_SUCCESS);
                 break;
             default:
-                fatal_printf("%s\n", "-d0 = linear walk, -d1 = recursive walk");
+                FATAL("%s\n", "-d0 = linear walk, -d1 = recursive walk");
                 break;
             }
 
@@ -74,7 +73,7 @@ int main(int argc, char *argv[])
 // FIXME - allow multiple -p in loop
 // FIXME - do -p / -P processing here so can print resored pre-parsed graphs
 //
-            fatal_printf("Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
+            FATAL("Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
             break;
         }
     }

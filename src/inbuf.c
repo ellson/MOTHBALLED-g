@@ -20,7 +20,7 @@ inbuf_t * new_inbuf(INBUF_t *INBUF)
 
         INBUF->free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbuf_t));
         if (!INBUF->free_inbuf_list) 
-            fatal_perror("Error - malloc(): ");
+            FATAL("malloc()");
         INBUF->stat_inbufmalloc++;
 
         next = INBUF->free_inbuf_list;    // link the new inbufs into free_inbuf_list

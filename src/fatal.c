@@ -8,23 +8,6 @@
 
 #include "fatal.h"
 
-void fatal_printf(const char *format, ...)
-{
-    va_list argList;
-
-    va_start(argList, format);
-    fprintf(stderr, format, argList);
-    va_end(argList);
-
-    exit(EXIT_FAILURE);
-}
-
-void fatal_perror(const char *s)
-{
-    perror(s);
-    exit(EXIT_FAILURE);
-}
-
 void fatal(const char *file, int line, const char *format, ...)
 {
     va_list argList;
@@ -32,9 +15,10 @@ void fatal(const char *file, int line, const char *format, ...)
 
     fprintf(stderr, "FATAL at %s:%d", file, line);
     if (err) {
-        fprintf(stderr, " with error: %s", strerror(err));
+        fprintf(stderr, " with error %d: \"%s\"", err, strerror(err));
     }
     if (format) {
+        fprintf(stderr, " : ");
         va_start(argList, format);
         fprintf(stderr, format, argList);
         va_end(argList);

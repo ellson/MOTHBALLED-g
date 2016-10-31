@@ -162,7 +162,7 @@ void append_string(PARSE_t * PARSE, char **pos, char *string)
     }
     len = sprintf(*pos,"%s",string);  // copy string
     if (len < 0)
-        fatal_perror("Error - sprintf(): ");
+        FATAL("sprintf()");
     PARSE->sep = ' ';      // sep required after strings 
     *pos += len;
 }
@@ -177,7 +177,7 @@ void append_ulong(PARSE_t * PARSE, char **pos, uint64_t integer)
     }
     len = sprintf(*pos,"%llu",integer); // format integer to string
     if (len < 0)
-        fatal_perror("Error - sprintf(): ");
+        FATAL("sprintf()");
     PARSE->sep = ' ';      // sep required after strings
     *pos += len;
 }
@@ -192,7 +192,7 @@ void append_runtime(PARSE_t * PARSE, char **pos,
     if (PARSE->sep) *(*pos)++ = PARSE->sep; // sep before, if any
     len = sprintf(*pos,"%llu.%09llu",run_sec, run_ns);
     if (len < 0)
-        fatal_perror("Error - sprintf(): ");
+        FATAL("sprintf()");
     PARSE->sep = ' ';   // sep required after strings
     *pos += len;
 }

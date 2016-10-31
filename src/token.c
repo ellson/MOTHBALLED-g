@@ -89,7 +89,7 @@ static success_t token_more_in(TOKEN_t * TOKEN)
             } else {
                 TOKEN->file = fopen(TOKEN->filename, "rb");
                 if (!TOKEN->file) {
-                    fatal_perror("Error - fopen()");
+                    FATAL("fopen()");
                 }
             }
             TOKEN->linecount_at_start = TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount;

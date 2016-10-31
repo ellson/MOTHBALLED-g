@@ -27,7 +27,7 @@ PARSE_t *initialize(int *pargc, char *argv[], int optind)
     PARSE_t *PARSE;
 
     if (! (PARSE = calloc(1, sizeof(PARSE_t))))
-        fatal_perror("Error - calloc(): ");
+        FATAL("calloc()");
 
     PARSE->progname = argv[0];
     PARSE->out = stdout;

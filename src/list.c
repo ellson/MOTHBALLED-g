@@ -27,7 +27,7 @@ static elem_t *new_elem_sub(LIST_t * LIST)
 
         LIST->free_elem_list = malloc(LISTALLOCNUM * sizeof(elem_t));
         if (!LIST->free_elem_list)
-            fatal_perror("Error - malloc(): ");
+            FATAL("malloc()");
         LIST->stat_elemmalloc++;
 
         next = LIST->free_elem_list;    // link the new elems into free_elem_list

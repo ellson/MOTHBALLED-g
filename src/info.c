@@ -83,14 +83,14 @@ char * session(PARSE_t * PARSE)
 
     uid = geteuid();
     if (!(pw = getpwuid(uid)))
-        fatal_perror("Error - getpwuid(): ");
+        FATAL("getpwuid()");
     PARSE->username = pw->pw_name;
     append_string  (PARSE, &pos, "username");
     append_token   (PARSE, &pos, '=');
     append_string  (PARSE, &pos, PARSE->username);
 
     if (uname(&unamebuf))
-        fatal_perror("Error - uname(): ");
+        FATAL("uname()");
     PARSE->hostname = unamebuf.nodename;
     append_string  (PARSE, &pos, "hostname");
     append_token   (PARSE, &pos, '=');
@@ -100,7 +100,7 @@ char * session(PARSE_t * PARSE)
     // Y2038-unsafe function - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (clock_gettime(CLOCK_BOOTTIME, &(PARSE->uptime)))
-        fatal_perror("Error - clock_gettime(): ");
+        FATAL("clock_gettime()");
     append_string  (PARSE, &pos, "uptime");
     append_token   (PARSE, &pos, '=');
     append_ulong   (PARSE, &pos, PARSE->uptime.tv_sec);
@@ -108,7 +108,7 @@ char * session(PARSE_t * PARSE)
     // Y2038-unsafe function - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (gettimeofday(&(PARSE->uptime), NULL))
-        fatal_perror("Error - gettimeofday(): ");
+        FATAL("gettimeofday()");
     append_string  (PARSE, &pos, "uptime");
     append_token   (PARSE, &pos, '=');
     append_ulong   (PARSE, &pos, PARSE->uptime.tv_sec);
@@ -118,7 +118,7 @@ char * session(PARSE_t * PARSE)
     // Y2038-unsafe function -  FIXME
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (clock_gettime(CLOCK_REALTIME, &starttime))
-        fatal_perror("Error - clock_gettime(): ");
+        FATAL("clock_gettime()");
     append_string  (PARSE, &pos, "starttime");
     append_token   (PARSE, &pos, '=');
     append_ulong   (PARSE, &pos, starttime.tv_sec);
@@ -126,7 +126,7 @@ char * session(PARSE_t * PARSE)
     // Y2038-unsafe function - FIXME
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (gettimeofday(&starttime, NULL))
-        fatal_perror("Error - gettimeofday(): ");
+        FATAL("gettimeofday()");
     append_string  (PARSE, &pos, "starttime");
     append_token   (PARSE, &pos, '=');
     append_ulong   (PARSE, &pos, starttime.tv_sec);
@@ -190,14 +190,14 @@ char * stats(PARSE_t * PARSE)
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (clock_gettime(CLOCK_BOOTTIME, &nowtime))
-        fatal_perror("Error - clock_gettime(): ");
+        FATAL("clock_gettime()");
     runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_nsec)
             - ((uint64_t)(PARSE->uptime.tv_sec) * TEN9 + (uint64_t)(PARSE->uptime.tv_nsec));
 #else
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (gettimeofday(&nowtime, NULL))
-        fatal_perror("Error - gettimeofday(): ");
+        FATAL("gettimeofday()");
     runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_usec) * TEN3
             - ((uint64_t)(PARSE->uptime.tv_sec) * TEN9 + (uint64_t)(PARSE->uptime.tv_usec) * TEN3);
 #endif

@@ -24,20 +24,20 @@ void sslhash_list(uint64_t *hash, elem_t *list)
 
 #ifndef HAVE_EVP_MD_CTX_NEW
     if ((ctx = malloc(sizeof(EVP_MD_CTX))) == NULL)
-        fatal_perror("Error - malloc() ");
+        FATAL("malloc()");
 #else
     if ((ctx = EVP_MD_CTX_new()) == NULL)
-        fatal_perror("Error - EVP_MD_CTX_new() ");
+        FATAL("EVP_MD_CTX_new()");
 #endif
     unsigned char digest[64];
     unsigned int digest_len=64;
     assert(list);
 
     if ((EVP_DigestInit_ex(ctx, EVP_sha1(), NULL)) != 1)
-        fatal_perror("Error - EVP_DigestInit_ex() ");
+        FATAL("EVP_DigestInit_ex()");
     hash_list_r(ctx, list);
     if ((EVP_DigestFinal_ex(ctx, digest, &digest_len)) != 1)
-        fatal_perror("Error - EVP_DigestFinal_ex() ");
+        FATAL("EVP_DigestFinal_ex()");
 }
 /**
  * Recursive hash accumulation of a fraglist, or list of fraglists
@@ -56,7 +56,7 @@ static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list)
         case FRAGELEM:
             while (elem) {
                 if ((EVP_DigestUpdate(ctx, elem->u.f.frag, elem->len)) != 1)
-                    fatal_perror("Error - EVP_DigestUpdate() ");
+                    FATAL("EVP_DigestUpdate()");
                 elem = elem->u.l.next;
             }
             break;
