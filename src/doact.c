@@ -12,7 +12,7 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t *LIST = (LIST_t*)PARSE;
-    elem_t *subj, *obj, *new;
+    elem_t *subject, *attributes, *new, *newsubjects, *elem;
     state_t verb = 0;
 
     assert(act);
@@ -25,17 +25,19 @@ P(LIST, act);
 
 
 
-//====================== VERB
-    subj = act->u.l.first;             // tentatively, first item is SUBJECT
-    if (subj->state == (char)VERB) {   // but it might be a VERB instead
-        verb = subj->u.l.first->state; // record TLD '~' for: "delete"
-                                       //     or QRY '?' for: "query"
-                                       //        defaults to: "add"
- 
-        subj = subj->u.l.next;         // SUBJECT must be second item
+//====================== VERB extraction
+//
+    subject = act->u.l.first;             // tentatively, first item is SUBJECT
+    if (subject->state == (char)VERB) {   // but it might be a VERB instead
+        verb = subject->u.l.first->state; // record TLD '~' for: "delete"
+                                          //     or QRY '?' for: "query"
+                                          //        defaults to: "add"
+        subject = subject->u.l.next;      // SUBJECT must be second item
     }
-    assert(subj);
-    assert(subj->state == (char)SUBJECT);
+    attributes = subject->u.l.next;       // and ATTRIBUTES (if any) are next
+    assert(subject);
+    assert(subject->state == (char)SUBJECT);
+//P(LIST, subject);
 //----------------------- example
 // G:      ?a
 //
@@ -44,13 +46,14 @@ P(LIST, act);
 //
 // Here:   SUBJECT OBJECT NODE NODEID ABC a
 //----------------------- 
-// P(LIST, subj);
 
    
 
-//======================= classify NODE or EDGE, and perform sameas substitions
-    obj = sameas(CONTENT, subj);
-    assert(obj);
+//======================= sameas substitions, also classify subject as NODE or EDGE
+//
+    newsubjects = sameas(CONTENT, subject);
+    assert(newsubjects);
+//P(LIST, newsubjects);
 //----------------------- example
 // G:      <a b> <= c>
 //
@@ -72,13 +75,16 @@ P(LIST, act);
 //                             LEG ENDPOINT SIBLING NODEREF NODEID ABC c
 //                             RAN
 //----------------------- 
-//P(LIST, obj);
 
 
 
 //======================= process ATTRIBUTES (if any)
-    attribute_update(CONTENT, subj->u.l.next, verb);
-    // Later we reattach the attributes to the reassembled acts
+// Do this after sameas so we have the NODE/EDGE classification
+// We keep separate attribute lists for NODES and EDGES
+// Later we reattach the attributes to the reassembled ACTs
+//
+    attribute_update(CONTENT, attributes, verb);
+//P(LIST, newsubjects);
 //----------------------- example
 // G:       a[foo=bar abc=xyz]
 //
@@ -94,99 +100,42 @@ P(LIST, act);
 //
 // Here:    SUBJECT OBJECT NODE NODEID ABC a
 //----------------------- 
-//P(LIST, obj);
 
 
 
 //======================= collect, remove, or apply patterns
-    if (CONTENT->is_pattern) {
-        PARSE->stat_patternactcount++;
-        assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
-        pattern_update(CONTENT, obj, verb);
-        return SUCCESS;
-    } 
-    PARSE->stat_nonpatternactcount++;
-    new = pattern_match(CONTENT, obj);
+//
+    new = pattern(CONTENT, newsubjects, verb);
+    free_list(LIST, newsubjects);
     if (new) {
-        free_list(LIST, obj);
-        obj = new;
+        newsubjects = new;
+    } else {
+        return SUCCESS;  // new pattern stored,  no more procesing for this ACT
     }
-    //  N.B. (there can be multiple obj after pattern subst.  Each matched
-    //  pattern generates an additional object.
 
-    assert(obj);
+    //  N.B. (there can be multiple subjects after pattern subst.  Each matched
+    //  pattern generates an additional subject.
 
-#if 0
+    assert(newsubjects);
+//P(LIST, newsubjects);
+
 // FIXME so this is probably flawed - doesn't it need a loop?
     // dispatch events for the ACT just finished
-    new = dispatch(CONTENT, outacts);
+    new = dispatch(CONTENT, newsubjects);
     if (new) {
-        free_list(LIST, outacts);
-        outacts = new;
+        free_list(LIST, newsubjects);
+        newsubjects = new;
     }
 
-    elem = outacts->u.l.first;
+    elem = newsubjects->u.l.first;
     while (elem) {
         PARSE->stat_outactcount++;
-//P(LIST,elem);
-        reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
+P(LIST,elem);
+        reduce(CONTENT, elem);  // eliminate redundancy by insertion sorting into trees.
 
         elem = elem->u.l.next;
     }
-#endif
-
-    free_list(LIST, obj);
-
-#if 0
-            break;
-        case TLD:
-        case QRY:
-            TOKEN->verb = si;  // record verb prefix, if not default
-            break;
-        case HAT:
-            // FIXME - this  is all wrong ... maybe it should just close the current box
-            // FIXME - close this container's box
-            ikea_store_snapshot(PARSE->ikea_store);
-            // FIXME - open appending container for this box.
-            break;
-        case SUBJECT: // subject rewrites before adding branch to root
-            act->state = si;
-
-            // Perform EQL "same as in subject of previous ACT" substitutions
-            // Also classifies ACT as NODE or EDGE based on SUBJECT
-//P(LIST, act);
-            new = sameas(CONTENT, act);
-            free_list(LIST, act);
-            act = new;
-//P(LIST, act);
-
-            // If this subject is not itself a pattern, then
-            // perform pattern matching and insertion if matched
-            if (!(CONTENT->is_pattern = TOKEN->has_ast)) {
-                new = pattern(CONTENT, act);
-                if (new) {
-                    free_list(LIST, act);
-                    act = new;
-                }
-            }
-
-            emit_subject(CONTENT, act);      // emit hook for rewritten subject
-            break;
-        case ATTRIBUTES:
-            emit_attributes(CONTENT, act);   // emit hook for attributes
-            break;
-
-        default:
-            break;
-        }
-        if (act->u.l.first != NULL || si == EQL) {    // mostly ignore empty lists
-            if (act->u.l.first && act->u.l.first->type != FRAGELEM) {
-                // record state generating this tree
-                // - except for STRINGs which use state for quoting info
-                act->state = si;
-            }
-        }
-#endif
+    free_list(LIST, newsubjects);
 
     return SUCCESS;
 }

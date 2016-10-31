@@ -8,6 +8,9 @@
 
 #include "pattern.h"
 
+static void pattern_update(CONTENT_t * CONTENT, elem_t * subject, state_t verb);
+static elem_t * pattern_match(CONTENT_t * CONTENT, elem_t * subject);
+
 /*
  * A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
  * The AST is a wild-card that matches any substring of zero or more 
@@ -32,7 +35,25 @@
  */ 
  
 
-void pattern_update(CONTENT_t * CONTENT, elem_t * subject, state_t verb)
+elem_t * pattern(CONTENT_t * CONTENT, elem_t * subject, state_t verb)
+{
+    PARSE_t * PARSE = CONTENT->PARSE;
+    LIST_t *LIST = (LIST_t*)PARSE;
+    TOKEN_t *TOKEN = (TOKEN_t*)PARSE;
+    elem_t *newsubjects;
+
+    if ((CONTENT->is_pattern = TOKEN->has_ast)) {
+        PARSE->stat_patternactcount++;
+        assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
+        pattern_update(CONTENT, subject, verb);
+        return NULL;
+    }
+    PARSE->stat_nonpatternactcount++;
+    newsubjects = pattern_match(CONTENT, subject);
+    return newsubjects;
+}
+
+static void pattern_update(CONTENT_t * CONTENT, elem_t * subject, state_t verb)
 {
     assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
     if (verb == (char)QRY) {
@@ -68,10 +89,7 @@ void pattern_update(CONTENT_t * CONTENT, elem_t * subject, state_t verb)
  * @return newacts - with list of matched acts, or NULL
  */
 
-// FIXME, this tacks a SUBJECT and returns a list of SUBJECTS
-//      better if they were the same type
-elem_t *
-pattern_match(CONTENT_t * CONTENT, elem_t * subject)
+static elem_t * pattern_match(CONTENT_t * CONTENT, elem_t * subject)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
@@ -91,9 +109,7 @@ pattern_match(CONTENT_t * CONTENT, elem_t * subject)
     }
 
     // iterate over available patterns
-    for ( act = pattern_acts->u.l.first; act; act = act->u.l.next) {
-        assert((state_t) act->state == ACT);
-        subj = act->u.l.first;
+    for ( subj = pattern_acts->u.l.first; subj; subj = subj->u.l.next) {
         assert(subj);
         assert((state_t) subj->state == SUBJECT);
         attr = subj->u.l.next;

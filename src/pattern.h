@@ -11,8 +11,8 @@ extern "C" {
 #include "match.h"
 #include "tree.h"
 
-void pattern_update(CONTENT_t * CONTENT, elem_t * subject, state_t verb);
-elem_t * pattern_match(CONTENT_t * CONTENT, elem_t * subject);
+elem_t * pattern(CONTENT_t * CONTENT, elem_t * subject, state_t verb);
+
 
 #ifdef __cplusplus
 }
