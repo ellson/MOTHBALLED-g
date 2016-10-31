@@ -12,45 +12,162 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t *LIST = (LIST_t*)PARSE;
+    elem_t *subj, *obj, *attr, *valu, *elem, *new;
+    state_t si, verb = 0;
+
+    assert(act);
+    assert(act->u.l.first);  // minimaly, an ACT must have a SUBJECT
+
+
+    PARSE->stat_inactcount++;
 
 P(LIST, act);
 
-    PARSE->stat_inactcount++;
-#if 0
-    if (CONTENT->is_pattern) {   // flag was set by SUBJECT in previous ACT
-                                         //  save entire previous ACT in a list of pattern_acts
-        PARSE->stat_patternactcount++;
-        assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
-        if (CONTENT->subject_type == NODE) {
-                    append_transfer(CONTENT->node_pattern_acts, act);
-        } else {
-                    append_transfer(CONTENT->edge_pattern_acts, act);
-        }
-    } else {
-        PARSE->stat_nonpatternactcount++;
 
-//P(LIST, act);
-        // dispatch events for the ACT just finished
-        new = dispatch(CONTENT, act);
-        if (new) {
-            free_list(LIST, act);
-            act = new;
-        }
-//P(LIST, act);
 
-// and this is where we actually emit the fully processed acts!
-//  (there can be multiple acts after pattern subst.  Each matched pattern generates an additional act.
-        elem = act->u.l.first;
+//====================== VERB
+    subj = act->u.l.first;             // tentatively, first item is SUBJECT
+    if (subj->state == (char)VERB) {   // but it might be a VERB instead
+        verb = subj->u.l.first->state; // record TLD '~' for: "delete"
+                                       //     or QRY '?' for: "query"
+                                       //        defaults to: "add"
+ 
+        subj = subj->u.l.next;         // SUBJECT must be second item
+    }
+    assert(subj);
+    assert(subj->state == (char)SUBJECT);
+//----------------------- example
+// G:      ?a
+//
+// Parse:  ACT VERB QRY
+//             SUBJECT OBJECT NODE NODEID ABC a
+//
+// Here:   SUBJECT OBJECT NODE NODEID ABC a
+// P(LIST, subj);
+
+   
+
+//======================= classify NODE or EDGE, and perform sameas substitions
+    obj = sameas(CONTENT, subj);
+    assert(obj);
+//----------------------- example
+// G:      <a b> <= c>
+//
+// Parse:  ACT SUBJECT OBJECT EDGE LAN
+//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC a
+//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC b
+//                                 RAN
+//         ACT SUBJECT OBJECT EDGE LAN
+//                                 LEG EQL
+//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC c
+//                                 RAN
+//
+// Here:   SUBJECT OBJECT EDGE LAN
+//                             LEG ENDPOINT SIBLING NODEREF NODEID ABC a
+//                             LEG ENDPOINT SIBLING NODEREF NODEID ABC b
+//                             RAN
+//         SUBJECT OBJECT EDGE LAN
+//                             LEG ENDPOINT SIBLING NODEREF NODEID ABC a
+//                             LEG ENDPOINT SIBLING NODEREF NODEID ABC c
+//                             RAN
+//----------------------- 
+//P(LIST, obj);
+
+
+
+//======================= process ATTRIBUTES (if any)
+    attr = subj->u.l.next;
+    if (attr) {
+        // ATTRID are stored in a sorted list of all ATTRID encountered
+        // VALUE are stored in a list sorted by ATTRID for this ACT
+        elem = attr->u.l.first;
         while (elem) {
-            PARSE->stat_outactcount++;
-//P(LIST,elem);
-//                    je_emit_act(CONTENT, elem);  // primary emitter to graph DB
-//                    reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
-
+            si = (state_t)elem->state;
+            switch (si) {
+            case LBR:
+            case RBR:
+                break; // ignore
+            case ATTR:
+                // don't look!
+                attr = elem->u.l.first;
+                valu = attr->u.l.next->u.l.first->u.l.next->u.l.first;
+                attr = attr->u.l.first;
+                // phew!
+P(LIST, attr);
+P(LIST, valu);
+                // FIXME - need a version that keeps old on match
+                if (CONTENT->subject_type == NODE) {
+//                    CONTENT->node_attrid = insert_item(LIST, CONTENT->node_attrid, attr);
+                } else {
+//                    CONTENT->edge_attrid = insert_item(LIST, CONTENT->edge_attrid, attr);
+                }
+                break;
+            default:
+                S(si);
+                assert(0); // shouldn't be here
+                break;
+            }
             elem = elem->u.l.next;
         }
     }
+//----------------------- example
+// G:       a[foo=bar abc=xyz]
+//
+// Parse:   ACT SUBJECT OBJECT NODE NODEID ABC a
+//              ATTRIBUTES LBR
+//                         ATTR ATTRID ABC foo
+//                              VALASSIGN EQL
+//                                        VALUE ABC bar
+//                         ATTR ATTRID ABC abc
+//                              VALASSIGN EQL
+//                                        VALUE ABC xyz
+//                         RBR
+//
+// Here:    SUBJECT OBJECT NODE NODEID ABC a
+//----------------------- 
+//P(LIST, obj);
+
+
+
+//======================= collect, remove, or apply patterns
+    if (CONTENT->is_pattern) {
+        PARSE->stat_patternactcount++;
+        assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
+        pattern_update(CONTENT, obj, verb);
+        return SUCCESS;
+    } 
+    PARSE->stat_nonpatternactcount++;
+    new = pattern_match(CONTENT, obj);
+    if (new) {
+        free_list(LIST, obj);
+        obj = new;
+    }
+    //  N.B. (there can be multiple obj after pattern subst.  Each matched
+    //  pattern generates an additional object.
+
+    assert(obj);
+
+#if 0
+// FIXME so this is probably flawed - doesn't it need a loop?
+    // dispatch events for the ACT just finished
+    new = dispatch(CONTENT, outacts);
+    if (new) {
+        free_list(LIST, outacts);
+        outacts = new;
+    }
+
+    elem = outacts->u.l.first;
+    while (elem) {
+        PARSE->stat_outactcount++;
+//P(LIST,elem);
+        reduce(CONTENT, elem);  // eliminate reduncy by insertion sorting into trees.
+
+        elem = elem->u.l.next;
+    }
 #endif
+
+    free_list(LIST, obj);
+
 #if 0
             break;
         case TLD:
@@ -101,5 +218,6 @@ P(LIST, act);
             }
         }
 #endif
+
     return SUCCESS;
 }

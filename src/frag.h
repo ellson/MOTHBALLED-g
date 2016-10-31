@@ -12,13 +12,13 @@ extern "C" {
 
 uint16_t print_len_frag(FILE * chan, unsigned char *len_frag);
 void print_frags(FILE * chan, state_t state, elem_t * elem, char *sep);
-void print_list(FILE * chan, elem_t * list, int indent, char *sep);
+void print_elem(LIST_t * LIST, elem_t * elem, int indent, char *sep);
 
-// macro to print a list
+// macro to print an elem
 #define P(C, L) { \
-    printf("\nlist at: %s:%d\n", __FILE__, __LINE__); \
+    printf("\nelem at: %s:%d\n", __FILE__, __LINE__); \
     ((PARSE_t*)C)->sep = ' '; \
-    print_list(stdout, L, 0, &(((PARSE_t*)C)->sep)); \
+    print_elem((LIST_t*)C, L, 0, &(((PARSE_t*)C)->sep)); \
     putc('\n', stdout);}
 
 // macro to print current element count

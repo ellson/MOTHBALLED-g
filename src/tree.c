@@ -160,7 +160,7 @@ P(LIST, p->u.t.key);
  * @param key the elem to be inserted
  * @return the new root of the tree after inserting and rebalancing
  */
-elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
+elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t * key)
 {
     int comp;
 
@@ -175,10 +175,10 @@ elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key)
     comp = compare(key, p->u.t.key);
     if (comp) {
         if (comp < 0) {
-            p->u.t.left = insert(LIST, p->u.t.left, key);
+            p->u.t.left = insert_item(LIST, p->u.t.left, key);
         }
         else {
-            p->u.t.right = insert(LIST, p->u.t.right, key);
+            p->u.t.right = insert_item(LIST, p->u.t.right, key);
         }
     }
     else {

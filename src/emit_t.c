@@ -37,12 +37,13 @@ api_start_state(CONTENT_t * CONTENT, char class, unsigned char prop, int nest, i
 
 static void api_string(PARSE_t * PARSE, elem_t * branch)
 {
+    LIST_t *LIST = (LIST_t*)PARSE;
     FILE *chan = PARSE->out;
     char sep;
 
     sep = 0;
     putc('\t', chan);
-    print_list(chan, branch, -1, &sep);
+    print_elem(LIST, branch, -1, &sep);
 }
 
 static void api_token(PARSE_t * PARSE, char token)
@@ -102,12 +103,13 @@ emit_t t_api = { "t",
 
 static void api1_act(CONTENT_t * CONTENT, elem_t * tree)
 {
+    LIST_t *LIST = (LIST_t*)(CONTENT->PARSE);
     FILE *chan = CONTENT->PARSE->out;
     char sep;
 
     sep = ' ';
     fprintf(chan, "%3d ACT", CONTENT->PARSE->containment);
-    print_list(chan, tree, 7, &sep);
+    print_elem(LIST, tree, 7, &sep);
 }
 
 emit_t t1_api = { "t1",

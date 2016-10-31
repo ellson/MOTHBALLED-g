@@ -98,61 +98,55 @@ static void print_shortstr(FILE *chan, elem_t *elem, char *sep) {
 }
 
 /**
- * Print a simple fragment list (a string)
- * or print a list of strings (recursively), with appropriate separators
- * and indentation
+ * Print an elem, recursively, with appropriate separators and indentation
  *
  * If non-negative initial indent, each nested list is printed at an incremented indent
  *
  * @param chan output FILE*
- * @param list the header of a fraglist, or a list (maybe nested)  of fraglists
+ * @param elem to be printed
  * @param indent if not -ve, then the initial indent
  * @param sep if not NULL then a character to be printed first
  */
-void print_list(FILE * chan, elem_t * list, int indent, char *sep)
+void print_elem(LIST_t * LIST, elem_t * elem, int indent, char *sep)
 {
-    elem_t *elem;
     elemtype_t type;
     int ind, cnt, width;
+    FILE *chan = stdout;
 
-    assert(list->type == (char)LISTELEM);
-
-    elem = list->u.l.first;
-    if (!elem) {
-        return;
-    }
-    type = (elemtype_t) (elem->type);
-    switch (type) {
-    case FRAGELEM:
-        print_frags(chan, list->state, elem, sep);
-        break;
-    case LISTELEM:
-        cnt = 0;
-        width = 0;
-        while (elem) {
-            assert(elem->type == (char)type);    // check all the same type
-            if (cnt++) {
-                putc('\n', chan);
-                putc(' ', chan);
-                if (indent >= 0) {
-                    ind = indent;
-                    while (ind--)
-                        putc(' ', chan);
+    if (elem) {
+        type = (elemtype_t) (elem->type);
+        switch (type) {
+        case FRAGELEM:
+            print_frags(chan, elem->state, elem, sep);
+            break;
+        case LISTELEM:
+            cnt = 0;
+            width = 0;
+            while (elem) {
+                assert(elem->type == (char)type);    // check all the same type
+                if (cnt++) {
+                    putc('\n', chan);
+                    putc(' ', chan);
+                    if (indent >= 0) {
+                        ind = indent;
+                        while (ind--)
+                            putc(' ', chan);
+                    }
+                } else {
+                    putc(' ', chan);
                 }
-            } else {
-                putc(' ', chan);
+                width = print_len_frag(chan, NAMEP(elem->state));
+                ind = indent + width + 1;
+                print_elem(LIST, elem->u.l.first, ind, sep);    // recurse
+                elem = elem->u.l.next;
             }
-            width = print_len_frag(chan, NAMEP(elem->state));
-            ind = indent + width + 1;;
-            print_list(chan, elem, ind, sep);    // recurse
-            elem = elem->u.l.next;
+            break;
+        case SHORTSTRELEM:
+            print_shortstr(chan, elem, sep);
+            break;
+        case TREEELEM:
+            print_tree(LIST, elem);
+            break;
         }
-        break;
-    case SHORTSTRELEM:
-        print_shortstr(chan, elem, sep);
-        break;
-    case TREEELEM:
-        assert(0);  // should not be here
-        break;
     }
 }

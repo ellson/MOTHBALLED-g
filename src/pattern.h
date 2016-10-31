@@ -9,9 +9,10 @@ extern "C" {
 
 #include "emit.h"
 #include "match.h"
+#include "tree.h"
 
-elem_t *
-pattern(CONTENT_t * CONTENT, elem_t * subject);
+void pattern_update(CONTENT_t * CONTENT, elem_t * subject, state_t verb);
+elem_t * pattern_match(CONTENT_t * CONTENT, elem_t * subject);
 
 #ifdef __cplusplus
 }

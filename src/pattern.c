@@ -18,21 +18,41 @@
  *
  * The following are valid pattern STRING:
  *      *       // This and the next require only prefix matching
- *      abcd*
+ *      abcd*   
+ *      abcdef  // Exact matches are ok
  *
- *      ab*ef   // FIXME - this and the next require suffix matching - not yet implemented
- *      *cdef
- *
- * and all of these patterns will match
- *      abcdef
+ * The following are not (yet) supported because they requre suffix matching
+ *      *def
+ *      ab*ef
  * 
  * A SUBJECT is matched if all its pattern and non-pattern STRINGS
  * match, after pattern substitution.
  * 
- * ENDPOINTSETs are not expanded in patterns, or in SUBJECTs
- * before pattern matching. (i.e. the form of ENDPOINTSETS must be the same for a match to occur)
+ * The form of ENDPOINTSETS must be the same for a match to occur.
  */ 
  
+
+void pattern_update(CONTENT_t * CONTENT, elem_t * subject, state_t verb)
+{
+    assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
+    if (verb == (char)QRY) {
+        assert(0);  // FIXME - report error
+    }
+    if (CONTENT->subject_type == NODE) {
+        if (verb == (char)TLD) {
+ //           remove_item(LIST, CONTENT->node_pattern_acts, obj);
+        } else {
+ //           insert_item(LIST, CONTENT->node_pattern_acts, obj);
+        }
+    } else {
+        if (verb == (char)TLD) {
+ //           remove_item(LIST, CONTENT->edge_pattern_acts, obj);
+        } else {
+ //           insert_item(LIST, CONTENT->edge_pattern_acts, obj);
+        }
+    }
+}
+
 /**
  * Look for pattern match(es) to the current subject (segregated
  * into NODE and EDGE patterns).
@@ -49,7 +69,7 @@
 // FIXME, this tacks a SUBJECT and returns a list of SUBJECTS
 //      better if they were the same type
 elem_t *
-pattern(CONTENT_t * CONTENT, elem_t * subject)
+pattern_match(CONTENT_t * CONTENT, elem_t * subject)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
@@ -100,3 +120,4 @@ pattern(CONTENT_t * CONTENT, elem_t * subject)
 //E(LIST);
     return newacts;
 }
+

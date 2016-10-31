@@ -93,7 +93,7 @@ static void api1_string(PARSE_t * PARSE, elem_t * branch)
     char sep;
 
     sep = 0;
-    print_list(PARSE->out, branch, -1, &sep);
+    print_elem(PARSE, branch, -1, &sep);
 }
 
 static void api1_token(PARSE_t * PARSE, char token)

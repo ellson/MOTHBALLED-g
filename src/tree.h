@@ -13,7 +13,7 @@ extern "C" {
 
 elem_t * search(elem_t * p, elem_t * key);
 void print_tree(LIST_t * LIST, elem_t * p);
-elem_t * insert(LIST_t * LIST, elem_t * p, elem_t * key);
+elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t * key);
 elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key);
 
 #ifdef __cplusplus

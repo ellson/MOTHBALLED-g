@@ -71,13 +71,13 @@ P(LIST, list);
 
     switch (subjtype) {
     case NODE:
-        CONTENT->nodes = insert(LIST, CONTENT->nodes, subject->u.l.first); // skip NODEID
+        CONTENT->nodes = insert_item(LIST, CONTENT->nodes, subject->u.l.first); // skip NODEID
         break;
     case SIBLING:
-        CONTENT->nodes = insert(LIST, CONTENT->nodes, subject->u.l.first->u.l.first); // skip NODEREF NODEID
+        CONTENT->nodes = insert_item(LIST, CONTENT->nodes, subject->u.l.first->u.l.first); // skip NODEREF NODEID
         break;
     case EDGE:
-        CONTENT->edges = insert(LIST, CONTENT->edges, subject); 
+        CONTENT->edges = insert_item(LIST, CONTENT->edges, subject); 
         break;
     default:
         S(subjtype);
