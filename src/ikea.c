@@ -427,7 +427,7 @@ void ikea_store_close ( ikea_store_t * ikea_store )
     char glob_pattern[(sizeof(tempdir_template) +4)];
     int rc;
 
-    // glob for all the files in the temporay directory
+    // glob for all the files in the temporaray directory
     strcpy(glob_pattern, ikea_store->tempdir);
     strcat(glob_pattern, "/*");
     if ((rc = glob(glob_pattern, 0, glob_err, &pglob))) {
