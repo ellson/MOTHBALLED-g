@@ -1,7 +1,9 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 #include <openssl/evp.h>
 #include <errno.h>
 #include <zlib.h>
