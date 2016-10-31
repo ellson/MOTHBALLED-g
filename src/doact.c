@@ -53,7 +53,7 @@ P(act);
 //
     newsubjects = sameas(CONTENT, subject);
     assert(newsubjects);
-//P(newsubjects);
+P(newsubjects);
 //----------------------- example
 // G:      <a b> <= c>
 //
@@ -62,7 +62,7 @@ P(act);
 //                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC b
 //                                 RAN
 //         ACT SUBJECT OBJECT EDGE LAN
-//                                 LEG EQL
+//                                 LEG SAMEAS
 //                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC c
 //                                 RAN
 //

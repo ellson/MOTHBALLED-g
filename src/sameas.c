@@ -13,7 +13,7 @@ sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newl
 /**
  * rewrite subject into a newsubject
  * compare subject with oldsubject
- * substitue EQL in newsubject from corresponding member of
+ * substitue SAMEAS in newsubject from corresponding member of
  *   oldsubject (or error if old not available)
  *      replace subject and oldsubject with newsubject
  *
@@ -39,7 +39,7 @@ sameas(CONTENT_t * CONTENT, elem_t * subject)
     nextold = CONTENT->subject->u.l.first;
     CONTENT->subject_type = 0;  // will be set by sameas_r()
 
-    // rewrite subject into newsubject with any EQL elements substituted from oldsubject
+    // rewrite subject into newsubject with any SAMEAS elements substituted from oldsubject
     sameas_r(CONTENT, subject, &nextold, newsubject);
     assert(newsubject->u.l.first);
 
@@ -54,7 +54,7 @@ sameas(CONTENT_t * CONTENT, elem_t * subject)
 }
 
 /**
- * rewrite subject into newlist with any EQL elements substituted from oldlist
+ * rewrite subject into newlist with any SAMEAS elements substituted from oldlist
  *
  * @param CONTENT container context
  * @param subject
@@ -117,7 +117,7 @@ sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newl
                 *nextold = (*nextold)->u.l.next;
             }
             break;
-        case EQL:
+        case SAMEAS:
             if (*nextold) {
                 new = ref_list(LIST, *nextold);
                 append_transfer(newlist, new);
