@@ -37,12 +37,10 @@ static elem_t * pattern_match(CONTENT_t * CONTENT, elem_t * subject);
 
 elem_t * pattern(CONTENT_t * CONTENT, elem_t * subject, state_t verb)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
-    LIST_t *LIST = (LIST_t*)PARSE;
-    TOKEN_t *TOKEN = (TOKEN_t*)PARSE;
+    PARSE_t *PARSE = CONTENT->PARSE;
     elem_t *newsubjects;
 
-    if ((CONTENT->is_pattern = TOKEN->has_ast)) {
+    if ((CONTENT->is_pattern = ((TOKEN_t*)PARSE)->has_ast)) {
         PARSE->stat_patternactcount++;
         assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
         pattern_update(CONTENT, subject, verb);
@@ -93,13 +91,13 @@ static elem_t * pattern_match(CONTENT_t * CONTENT, elem_t * subject)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
-    elem_t *newacts = NULL, *pattern_acts, *act, *subj, *attr;
+    elem_t *newacts = NULL, *pattern_acts, *subj, *attr;
 
     assert(subject);
     assert((state_t) subject->state == SUBJECT);
 
-//E(LIST);
-//P(LIST, subject);
+//E();
+//P(subject);
 
     assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
     if (CONTENT->subject_type == NODE) {
@@ -135,7 +133,7 @@ static elem_t * pattern_match(CONTENT_t * CONTENT, elem_t * subject)
         }
     }
 
-//E(LIST);
+//E();
     return newacts;
 }
 

@@ -107,11 +107,10 @@ static void print_shortstr(FILE *chan, elem_t *elem, char *sep) {
  * @param indent if not -ve, then the initial indent
  * @param sep if not NULL then a character to be printed first
  */
-void print_elem(LIST_t * LIST, elem_t * elem, int indent, char *sep)
+void print_elem(FILE * chan, elem_t * elem, int indent, char *sep)
 {
     elemtype_t type;
     int ind, cnt, width;
-    FILE *chan = stdout;
 
     if (elem) {
         type = (elemtype_t) (elem->type);
@@ -137,7 +136,7 @@ void print_elem(LIST_t * LIST, elem_t * elem, int indent, char *sep)
                 }
                 width = print_len_frag(chan, NAMEP(elem->state));
                 ind = indent + width + 1;
-                print_elem(LIST, elem->u.l.first, ind, sep);    // recurse
+                print_elem(chan, elem->u.l.first, ind, sep);    // recurse
                 elem = elem->u.l.next;
             }
             break;
@@ -145,8 +144,32 @@ void print_elem(LIST_t * LIST, elem_t * elem, int indent, char *sep)
             print_shortstr(chan, elem, sep);
             break;
         case TREEELEM:
-            print_tree(LIST, elem);
+            print_tree(chan, elem, sep);
             break;
         }
     }
 }
+
+/**
+ * print a tree from left to right.  i.e in insertion sort order
+ *
+ * @param chan the FILE* for the output
+ * @param p the root of the tree (should be in the middle of the resulting list)
+ * @param sep the separator beween items
+ */
+void print_tree(FILE *chan, elem_t * p, char *sep)
+{
+    assert(p);
+    assert(p->u.t.key);
+    assert(p->u.t.key->u.l.first);
+    assert(p->u.t.key->u.l.first->u.l.first);
+
+    if (p->u.t.left) {
+        print_tree(chan, p->u.t.left, sep);
+    }
+    print_frags(stdout, 0, p->u.t.key->u.l.first->u.l.first, sep);
+    if (p->u.t.right) {
+        print_tree(chan, p->u.t.right, sep);
+    }
+}
+

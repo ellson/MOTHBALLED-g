@@ -21,7 +21,7 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
 
     PARSE->stat_inactcount++;
 
-P(LIST, act);
+P(act);
 
 
 
@@ -37,7 +37,7 @@ P(LIST, act);
     attributes = subject->u.l.next;       // and ATTRIBUTES (if any) are next
     assert(subject);
     assert(subject->state == (char)SUBJECT);
-//P(LIST, subject);
+//P(subject);
 //----------------------- example
 // G:      ?a
 //
@@ -53,7 +53,7 @@ P(LIST, act);
 //
     newsubjects = sameas(CONTENT, subject);
     assert(newsubjects);
-//P(LIST, newsubjects);
+//P(newsubjects);
 //----------------------- example
 // G:      <a b> <= c>
 //
@@ -84,7 +84,7 @@ P(LIST, act);
 // Later we reattach the attributes to the reassembled ACTs
 //
     attribute_update(CONTENT, attributes, verb);
-//P(LIST, newsubjects);
+//P(newsubjects);
 //----------------------- example
 // G:       a[foo=bar abc=xyz]
 //
@@ -117,7 +117,7 @@ P(LIST, act);
     //  pattern generates an additional subject.
 
     assert(newsubjects);
-//P(LIST, newsubjects);
+//P(newsubjects);
 
 // FIXME so this is probably flawed - doesn't it need a loop?
     // dispatch events for the ACT just finished
@@ -130,7 +130,7 @@ P(LIST, act);
     elem = newsubjects->u.l.first;
     while (elem) {
         PARSE->stat_outactcount++;
-P(LIST,elem);
+P(elem);
         reduce(CONTENT, elem);  // eliminate redundancy by insertion sorting into trees.
 
         elem = elem->u.l.next;

@@ -8,7 +8,7 @@
 #include "dispatch.h"
 
 static void
-dispatch_r(LIST_t * LIST, elem_t * list, elem_t *attributes,
+dispatch_r(PARSE_t * PARSE, elem_t * list, elem_t *attributes,
         elem_t * nodes, elem_t * edges);
 
 static elem_t *
@@ -67,8 +67,8 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
     assert(act->type == (char)LISTELEM);
     assert((state_t) act->state == ACT);
 
-//E(LIST);
-//P(LIST, act);
+//E();
+//P(act);
 
     newacts = new_list(LIST, 0); // return list
 
@@ -77,7 +77,7 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
     attributes = new_list(LIST, 0);
 
     // expand OBJECT_LIST and ENDPOINTSETS
-    dispatch_r(LIST, act, attributes, nodes, edges);
+    dispatch_r(PARSE, act, attributes, nodes, edges);
 
     // if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
@@ -125,8 +125,8 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
     free_list(LIST, edges);
     free_list(LIST, attributes);
 
-//E(LIST);
-//P(LIST, newacts);
+//E();
+//P(newacts);
     return(newacts);
 }
 
@@ -142,22 +142,23 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
  * @param edges -- appended
  */
 static void
-dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
+dispatch_r(PARSE_t * PARSE, elem_t * list, elem_t * attributes,
         elem_t * nodes, elem_t * edges)
 {
+    LIST_t *LIST = (LIST_t*)PARSE;
     elem_t *elem, *new, *object;
     state_t si1, si2;
 
     assert(list->type == (char)LISTELEM);
-//E(LIST);
-//P(LIST, list);
+//E();
+//P(list);
 
     elem = list->u.l.first;
     while (elem) {
         si1 = (state_t) elem->state;
         switch (si1) {
         case ACT:
-            dispatch_r(LIST, elem, attributes, nodes, edges);
+            dispatch_r(PARSE, elem, attributes, nodes, edges);
             break;
         case ATTRIBUTES:
             new = ref_list(LIST, elem);
@@ -168,13 +169,13 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
             si2 = (state_t)object->state;
             switch (si2) {
             case OBJECT:
-                dispatch_r(LIST, object, attributes, nodes, edges);
+                dispatch_r(PARSE, object, attributes, nodes, edges);
                 break;
             case OBJECT_LIST:
                 object = object->u.l.first;
                 while(object) {
                     assert((state_t)object->state == OBJECT);
-                    dispatch_r(LIST, object, attributes, nodes, edges);
+                    dispatch_r(PARSE, object, attributes, nodes, edges);
                     object = object->u.l.next;
                 }
                 break;
@@ -200,7 +201,7 @@ dispatch_r(LIST_t * LIST, elem_t * list, elem_t * attributes,
         }
         elem = elem->u.l.next;
     }
-//E(LIST);
+//E();
 }
 
 /**

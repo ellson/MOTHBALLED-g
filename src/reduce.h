@@ -7,7 +7,8 @@
 extern "C" {
 #endif
 
-#include "tree.h"
+#include "context.h"
+#include "parse.h"
 
 void reduce(CONTENT_t * CONTENT, elem_t *list);
 

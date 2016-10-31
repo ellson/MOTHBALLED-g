@@ -109,7 +109,7 @@ static elem_t * balance(elem_t * p)
  * @param key the element to be found
  * @return the matching element, or NULL if not found
  */
-elem_t * search(elem_t * p, elem_t * key)
+elem_t * search_item(elem_t * p, elem_t * key)
 {
     int comp;
 
@@ -119,36 +119,13 @@ elem_t * search(elem_t * p, elem_t * key)
     comp = compare(key, p->u.t.key);
     if (comp) {
         if (comp < 0) {
-            return search(p->u.t.left, key);
+            return search_item(p->u.t.left, key);
         }
         else {
-            return search(p->u.t.right, key);
+            return search_item(p->u.t.right, key);
         }
     }
     return p;        
-}
-
-/**
- * print the tree from left to right.  i.e in insertion sort order
- *
- * @param LIST the context of the tree
- * @param p the root of the tree (should be in the middle of the resulting list)
- */
-void print_tree(LIST_t * LIST, elem_t * p)
-{
-    assert(p);
-    assert(p->u.t.key);
-    assert(p->u.t.key->u.l.first);
-    assert(p->u.t.key->u.l.first->u.l.first);
-
-    if (p->u.t.left) {
-	    print_tree(LIST, p->u.t.left);
-    }
-//    print_frags(stdout, 0, p->u.t.key->u.l.first->u.l.first, &(((PARSE_t*)LIST)->sep));
-P(LIST, p->u.t.key);
-    if (p->u.t.right) {
-	    print_tree(LIST, p->u.t.right);
-    }
 }
 
 /**

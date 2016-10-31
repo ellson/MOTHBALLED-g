@@ -25,10 +25,10 @@ elem_t *
 sameas(CONTENT_t * CONTENT, elem_t * subject)
 {
     LIST_t * LIST = (LIST_t *)(CONTENT->PARSE);
-    elem_t *oldsubject, *nextold, *newsubject;
+    elem_t *nextold, *newsubject;
 
-//E(LIST);
-//P(LIST,subject);
+//E();
+//P(subject);
 
     assert(CONTENT->subject);
     assert(subject);
@@ -47,8 +47,8 @@ sameas(CONTENT_t * CONTENT, elem_t * subject)
     CONTENT->subject = newsubject; // save the newsubject as oldsubject
     newsubject->refs++;            // and increase its reference count
 
-//E(LIST);
-//P(LIST,newsubject);
+//E();
+//P(newsubject);
 
     return newsubject;        //    to also save as the rewritten current subject
 }

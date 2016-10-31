@@ -37,13 +37,12 @@ api_start_state(CONTENT_t * CONTENT, char class, unsigned char prop, int nest, i
 
 static void api_string(PARSE_t * PARSE, elem_t * branch)
 {
-    LIST_t *LIST = (LIST_t*)PARSE;
     FILE *chan = PARSE->out;
     char sep;
 
     sep = 0;
     putc('\t', chan);
-    print_elem(LIST, branch, -1, &sep);
+    print_elem(chan, branch, -1, &sep);
 }
 
 static void api_token(PARSE_t * PARSE, char token)

@@ -29,8 +29,8 @@ void attribute_update(CONTENT_t * CONTENT, elem_t * attributes, state_t verb)
                 // get pointers to the fraglists for the ATTRID and VALUE
                 attrid = elem->u.l.first->u.l.first;
                 value = elem->u.l.last->u.l.last->u.l.first;
-//P(LIST, attrid);
-//P(LIST, value);
+//P(attrid);
+//P(value);
                 // FIXME - need a version that keeps old on match
                 if (CONTENT->subject_type == NODE) {
     //                    CONTENT->node_attrid = insert_item(LIST, CONTENT->node_attrid, attr);

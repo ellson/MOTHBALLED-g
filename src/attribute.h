@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "emit.h"
+#include "parse.h"
 #include "match.h"
 #include "tree.h"
 

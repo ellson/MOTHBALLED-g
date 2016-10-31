@@ -23,11 +23,12 @@ static void expand_hub(LIST_t * LIST, elem_t *tail, elem_t *head, elem_t *disamb
  */
 void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
 {
+    PARSE_t *PARSE = (PARSE_t*)LIST;
     elem_t *elem, *epset, *ep, *np, *new, *disambig = NULL;
     elem_t *newepset, *newleglist, *singletonepset = NULL;
     state_t si1, si2, si3;
 
-//E(LIST);
+//E();
 
     assert(list);
     newepset = new_list(LIST, ENDPOINTSET);
@@ -113,7 +114,7 @@ void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
     free_list(LIST, newepset);
     free_list(LIST, newleglist);
 
-//E(LIST);
+//E();
 }
 
 /**

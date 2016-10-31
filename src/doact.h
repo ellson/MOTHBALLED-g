@@ -7,6 +7,7 @@
 extern "C" {
 #endif
 
+#include "attribute.h"
 #include "pattern.h"
 #include "dispatch.h"
 #include "reduce.h"

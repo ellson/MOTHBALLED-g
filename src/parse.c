@@ -46,9 +46,7 @@ success_t parse(PARSE_t * PARSE)
 {
     success_t rc;
 
-//E(PARSE);
     rc = parse_nest_r(PARSE, NULL);
-//E(PARSE);
     return rc;
 }
 
@@ -60,8 +58,6 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *root;
-
-//E(LIST);
 
     CONTENT->PARSE = PARSE;
     CONTENT->subject = new_list(LIST, SUBJECT);
@@ -81,18 +77,15 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
             token_error(TOKEN, TOKEN->state, "Parse error. Last good state was:");
         }
     }
-//P(LIST,root);
-//E(LIST);
-
     if (CONTENT->nodes) {
-        PARSE->sep = '\0';
-        print_tree(LIST, CONTENT->nodes);
-        putc('\n', stdout);
+        PARSE->sep = ' ';
+        print_tree(PARSE->out, CONTENT->nodes, &(PARSE->sep));
+        putc('\n', PARSE->out);
     }
     if (CONTENT->edges) {
-        PARSE->sep = '\0';
-        print_tree(LIST, CONTENT->edges);
-        putc('\n', stdout);
+        PARSE->sep = ' ';
+        print_tree(PARSE->out, CONTENT->edges, &(PARSE->sep));
+        putc('\n', PARSE->out);
     }
 
 // FIXME - don't forget to include NODE and EDGE patterns, after NODES and EDGES
@@ -103,7 +96,6 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
 
     ikea_box_close ( CONTENT->ikea_box );
 
-//E(LIST);
     free_list(LIST, root);
     free_tree(LIST, CONTENT->nodes);
     free_tree(LIST, CONTENT->edges);
@@ -112,11 +104,10 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
     free_list(LIST, CONTENT->edge_pattern_acts);
 
     if (LIST->stat_elemnow) {
-        E(LIST);
+        E();
         assert(LIST->stat_elemnow == 0);   // check for elem leaks
     }
 
-//E(LIST);
     return rc;
 }
 
@@ -144,7 +135,7 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
     elem_t *branch, *new;
     static unsigned char nullstring[] = { '\0' };
 
-//E(LIST);
+//E();
 
     branch = new_list(LIST, si);  // return list
 
@@ -295,7 +286,7 @@ done: // State exit processing
 
     emit_end_state(CONTENT, si, rc, nest, repc);
 
-//E(LIST);
+//E();
     return branch;
 }
 
