@@ -46,8 +46,8 @@
  *        When g is running, the tree is unpacked into a private tree.
  */
 
-static char *tempdir_template="/tmp/g_XXXXXX";
-static char *tempfile_template="/g_XXXXXX";
+static char tempdir_template[]="/tmp/g_XXXXXX";
+static char tempfile_template[]="/g_XXXXXX";
 
 // private structs
 struct ikea_store_s {
