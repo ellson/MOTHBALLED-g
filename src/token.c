@@ -63,7 +63,6 @@ static success_t token_more_in(TOKEN_t * TOKEN)
         INBUF->inbuf->refs = 1;    // add active-inbuf reference
         TOKEN->in = INBUF->inbuf->buf;
     }
-
     if (TOKEN->file) {        // if there is an existing active input file
         if (TOKEN->insi == NLL && feof(TOKEN->file)) {    //    if it is at EOF
             //   Although the grammar doesn't care, I decided that it would
@@ -87,10 +86,9 @@ static success_t token_more_in(TOKEN_t * TOKEN)
                 TOKEN->file = stdin;
                 *(TOKEN->pargc) = 0;    // No files after stdin
             } else {
-                TOKEN->file = fopen(TOKEN->filename, "rb");
-                if (!TOKEN->file) {
+                if (! (TOKEN->file = fopen(TOKEN->filename, "rb")))
                     FATAL("fopen()");
-                }
+// FIXME            FATAL("fopen(\"%s\", \"rb\")", TOKEN->filename);
             }
             TOKEN->linecount_at_start = TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount;
             TOKEN->stat_filecount++;
