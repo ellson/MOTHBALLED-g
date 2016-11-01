@@ -20,11 +20,22 @@
 
 8. thread and event model
 - parser per thread
+- allow multiple ACTIVITY streams per parser (ACTS treated atomically)
 - inotify input events
-- cron-like output events e.g. "cron{^/graph[full=nowtime%3600 diff=nowtime%5]}"
+  - on last non-stdin file on command line?
+  - on file with special option ?
+  - RESTful events on a socket  (push or pull) - a daemon mode
+- cron-like:
+	 output events e.g. "cron{^/graph[full=nowtime%3600 diff=nowtime%5]}"
+-        input polling events, ....
+         access verication...
+
 - gdiff - for incremental outputs
 
 9. queries
+- results return to same bidir channel (RESTfull, socket, stdio, 
+            -- what about queries in files??? 
+                     -- maybe treat as if stdin -- return results to stdout
 - return multiple results from applying a match
 - edge queries
 - meta queries:  ?^g ?^p  ?^s  ?^n    (graph, patterns, stats, net)
@@ -42,5 +53,26 @@
 12. ?? separate threads/processes for layout computation
 
 13. distributed graphs
+  - net is a graph of authorized ssh access,  
+  -    authorization may be symmetric: either end can intiate ssh
+                        or asymmetric: only one end can initiate
+  - access to authorized host needs to be verfied periodically,
+      and indications made to the graph at both ends if access is broken 
+      -- any normal RESTful connection can be used as verification
+         polling only need in absence of normal traffic
+
+  - access authorizations are at the user level, so avalable to 
+    all g process run by that user
+
+  - each g process may use all or any subset of the authorized access
+    in its graph, (or graphs?)
+
+       (a polling strategy is implied for assymetric accees)
+  - actual connections are short RESTful connections over ssh.
+
+    - no graph concept of read-only -  if the access is authorized
+    (symmetric or asymetric) then both sides see the same distributed graph
+
+
 
 14. g_pretty with opt for degrees of ecpansion and indentation
