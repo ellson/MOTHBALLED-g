@@ -257,12 +257,12 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
 /**
  * Return a pointer to an elem_t which holds a shortstr
  * (suitable for use as a hash name for hubs)
- * The string is stored in the struct.  Maximum length is the first 24 characters.
- * of the referenced str.  The stored string is *not* NUL terminated;
+ * The string is stored in the struct.  Maximum length sizeof(void*)*3
+ * The stored string is *not* NUL terminated;
  *
  * @param LIST the top-level context in which all lists are managed
  * @param state a one character value stored with the elem, no internal meaning
- * @param str string to be strored in elem,  first 24 chars max
+ * @param str string to be stored in elem, max 12 chars on 32 bit machines
  * @return a new intialized elem_t
  */
 elem_t *new_shortstr(LIST_t * LIST, char state, char * str)
