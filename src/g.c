@@ -36,9 +36,10 @@ int main(int argc, char *argv[])
             optnum = 0;
         switch (opt) {
         case 'T':
-            if (select_emitter(optarg) == FAIL)
+            if (select_emitter(optarg) == FAIL) {
                 fprintf(stderr, "No back-end found for format: -T%s\n", optarg);
                 exit(EXIT_FAILURE);
+            }
             break;
         case 'd':
             switch (optnum) {
