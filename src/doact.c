@@ -62,7 +62,7 @@ P(newsubjects);
 //                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC b
 //                                 RAN
 //         ACT SUBJECT OBJECT EDGE LAN
-//                                 LEG SAMEAS
+//                                 LEG EQL
 //                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC c
 //                                 RAN
 //
