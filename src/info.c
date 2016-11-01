@@ -168,11 +168,12 @@ char * stats(PARSE_t * PARSE)
 #ifdef HAVE_CLOCK_GETTIME
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    struct timespec nowtime;
+    static struct timespec uptime;
+    static struct timespec nowtime;
 #else
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    struct timeval nowtime;
+    static struct timeval nowtime;
 #endif
 
     append_string  (PARSE, &pos, "stats_running");
@@ -181,9 +182,11 @@ char * stats(PARSE_t * PARSE)
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (clock_gettime(CLOCK_BOOTTIME, &nowtime))
+    if (clock_gettime(CLOCK_BOOTTIME, &uptime))
         FATAL("clock_gettime()");
-    runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_nsec)
+    if (clock_gettime(CLOCK_REALTIME, &nowtime))
+        FATAL("clock_gettime()");
+    runtime = ((uint64_t)uptime.tv_sec * TEN9 + (uint64_t)uptime.tv_nsec)
             - ((uint64_t)(PARSE->uptime.tv_sec) * TEN9 + (uint64_t)(PARSE->uptime.tv_nsec));
 #else
     // Y2038-unsafe struct - but should be ok for uptime
@@ -193,6 +196,7 @@ char * stats(PARSE_t * PARSE)
     runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_usec) * TEN3
             - ((uint64_t)(PARSE->uptime.tv_sec) * TEN9 + (uint64_t)(PARSE->uptime.tv_usec) * TEN3);
 #endif
+    Au("nowtime",               nowtime.tv_sec);
     Ar("runtime",               runtime/TEN9, runtime%TEN9);
     Au("filecount",             PARSE->TOKEN.stat_filecount);
     Au("linecount",             1 + (TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount));
