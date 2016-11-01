@@ -37,7 +37,7 @@ void fatal(const char *file, int line, const char *format, ...)
     }
     fprintf(stderr, " : ");
     va_start(args, format);
-    fprintf(stderr, format, args);
+    vfprintf(stderr, format, args);
     va_end(args);
     putc('\n', stderr);
 

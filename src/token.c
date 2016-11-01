@@ -87,8 +87,7 @@ static success_t token_more_in(TOKEN_t * TOKEN)
                 *(TOKEN->pargc) = 0;    // No files after stdin
             } else {
                 if (! (TOKEN->file = fopen(TOKEN->filename, "rb")))
-                    FATAL("fopen()");
-// FIXME            FATAL("fopen(\"%s\", \"rb\")", TOKEN->filename);
+                    FATAL("fopen(\"%s\", \"rb\")", TOKEN->filename);
             }
             TOKEN->linecount_at_start = TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount;
             TOKEN->stat_filecount++;

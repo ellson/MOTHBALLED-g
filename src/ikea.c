@@ -141,8 +141,7 @@ ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_conten
 
     // make a temporary file 
     if ((fd = mkstemp(ikea_box->tempfile)) == -1)
-        FATAL("mkstemp()");
-// FIXME        FATAL("mkstemp(%s)", ikea_box->tempfile);
+        FATAL("mkstemp(%s)", ikea_box->tempfile);
 
     // convert to FILE*
     if ((ikea_box->fh = fdopen(fd, "w")) == NULL)

@@ -9,8 +9,7 @@ extern "C" {
 
 void fatal(const char *file, int line, const char *format, ...);
 
-#define FATAL(...) {fatal(__FILE__,__LINE__,__VA_ARGS__);}
-
+#define FATAL(...) {fatal(__FILE__, __LINE__, __VA_ARGS__);}
 
 #ifdef __cplusplus
 }
