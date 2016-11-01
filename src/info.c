@@ -85,32 +85,19 @@ char * session(PARSE_t * PARSE)
         return buf;
     }
 
-    append_string  (PARSE, &pos, "stats_fixed");
-    append_token   (PARSE, &pos, '[');
-
-    As("progname",              PARSE->progname);
-
+    // gather info
+    
     PARSE->pid = getpid();
-    Au("pid",                   PARSE->pid);
-
     uid = geteuid();
     if (!(pw = getpwuid(uid)))
         FATAL("getpwuid()");
-
     PARSE->username = pw->pw_name;
-    As("username",              PARSE->username);
-
     if (uname(&unamebuf))
         FATAL("uname()");
     PARSE->hostname = unamebuf.nodename;
     PARSE->osname = unamebuf.sysname;
     PARSE->osrelease = unamebuf.release;
     PARSE->osmachine = unamebuf.machine;
-    As("hostname",              PARSE->hostname);
-    As("osname",                PARSE->osname);
-    As("osrelease",             PARSE->osrelease);
-    As("osmachine",             PARSE->osmachine);
-
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe function - but should be ok for uptime and starttime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
@@ -126,21 +113,34 @@ char * session(PARSE_t * PARSE)
     if (gettimeofday(&starttime, NULL))
         FATAL("gettimeofday()");
 #endif
-    Au("uptime",                PARSE->uptime.tv_sec);
-    Au("starttime",             starttime.tv_sec);
-    Au("voidptrsize",           sizeof(void*));
-    Au("inbufsize",             sizeof(inbuf_t));
-    Au("inbufcapacity",         INBUFIZE);
-    Au("inbuf_per_malloc",      INBUFALLOCNUM);
-    Au("inbufmallocsize",       INBUFALLOCNUM * sizeof(inbuf_t));
-    Au("elemsize",              sizeof(elem_t));
-    Au("elem_per_malloc",       LISTALLOCNUM);
-    Au("elemmallocsize",        LISTALLOCNUM * sizeof(elem_t));
 
+    // write in canonical g format
+    // - minimal spacing - one SUBJECT per line
+    // - alpha sorted nodes and attributes
+
+    PARSE->sep = '\0';
+    append_string  (PARSE, &pos, "stats_fixed");
+    append_token   (PARSE, &pos, '[');
+    Au("elemmallocsize",        LISTALLOCNUM * sizeof(elem_t));
+    Au("elempermalloc",         LISTALLOCNUM);
+    Au("elemsize",              sizeof(elem_t));
+    As("hostname",              PARSE->hostname);
+    Au("inbufcapacity",         INBUFIZE);
+    Au("inbufmallocsize",       INBUFALLOCNUM * sizeof(inbuf_t));
+    Au("inbufpermalloc",        INBUFALLOCNUM);
+    Au("inbufsize",             sizeof(inbuf_t));
+    As("osmachine",             PARSE->osmachine);
+    As("osname",                PARSE->osname);
+    As("osrelease",             PARSE->osrelease);
+    Au("pid",                   PARSE->pid);
+    As("progname",              PARSE->progname);
+    Au("starttime",             starttime.tv_sec);
+    Au("uptime",                PARSE->uptime.tv_sec);
+    As("username",              PARSE->username);
+    Au("voidptrsize",           sizeof(void*));
     append_token   (PARSE, &pos, ']');
 
     assert(pos < buf+SESSION_BUF_SIZE);
-
     return buf;
 }
 
@@ -160,11 +160,10 @@ char * stats(PARSE_t * PARSE)
     LIST_t *LIST = (LIST_t*)PARSE;
     INBUF_t *INBUF = (INBUF_t*)PARSE;
     static char buf[STATS_BUF_SIZE];
-    uint64_t runtime, itot, etot;
+    uint64_t runtime, lend, itot, etot;
 
     char *pos = &buf[0];  // NB non-static.  stats are updated and re-formatted on each call
     
-    PARSE->sep = '\0';
 #ifdef HAVE_CLOCK_GETTIME
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
@@ -176,9 +175,8 @@ char * stats(PARSE_t * PARSE)
     static struct timeval nowtime;
 #endif
 
-    append_string  (PARSE, &pos, "stats_running");
-    append_token   (PARSE, &pos, '[');
-
+    // gather info
+    
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
@@ -196,38 +194,43 @@ char * stats(PARSE_t * PARSE)
     runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_usec) * TEN3
             - ((uint64_t)(PARSE->uptime.tv_sec) * TEN9 + (uint64_t)(PARSE->uptime.tv_usec) * TEN3);
 #endif
-    Au("nowtime",               nowtime.tv_sec);
-    Ar("runtime",               runtime/TEN9, runtime%TEN9);
-    Au("filecount",             PARSE->TOKEN.stat_filecount);
-    Au("linecount",             1 + (TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount));
-    Au("inactcount",            PARSE->stat_inactcount);
-    Au("inacts_per_second",     PARSE->stat_inactcount*TEN9/runtime);
-    Au("sameas",                PARSE->stat_sameas);
-    Au("patternacts",           PARSE->stat_patternactcount);
-    Au("nonpatternacts",        PARSE->stat_nonpatternactcount);
-    Au("patternmatches",        PARSE->stat_patternmatches);
-    Au("outactcount",           PARSE->stat_outactcount);
-    Au("stringcount",           TOKEN->stat_stringcount);
-    Au("fragcount",             TOKEN->stat_fragcount);
+    itot = INBUF->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t);
+    etot = LIST->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
+    lend = (TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount);
+  
+    // write in canonical g format
+    // - minimal spacing - one SUBJECT per line
+    // - alpha sorted nodes and attributes
+
+    PARSE->sep = '\0';
+    append_string  (PARSE, &pos, "stats_running");
+    append_token   (PARSE, &pos, '[');
     Au("charcount",             TOKEN->stat_inchars);
-    Au("char_per_second",       TOKEN->stat_inchars + TEN9 / runtime);
-    Au("inbufmax",              INBUF->stat_inbufmax);
-    Au("inbufnow",              INBUF->stat_inbufnow);
+    Au("charpersecond",         TOKEN->stat_inchars + TEN9 / runtime);
+    Au("elemmalloccount",       LIST->stat_elemmalloc);
+    Au("elemmalloctotal",       etot);
     Au("elemmax",               LIST->stat_elemmax);
     Au("elemnow",               LIST->stat_elemnow);
+    Au("fragcount",             TOKEN->stat_fragcount);
     Au("inbufmalloccount",      INBUF->stat_inbufmalloc);
-
-    itot = INBUF->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t);
     Au("inbufmalloctotal",      itot);
-    Au("elemmalloccount",       LIST->stat_elemmalloc);
-
-    etot = LIST->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
-    Au("elemmalloctotal",       etot);
+    Au("inbufmax",              INBUF->stat_inbufmax);
+    Au("inbufnow",              INBUF->stat_inbufnow);
+    Au("inactcount",            PARSE->stat_inactcount);
+    Au("inactpatterns",         PARSE->stat_patternactcount);
+    Au("inactnonpatterns",      PARSE->stat_nonpatternactcount);
+    Au("inactspersecond",       PARSE->stat_inactcount*TEN9/runtime);
+    Au("infilecount",           PARSE->TOKEN.stat_filecount);
+    Au("inlinecount",           lend + 1);
     Au("malloctotal",           itot+etot);
-
+    Au("nowtime",               nowtime.tv_sec);
+    Au("outactcount",           PARSE->stat_outactcount);
+    Au("patternmatches",        PARSE->stat_patternmatches);
+    Ar("runtime",               runtime/TEN9, runtime%TEN9);
+    Au("sameas",                PARSE->stat_sameas);
+    Au("stringcount",           TOKEN->stat_stringcount);
     append_token   (PARSE, &pos, ']');
 
     assert(pos < buf+STATS_BUF_SIZE);
-
     return buf;
 }
