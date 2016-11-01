@@ -8,15 +8,48 @@
 
 #include "attribute.h"
 
+
+/**
+ * ATTRID and VALUE are stored in separate trees:
+ * ATTRID are stored in one tree, and VALUE is stored in another
+ *
+ * Both trees are sorted by ATTRID
+ *
+ * The ATTRID tree is common to all the CONTAINERs in a SESSION
+ * This is to permit the FRAGLIST representing the ATTRID to
+ * be inserted just once, on first use, and then shared by
+ * reference from all NODEs or EDGEs that set a VALUE for that ATTRID.
+ *
+ * Every NODE and EDGE has its own VALUE tree
+ *
+ *         an OBJECT's
+ *         VALUE tree
+ *          /      \
+ *       /    \  /    \   key           first
+ *                     .--------> ABC -------- > FRAGLIST of string VALUE
+ *                                 |
+ *                                 |
+ *         SESSION's               | next
+ *         ATTRID tree             |
+ *          /      \               |
+ *       /    \  /    \   key      v    first
+ *                    .---------> ABC ---------> FRAGLIST of string ATTRID
+ *
+ *
+ * After parse, we have a SUBJECT which applies to one or more OBJECTs
+ * of the same type (NODE or EDGE).
+ *
+ * After varios transformations of the SUBJECT we get a list of individual
+ * OBJECTS and the the single set of ATTRIBUTES from the ACT
+ * need to be merged individually for each OBJECT.
+ */
+
 void attribute_update(CONTENT_t * CONTENT, elem_t * attributes, state_t verb)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t *LIST = (LIST_t*)PARSE;
     elem_t *attrid, *value, *elem;
     state_t si;
-
-    // ATTRID are stored in a sorted list of all ATTRID encountered
-    // VALUE are stored in a list sorted by ATTRID for this ACT
     if (attributes) {
         elem = attributes->u.l.first;
         while (elem) {
