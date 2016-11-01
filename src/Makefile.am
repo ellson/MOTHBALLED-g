@@ -81,6 +81,8 @@ libje_la_LIBADD = $(libje_C_la_LIBADD)
 
 bin_PROGRAMS = g g_static
 
+BUILT_SOURCES = grammar.h
+
 g_SOURCES = g.c
 g_CPPFLAGS = 
 g_LDADD = libje.la @LIBS@
@@ -89,9 +91,9 @@ g_static_SOURCES = g.c
 g_static_CPPFLAGS = 
 g_static_LDADD = libje_C.la @LIBS@
 
-grammar.h grammar.c: grammar.ebnf
+grammar.h: grammar.c
 
-grammar.ebnf grammar.gv: grammar.g gacc.sh
+grammar.c grammar.ebnf grammar.gv: grammar.g gacc.sh
 	./gacc.sh grammar.g
 
 grammar.svg: grammar.gv
