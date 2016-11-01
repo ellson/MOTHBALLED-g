@@ -27,6 +27,22 @@
 
 #define SESSION_BUF_SIZE 1024
 
+#define As(attr,valu) { \
+     append_string  (PARSE, &pos, attr); \
+     append_token   (PARSE, &pos, '='); \
+     append_string  (PARSE, &pos, valu); \
+}
+#define Au(attr,valu) { \
+     append_string  (PARSE, &pos, attr); \
+     append_token   (PARSE, &pos, '='); \
+     append_ulong  (PARSE, &pos, valu); \
+}
+#define Ar(attr,valu_s,valu_ns) { \
+     append_string  (PARSE, &pos, attr); \
+     append_token   (PARSE, &pos, '='); \
+     append_runtime  (PARSE, &pos, valu_s, valu_ns); \
+}
+
 /**
  * This code collects info from the environment to:
  *  - populate session info into attributes of a 'g' NODE
@@ -72,81 +88,54 @@ char * session(PARSE_t * PARSE)
     append_string  (PARSE, &pos, "stats_fixed");
     append_token   (PARSE, &pos, '[');
 
-    append_string  (PARSE, &pos, "progname");
-    append_token   (PARSE, &pos, '=');
-    append_string  (PARSE, &pos, PARSE->progname);
+    As("progname",              PARSE->progname);
 
     PARSE->pid = getpid();
-    append_string  (PARSE, &pos, "pid");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->pid);
+    Au("pid",                   PARSE->pid);
 
     uid = geteuid();
     if (!(pw = getpwuid(uid)))
         FATAL("getpwuid()");
+
     PARSE->username = pw->pw_name;
-    append_string  (PARSE, &pos, "username");
-    append_token   (PARSE, &pos, '=');
-    append_string  (PARSE, &pos, PARSE->username);
+    As("username",              PARSE->username);
 
     if (uname(&unamebuf))
         FATAL("uname()");
     PARSE->hostname = unamebuf.nodename;
-    append_string  (PARSE, &pos, "hostname");
-    append_token   (PARSE, &pos, '=');
-    append_string  (PARSE, &pos, PARSE->hostname);
+    PARSE->osname = unamebuf.sysname;
+    PARSE->osrelease = unamebuf.release;
+    PARSE->osmachine = unamebuf.machine;
+    As("hostname",              PARSE->hostname);
+    As("osname",                PARSE->osname);
+    As("osrelease",             PARSE->osrelease);
+    As("osmachine",             PARSE->osmachine);
 
 #if defined(HAVE_CLOCK_GETTIME)
-    // Y2038-unsafe function - but should be ok for uptime
+    // Y2038-unsafe function - but should be ok for uptime and starttime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (clock_gettime(CLOCK_BOOTTIME, &(PARSE->uptime)))
         FATAL("clock_gettime()");
-    append_string  (PARSE, &pos, "uptime");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->uptime.tv_sec);
-#else
-    // Y2038-unsafe function - but should be ok for uptime
-    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (gettimeofday(&(PARSE->uptime), NULL))
-        FATAL("gettimeofday()");
-    append_string  (PARSE, &pos, "uptime");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->uptime.tv_sec);
-#endif
-
-#if defined(HAVE_CLOCK_GETTIME)
-    // Y2038-unsafe function -  FIXME
-    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (clock_gettime(CLOCK_REALTIME, &starttime))
         FATAL("clock_gettime()");
-    append_string  (PARSE, &pos, "starttime");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, starttime.tv_sec);
 #else
-    // Y2038-unsafe function - FIXME
-    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    // Y2038-unsafe function - but should be ok for uptime and starttime
+    // ref: htt,ps://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    if (gettimeofday(&(PARSE->uptime), NULL))
+        FATAL("gettimeofday()");
     if (gettimeofday(&starttime, NULL))
         FATAL("gettimeofday()");
-    append_string  (PARSE, &pos, "starttime");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, starttime.tv_sec);
 #endif
-
-    append_string  (PARSE, &pos, "inbufsize");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, sizeof(inbuf_t));
-
-    append_string  (PARSE, &pos, "inbufcapacity");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, INBUFIZE);
-
-    append_string  (PARSE, &pos, "elemsize");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, sizeof(elem_t));
-
-    append_string  (PARSE, &pos, "elemmallocsize");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, LISTALLOCNUM * sizeof(elem_t));
+    Au("uptime",                PARSE->uptime.tv_sec);
+    Au("starttime",             starttime.tv_sec);
+    Au("voidptrsize",           sizeof(void*));
+    Au("inbufsize",             sizeof(inbuf_t));
+    Au("inbufcapacity",         INBUFIZE);
+    Au("inbuf_per_malloc",      INBUFALLOCNUM);
+    Au("inbufmallocsize",       INBUFALLOCNUM * sizeof(inbuf_t));
+    Au("elemsize",              sizeof(elem_t));
+    Au("elem_per_malloc",       LISTALLOCNUM);
+    Au("elemmallocsize",        LISTALLOCNUM * sizeof(elem_t));
 
     append_token   (PARSE, &pos, ']');
 
@@ -167,7 +156,11 @@ char * session(PARSE_t * PARSE)
  */
 char * stats(PARSE_t * PARSE)
 {
+    TOKEN_t *TOKEN = (TOKEN_t*)PARSE;
+    LIST_t *LIST = (LIST_t*)PARSE;
+    INBUF_t *INBUF = (INBUF_t*)PARSE;
     static char buf[STATS_BUF_SIZE];
+    uint64_t runtime, itot, etot;
 
     char *pos = &buf[0];  // NB non-static.  stats are updated and re-formatted on each call
     
@@ -181,7 +174,6 @@ char * stats(PARSE_t * PARSE)
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     struct timeval nowtime;
 #endif
-    long runtime;    // runtime in seconds
 
     append_string  (PARSE, &pos, "stats_running");
     append_token   (PARSE, &pos, '[');
@@ -201,103 +193,33 @@ char * stats(PARSE_t * PARSE)
     runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_usec) * TEN3
             - ((uint64_t)(PARSE->uptime.tv_sec) * TEN9 + (uint64_t)(PARSE->uptime.tv_usec) * TEN3);
 #endif
+    Ar("runtime",               runtime/TEN9, runtime%TEN9);
+    Au("filecount",             PARSE->TOKEN.stat_filecount);
+    Au("linecount",             1 + (TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount));
+    Au("inactcount",            PARSE->stat_inactcount);
+    Au("inacts_per_second",     PARSE->stat_inactcount*TEN9/runtime);
+    Au("sameas",                PARSE->stat_sameas);
+    Au("patternacts",           PARSE->stat_patternactcount);
+    Au("nonpatternacts",        PARSE->stat_nonpatternactcount);
+    Au("patternmatches",        PARSE->stat_patternmatches);
+    Au("outactcount",           PARSE->stat_outactcount);
+    Au("stringcount",           TOKEN->stat_stringcount);
+    Au("fragcount",             TOKEN->stat_fragcount);
+    Au("charcount",             TOKEN->stat_inchars);
+    Au("char_per_second",       TOKEN->stat_inchars + TEN9 / runtime);
+    Au("inbufmax",              INBUF->stat_inbufmax);
+    Au("inbufnow",              INBUF->stat_inbufnow);
+    Au("elemmax",               LIST->stat_elemmax);
+    Au("elemnow",               LIST->stat_elemnow);
+    Au("inbufmalloccount",      INBUF->stat_inbufmalloc);
 
-    append_string  (PARSE, &pos, "runtime");
-    append_token   (PARSE, &pos, '=');
-    append_runtime (PARSE, &pos, runtime/TEN9, runtime%TEN9);
+    itot = INBUF->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t);
+    Au("inbufmalloctotal",      itot);
+    Au("elemmalloccount",       LIST->stat_elemmalloc);
 
-    append_string  (PARSE, &pos, "files");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->TOKEN.stat_filecount);
-
-    append_string  (PARSE, &pos, "lines");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, 1 + (PARSE->TOKEN.stat_lfcount ? PARSE->TOKEN.stat_lfcount : PARSE->TOKEN.stat_crcount));
-
-    append_string  (PARSE, &pos, "inacts");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->stat_inactcount);
-
-    append_string  (PARSE, &pos, "inacts_per_second");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->stat_inactcount*TEN9/runtime);
-
-    append_string  (PARSE, &pos, "sameas");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->stat_sameas);
-
-    append_string  (PARSE, &pos, "patternacts");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->stat_patternactcount);
-
-    append_string  (PARSE, &pos, "nonpatternacts");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->stat_nonpatternactcount);
-
-    append_string  (PARSE, &pos, "patternmatches");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->stat_patternmatches);
-
-    append_string  (PARSE, &pos, "outacts");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->stat_outactcount);
-
-    append_string  (PARSE, &pos, "strings");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->TOKEN.stat_stringcount);
-
-    append_string  (PARSE, &pos, "fragmentss");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->TOKEN.stat_fragcount);
-
-    append_string  (PARSE, &pos, "inchars");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->TOKEN.stat_inchars);
-
-    append_string  (PARSE, &pos, "chars_per_second");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->TOKEN.stat_inchars + TEN9 / runtime);
-
-    append_string  (PARSE, &pos, "inbufmax");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.INBUF.stat_inbufmax);
-
-    append_string  (PARSE, &pos, "inbufnow");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.INBUF.stat_inbufnow);
-
-    append_string  (PARSE, &pos, "elemmax");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.stat_elemmax);
-
-    append_string  (PARSE, &pos, "elemnow");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.stat_elemnow);
-
-    append_string  (PARSE, &pos, "inbufmallocsize");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, INBUFALLOCNUM * sizeof(inbuf_t));
-
-    append_string  (PARSE, &pos, "inbufmalloccount");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.INBUF.stat_inbufmalloc);
-
-    append_string  (PARSE, &pos, "inbufmalloctotal");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.INBUF.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t));
-
-    append_string  (PARSE, &pos, "elemmalloccount");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.stat_elemmalloc);
-
-    append_string  (PARSE, &pos, "elemmalloctotal");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, PARSE->TOKEN.LIST.stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t));
-
-    append_string  (PARSE, &pos, "malloctotal");
-    append_token   (PARSE, &pos, '=');
-    append_ulong   (PARSE, &pos, (PARSE->TOKEN.LIST.stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t))
-                        + (PARSE->TOKEN.LIST.INBUF.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t)));
+    etot = LIST->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
+    Au("elemmalloctotal",       etot);
+    Au("malloctotal",           itot+etot);
 
     append_token   (PARSE, &pos, ']');
 

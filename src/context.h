@@ -60,7 +60,10 @@ struct parse_s {               // parse context
     char needstats;            // flag set if -s on command line
     char *progname;            // name of program
     char *username;            // set by first call to g_session
-    char *hostname;            // ditto
+    char *hostname;          
+    char *osname;
+    char *osrelease;
+    char *osmachine;
 
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe struct - but should be ok for uptime
