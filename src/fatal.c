@@ -10,20 +10,32 @@
 
 /**
  * Report an error and exit.
- * Intended only for use from FATAL(...) macro.
+ * Intended only for use from the FATAL(...) macro, #define'd in fatal.h
  *
- * Example:
- *
+ * Source example 1 - basic:
  *     if (!(buf = malloc(sz)))
  *         FATAL("malloc()");
  *
- * might produce the error:
+ * produces error messages like:
  *     FATAL at foo.c:123 with error 12 "Not enough space" : malloc()
+ *
+ * Source example 2 - using additional va_args:
+ *     if (!(fh = fopen(fn, "r")))
+ *         FATAL("fopen(\"%s\", \"r\")", fn);
+ * 
+ * produces error messages like:
+ *     FATAL at foo.c:456 with error 2 "No such file or directory" : fopen("../a/b/c", "r")
+ *
+ * FIXME - include program_invocation_short_name in error messages
+ *         see "man 3 program_invocation_short_name"
+ *         but this is a GNU extension so will need help from configure.ac to make portable
+ *         Alternatively, main's argv[0], which we keep in PARSE->progname,
+ *         but then we have to include parse.h - maybe keep somewhere simpler....
  *
  * @param file name of the source file, as provided by __FILE__
  * @param line within the source file, as provided by __LINE__
  * @param format for message string
- * @param ... varargs for the message string.
+ * @param ... varargs for the format string.
  *
  */
 void fatal(const char *file, int line, const char *format, ...)
