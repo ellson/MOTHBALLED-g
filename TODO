@@ -1,4 +1,6 @@
-2. complete merge.c for attribute merging
+1. fix elem leaks 
+
+2. attribute trees,  attribute merging
 
 3. need some kind of print_edge_name
 - for compare and for ikea ...
@@ -8,22 +10,37 @@
 4. breakout PARSE_t from CONTEXT_t
 
 5. common match code for patterns and queries
-5.a extend match patterns
+
+6. extend match patterns
 - currently suffix matching only
 - can we find a syntax for REs that fits?
 - at least want prefix matching
 
-6. thread model
+7. parent{graph patterns stats cron net...}
 
-7. queries
+8. thread and event model
+- parser per thread
+- inotify input events
+- cron-like output events e.g. "cron{^/graph[full=nowtime%3600 diff=nowtime%5]}"
+- gdiff - for incremental outputs
+
+9. queries
 - return multiple results from applying a match
 - edge queries
 - meta queries:  ?^g ?^p  ?^s  ?^n    (graph, patterns, stats, net)
 
-8. persistence
+10. persistence
 
-9. container updates
+11. container updates
+- requires:
+  1. reading in previous contents
+  2. updating,
+  3. saving and  computing new content hash
+  4. updating content hash in containing object
+  5. removing old contents iff no nonger referenced
 
-10. separate threads/processes for layout computation
+12. ?? separate threads/processes for layout computation
 
-11. distributed graphs
+13. distributed graphs
+
+14. g_pretty with opt for degrees of ecpansion and indentation
