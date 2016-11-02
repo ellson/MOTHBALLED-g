@@ -24,13 +24,23 @@
  */
 PARSE_t *initialize(int *pargc, char *argv[], int optind)
 {
+    SESSION_t *SESSION;
     PARSE_t *PARSE;
+
+    if (! (SESSION = calloc(1, sizeof(SESSION_t))))
+        FATAL("calloc()");
+
+    SESSION->progname = argv[0];
+    SESSION->out = stdout;
 
     if (! (PARSE = calloc(1, sizeof(PARSE_t))))
         FATAL("calloc()");
 
+    PARSE->SESSION = SESSION;
+#if 1
     PARSE->progname = argv[0];
     PARSE->out = stdout;
+#endif
 
     argv = &argv[optind];
     *pargc -= optind;
@@ -48,7 +58,10 @@ PARSE_t *initialize(int *pargc, char *argv[], int optind)
     session(PARSE);
     
     // create (or reopen) store for the containers
+    SESSION->ikea_store = ikea_store_open( NULL );
+#if 1
     PARSE->ikea_store = ikea_store_open( NULL );
+#endif
 
     emit_initialize(PARSE);
 

@@ -30,10 +30,7 @@ typedef struct session_s SESSION_t;
 struct session_s {
     FILE *out;                 // typically stdout for parser debug outputs
     style_t style;             // spacing style in emitted outputs
-    char sep;                  // the next separator
-                               // (either 0, or ' ' if following a STRING that
-                               // requires a separator,  but may be ignored if
-                               // the next character is a token which implicitly separates.)
+                               
     ikea_store_t *ikea_store;  // persistency
     ikea_box_t *namehash_buckets[64];
 
@@ -68,6 +65,13 @@ struct parse_s {               // parse context
     state_t verb;              // after parsing, 0 "add", TLD "del", QRY "query"
     char has_cousin;           // flag set if a COUSIN is found in any EDGE of the ACT
                                //  (forward EDGE to ancestors for processing)
+
+    char sep;                  // the next separator
+                               // (either 0, or ' ' if following a STRING that
+                               // requires a separator,  but may be ignored if
+                               // the next character is a token which
+                               // implicitly separates.)
+
     int containment;           // depth of containment
     long stat_inactcount;
     long stat_outactcount;
@@ -82,10 +86,6 @@ struct parse_s {               // parse context
 
     FILE *out;                 // typically stdout for parser debug outputs
     style_t style;             // spacing style in emitted outputs
-    char sep;                  // the next separator
-                               // (either 0, or ' ' if following a STRING that
-                               // requires a separator,  but may be ignored if
-                               // the next character is a token which implicitly separates.)
     ikea_store_t *ikea_store;  // persistency
     ikea_box_t *namehash_buckets[64];
 
