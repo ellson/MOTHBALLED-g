@@ -260,15 +260,22 @@ parse_list_r(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char prop, 
 done: // State exit processing
     if (rc == SUCCESS) {
         switch (si) {
-        case ACT:
-            rc = doact(CONTENT, branch);    // ACT is complete, process it
+        case ACT:  // ACT is complete, process it
+            rc = doact(CONTENT, branch);
+            // this is the top recursion
+            // no more need for this branch
+            // don't bother appending to root
             break;
-        case VERB:
+        case VERB:  // stash VERB (if any) then drop it
             PARSE->verb = branch->u.l.first->state;  // QRY or TLD
             break;
         case SUBJECT:
-            new = sameas(CONTENT, branch);
-            append_transfer(root, new);
+            new = sameas(CONTENT, branch);  // sameas rewites
+            append_transfer(root, new);     // use modified branch
+            break;
+        case ATTRIBUTES:
+            attrid_merge(CONTENT, branch);  // stash ATTRID
+            append_addref(root, branch);    // branch not modified, 
             break;
         case LBR:
         case RBR:
@@ -277,14 +284,15 @@ done: // State exit processing
         case LPN:
         case RPN:
         case TIC:
-            break; // Ignore terminals that are no longer usefusl
+            break; // Ignore terminals that are no longer useful
         case EQL:
             // we can ignore EQL in VALASSIGN, but not in samas locations
             if (root->state != (char)VALASSIGN) {
-                append_addref(root, branch);  // still needed for sameas
+                append_addref(root, branch);
             }
             break;
         default:
+            // append this branch to root
             append_addref(root, branch);
             break;
         }

@@ -11,11 +11,10 @@
 
 /**
  * ATTRID and VALUE are stored in separate trees:
- * ATTRID are stored in one tree, and VALUE is stored in another
- *
  * Both trees are sorted by ATTRID
  *
  * The ATTRID tree is common to all the CONTAINERs in a SESSION
+ * ( FIXME - what about the meta graph, which includes all the stats ...)
  * This is to permit the FRAGLIST representing the ATTRID to
  * be inserted just once, on first use, and then shared by
  * reference from all NODEs or EDGEs that set a VALUE for that ATTRID.
@@ -36,41 +35,82 @@
  *                    .---------> ABC ---------> FRAGLIST of string ATTRID
  *
  *
- * After parse, we have a SUBJECT which applies to one or more OBJECTs
- * of the same type (NODE or EDGE).
+ * At parse, we have an ATTRIBUTES list which applies to all the OBJECTs from the SUBJECT,
+ * (which are all of the same type, NODE or EDGE).  At this point we merge
+ * the ATTRID into the SESSION's ATTRID tree, adding a reference to the *new* version of
+ * any matching ATTRID, and freeing any older duplicate strings.
+ * The current ATTRIBUTES are not modified. 
  *
- * After varios transformations of the SUBJECT we get a list of individual
- * OBJECTS and the the single set of ATTRIBUTES from the ACT
- * need to be merged individually for each OBJECT.
+ * After various transformations of the SUBJECT we get a list of individual
+ * OBJECTS.  Then, the VALUES from the rewritten ATTRIBUTES get merged with any existing 
+ * VALUES used by the object.  The latest VALUE list is saved in the OBJECT's VALUE trees,
+ * but referring to the ATTRID from the SESSION's ATTRID tree.
  */
+ 
 
-void attribute_update(CONTENT_t * CONTENT, elem_t * attributes, state_t verb)
+
+/**
+ * @param CONTENT - the current container context
+ * @param attributes - the ATTRIBUTES branch before merging ATTRID 
+ */
+void attrid_merge(CONTENT_t * CONTENT, elem_t * attributes)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t *LIST = (LIST_t*)PARSE;
-    elem_t *attr, *attrid, *valassign, *value;
+    elem_t *attr, *attrid, *attrid_str;
     state_t si;
 
     assert(attributes);
+    assert((state_t)attributes->state == ATTRIBUTES);
+
+    attr = attributes->u.l.first;
+    while (attr) {
+        assert((state_t)attr->state == ATTR);
+
+        // get pointer to the fraglist for the ATTRID
+        attrid = attr->u.l.first;
+
+        assert(attrid);
+        assert((state_t)attrid->state == ATTRID);
+
+        attrid_str = attrid->u.l.first;
+P(attrid_str);
+
+        attr = attr->u.l.next;
+    }
+}
+
+
+
+void value_merge(CONTENT_t * CONTENT, elem_t * attributes)
+{
+    PARSE_t * PARSE = CONTENT->PARSE;
+    LIST_t *LIST = (LIST_t*)PARSE;
+    elem_t *attr, *attrid, *attrid_str, *valassign, *value, *value_str;
+    state_t si;
+
+    assert(attributes);
+    assert((state_t)attributes->state == ATTRIBUTES);
 
     attr = attributes->u.l.first;
     while (attr) {
         assert((state_t)attr->state == ATTR);
 
         // get pointers to the fraglists for the ATTRID and VALUE
-        attrid = attr->u.l.first->u.l.first;
-P(attrid);
+        attrid = attr->u.l.first;
+        assert(attrid);
+        assert((state_t)attrid->state == ATTRID);
+
+        attrid_str = attrid->u.l.first;
+//P(attrid_str);
+
         valassign = attr->u.l.first->u.l.next;
         if (valassign) {
-            value = valassign->u.l.first->u.l.first;
-P(value);
-        }
-        //
-        // FIXME - need a version that keeps old on match
-        if (CONTENT->subject_type == NODE) {
-//            CONTENT->node_attrid = insert_item(LIST, CONTENT->node_attrid, attr);
-        } else {
-//            CONTENT->edge_attrid = insert_item(LIST, CONTENT->edge_attrid, attr);
+            value = valassign->u.l.first;
+            assert((state_t)value->state == VALUE);
+
+            value_str = value->u.l.first;
+P(value_str);
         }
 
         attr = attr->u.l.next;

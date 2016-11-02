@@ -54,7 +54,6 @@ struct parse_s {               // parse context
                                // the next character is a token which implicitly separates.)
     ikea_store_t *ikea_store;  // persistency
     ikea_box_t *namehash_buckets[64];
-    elem_t *hash_buckets[64];  // 64 buckets of name hashes and FILE*.
 
 // FIXME -- session context
 

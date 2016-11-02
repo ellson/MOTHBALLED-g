@@ -32,17 +32,6 @@ P(act);
     assert(subject);
     assert(subject->state == (char)SUBJECT);
 
-//======================= process ATTRIBUTES (if any)
-// Do this after sameas so we have the NODE/EDGE classification
-// Later we reattach the attributes to the reassembled ACTs
-//
-    attributes = subject->u.l.next;  // second is ATTRIBUTES
-    if (attributes) {
-        attribute_update(CONTENT, attributes, verb);
-    }
-
-
-
 
 //P(newsubjects);
 //----------------------- example

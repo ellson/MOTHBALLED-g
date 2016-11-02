@@ -11,7 +11,7 @@ extern "C" {
 #include "match.h"
 #include "tree.h"
 
-void attribute_update(CONTENT_t * CONTENT, elem_t * subject, state_t verb);
+void attrid_merge(CONTENT_t * CONTENT, elem_t * attributes);
 
 #ifdef __cplusplus
 }
