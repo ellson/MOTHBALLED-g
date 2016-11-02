@@ -80,7 +80,7 @@ elem_t * attrid_merge(CONTENT_t * CONTENT, elem_t * attributes)
 P(attrid_str);
 
         new = ref_list(LIST, attr);
-        append_addref(newattributes, new);    // FIXME not right yet ...
+        append_transfer(newattributes, new);    // FIXME not right yet ...
 
         attr = attr->u.l.next;
     }

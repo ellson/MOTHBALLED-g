@@ -12,7 +12,8 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t *LIST = (LIST_t*)PARSE;
-    elem_t *subject, *attributes, *newact, *newsubject, *newattributes = NULL, *elem;
+    elem_t *subject, *attributes, *elem;
+    elem_t *newact, *newsubject, *newattributes;
     state_t verb = 0;
 
     assert(act);
@@ -21,6 +22,8 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
     PARSE->stat_inactcount++;
 
 //P(act);
+    
+    newact = new_list(LIST, ACT);
 
     // VERB has been recorded in PARSE->verb during VERB exit processing 
 
@@ -34,6 +37,7 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
 //P(subject)
     newsubject = sameas(CONTENT, subject);
 //P(subject);
+    append_transfer(newact, newsubject);
 //----------------------- example (from two consecutive ACTs)
 // G:          <a b> <= c>
 //
@@ -49,37 +53,41 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
 //                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC c
 //----------------------- 
 
-//====================== stash ATTRID - should be no structural change to ATTRIBUTES
-//                                      just the STRING represent the ATTRID stored only once
+//====================== stash ATTRID - there should be no structural change
+//                                      to ATTRIBUTES,  just the STRING
+//                                      represent the ATTRID stored only once
 
     attributes = subject->u.l.next;   // second item, if any, is attributes
     if (attributes) {
         assert(attributes->state == (char)ATTRIBUTES);
-P(attributes);
+//P(attributes);
         newattributes = attrid_merge(CONTENT, attributes);
-P(newattributes);
+//P(newattributes);
+        append_transfer(newact, newattributes);
     }
 //----------------------- example
-// G:       a[foo=bar abc=xyz]
+// G:              a[foo=bar abc=xyz]
 //
-// attributes:
-//
-// newattributes:
+// attributes:     ATTRIBUTES ATTR ATTRID ABC foo
+//                                 VALASSIGN VALUE ABC bar
+//                            ATTR ATTRID ABC abc
+//                                 VALASSIGN VALUE ABC xyz
+//            
+// newattribute:   ATTRIBUTES ATTR ATTRID ABC foo
+//                                 VALASSIGN VALUE ABC bar
+//                            ATTR ATTRID ABC abc
+//                                 VALASSIGN VALUE ABC xyz
 //----------------------- 
 
-//    newact = new_list(LIST, ACT);
-//    append_transfer(newact, newsubject);
-//    append_addref(newact, attributes);
-//
-//P(newact);
+P(newact);
 
 #if 0
 //======================= collect, remove, or apply patterns
 //
-    new = pattern(CONTENT, newsubject, verb);
-    free_list(LIST, newsubject);
+    new = pattern(CONTENT, newact, verb);
+    free_list(LIST, newact);
     if (new) {
-        newsubject = new;
+       newact = new;
     } else {
         return SUCCESS;  // new pattern stored,  no more procesing for this ACT
     }
@@ -87,8 +95,7 @@ P(newattributes);
     //  N.B. (there can be multiple subjects after pattern subst.  Each matched
     //  pattern generates an additional subject.
 
-    assert(newsubject);
-//P(newsubject);
+P(newact);
 
 // FIXME so this is probably flawed - doesn't it need a loop?
     // dispatch events for the ACT just finished
@@ -108,10 +115,7 @@ P(elem);
     }
 #endif
     
-    free_list(LIST, newsubject);
-    if (newattributes) {
-        free_list(LIST, newattributes);
-    }
+    free_list(LIST, newact);
 
     return SUCCESS;
 }
