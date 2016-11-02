@@ -25,41 +25,25 @@ P(act);
     // VERB has been recorded in PARSE->verb during VERB exit processing 
 //S(PARSE->verb);
 
+    // sameas substitutions have been performed on the subject
+ 
 
     subject = act->u.l.first;   // first item is SUBJECT
     assert(subject);
     assert(subject->state == (char)SUBJECT);
-//P(subjects);
-//----------------------- example
-// G:      <a b> <= c>
-//
-// Parse:  ACT SUBJECT OBJECT EDGE LAN
-//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC a
-//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC b
-//                                 RAN
-//         ACT SUBJECT OBJECT EDGE LAN
-//                                 LEG EQL
-//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC c
-//                                 RAN
-//
-// Here:   SUBJECT OBJECT EDGE LAN
-//                             LEG ENDPOINT SIBLING NODEREF NODEID ABC a
-//                             LEG ENDPOINT SIBLING NODEREF NODEID ABC b
-//                             RAN
-//         SUBJECT OBJECT EDGE LAN
-//                             LEG ENDPOINT SIBLING NODEREF NODEID ABC a
-//                             LEG ENDPOINT SIBLING NODEREF NODEID ABC c
-//                             RAN
-//----------------------- 
-
-
 
 //======================= process ATTRIBUTES (if any)
 // Do this after sameas so we have the NODE/EDGE classification
-// We keep separate attribute lists for NODES and EDGES
 // Later we reattach the attributes to the reassembled ACTs
 //
-    attribute_update(CONTENT, attributes, verb);
+    attributes = subject->u.l.next;  // second is ATTRIBUTES
+    if (attributes) {
+        attribute_update(CONTENT, attributes, verb);
+    }
+
+
+
+
 //P(newsubjects);
 //----------------------- example
 // G:       a[foo=bar abc=xyz]
