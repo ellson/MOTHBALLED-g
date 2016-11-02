@@ -205,13 +205,13 @@ char * stats(PARSE_t * PARSE)
     PARSE->sep = '\0';
     append_string  (PARSE, &pos, "stats_running");
     append_token   (PARSE, &pos, '[');
-    Au("charcount",             TOKEN->stat_inchars);
-    Au("charpersecond",         TOKEN->stat_inchars + TEN9 / runtime);
+    Au("charpersecond",         TOKEN->stat_incharcount+TEN9/runtime);
     Au("elemmalloccount",       LIST->stat_elemmalloc);
     Au("elemmalloctotal",       etot);
     Au("elemmax",               LIST->stat_elemmax);
     Au("elemnow",               LIST->stat_elemnow);
-    Au("fragcount",             TOKEN->stat_fragcount);
+    Au("fragmax",               LIST->stat_fragmax);
+    Au("fragnow",               LIST->stat_fragnow);
     Au("inbufmalloccount",      INBUF->stat_inbufmalloc);
     Au("inbufmalloctotal",      itot);
     Au("inbufmax",              INBUF->stat_inbufmax);
@@ -220,15 +220,17 @@ char * stats(PARSE_t * PARSE)
     Au("inactpatterns",         PARSE->stat_patternactcount);
     Au("inactnonpatterns",      PARSE->stat_nonpatternactcount);
     Au("inactspersecond",       PARSE->stat_inactcount*TEN9/runtime);
-    Au("infilecount",           PARSE->TOKEN.stat_filecount);
+    Au("incharcount",           TOKEN->stat_incharcount);
+    Au("infragcount",           TOKEN->stat_infragcount);
+    Au("infilecount",           TOKEN->stat_infilecount);
     Au("inlinecount",           lend + 1);
+    Au("instringcount",         TOKEN->stat_instringcount);
     Au("malloctotal",           itot+etot);
     Au("nowtime",               nowtime.tv_sec);
     Au("outactcount",           PARSE->stat_outactcount);
     Au("patternmatches",        PARSE->stat_patternmatches);
     Ar("runtime",               runtime/TEN9, runtime%TEN9);
     Au("sameas",                PARSE->stat_sameas);
-    Au("stringcount",           TOKEN->stat_stringcount);
     append_token   (PARSE, &pos, ']');
 
     assert(pos < buf+STATS_BUF_SIZE);

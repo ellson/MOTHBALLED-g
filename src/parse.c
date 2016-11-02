@@ -132,7 +132,7 @@ parse_list_r(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char prop, 
     char so;        // offset to next state, signed
     state_t ti, ni;
     success_t rc;
-    elem_t *branch = new_list(LIST, si);
+    elem_t *new, *branch = new_list(LIST, si);
     static unsigned char nullstring[] = { '\0' };
 
 //E();
@@ -266,12 +266,10 @@ done: // State exit processing
         case VERB:
             PARSE->verb = branch->u.l.first->state;  // QRY or TLD
             break;
-//      case SUBJECT:
-//          do sameas processing
-//          break;
-//      case ATTRIBUTE:
-//          do attribute processing - at least ATTRID
-//          break;
+        case SUBJECT:
+            new = sameas(CONTENT, branch);
+            append_transfer(root, new);
+            break;
         case LBR:
         case RBR:
         case LAN:

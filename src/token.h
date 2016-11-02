@@ -26,12 +26,12 @@ typedef struct {
     char has_ast;              // flag set if an '*' is found in a STRING
     char has_quote;            // flag set if STRING contains one or more DQT fragments
     long linecount_at_start;   // activity line count when this file was opened.
-    long stat_inchars;
     long stat_lfcount;
     long stat_crcount;
-    long stat_stringcount;
-    long stat_fragcount;
-    long stat_filecount;       // various stats
+    long stat_incharcount;
+    long stat_infragcount;
+    long stat_instringcount;
+    long stat_infilecount;       // various stats
 } TOKEN_t;
 
 void token_error(TOKEN_t * TOKEN, state_t si, char *message);

@@ -53,6 +53,8 @@ typedef struct {
     long stat_elemmax;      // list stats
     long stat_elemnow;
     long stat_elemmalloc;
+    long stat_fragnow;
+    long stat_fragmax;
 } LIST_t;
 
 #define LISTALLOCNUM 512

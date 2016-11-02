@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "doact.h"
+#include "sameas.h"
 
 // macro to print an elem
 #define P(L) { \

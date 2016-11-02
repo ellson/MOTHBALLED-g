@@ -29,11 +29,7 @@ P(act);
     subject = act->u.l.first;   // first item is SUBJECT
     assert(subject);
     assert(subject->state == (char)SUBJECT);
-//======================= sameas substitions, also classify subject as NODE or EDGE
-//
-    newsubjects = sameas(CONTENT, subject);
-    assert(newsubjects);
-//P(newsubjects);
+//P(subjects);
 //----------------------- example
 // G:      <a b> <= c>
 //
@@ -82,7 +78,7 @@ P(act);
 //----------------------- 
 
 
-
+#if 0
 //======================= collect, remove, or apply patterns
 //
     new = pattern(CONTENT, newsubjects, verb);
@@ -115,7 +111,7 @@ P(elem);
 
         elem = elem->u.l.next;
     }
-    free_list(LIST, newsubjects);
+#endif
 
     return SUCCESS;
 }

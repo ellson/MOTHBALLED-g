@@ -74,6 +74,7 @@ elem_t *new_list(LIST_t * LIST, char state)
     elem->u.l.last = NULL;
     elem->len = 0;
     elem->refs = 1;
+    elem->height = 0;       // notused
 
     return elem;
 }
@@ -115,6 +116,7 @@ void free_list(LIST_t * LIST, elem_t * elem)
             if (--(elem->u.f.inbuf->refs) == 0) {
                 free_inbuf(&(LIST->INBUF), elem->u.f.inbuf);
             }
+            LIST->stat_fragnow--;    // maintain stats
             break;
         case SHORTSTRELEM:
             // these are self contained singletons,  nothing else to clean up
@@ -251,6 +253,11 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
     elem->height = 0;       // notused
 
     INBUF->inbuf->refs++;   // increment reference count in inbuf.
+    
+    LIST->stat_fragnow++;        // stats
+    if (LIST->stat_fragnow > LIST->stat_fragmax) {
+        LIST->stat_fragmax = LIST->stat_fragnow;
+    }
     return elem;
 }
 

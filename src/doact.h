@@ -11,7 +11,6 @@ extern "C" {
 #include "pattern.h"
 #include "dispatch.h"
 #include "reduce.h"
-#include "sameas.h"
 
 success_t doact(CONTENT_t *CONTENT, elem_t *act);
 

@@ -90,7 +90,7 @@ static success_t token_more_in(TOKEN_t * TOKEN)
                     FATAL("fopen(\"%s\", \"rb\")", TOKEN->filename);
             }
             TOKEN->linecount_at_start = TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount;
-            TOKEN->stat_filecount++;
+            TOKEN->stat_infilecount++;
         } else {
             return FAIL;    // no more input available
         }
@@ -102,7 +102,7 @@ static success_t token_more_in(TOKEN_t * TOKEN)
     //    character in inbuf_t for this )
     TOKEN->insi = char2state[*TOKEN->in];
 
-    TOKEN->stat_inchars += size;
+    TOKEN->stat_incharcount += size;
     return SUCCESS;
 }
 
@@ -294,7 +294,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
             break;
         }
         append_transfer(fraglist, elem);
-        TOKEN->stat_fragcount++;
+        TOKEN->stat_infragcount++;
     }
     return slen;
 }
@@ -323,7 +323,7 @@ success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist)
         slen += len;
     }
     if (slen > 0) {
-        TOKEN->stat_stringcount++;
+        TOKEN->stat_instringcount++;
         if (TOKEN->has_quote) {
             fraglist->state = DQT;
         } else {
@@ -422,7 +422,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
             break;
         }
         append_transfer(fraglist, elem);
-        TOKEN->stat_fragcount++;
+        TOKEN->stat_infragcount++;
     }
     return slen;
 }
@@ -450,7 +450,7 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
         slen += len;
     }
     if (slen > 0) {
-        TOKEN->stat_stringcount++;     //FIXME ?
+        TOKEN->stat_instringcount++;     //FIXME - could we use a separate count for vstring?
         if (TOKEN->has_quote) {
             fraglist->state = DQT;
         } else {
