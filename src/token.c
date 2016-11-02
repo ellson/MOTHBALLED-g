@@ -24,7 +24,9 @@ void token_error(TOKEN_t * TOKEN, state_t si, char *message)
     print_len_frag(stderr, NAMEP(si));
     fprintf(stderr, "\n      in \"%s\" line: %ld just before: \"",
         TOKEN->filename,
-        (TOKEN->stat_lfcount ?  TOKEN->stat_lfcount : TOKEN->stat_crcount) - TOKEN->linecount_at_start + 1);
+        (TOKEN->stat_lfcount ?
+            TOKEN->stat_lfcount :
+            TOKEN->stat_crcount) - TOKEN->linecount_at_start + 1);
     p = TOKEN->in;
     while ((c = *p++)) {
         if (c == '\n' || c == '\r') {
@@ -310,10 +312,12 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
 success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist)
 {
     int len, slen;
+// frags = 0;
 
     TOKEN->has_quote = 0;
     slen = token_string_fragment(TOKEN, fraglist);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
+//        frags++;
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
@@ -329,6 +333,10 @@ success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist)
         } else {
             fraglist->state = ABC;
         }
+        // FIXME can't we use fraglist->len for something useful?
+        //           either the length of the composite string,
+        //           or the number of fragments
+        //           If so, do the same for vstring
         return SUCCESS;
     }
     return FAIL;
