@@ -13,8 +13,8 @@
 static success_t
 parse_content_r(PARSE_t * PARSE, elem_t * subject);
 
-static elem_t *
-parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int repc);
+static success_t
+parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop, int nest, int repc);
 
 static success_t
 parse_more_rep(PARSE_t * PARSE, unsigned char prop);
@@ -57,7 +57,7 @@ static success_t parse_content_r(PARSE_t * PARSE, elem_t * subject)
     success_t rc;
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
-    elem_t *root;
+    elem_t *root = new_list(LIST, ACTIVITY);
 
     CONTENT->PARSE = PARSE;
     CONTENT->subject = new_list(LIST, SUBJECT);
@@ -69,8 +69,7 @@ static success_t parse_content_r(PARSE_t * PARSE, elem_t * subject)
     PARSE->containment++;            // containment nesting level
     PARSE->stat_containercount++;    // number of containers
 
-    root = parse_list_r(CONTENT, ACTIVITY, SREP, 0, 0);
-    if (root) {
+    if ((rc = parse_list_r(CONTENT, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
@@ -115,14 +114,15 @@ static success_t parse_content_r(PARSE_t * PARSE, elem_t * subject)
  * iterate and recurse through state-machine at a single level of containment
  *
  *  @param CONTENT container context
+ *  @param root - the parent's branch that we are adding to
  *  @param si input state
  *  @param prop grammar properties
  *  @param nest recursion nesting level (containment level)
  *  @param repc sequence member counter
- *  @return resulting parsed branch
+ *  @return SUCCESS or FAIL
  */
-static elem_t *
-parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int repc)
+static success_t
+parse_list_r(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
@@ -132,12 +132,10 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
     char so;        // offset to next state, signed
     state_t ti, ni;
     success_t rc;
-    elem_t *branch, *new;
+    elem_t *branch = new_list(LIST, si);
     static unsigned char nullstring[] = { '\0' };
 
 //E();
-
-    branch = new_list(LIST, si);  // return list
 
     rc = SUCCESS;
     emit_start_state(CONTENT, si, prop, nest, repc);
@@ -198,9 +196,6 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
         break;
 
     // the remainder of the switch() is just state initialization
-    case ACT:
-        TOKEN->verb = 0;          // initialize verb to default "add"
-        break;
     case SUBJECT:
         TOKEN->has_ast = 0;       // maintain flag for '*' found anywhere in the subject
         PARSE->has_cousin = 0;    // maintain flag for any NODEREF to COUSIN
@@ -229,46 +224,31 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            new = parse_list_r(CONTENT, ni, nprop, nest, 0);
-            if (new) {
-                append_transfer(branch, new);
-                rc = SUCCESS;
+            if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, 0)) == SUCCESS) {
                 break;                  // ALT satisfied
             }
             // we failed an ALT so continue iteration to try next ALT
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
-                if (new) {
-                    append_transfer(branch, new);
+                if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) == SUCCESS) {
                     while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                        new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
-                        if (new) {
-                            append_transfer(branch, new);
-                        } else {
+                        if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                             break;
                         }
                     }
                 }
                 rc = SUCCESS;           // OPTs always successful
-            } else {                    // else not OPTional
-                new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
-                if (new) {
-                    append_transfer(branch, new);
-                    rc = SUCCESS;           // OPTs always successful
-                } else {
+            } else {                    // else not OPTional, at least one is mandatory
+                if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                     break;
                 }
                 while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                    new = parse_list_r(CONTENT, ni, nprop, nest, repc++);
-                    if (new) {
-                        append_transfer(branch, new);
-                        rc = SUCCESS;           // OPTs always successful
-                    } else {
+                    if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                         break;
                     }
                 }
+                rc = SUCCESS;           // OPTs always successful
             }
         }
         ti++;        // next ALT (if not yet satisfied), or next sequence item
@@ -280,21 +260,34 @@ done: // State exit processing
         case ACT:
             rc = doact(CONTENT, branch);              // ACT is complete, process it
             break;
+        case LBR:
+        case RBR:
+        case LAN:
+        case RAN:
+        case LPN:
+        case RPN:
+        case TIC:
+            // Ignore terminals that are no longer usefusl
+            break;
+        case EQL:
+            // we can ignore EQL in VALASSIGN, but not in samas locations
+            if (root->state != (char)VALASSIGN) {
+                append_addref(root, branch);  // still needed for sameas
+            }
+            break;
         default:
+            append_addref(root, branch);
             break;
         }
     } 
-    if (rc == FAIL) {
-        free_list(LIST, branch);
-        branch = NULL;
-    }
+    free_list(LIST, branch);
     nest--;
     assert(nest >= 0);
 
     emit_end_state(CONTENT, si, rc, nest, repc);
 
 //E();
-    return branch;
+    return rc;
 }
 
 /**

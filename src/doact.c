@@ -119,7 +119,7 @@ P(act);
 
 // FIXME so this is probably flawed - doesn't it need a loop?
     // dispatch events for the ACT just finished
-    new = dispatch(CONTENT, newsubjects);
+    new = dispatch(CONTENT, newsubjects, verb);
     if (new) {
         free_list(LIST, newsubjects);
         newsubjects = new;

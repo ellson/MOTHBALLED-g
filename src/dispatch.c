@@ -9,10 +9,10 @@
 
 static void
 dispatch_r(PARSE_t * PARSE, elem_t * list, elem_t *attributes,
-        elem_t * nodes, elem_t * edges);
+        elem_t * nodes, elem_t * edges, state_t verb);
 
 static elem_t *
-assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes);
+assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
 
 /*
  * Processes an ACT after sameas and pattern substitutions.
@@ -53,10 +53,11 @@ assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes);
 /**
  * @param CONTENT container context
  * @param an ACT
+ * @param verb - add, del, qry 
  * @return new list of ACTS
  */
 elem_t *
-dispatch(CONTENT_t * CONTENT, elem_t * act)
+dispatch(CONTENT_t * CONTENT, elem_t * act, state_t verb)
 {
     PARSE_t *PARSE = CONTENT->PARSE;
     LIST_t * LIST = (LIST_t *)PARSE;
@@ -77,7 +78,7 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
     attributes = new_list(LIST, 0);
 
     // expand OBJECT_LIST and ENDPOINTSETS
-    dispatch_r(PARSE, act, attributes, nodes, edges);
+    dispatch_r(PARSE, act, attributes, nodes, edges, verb);
 
     // if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
@@ -88,7 +89,7 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
     case NODE:
         elem = nodes->u.l.first;
         while (elem) {
-            new = assemble_act(LIST, elem, attributes);
+            new = assemble_act(LIST, elem, attributes, verb);
             append_transfer(newacts, new);
             elem = elem->u.l.next;
         }
@@ -101,15 +102,15 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
         else {
                 elem = nodes->u.l.first;
                 while (elem) {
-                    // inducing nodes from NODEREFS - no attriibutes from these
-                    new = assemble_act(LIST, elem, NULL);
+                    // inducing nodes from NODEREFS - no attributes from these
+                    new = assemble_act(LIST, elem, NULL, verb);    //FIXME we dont want to delete induced nodes!!
                     append_transfer(newacts, new);
                     elem = elem->u.l.next;
                 }
 
                 elem = edges->u.l.first;
                 while (elem) {
-                    new = assemble_act(LIST, elem, attributes);
+                    new = assemble_act(LIST, elem, attributes, verb);
                     append_transfer(newacts, new);
                     elem = elem->u.l.next;
                 }
@@ -140,10 +141,11 @@ dispatch(CONTENT_t * CONTENT, elem_t * act)
  * @param attributes -- appended
  * @param nodes -- appended
  * @param edges -- appended
+ * @param verb
  */
 static void
 dispatch_r(PARSE_t * PARSE, elem_t * list, elem_t * attributes,
-        elem_t * nodes, elem_t * edges)
+        elem_t * nodes, elem_t * edges, state_t verb)
 {
     LIST_t *LIST = (LIST_t*)PARSE;
     elem_t *elem, *new, *object;
@@ -158,7 +160,7 @@ dispatch_r(PARSE_t * PARSE, elem_t * list, elem_t * attributes,
         si1 = (state_t) elem->state;
         switch (si1) {
         case ACT:
-            dispatch_r(PARSE, elem, attributes, nodes, edges);
+            dispatch_r(PARSE, elem, attributes, nodes, edges, verb);
             break;
         case ATTRIBUTES:
             new = ref_list(LIST, elem);
@@ -169,13 +171,13 @@ dispatch_r(PARSE_t * PARSE, elem_t * list, elem_t * attributes,
             si2 = (state_t)object->state;
             switch (si2) {
             case OBJECT:
-                dispatch_r(PARSE, object, attributes, nodes, edges);
+                dispatch_r(PARSE, object, attributes, nodes, edges, verb);
                 break;
             case OBJECT_LIST:
                 object = object->u.l.first;
                 while(object) {
                     assert((state_t)object->state == OBJECT);
-                    dispatch_r(PARSE, object, attributes, nodes, edges);
+                    dispatch_r(PARSE, object, attributes, nodes, edges, verb);
                     object = object->u.l.next;
                 }
                 break;
@@ -214,7 +216,7 @@ dispatch_r(PARSE_t * PARSE, elem_t * list, elem_t * attributes,
  * @return a node act
  */
 static elem_t *
-assemble_act(LIST_t * LIST, elem_t *elem, elem_t *attributes)
+assemble_act(LIST_t * LIST, elem_t *elem, elem_t *attributes, state_t verb)
 {
     TOKEN_t * IN = (TOKEN_t *)LIST;
     elem_t *new;
@@ -223,10 +225,10 @@ assemble_act(LIST_t * LIST, elem_t *elem, elem_t *attributes)
     act = new_list(LIST, ACT);  // return list
 
     // verb
-    switch(IN->verb) {
+    switch(verb) {
     case QRY:
     case TLD:
-        new = new_list(LIST, IN->verb);
+        new = new_list(LIST, verb);
         append_transfer(act, new);
         break;
     case 0:  // default is add
