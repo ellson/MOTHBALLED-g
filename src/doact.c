@@ -21,8 +21,9 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
     PARSE->stat_inactcount++;
 
 P(act);
-    // VERB has been recorded in PARSE->verb during parse
-S(PARSE->verb);
+
+    // VERB has been recorded in PARSE->verb during VERB exit processing 
+//S(PARSE->verb);
 
 
     subject = act->u.l.first;   // first item is SUBJECT
