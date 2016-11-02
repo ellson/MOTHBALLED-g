@@ -18,11 +18,9 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
     assert(act);
     assert(act->u.l.first);  // minimaly, an ACT must have a SUBJECT
 
-
     PARSE->stat_inactcount++;
 
 P(act);
-
 
 
 //====================== VERB extraction
@@ -53,7 +51,7 @@ P(act);
 //
     newsubjects = sameas(CONTENT, subject);
     assert(newsubjects);
-P(newsubjects);
+//P(newsubjects);
 //----------------------- example
 // G:      <a b> <= c>
 //

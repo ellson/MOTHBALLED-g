@@ -11,7 +11,7 @@
 // forward declarations
 
 static success_t
-parse_nest_r(PARSE_t * PARSE, elem_t * subject);
+parse_content_r(PARSE_t * PARSE, elem_t * subject);
 
 static elem_t *
 parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int repc);
@@ -24,13 +24,13 @@ parse_more_rep(PARSE_t * PARSE, unsigned char prop);
  *
  * This parser recurses at two levels:
  *
- * parse() --> parse_nest_r() --> parse_list_r() --| -|  
- *           ^                  ^     |            |  |
- *           |                  |     -> doact()   |  |
- *           |                  |                  |  |
- *           |                  ----------<--------|  |
- *           |                                        |
- *           --------------------<--------------------|
+ * parse() --> parse_content_r() --> parse_list_r() --| -|  
+ *           ^                     ^     |            |  |
+ *           |                     |     -> doact()   |  |
+ *           |                     |                  |  |
+ *           |                     ----------<--------|  |
+ *           |                                           |
+ *           ----------------------<---------------------|
  *
  * The outer recursions are through nested containment.
  *
@@ -46,11 +46,11 @@ success_t parse(PARSE_t * PARSE)
 {
     success_t rc;
 
-    rc = parse_nest_r(PARSE, NULL);
+    rc = parse_content_r(PARSE, NULL);
     return rc;
 }
 
-static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
+static success_t parse_content_r(PARSE_t * PARSE, elem_t * subject)
 {
     CONTENT_t container_context = { 0 };
     CONTENT_t * CONTENT = &container_context;
@@ -112,7 +112,7 @@ static success_t parse_nest_r(PARSE_t * PARSE, elem_t * subject)
 }
 
 /** 
- * recurse through state-machine at a single level of containment
+ * iterate and recurse through state-machine at a single level of containment
  *
  *  @param CONTENT container context
  *  @param si input state
@@ -173,12 +173,13 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
         TOKEN->ei = TOKEN->insi;
         goto done;
     }
+
     switch (si) {
     case ACTIVITY:                // Recursion into Contained activity
         if (TOKEN->bi == LBE) {   // if not top-level of containment
             TOKEN->bi = NLL;
             // recursively process contained ACTIVITY in to its own root
-            rc = parse_nest_r(PARSE, CONTENT->subject);
+            rc = parse_content_r(PARSE, CONTENT->subject);
             TOKEN->bi = TOKEN->insi; // The char class that terminates the ACTIVITY
             goto done;
         }
@@ -274,10 +275,16 @@ parse_list_r(CONTENT_t * CONTENT, state_t si, unsigned char prop, int nest, int 
     }
 
 done: // State exit processing
-    if (rc == SUCCESS && si == ACT && branch) {
-        rc = doact(CONTENT, branch);              // ACT is complete, process it
+    if (rc == SUCCESS) {
+        switch (si) {
+        case ACT:
+            rc = doact(CONTENT, branch);              // ACT is complete, process it
+            break;
+        default:
+            break;
+        }
     } 
-    if (rc == FAIL && branch) {
+    if (rc == FAIL) {
         free_list(LIST, branch);
         branch = NULL;
     }
