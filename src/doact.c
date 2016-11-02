@@ -21,32 +21,13 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
     PARSE->stat_inactcount++;
 
 P(act);
+    // VERB has been recorded in PARSE->verb during parse
+S(PARSE->verb);
 
 
-//====================== VERB extraction
-//
-    subject = act->u.l.first;             // tentatively, first item is SUBJECT
-    if (subject->state == (char)VERB) {   // but it might be a VERB instead
-        verb = subject->u.l.first->state; // record TLD '~' for: "delete"
-                                          //     or QRY '?' for: "query"
-                                          //        defaults to: "add"
-        subject = subject->u.l.next;      // SUBJECT must be second item
-    }
-    attributes = subject->u.l.next;       // and ATTRIBUTES (if any) are next
+    subject = act->u.l.first;   // first item is SUBJECT
     assert(subject);
     assert(subject->state == (char)SUBJECT);
-//P(subject);
-//----------------------- example
-// G:      ?a
-//
-// Parse:  ACT VERB QRY
-//             SUBJECT OBJECT NODE NODEID ABC a
-//
-// Here:   SUBJECT OBJECT NODE NODEID ABC a
-//----------------------- 
-
-   
-
 //======================= sameas substitions, also classify subject as NODE or EDGE
 //
     newsubjects = sameas(CONTENT, subject);

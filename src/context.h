@@ -31,6 +31,7 @@ struct parse_s {               // parse context
 
     TOKEN_t TOKEN;             // Must be first (to allow casting from PARSE_t)
 
+    state_t verb;              // after parsing, 0 "add", TLD "del", QRY "query"
     char has_cousin;           // flag set if a COUSIN is found in any EDGE of the ACT
                                //  (forward EDGE to ancestors for processing)
     int containment;           // depth of containment

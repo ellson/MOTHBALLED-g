@@ -196,6 +196,9 @@ parse_list_r(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char prop, 
         break;
 
     // the remainder of the switch() is just state initialization
+    case ACT:
+        PARSE->verb = 0;          // default "add"
+        break;
     case SUBJECT:
         TOKEN->has_ast = 0;       // maintain flag for '*' found anywhere in the subject
         PARSE->has_cousin = 0;    // maintain flag for any NODEREF to COUSIN
@@ -258,8 +261,17 @@ done: // State exit processing
     if (rc == SUCCESS) {
         switch (si) {
         case ACT:
-            rc = doact(CONTENT, branch);              // ACT is complete, process it
+            rc = doact(CONTENT, branch);    // ACT is complete, process it
             break;
+        case VERB:
+            PARSE->verb = branch->u.l.first->state;  // QRY or TLD
+            break;
+//      case SUBJECT:
+//          do sameas processing
+//          break;
+//      case ATTRIBUTE:
+//          do attribute processing - at least ATTRID
+//          break;
         case LBR:
         case RBR:
         case LAN:
@@ -267,8 +279,7 @@ done: // State exit processing
         case LPN:
         case RPN:
         case TIC:
-            // Ignore terminals that are no longer usefusl
-            break;
+            break; // Ignore terminals that are no longer usefusl
         case EQL:
             // we can ignore EQL in VALASSIGN, but not in samas locations
             if (root->state != (char)VALASSIGN) {
