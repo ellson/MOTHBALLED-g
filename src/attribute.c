@@ -52,16 +52,19 @@
 /**
  * @param CONTENT - the current container context
  * @param attributes - the ATTRIBUTES branch before merging ATTRID 
+ * @return replacement attributes list
  */
-void attrid_merge(CONTENT_t * CONTENT, elem_t * attributes)
+elem_t * attrid_merge(CONTENT_t * CONTENT, elem_t * attributes)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t *LIST = (LIST_t*)PARSE;
-    elem_t *attr, *attrid, *attrid_str;
+    elem_t *attr, *attrid, *attrid_str, *newattributes, *newattr, *new;
     state_t si;
 
     assert(attributes);
     assert((state_t)attributes->state == ATTRIBUTES);
+
+    newattributes = new_list(LIST, ATTRIBUTES);
 
     attr = attributes->u.l.first;
     while (attr) {
@@ -76,8 +79,12 @@ void attrid_merge(CONTENT_t * CONTENT, elem_t * attributes)
         attrid_str = attrid->u.l.first;
 P(attrid_str);
 
+        new = ref_list(LIST, attr);
+        append_addref(newattributes, new);    // FIXME not right yet ...
+
         attr = attr->u.l.next;
     }
+    return newattributes;
 }
 
 

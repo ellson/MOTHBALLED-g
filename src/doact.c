@@ -12,7 +12,7 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     LIST_t *LIST = (LIST_t*)PARSE;
-    elem_t *subject, *attributes, *new, *newsubjects, *elem;
+    elem_t *subject, *attributes, *newact, *newsubject, *newattributes = NULL, *elem;
     state_t verb = 0;
 
     assert(act);
@@ -20,44 +20,66 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
 
     PARSE->stat_inactcount++;
 
-P(act);
+//P(act);
 
     // VERB has been recorded in PARSE->verb during VERB exit processing 
-//S(PARSE->verb);
 
-    // sameas substitutions have been performed on the subject
- 
+//S(PARSE->verb);
 
     subject = act->u.l.first;   // first item is SUBJECT
     assert(subject);
     assert(subject->state == (char)SUBJECT);
 
+//====================== substitute sameas OBJECT(s) from previous SUBJECT
+//P(subject)
+    newsubject = sameas(CONTENT, subject);
+//P(subject);
+//----------------------- example (from two consecutive ACTs)
+// G:          <a b> <= c>
+//
+// subject:    SUBJECT OBJECT EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
+//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC b
+//             SUBJECT OBJECT EDGE LEG EQL
+//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC c
+//
+//
+// newsubject: SUBJECT OBJECT EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
+//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC b
+//             SUBJECT OBJECT EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
+//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC c
+//----------------------- 
 
-//P(newsubjects);
+//====================== stash ATTRID - should be no structural change to ATTRIBUTES
+//                                      just the STRING represent the ATTRID stored only once
+
+    attributes = subject->u.l.next;   // second item, if any, is attributes
+    if (attributes) {
+        assert(attributes->state == (char)ATTRIBUTES);
+P(attributes);
+        newattributes = attrid_merge(CONTENT, attributes);
+P(newattributes);
+    }
 //----------------------- example
 // G:       a[foo=bar abc=xyz]
 //
-// Parse:   ACT SUBJECT OBJECT NODE NODEID ABC a
-//              ATTRIBUTES LBR
-//                         ATTR ATTRID ABC foo
-//                              VALASSIGN EQL
-//                                        VALUE ABC bar
-//                         ATTR ATTRID ABC abc
-//                              VALASSIGN EQL
-//                                        VALUE ABC xyz
-//                         RBR
+// attributes:
 //
-// Here:    SUBJECT OBJECT NODE NODEID ABC a
+// newattributes:
 //----------------------- 
 
+//    newact = new_list(LIST, ACT);
+//    append_transfer(newact, newsubject);
+//    append_addref(newact, attributes);
+//
+//P(newact);
 
 #if 0
 //======================= collect, remove, or apply patterns
 //
-    new = pattern(CONTENT, newsubjects, verb);
-    free_list(LIST, newsubjects);
+    new = pattern(CONTENT, newsubject, verb);
+    free_list(LIST, newsubject);
     if (new) {
-        newsubjects = new;
+        newsubject = new;
     } else {
         return SUCCESS;  // new pattern stored,  no more procesing for this ACT
     }
@@ -65,18 +87,18 @@ P(act);
     //  N.B. (there can be multiple subjects after pattern subst.  Each matched
     //  pattern generates an additional subject.
 
-    assert(newsubjects);
-//P(newsubjects);
+    assert(newsubject);
+//P(newsubject);
 
 // FIXME so this is probably flawed - doesn't it need a loop?
     // dispatch events for the ACT just finished
-    new = dispatch(CONTENT, newsubjects, verb);
+    new = dispatch(CONTENT, newsubject, verb);
     if (new) {
-        free_list(LIST, newsubjects);
-        newsubjects = new;
+        free_list(LIST, newsubject);
+        newsubject = new;
     }
 
-    elem = newsubjects->u.l.first;
+    elem = newsubject->u.l.first;
     while (elem) {
         PARSE->stat_outactcount++;
 P(elem);
@@ -85,6 +107,11 @@ P(elem);
         elem = elem->u.l.next;
     }
 #endif
+    
+    free_list(LIST, newsubject);
+    if (newattributes) {
+        free_list(LIST, newattributes);
+    }
 
     return SUCCESS;
 }

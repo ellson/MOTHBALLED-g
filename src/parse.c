@@ -266,33 +266,28 @@ done: // State exit processing
             // no more need for this branch
             // don't bother appending to root
             break;
+
+        // drop some terminals that are no longer useful
         case VERB:  // stash VERB (if any) then drop it
             PARSE->verb = branch->u.l.first->state;  // QRY or TLD
             break;
-        case SUBJECT:
-            new = sameas(CONTENT, branch);  // sameas rewites
-            append_transfer(root, new);     // use modified branch
-            break;
-        case ATTRIBUTES:
-            attrid_merge(CONTENT, branch);  // stash ATTRID
-            append_addref(root, branch);    // branch not modified, 
-            break;
-        case LBR:
+        case LBR:  // bracketing ATTRs
         case RBR:
-        case LAN:
+        case LAN:  // bracketing LEGs
         case RAN:
-        case LPN:
+        case LPN:  // bracketing OBJECTs
         case RPN:
-        case TIC:
-            break; // Ignore terminals that are no longer useful
+        case TIC:  // prefixing DISAMBID
+            break;
         case EQL:
-            // we can ignore EQL in VALASSIGN, but not in samas locations
+            // we can ignore EQL in VALASSIGN, but not when used in SUBJECT for sameas
             if (root->state != (char)VALASSIGN) {
                 append_addref(root, branch);
             }
             break;
+
         default:
-            // append this branch to root
+            // everything else is appended to parent's branch
             append_addref(root, branch);
             break;
         }
