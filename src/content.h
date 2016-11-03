@@ -1,7 +1,7 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#ifndef PARSE_H
-#define PARSE_H
+#ifndef CONTENT_H
+#define CONTENT_H
 
 #ifdef __cplusplus
 extern "C" {

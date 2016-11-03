@@ -10,7 +10,7 @@
 // private includes
 #include "ikea.h"
 #include "emit.h"
-#include "parse.h"
+#include "content.h"
 #include "container.h"
 
 // public include
@@ -20,7 +20,7 @@ success_t parse(SESSION_t * SESSION)
 {
     success_t rc;
 
-    rc = container(SESSION->PARSE, NULL);
+    rc = container(SESSION->PARSE);
     return rc;
 }
 

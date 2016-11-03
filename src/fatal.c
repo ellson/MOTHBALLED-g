@@ -30,7 +30,6 @@
  *         see "man 3 program_invocation_short_name"
  *         but this is a GNU extension so will need help from configure.ac to make portable
  *         Alternatively, main's argv[0], which we keep in PARSE->progname,
- *         but then we have to include parse.h - maybe keep somewhere simpler....
  *
  * @param file name of the source file, as provided by __FILE__
  * @param line within the source file, as provided by __LINE__

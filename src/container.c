@@ -6,10 +6,33 @@
 #include <string.h>
 #include <assert.h>
 
-#include "parse.h"
+#include "content.h"
 #include "container.h"
 
-success_t container(PARSE_t * PARSE, elem_t * subject)
+/**
+ * parse G syntax input
+ *
+ * This parser recurses at two levels:
+ *
+ * parse() --> container() --> content() ---| -|  
+ *           ^               ^  |           |  |
+ *           |               |  -> doact()  |  |
+ *           |               |              |  |
+ *           |               --------<------|  |
+ *           |                                 |
+ *           ----------------<-----------------|
+ *
+ * The outer recursions are through nested containment.
+ *
+ * The inner recursions are through the grammar state_machine at a single
+ * level of containment - maintained in the CONTENT context
+ *
+ * The top-level SESSION context is available to both and maintains the input state.
+ *
+ * @param PARSE context
+ * @return success/fail
+ */
+success_t container(PARSE_t * PARSE)
 {
     CONTENT_t container_context = { 0 };
     CONTENT_t * CONTENT = &container_context;

@@ -6,7 +6,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "parse.h"
+#include "content.h"
 #include "container.h"
 
 // forward declarations
@@ -104,7 +104,7 @@ success_t content(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char p
         if (TOKEN->bi == LBE) {   // if not top-level of containment
             TOKEN->bi = NLL;
             // recursively process contained ACTIVITY in to its own root
-            rc = container(PARSE, CONTENT->subject);
+            rc = container(PARSE);
             TOKEN->bi = TOKEN->insi; // The char class that terminates the ACTIVITY
             goto done;
         }

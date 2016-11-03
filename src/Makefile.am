@@ -12,6 +12,7 @@ noinst_HEADERS = \
     attribute.h \
     compare.h \
     container.h \
+    content.h \
     context.h \
     dispatch.h \
     doact.h \
@@ -28,7 +29,6 @@ noinst_HEADERS = \
     list.h \
     match.h \
     merge.h \
-    parse.h \
     pattern.h \
     reduce.h \
     sameas.h \
@@ -43,6 +43,7 @@ libje_C_la_SOURCES = \
     attribute.c \
     compare.c \
     container.c \
+    content.c \
     dispatch.c \
     doact.c \
     dumpg.c \
@@ -64,7 +65,6 @@ libje_C_la_SOURCES = \
     list.c \
     match.c \
     merge.c \
-    parse.c \
     pattern.c \
     reduce.c \
     sameas.c \
