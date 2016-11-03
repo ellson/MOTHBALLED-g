@@ -182,11 +182,15 @@ rm -f ${ifn}.s
 
 cat >${ifn}.ebnf <<EOF
 
-Meta grammar:	'|' separates alternates, otherwise the tokens are sequential
+Meta grammar:
+
+        '|' separates alternates, otherwise the tokens are sequential
 		'_' indicates that a non-ABC character must separate elements (e.g. WS)
 		'?' indicates that the token is optional
 		'+' indicates that the token is to be repeated 1 or more times
 		'*' indicates that the token is to be repeated 0 or more times
+
+Grammar:
 
 EOF
 
@@ -309,12 +313,17 @@ done
 
 cat >>${ifn}.ebnf <<EOF
 
-Extra grammar:  Comments in the form of "# ... EOL" are skipped over by the parser.
+Extra grammar:
+
+        Comments in the form of "# ... EOL" are skipped over by the parser.
+
+        MEMBERSETS must be all NODEs, or all EDGEs.  This constraint is enforced
+        by the parser, but not codified by this grammar.
 
 		Whitespace (WS) has no significance in the grammar except in quoted
 		strings and as a separator of last resort between string tokens.
 
-	        Strings can be concatenations of quoted and unquoted character sequences.
+	    Strings can be concatenations of quoted and unquoted character sequences.
 		for example:       abc"d e f"ghi"j\\\\k"
 		is equivalent to:  "abcd e fghij\\\\k"
 
@@ -325,14 +334,22 @@ Extra grammar:  Comments in the form of "# ... EOL" are skipped over by the pars
 		   and may include any characters, except that NLL, DQT, and BSL need
 		   to be escaped with a BSL (i.e. '\\')
 
-                NB. The single-quote character ''' is not special, and has no
-		quoting behavior in this grammar
+        Unquoted strings in NODEs and EDGEs can use only characters in the
+        ABC class.
 
-	        Patterns: if there is an unquoted AST (i.e. '*') in any string
-		in a SUBJECT, then the entire SUBJECT is considered a pattern, and
-		its ACT a pattern_act.   Patterns are used to add ATTRIBUTES and CONTAINER
-		to any future ACT whose SUBJECT matches the pattern. The AST matches any
-		character sequence.
+        Unquoted strings in VALUEs are slightly relaxed, additionally allowing:
+            '/' '\\' ':' '?'
+        This is to permit simple file paths and URLs to be unquoted VALUEs
+
+        NB. The single-quote character ''' is not special, and has no quoting
+        behavior in this grammar.
+
+Patterns:
+
+        If there is an unquoted '*' in any string in a SUBJECT, then the entir
+        SUBJECT is considered a pattern, and its ACT a pattern_act.  Patterns
+        are used to add ATTRIBUTES and CONTAINER to any future ACT whose SUBJECT
+        matches the pattern. The AST matches any character sequence.
 
 EOF
 ##############################################
