@@ -33,7 +33,7 @@ success_t doact(GRAPH_t *GRAPH, elem_t *act)
     assert(subject);
     assert(subject->state == (char)SUBJECT);
 
-//====================== substitute sameas OBJECT(s) from previous SUBJECT
+//====================== substitute sameas MEMBER(s) from previous SUBJECT
 //P(subject)
     newsubject = sameas(CONTAINER, subject);
 //P(subject);
@@ -41,15 +41,15 @@ success_t doact(GRAPH_t *GRAPH, elem_t *act)
 //----------------------- example (from two consecutive ACTs)
 // G:          <a b> <= c>
 //
-// subject:    SUBJECT OBJECT EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
+// subject:    SUBJECT MEMBER EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
 //                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC b
-//             SUBJECT OBJECT EDGE LEG EQL
+//             SUBJECT MEMBER EDGE LEG EQL
 //                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC c
 //
 //
-// newsubject: SUBJECT OBJECT EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
+// newsubject: SUBJECT MEMBER EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
 //                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC b
-//             SUBJECT OBJECT EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
+//             SUBJECT MEMBER EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
 //                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC c
 //----------------------- 
 

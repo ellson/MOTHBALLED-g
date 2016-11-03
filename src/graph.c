@@ -198,7 +198,7 @@ done: // State exit processing
         case RBR:
         case LAN:  // bracketing LEGs
         case RAN:
-        case LPN:  // bracketing OBJECTs
+        case LPN:  // bracketing MEMBERs
         case RPN:
         case TIC:  // prefixing DISAMBID
             break;
