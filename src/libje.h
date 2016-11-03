@@ -26,12 +26,10 @@ typedef enum {
 SESSION_t *initialize( int *argc, char *argv[], int optind );
 void finalize( SESSION_t * SESSION );
 void interrupt( SESSION_t * SESSION );
+success_t parse(SESSION_t * SESSION);
 
 // emit.c
 success_t select_emitter(char *name);
-
-// parse.c
-success_t parse( SESSION_t * SESSION);
 
 // info.c
 char * session( SESSION_t * SESSION );

@@ -7,11 +7,9 @@
 #include <assert.h>
 
 #include "parse.h"
+#include "container.h"
 
 // forward declarations
-
-static success_t
-parse_content_r(PARSE_t * PARSE, elem_t * subject);
 
 static success_t
 parse_more_rep(PARSE_t * PARSE, unsigned char prop);
@@ -39,73 +37,6 @@ parse_more_rep(PARSE_t * PARSE, unsigned char prop);
  * @param SESSION context
  * @return success/fail
  */
-success_t parse(SESSION_t * SESSION)
-{
-    success_t rc;
-
-    rc = parse_content_r(SESSION->PARSE, NULL);
-    return rc;
-}
-
-static success_t parse_content_r(PARSE_t * PARSE, elem_t * subject)
-{
-    CONTENT_t container_context = { 0 };
-    CONTENT_t * CONTENT = &container_context;
-    success_t rc;
-    TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
-    LIST_t * LIST = (LIST_t *)PARSE;
-    elem_t *root = new_list(LIST, ACTIVITY);
-
-    CONTENT->PARSE = PARSE;
-    CONTENT->subject = new_list(LIST, SUBJECT);
-    CONTENT->node_pattern_acts = new_list(LIST, 0);
-    CONTENT->edge_pattern_acts = new_list(LIST, 0);
-    CONTENT->ikea_box = ikea_box_open(PARSE->ikea_store, NULL);
-    CONTENT->out = stdout;
-    emit_start_activity(CONTENT);
-    PARSE->containment++;            // containment nesting level
-    PARSE->stat_containercount++;    // number of containers
-
-    if ((rc = parse_list_r(CONTENT, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
-        if (TOKEN->insi == NLL) {    // EOF is OK
-            rc = SUCCESS;
-        } else {
-            token_error(TOKEN, TOKEN->state, "Parse error. Last good state was:");
-        }
-    }
-    if (CONTENT->nodes) {
-        PARSE->sep = ' ';
-        print_tree(PARSE->out, CONTENT->nodes, &(PARSE->sep));
-        putc('\n', PARSE->out);
-    }
-    if (CONTENT->edges) {
-        PARSE->sep = ' ';
-        print_tree(PARSE->out, CONTENT->edges, &(PARSE->sep));
-        putc('\n', PARSE->out);
-    }
-
-// FIXME - don't forget to include NODE and EDGE patterns, after NODES and EDGES
-//   (Paterns are in effect now, but may not have been at the creation of existing objects.)
-
-    PARSE->containment--;
-    emit_end_activity(CONTENT);
-
-    ikea_box_close ( CONTENT->ikea_box );
-
-    free_list(LIST, root);
-    free_tree(LIST, CONTENT->nodes);
-    free_tree(LIST, CONTENT->edges);
-    free_list(LIST, CONTENT->subject);
-    free_list(LIST, CONTENT->node_pattern_acts);
-    free_list(LIST, CONTENT->edge_pattern_acts);
-
-    if (LIST->stat_elemnow) {
-        E();
-        assert(LIST->stat_elemnow == 0);   // check for elem leaks
-    }
-
-    return rc;
-}
 
 /** 
  * iterate and recurse through state-machine at a single level of containment

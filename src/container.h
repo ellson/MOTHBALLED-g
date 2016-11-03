@@ -7,9 +7,7 @@
 extern "C" {
 #endif
 
-#include "parse.h"
-
-static success_t parse_content_r(PARSE_t * PARSE, elem_t * subject);
+success_t parse_content_r (PARSE_t * PARSE, elem_t * subject);
 
 #ifdef __cplusplus
 }

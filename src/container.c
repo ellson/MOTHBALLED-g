@@ -6,9 +6,10 @@
 #include <string.h>
 #include <assert.h>
 
+#include "parse.h"
 #include "container.h"
 
-static success_t parse_content_r(PARSE_t * PARSE, elem_t * subject)
+success_t parse_content_r(PARSE_t * PARSE, elem_t * subject)
 {
     CONTENT_t container_context = { 0 };
     CONTENT_t * CONTENT = &container_context;

@@ -10,9 +10,19 @@
 // private includes
 #include "ikea.h"
 #include "emit.h"
+#include "parse.h"
+#include "container.h"
 
 // public include
 #include "libje.h"
+
+success_t parse(SESSION_t * SESSION)
+{
+    success_t rc;
+
+    rc = parse_content_r(SESSION->PARSE, NULL);
+    return rc;
+}
 
 /**
  * initialize context and process file args
