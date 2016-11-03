@@ -32,6 +32,7 @@ noinst_HEADERS = \
     pattern.h \
     reduce.h \
     sameas.h \
+	session.h \
     token.h \
     tree.h
 

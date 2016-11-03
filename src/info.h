@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "emit.h"
+#include "session.h"
 
 char * session(SESSION_t * SESSION);
 

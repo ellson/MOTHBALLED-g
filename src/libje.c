@@ -11,6 +11,7 @@
 #include "ikea.h"
 #include "emit.h"
 #include "container.h"
+#include "session.h"
 
 // public include
 #include "libje.h"
