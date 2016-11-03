@@ -20,7 +20,7 @@ success_t parse(SESSION_t * SESSION)
 {
     success_t rc;
 
-    rc = parse_content_r(SESSION->PARSE, NULL);
+    rc = container(SESSION->PARSE, NULL);
     return rc;
 }
 

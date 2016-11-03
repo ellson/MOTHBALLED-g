@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-success_t parse_content_r (PARSE_t * PARSE, elem_t * subject);
+success_t container (PARSE_t * PARSE, elem_t * subject);
 
 #ifdef __cplusplus
 }

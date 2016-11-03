@@ -10,7 +10,7 @@ extern "C" {
 #include "doact.h"
 #include "sameas.h"
 
-success_t parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop, int nest, int repc);
+success_t content(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop, int nest, int repc);
 
 // macro to print an elem
 #define P(L) { \

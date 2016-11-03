@@ -19,20 +19,20 @@ parse_more_rep(PARSE_t * PARSE, unsigned char prop);
  *
  * This parser recurses at two levels:
  *
- * parse() --> parse_content_r() --> parse_list_r() --| -|  
- *           ^                     ^     |            |  |
- *           |                     |     -> doact()   |  |
- *           |                     |                  |  |
- *           |                     ----------<--------|  |
- *           |                                           |
- *           ----------------------<---------------------|
+ * parse() --> container() --> content() ---| -|  
+ *           ^               ^  |           |  |
+ *           |               |  -> doact()  |  |
+ *           |               |              |  |
+ *           |               --------<------|  |
+ *           |                                 |
+ *           ----------------<-----------------|
  *
  * The outer recursions are through nested containment.
  *
  * The inner recursions are through the grammar state_machine at a single
- * level of containment - maintained in container_context (CONTENT)
+ * level of containment - maintained in the CONTENT context
  *
- * The top-level context (PARSE) is available to both and maintains the input state.
+ * The top-level SESSION context is available to both and maintains the input state.
  *
  * @param SESSION context
  * @return success/fail
@@ -49,7 +49,7 @@ parse_more_rep(PARSE_t * PARSE, unsigned char prop);
  *  @param repc sequence member counter
  *  @return SUCCESS or FAIL
  */
-success_t parse_list_r(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
+success_t content(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
@@ -104,7 +104,7 @@ success_t parse_list_r(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned c
         if (TOKEN->bi == LBE) {   // if not top-level of containment
             TOKEN->bi = NLL;
             // recursively process contained ACTIVITY in to its own root
-            rc = parse_content_r(PARSE, CONTENT->subject);
+            rc = container(PARSE, CONTENT->subject);
             TOKEN->bi = TOKEN->insi; // The char class that terminates the ACTIVITY
             goto done;
         }
@@ -154,27 +154,27 @@ success_t parse_list_r(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned c
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, 0)) == SUCCESS) {
+            if ((rc = content(CONTENT, branch, ni, nprop, nest, 0)) == SUCCESS) {
                 break;                  // ALT satisfied
             }
             // we failed an ALT so continue iteration to try next ALT
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) == SUCCESS) {
+                if ((rc = content(CONTENT, branch, ni, nprop, nest, repc++)) == SUCCESS) {
                     while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                        if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                        if ((rc = content(CONTENT, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                             break;
                         }
                     }
                 }
                 rc = SUCCESS;           // OPTs always successful
             } else {                    // else not OPTional, at least one is mandatory
-                if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                if ((rc = content(CONTENT, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                     break;
                 }
                 while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                    if ((rc = parse_list_r(CONTENT, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                    if ((rc = content(CONTENT, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                         break;
                     }
                 }

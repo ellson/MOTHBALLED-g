@@ -9,7 +9,7 @@
 #include "parse.h"
 #include "container.h"
 
-success_t parse_content_r(PARSE_t * PARSE, elem_t * subject)
+success_t container(PARSE_t * PARSE, elem_t * subject)
 {
     CONTENT_t container_context = { 0 };
     CONTENT_t * CONTENT = &container_context;
@@ -28,7 +28,7 @@ success_t parse_content_r(PARSE_t * PARSE, elem_t * subject)
     PARSE->containment++;            // containment nesting level
     PARSE->stat_containercount++;    // number of containers
 
-    if ((rc = parse_list_r(CONTENT, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
+    if ((rc = content(CONTENT, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
