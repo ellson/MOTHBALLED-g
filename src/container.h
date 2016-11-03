@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#include "graph.h"
+
 success_t container(GRAPH_t * GRAPH);
 
 #ifdef __cplusplus

@@ -10,7 +10,6 @@
 // private includes
 #include "ikea.h"
 #include "emit.h"
-#include "graph.h"
 #include "container.h"
 
 // public include

@@ -7,8 +7,7 @@
 extern "C" {
 #endif
 
-#include "context.h"
-#include "graph.h"
+#include "container.h"
 
 void reduce(CONTAINER_t * CONTAINER, elem_t *list);
 
