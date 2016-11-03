@@ -63,7 +63,7 @@
  * is used. It is only filled on the first call,  if session() is
  * called again the same result is used.
  *
- * @param PARSE context
+ * @param SESSION context
  * @return formatted string result
  */
 char * session(SESSION_t * SESSION)
@@ -88,28 +88,28 @@ char * session(SESSION_t * SESSION)
 
     // gather info
     
-    PARSE->pid = getpid();
+    SESSION->pid = getpid();
     uid = geteuid();
     if (!(pw = getpwuid(uid)))
         FATAL("getpwuid()");
-    PARSE->username = pw->pw_name;
+    SESSION->username = pw->pw_name;
     if (uname(&unamebuf))
         FATAL("uname()");
-    PARSE->hostname = unamebuf.nodename;
-    PARSE->osname = unamebuf.sysname;
-    PARSE->osrelease = unamebuf.release;
-    PARSE->osmachine = unamebuf.machine;
+    SESSION->hostname = unamebuf.nodename;
+    SESSION->osname = unamebuf.sysname;
+    SESSION->osrelease = unamebuf.release;
+    SESSION->osmachine = unamebuf.machine;
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe function - but should be ok for uptime and starttime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (clock_gettime(CLOCK_BOOTTIME, &(PARSE->uptime)))
+    if (clock_gettime(CLOCK_BOOTTIME, &(SESSION->uptime)))
         FATAL("clock_gettime()");
     if (clock_gettime(CLOCK_REALTIME, &starttime))
         FATAL("clock_gettime()");
 #else
     // Y2038-unsafe function - but should be ok for uptime and starttime
     // ref: htt,ps://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (gettimeofday(&(PARSE->uptime), NULL))
+    if (gettimeofday(&(SESSION->uptime), NULL))
         FATAL("gettimeofday()");
     if (gettimeofday(&starttime, NULL))
         FATAL("gettimeofday()");
@@ -125,19 +125,19 @@ char * session(SESSION_t * SESSION)
     Au("elemmallocsize",        LISTALLOCNUM * sizeof(elem_t));
     Au("elempermalloc",         LISTALLOCNUM);
     Au("elemsize",              sizeof(elem_t));
-    As("hostname",              PARSE->hostname);
+    As("hostname",              SESSION->hostname);
     Au("inbufcapacity",         INBUFIZE);
     Au("inbufmallocsize",       INBUFALLOCNUM * sizeof(inbuf_t));
     Au("inbufpermalloc",        INBUFALLOCNUM);
     Au("inbufsize",             sizeof(inbuf_t));
-    As("osmachine",             PARSE->osmachine);
-    As("osname",                PARSE->osname);
-    As("osrelease",             PARSE->osrelease);
-    Au("pid",                   PARSE->pid);
-    As("progname",              PARSE->progname);
+    As("osmachine",             SESSION->osmachine);
+    As("osname",                SESSION->osname);
+    As("osrelease",             SESSION->osrelease);
+    Au("pid",                   SESSION->pid);
+    As("progname",              SESSION->progname);
     Au("starttime",             starttime.tv_sec);
-    Au("uptime",                PARSE->uptime.tv_sec);
-    As("username",              PARSE->username);
+    Au("uptime",                SESSION->uptime.tv_sec);
+    As("username",              SESSION->username);
     Au("voidptrsize",           sizeof(void*));
     append_token   (PARSE, &pos, ']');
 
@@ -187,14 +187,14 @@ char * stats(SESSION_t * SESSION)
     if (clock_gettime(CLOCK_REALTIME, &nowtime))
         FATAL("clock_gettime()");
     runtime = ((uint64_t)uptime.tv_sec * TEN9 + (uint64_t)uptime.tv_nsec)
-            - ((uint64_t)(PARSE->uptime.tv_sec) * TEN9 + (uint64_t)(PARSE->uptime.tv_nsec));
+            - ((uint64_t)(SESSION->uptime.tv_sec) * TEN9 + (uint64_t)(SESSION->uptime.tv_nsec));
 #else
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (gettimeofday(&nowtime, NULL))
         FATAL("gettimeofday()");
     runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_usec) * TEN3
-            - ((uint64_t)(PARSE->uptime.tv_sec) * TEN9 + (uint64_t)(PARSE->uptime.tv_usec) * TEN3);
+            - ((uint64_t)(SESSION->uptime.tv_sec) * TEN9 + (uint64_t)(SESSION->uptime.tv_usec) * TEN3);
 #endif
     itot = INBUF->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t);
     etot = LIST->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);

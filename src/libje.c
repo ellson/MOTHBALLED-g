@@ -39,7 +39,7 @@ SESSION_t *initialize(int *pargc, char *argv[], int optind)
     PARSE->SESSION = SESSION;
     SESSION->PARSE = PARSE;
 #if 1
-    PARSE->progname = argv[0];
+    SESSION->progname = argv[0];
     PARSE->out = stdout;
 #endif
 

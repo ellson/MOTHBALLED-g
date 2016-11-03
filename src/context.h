@@ -90,6 +90,7 @@ struct parse_s {               // parse context
     ikea_store_t *ikea_store;  // persistency
     ikea_box_t *namehash_buckets[64];
 
+#if 0
 // FIXME -- session context
 
     char needstats;            // flag set if -s on command line
@@ -110,6 +111,7 @@ struct parse_s {               // parse context
     struct timeval uptime;      // time with subsec resolution since boot, used as the base for runtime calculations
 #endif
     pid_t pid;
+#endif
 };
 
 typedef struct {                // container_context
