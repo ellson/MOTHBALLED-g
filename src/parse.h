@@ -10,6 +10,8 @@ extern "C" {
 #include "doact.h"
 #include "sameas.h"
 
+success_t parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop, int nest, int repc);
+
 // macro to print an elem
 #define P(L) { \
    fprintf(PARSE->out, "\nelem at: %s:%d\n", __FILE__, __LINE__); \

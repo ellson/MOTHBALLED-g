@@ -11,6 +11,7 @@ include_HEADERS = \
 noinst_HEADERS = \
     attribute.h \
     compare.h \
+    container.h \
     context.h \
     dispatch.h \
     doact.h \
@@ -41,6 +42,7 @@ lib_LTLIBRARIES = libje.la
 libje_C_la_SOURCES = \
     attribute.c \
     compare.c \
+    container.c \
     dispatch.c \
     doact.c \
     dumpg.c \

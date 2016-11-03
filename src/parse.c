@@ -14,9 +14,6 @@ static success_t
 parse_content_r(PARSE_t * PARSE, elem_t * subject);
 
 static success_t
-parse_list_r(CONTENT_t * CONTENT, elem_t * root, state_t si, unsigned char prop, int nest, int repc);
-
-static success_t
 parse_more_rep(PARSE_t * PARSE, unsigned char prop);
 
 /**
@@ -121,8 +118,7 @@ static success_t parse_content_r(PARSE_t * PARSE, elem_t * subject)
  *  @param repc sequence member counter
  *  @return SUCCESS or FAIL
  */
-static success_t
-parse_list_r(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
+success_t parse_list_r(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
 {
     PARSE_t * PARSE = CONTENT->PARSE;
     TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
