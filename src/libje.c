@@ -22,7 +22,7 @@
  * @param optind
  * @return context
  */
-PARSE_t *initialize(int *pargc, char *argv[], int optind)
+SESSION_t *initialize(int *pargc, char *argv[], int optind)
 {
     SESSION_t *SESSION;
     PARSE_t *PARSE;
@@ -37,6 +37,7 @@ PARSE_t *initialize(int *pargc, char *argv[], int optind)
         FATAL("calloc()");
 
     PARSE->SESSION = SESSION;
+    SESSION->PARSE = PARSE;
 #if 1
     PARSE->progname = argv[0];
     PARSE->out = stdout;
@@ -55,7 +56,7 @@ PARSE_t *initialize(int *pargc, char *argv[], int optind)
 
     // gather session info, including starttime.
     //    subsequent calls to session() just reuse the info gathered in this first call.
-    session(PARSE);
+    session(SESSION);
     
     // create (or reopen) store for the containers
     SESSION->ikea_store = ikea_store_open( NULL );
@@ -63,9 +64,9 @@ PARSE_t *initialize(int *pargc, char *argv[], int optind)
     PARSE->ikea_store = ikea_store_open( NULL );
 #endif
 
-    emit_initialize(PARSE);
+//    emit_initialize(PARSE);
 
-    return PARSE;
+    return SESSION;
 }
 
 /**
@@ -73,8 +74,9 @@ PARSE_t *initialize(int *pargc, char *argv[], int optind)
  *
  * @param PARSE context
  */
-void finalize( PARSE_t * PARSE )
+void finalize( SESSION_t * SESSION )
 {
+   PARSE_t *PARSE = SESSION->PARSE;
    emit_finalize(PARSE);
 
    ikea_store_snapshot(PARSE->ikea_store);
@@ -82,9 +84,10 @@ void finalize( PARSE_t * PARSE )
 
    // free context
    free(PARSE);
+   free(SESSION);
 }
 
-void interrupt( PARSE_t * PARSE )
+void interrupt( SESSION_t * SESSION )
 {
-   ikea_store_close(PARSE->ikea_store);
+   ikea_store_close(SESSION->PARSE->ikea_store);
 }

@@ -28,6 +28,7 @@ extern "C" {
 typedef struct session_s SESSION_t;
 
 struct session_s {
+    PARSE_t *PARSE;
     FILE *out;                 // typically stdout for parser debug outputs
     style_t style;             // spacing style in emitted outputs
                                

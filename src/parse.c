@@ -39,14 +39,14 @@ parse_more_rep(PARSE_t * PARSE, unsigned char prop);
  *
  * The top-level context (PARSE) is available to both and maintains the input state.
  *
- * @param PARSE context
+ * @param SESSION context
  * @return success/fail
  */
-success_t parse(PARSE_t * PARSE)
+success_t parse(SESSION_t * SESSION)
 {
     success_t rc;
 
-    rc = parse_content_r(PARSE, NULL);
+    rc = parse_content_r(SESSION->PARSE, NULL);
     return rc;
 }
 

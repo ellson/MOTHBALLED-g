@@ -11,14 +11,14 @@
 #include "libje.h"
 #include "fatal.h" 
 
-static PARSE_t * PARSE;  // the input context - needs to be global for intr()
+static SESSION_t * SESSION;  // the context - needs to be global for intr()
 
 // if interrupted we try to gracefully snapshot the current state 
 static void intr(int s)
 {
     (void) s; // NOTUSED
 
-    interrupt(PARSE);
+    interrupt(SESSION);
 
     exit (EXIT_FAILURE);
 }
@@ -83,19 +83,19 @@ int main(int argc, char *argv[])
     }
 
     // create the top-level context for processing the inputs
-    PARSE = initialize(&argc, argv, optind);
+    SESSION = initialize(&argc, argv, optind);
 
     // parse the input 
-    parse(PARSE);
+    parse(SESSION);
 
     // and stats, if wanted 
     if (needstats) {
         // FIXME - need pretty-printer
-        fprintf (stderr, "%s\n", session(PARSE));
-        fprintf (stderr, "%s\n", stats(PARSE));
+        fprintf (stderr, "%s\n", session(SESSION));
+        fprintf (stderr, "%s\n", stats(SESSION));
     }
 
-    finalize(PARSE);
+    finalize(SESSION);
 
     exit(EXIT_SUCCESS);
 }

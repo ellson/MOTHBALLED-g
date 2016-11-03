@@ -9,6 +9,7 @@ extern "C" {
 
 //opaque structs from the public interface
 typedef struct parse_s PARSE_t;
+typedef struct session_s SESSION_t;
 
 typedef enum {
     SUCCESS,
@@ -22,19 +23,19 @@ typedef enum {
 } style_t;
 
 // libje.c
-PARSE_t *initialize( int *argc, char *argv[], int optind );
-void finalize( PARSE_t * PARSE );
-void interrupt( PARSE_t * PARSE );
+SESSION_t *initialize( int *argc, char *argv[], int optind );
+void finalize( SESSION_t * SESSION );
+void interrupt( SESSION_t * SESSION );
 
 // emit.c
 success_t select_emitter(char *name);
 
 // parse.c
-success_t parse( PARSE_t * PARSE);
+success_t parse( SESSION_t * SESSION);
 
 // info.c
-char * session( PARSE_t * PARSE );
-char * stats( PARSE_t * PARSE );
+char * session( SESSION_t * SESSION );
+char * stats( SESSION_t * SESSION );
 
 // dumpg.c
 void set_sstyle( void );

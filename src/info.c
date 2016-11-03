@@ -66,8 +66,9 @@
  * @param PARSE context
  * @return formatted string result
  */
-char * session(PARSE_t * PARSE)
+char * session(SESSION_t * SESSION)
 {
+    PARSE_t *PARSE = SESSION->PARSE;
     static char buf[SESSION_BUF_SIZE];
     static char *pos = &buf[0];  // NB. static. This initalization happens only once
     static struct passwd *pw;
@@ -151,11 +152,12 @@ char * session(PARSE_t * PARSE)
 /**
  * format running stats as a string
  *
- * @param PARSE context
+ * @param SESSION context
  * @return formatted string
  */
-char * stats(PARSE_t * PARSE)
+char * stats(SESSION_t * SESSION)
 {
+    PARSE_t *PARSE = SESSION->PARSE;
     TOKEN_t *TOKEN = (TOKEN_t*)PARSE;
     LIST_t *LIST = (LIST_t*)PARSE;
     INBUF_t *INBUF = (INBUF_t*)PARSE;
