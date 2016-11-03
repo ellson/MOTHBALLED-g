@@ -50,7 +50,7 @@ success_t container(GRAPH_t * GRAPH)
     GRAPH->containment++;            // containment nesting level
     GRAPH->stat_containercount++;    // number of containers
 
-    if ((rc = graph(CONTAINER, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
+    if ((rc = graph(GRAPH, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {

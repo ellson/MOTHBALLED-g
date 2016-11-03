@@ -27,7 +27,7 @@ static success_t more_rep(GRAPH_t * GRAPH, unsigned char prop);
  * The outer recursions are through nested containment.
  *
  * The inner recursions are through the grammar state_machine at a single
- * level of containment - maintained in the CONTAINER context
+ * level of containment.
  *
  * The top-level SESSION context is available to both and maintains the input state.
  *
@@ -38,7 +38,7 @@ static success_t more_rep(GRAPH_t * GRAPH, unsigned char prop);
 /** 
  * iterate and recurse through state-machine at a single level of containment
  *
- *  @param CONTAINER context
+ *  @param GRAPH context
  *  @param root - the parent's branch that we are adding to
  *  @param si input state
  *  @param prop grammar properties
@@ -46,9 +46,8 @@ static success_t more_rep(GRAPH_t * GRAPH, unsigned char prop);
  *  @param repc sequence member counter
  *  @return SUCCESS or FAIL
  */
-success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
+success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
     TOKEN_t * TOKEN = (TOKEN_t *)GRAPH;
     LIST_t * LIST = (LIST_t *)GRAPH;
     INBUF_t * INBUF = (INBUF_t *)GRAPH;
@@ -62,7 +61,7 @@ success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
 //E();
 
     rc = SUCCESS;
-    emit_start_state(CONTAINER, si, prop, nest, repc);
+//    emit_start_state(GRAPH, si, prop, nest, repc);
 
     nest++;
     assert(nest >= 0);            // catch overflows
@@ -151,27 +150,27 @@ success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            if ((rc = graph(CONTAINER, branch, ni, nprop, nest, 0)) == SUCCESS) {
+            if ((rc = graph(GRAPH, branch, ni, nprop, nest, 0)) == SUCCESS) {
                 break;                  // ALT satisfied
             }
             // we failed an ALT so continue iteration to try next ALT
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                if ((rc = graph(CONTAINER, branch, ni, nprop, nest, repc++)) == SUCCESS) {
+                if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) == SUCCESS) {
                     while (more_rep(GRAPH, nprop) == SUCCESS) {
-                        if ((rc = graph(CONTAINER, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                        if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                             break;
                         }
                     }
                 }
                 rc = SUCCESS;           // OPTs always successful
             } else {                    // else not OPTional, at least one is mandatory
-                if ((rc = graph(CONTAINER, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                     break;
                 }
                 while (more_rep(GRAPH, nprop) == SUCCESS) {
-                    if ((rc = graph(CONTAINER, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                    if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                         break;
                     }
                 }
@@ -185,7 +184,7 @@ done: // State exit processing
     if (rc == SUCCESS) {
         switch (si) {
         case ACT:  // ACT is complete, process it
-            rc = doact(CONTAINER, branch);
+            rc = doact(GRAPH, branch);
             // this is the top recursion
             // no more need for this branch
             // don't bother appending to root
@@ -220,7 +219,7 @@ done: // State exit processing
     nest--;
     assert(nest >= 0);
 
-    emit_end_state(CONTAINER, si, rc, nest, repc);
+//    emit_end_state(GRAPH, si, rc, nest, repc);
 
 //E();
     return rc;

@@ -8,9 +8,9 @@
 
 #include "doact.h"
 
-success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
+success_t doact(GRAPH_t *GRAPH, elem_t *act)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)GRAPH;
     LIST_t *LIST = (LIST_t*)GRAPH;
     elem_t *subject, *attributes, *elem;
     elem_t *newact, *newsubject, *newattributes;
