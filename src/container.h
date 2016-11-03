@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#include "libje.h"
+#include "context.h"
 #include "graph.h"
 
 success_t container(GRAPH_t * GRAPH);

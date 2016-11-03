@@ -7,10 +7,11 @@
 extern "C" {
 #endif
 
+#include "token.h"
 #include "doact.h"
 #include "sameas.h"
 
-success_t content(CONTAINER_t * CONTAINER, elem_t * root, state_t si, unsigned char prop, int nest, int repc);
+success_t graph(CONTAINER_t * CONTAINER, elem_t * root, state_t si, unsigned char prop, int nest, int repc);
 
 // macro to print an elem
 #define P(L) { \

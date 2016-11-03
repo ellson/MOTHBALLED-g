@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "context.h"
+#include "container.h"
 
 success_t match(CONTAINER_t * CONTAINER, elem_t * subject, elem_t * pattern);
 
