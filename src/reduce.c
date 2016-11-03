@@ -6,10 +6,10 @@
 
 #include "reduce.h"
 
-void reduce(CONTENT_t * CONTENT, elem_t *list)
+void reduce(CONTAINER_t * CONTAINER, elem_t *list)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
-    LIST_t *LIST = (LIST_t*)PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    LIST_t *LIST = (LIST_t*)GRAPH;
     state_t si, verb = 0, subjtype = 0;
     elem_t *elem, *subject, *attributes = NULL, *disambig = NULL;
 
@@ -71,13 +71,13 @@ P(list);
 
     switch (subjtype) {
     case NODE:
-        CONTENT->nodes = insert_item(LIST, CONTENT->nodes, subject->u.l.first); // skip NODEID
+        CONTAINER->nodes = insert_item(LIST, CONTAINER->nodes, subject->u.l.first); // skip NODEID
         break;
     case SIBLING:
-        CONTENT->nodes = insert_item(LIST, CONTENT->nodes, subject->u.l.first->u.l.first); // skip NODEREF NODEID
+        CONTAINER->nodes = insert_item(LIST, CONTAINER->nodes, subject->u.l.first->u.l.first); // skip NODEREF NODEID
         break;
     case EDGE:
-        CONTENT->edges = insert_item(LIST, CONTENT->edges, subject); 
+        CONTAINER->edges = insert_item(LIST, CONTAINER->edges, subject); 
         break;
     default:
         S(subjtype);

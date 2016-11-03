@@ -28,7 +28,7 @@ extern "C" {
 typedef struct session_s SESSION_t;
 
 struct session_s {
-    PARSE_t *PARSE;
+    GRAPH_t *GRAPH;
     FILE *out;                 // typically stdout for parser debug outputs
     style_t style;             // spacing style in emitted outputs
                                
@@ -59,7 +59,7 @@ struct parse_s {               // parse context
  
 //FIXME -- parser context
 
-    TOKEN_t TOKEN;             // Must be first (to allow casting from PARSE_t)
+    TOKEN_t TOKEN;             // Must be first (to allow casting from GRAPH_t)
 
     SESSION_t *SESSION;
 
@@ -115,7 +115,7 @@ struct parse_s {               // parse context
 };
 
 typedef struct {                // container_context
-    PARSE_t *PARSE;             // the parser context
+    GRAPH_t *GRAPH;             // the parser context
     elem_t *subject;            // Preceeding ACT's subject, until this ACT's
                                 // SUBJECT has been parsed and processd by sameas()
                                 //   - at which point it becomes this ACT's subject.
@@ -138,7 +138,7 @@ typedef struct {                // container_context
 
     // FIXME  - place for fork header for layout process...
 
-} CONTENT_t;
+} CONTAINER_t;
 
 #ifdef __cplusplus
 }

@@ -50,14 +50,14 @@
 
 
 /**
- * @param CONTENT - the current container context
+ * @param CONTAINER - the current container context
  * @param attributes - the ATTRIBUTES branch before merging ATTRID 
  * @return replacement attributes list
  */
-elem_t * attrid_merge(CONTENT_t * CONTENT, elem_t * attributes)
+elem_t * attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
-    LIST_t *LIST = (LIST_t*)PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    LIST_t *LIST = (LIST_t*)GRAPH;
     elem_t *attr, *attrid, *attrid_str, *newattributes, *newattr, *new;
     state_t si;
 
@@ -89,10 +89,10 @@ P(attrid_str);
 
 
 
-void value_merge(CONTENT_t * CONTENT, elem_t * attributes)
+void value_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
-    LIST_t *LIST = (LIST_t*)PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    LIST_t *LIST = (LIST_t*)GRAPH;
     elem_t *attr, *attrid, *attrid_str, *valassign, *value, *value_str;
     state_t si;
 

@@ -12,25 +12,25 @@
 #include "emit.h"
 
 // forward declaration
-static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list);
+static void ikea_list_r(CONTAINER_t * CONTAINER, elem_t * list);
 static void ikea_print_frags(ikea_box_t * ikea_box, state_t liststate, elem_t * elem, char *sep);
 
-void emit_ikea(CONTENT_t * CONTENT, elem_t *elem)
+void emit_ikea(CONTAINER_t * CONTAINER, elem_t *elem)
 {
-    CONTENT->PARSE->sep = 0; // suppress space before (because preceded by BOF or NL)
+    CONTAINER->GRAPH->sep = 0; // suppress space before (because preceded by BOF or NL)
     // emit in compact g format
-    ikea_list_r(CONTENT, elem);
-    ikea_box_append(CONTENT->ikea_box, "\n", 1); // NL after each act
+    ikea_list_r(CONTAINER, elem);
+    ikea_box_append(CONTAINER->ikea_box, "\n", 1); // NL after each act
 }
 
-static void ikea_token(CONTENT_t * CONTENT, char *tok)
+static void ikea_token(CONTAINER_t * CONTAINER, char *tok)
 {
-    ikea_box_append(CONTENT->ikea_box, tok, 1);
-    CONTENT->PARSE->sep = 0;
+    ikea_box_append(CONTAINER->ikea_box, tok, 1);
+    CONTAINER->GRAPH->sep = 0;
 }
 
 // recursive function
-static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list)
+static void ikea_list_r(CONTAINER_t * CONTAINER, elem_t * list)
 {
     elem_t *elem;
     elemtype_t type;
@@ -42,10 +42,10 @@ static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list)
     if (! (elem = list->u.l.first)) {
         switch (liststate) {
         case QRY:
-            ikea_token(CONTENT, "?");
+            ikea_token(CONTAINER, "?");
             break;
         case TLD:
-            ikea_token(CONTENT, "~");
+            ikea_token(CONTAINER, "~");
             break;
         default:
             break;
@@ -55,7 +55,7 @@ static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-        ikea_print_frags(CONTENT->ikea_box, liststate, elem, &(CONTENT->PARSE->sep));
+        ikea_print_frags(CONTAINER->ikea_box, liststate, elem, &(CONTAINER->GRAPH->sep));
         break;
     case LISTELEM:
         cnt = 0;
@@ -63,44 +63,44 @@ static void ikea_list_r(CONTENT_t * CONTENT, elem_t * list)
             if (cnt++ == 0) {
                 switch (liststate) {
                 case EDGE:
-                    ikea_token(CONTENT, "<");
+                    ikea_token(CONTAINER, "<");
                     break;
                 case OBJECT_LIST:
                 case ENDPOINTSET:
-                    ikea_token(CONTENT, "(");
+                    ikea_token(CONTAINER, "(");
                     break;
                 case ATTRIBUTES:
-                    ikea_token(CONTENT, "[");
+                    ikea_token(CONTAINER, "[");
                     break;
-                case CONTAINER:
-                    ikea_token(CONTENT, "{");
+                case CONTENTS:
+                    ikea_token(CONTAINER, "{");
                     break;
                 case VALASSIGN:
-                    ikea_token(CONTENT, "=");
+                    ikea_token(CONTAINER, "=");
                     break;
                 case CHILD:
-                    ikea_token(CONTENT, "/");
+                    ikea_token(CONTAINER, "/");
                     break;
                 default:
                     break;
                 }
             }
-            ikea_list_r(CONTENT, elem);    // recurse
+            ikea_list_r(CONTAINER, elem);    // recurse
             elem = elem->u.l.next;
         }
         switch (liststate) {
         case EDGE:
-            ikea_token(CONTENT, ">");
+            ikea_token(CONTAINER, ">");
             break;
         case OBJECT_LIST:
         case ENDPOINTSET:
-            ikea_token(CONTENT, ")");
+            ikea_token(CONTAINER, ")");
             break;
         case ATTRIBUTES:
-            ikea_token(CONTENT, "]");
+            ikea_token(CONTAINER, "]");
             break;
-        case CONTAINER:
-            ikea_token(CONTENT, "}");
+        case CONTENTS:
+            ikea_token(CONTAINER, "}");
             break;
         default:
             break;

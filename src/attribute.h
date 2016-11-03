@@ -7,11 +7,11 @@
 extern "C" {
 #endif
 
-#include "content.h"
+#include "graph.h"
 #include "match.h"
 #include "tree.h"
 
-elem_t * attrid_merge(CONTENT_t * CONTENT, elem_t * attributes);
+elem_t * attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes);
 
 #ifdef __cplusplus
 }

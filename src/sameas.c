@@ -8,7 +8,7 @@
 #include "sameas.h"
 
 static void
-sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist);
+sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * newlist);
 
 /**
  * rewrite subject into a newsubject
@@ -17,34 +17,34 @@ sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newl
  *   oldsubject (or error if old not available)
  *      replace subject and oldsubject with newsubject
  *
- * @param CONTENT container context
+ * @param CONTAINER container context
  * @param subject a subject tree from the parser (may be multiple object with same attributes)
  * @return rewritten with samas ('=') substituted
  */
 elem_t *
-sameas(CONTENT_t * CONTENT, elem_t * subject)
+sameas(CONTAINER_t * CONTAINER, elem_t * subject)
 {
-    LIST_t * LIST = (LIST_t *)(CONTENT->PARSE);
+    LIST_t * LIST = (LIST_t *)(CONTAINER->GRAPH);
     elem_t *nextold, *newsubject;
 
 //E();
 //P(subject);
 
-    assert(CONTENT->subject);
+    assert(CONTAINER->subject);
     assert(subject);
     assert((state_t)subject->state == SUBJECT);
 
     newsubject = new_list(LIST, SUBJECT);
 
-    nextold = CONTENT->subject->u.l.first;
-    CONTENT->subject_type = 0;  // will be set by sameas_r()
+    nextold = CONTAINER->subject->u.l.first;
+    CONTAINER->subject_type = 0;  // will be set by sameas_r()
 
     // rewrite subject into newsubject with any EQL elements substituted from oldsubject
-    sameas_r(CONTENT, subject, &nextold, newsubject);
+    sameas_r(CONTAINER, subject, &nextold, newsubject);
     assert(newsubject->u.l.first);
 
-    free_list(LIST, CONTENT->subject);   // free the previous oldsubject
-    CONTENT->subject = newsubject; // save the newsubject as oldsubject
+    free_list(LIST, CONTAINER->subject);   // free the previous oldsubject
+    CONTAINER->subject = newsubject; // save the newsubject as oldsubject
     newsubject->refs++;            // and increase its reference count
 
 //E();
@@ -56,17 +56,17 @@ sameas(CONTENT_t * CONTENT, elem_t * subject)
 /**
  * rewrite subject into newlist with any EQL elements substituted from oldlist
  *
- * @param CONTENT container context
+ * @param CONTAINER container context
  * @param subject
  * @param nextold
  * @param newlist
  */
 static void
-sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newlist)
+sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
-    TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
-    LIST_t * LIST = (LIST_t *)PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    TOKEN_t * TOKEN = (TOKEN_t *)GRAPH;
+    LIST_t * LIST = (LIST_t *)GRAPH;
     elem_t *elem, *new, *nextoldelem = NULL;
     elem_t *object;
     state_t si;
@@ -80,10 +80,10 @@ sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newl
         switch (si) {
         case NODE:
         case EDGE:
-            if (CONTENT->subject_type == 0) {
-                CONTENT->subject_type = si;    // record if the ACT has a NODE or EDGE SUBJECT
+            if (CONTAINER->subject_type == 0) {
+                CONTAINER->subject_type = si;    // record if the ACT has a NODE or EDGE SUBJECT
             } else {
-                if (si != CONTENT->subject_type) {
+                if (si != CONTAINER->subject_type) {
                     // all members of the SUBJECT must be of the same type: NODE or EDGE
                     // (this is really a shortcut to avoid extra productions in the grammar)
                     if (si == NODE) {
@@ -105,7 +105,7 @@ sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newl
                     *nextold = NULL;
                 }
             }
-            sameas_r(CONTENT, elem, &nextoldelem, object);    // recurse, adding result to a sublist
+            sameas_r(CONTAINER, elem, &nextoldelem, object);    // recurse, adding result to a sublist
             append_addref(newlist, object);
             break;
         case DISAMBIG:
@@ -122,7 +122,7 @@ sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newl
                 new = ref_list(LIST, *nextold);
                 append_transfer(newlist, new);
                 *nextold = (*nextold)->u.l.next;
-                PARSE->stat_sameas++;
+                GRAPH->stat_sameas++;
             } else {
                 token_error(TOKEN, si, "No corresponding object found for same-as substitution");
             }
@@ -133,7 +133,7 @@ sameas_r(CONTENT_t * CONTENT, elem_t * subject, elem_t ** nextold, elem_t * newl
                 nextoldelem = (*nextold)->u.l.first;    // for the recursion
                 *nextold = (*nextold)->u.l.next;    // at this level, continue over the elems
             }
-            sameas_r(CONTENT, elem, &nextoldelem, object);    // recurse, adding result to a sublist
+            sameas_r(CONTAINER, elem, &nextoldelem, object);    // recurse, adding result to a sublist
             append_addref(newlist, object);
             break;
         }

@@ -6,7 +6,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "content.h"
+#include "graph.h"
 #include "container.h"
 
 /**
@@ -14,9 +14,9 @@
  *
  * This parser recurses at two levels:
  *
- * parse() --> container() --> content() ---| -|  
- *           ^               ^  |           |  |
- *           |               |  -> doact()  |  |
+ * parse() --> container() --> graph() -----| -|  
+ *           ^               ^   |          |  |
+ *           |               |   -> doact() |  |
  *           |               |              |  |
  *           |               --------<------|  |
  *           |                                 |
@@ -25,64 +25,64 @@
  * The outer recursions are through nested containment.
  *
  * The inner recursions are through the grammar state_machine at a single
- * level of containment - maintained in the CONTENT context
+ * level of containment - maintained in the CONTAINER context
  *
  * The top-level SESSION context is available to both and maintains the input state.
  *
- * @param PARSE context
+ * @param GRAPH context
  * @return success/fail
  */
-success_t container(PARSE_t * PARSE)
+success_t container(GRAPH_t * GRAPH)
 {
-    CONTENT_t container_context = { 0 };
-    CONTENT_t * CONTENT = &container_context;
+    CONTAINER_t container_context = { 0 };
+    CONTAINER_t * CONTAINER = &container_context;
     success_t rc;
-    TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
-    LIST_t * LIST = (LIST_t *)PARSE;
+    TOKEN_t * TOKEN = (TOKEN_t *)GRAPH;
+    LIST_t * LIST = (LIST_t *)GRAPH;
     elem_t *root = new_list(LIST, ACTIVITY);
 
-    CONTENT->PARSE = PARSE;
-    CONTENT->subject = new_list(LIST, SUBJECT);
-    CONTENT->node_pattern_acts = new_list(LIST, 0);
-    CONTENT->edge_pattern_acts = new_list(LIST, 0);
-    CONTENT->ikea_box = ikea_box_open(PARSE->ikea_store, NULL);
-    CONTENT->out = stdout;
-    emit_start_activity(CONTENT);
-    PARSE->containment++;            // containment nesting level
-    PARSE->stat_containercount++;    // number of containers
+    CONTAINER->GRAPH = GRAPH;
+    CONTAINER->subject = new_list(LIST, SUBJECT);
+    CONTAINER->node_pattern_acts = new_list(LIST, 0);
+    CONTAINER->edge_pattern_acts = new_list(LIST, 0);
+    CONTAINER->ikea_box = ikea_box_open(GRAPH->ikea_store, NULL);
+    CONTAINER->out = stdout;
+    emit_start_activity(CONTAINER);
+    GRAPH->containment++;            // containment nesting level
+    GRAPH->stat_containercount++;    // number of containers
 
-    if ((rc = content(CONTENT, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
+    if ((rc = graph(CONTAINER, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
             token_error(TOKEN, TOKEN->state, "Parse error. Last good state was:");
         }
     }
-    if (CONTENT->nodes) {
-        PARSE->sep = ' ';
-        print_tree(PARSE->out, CONTENT->nodes, &(PARSE->sep));
-        putc('\n', PARSE->out);
+    if (CONTAINER->nodes) {
+        GRAPH->sep = ' ';
+        print_tree(GRAPH->out, CONTAINER->nodes, &(GRAPH->sep));
+        putc('\n', GRAPH->out);
     }
-    if (CONTENT->edges) {
-        PARSE->sep = ' ';
-        print_tree(PARSE->out, CONTENT->edges, &(PARSE->sep));
-        putc('\n', PARSE->out);
+    if (CONTAINER->edges) {
+        GRAPH->sep = ' ';
+        print_tree(GRAPH->out, CONTAINER->edges, &(GRAPH->sep));
+        putc('\n', GRAPH->out);
     }
 
 // FIXME - don't forget to include NODE and EDGE patterns, after NODES and EDGES
 //   (Paterns are in effect now, but may not have been at the creation of existing objects.)
 
-    PARSE->containment--;
-    emit_end_activity(CONTENT);
+    GRAPH->containment--;
+    emit_end_activity(CONTAINER);
 
-    ikea_box_close ( CONTENT->ikea_box );
+    ikea_box_close ( CONTAINER->ikea_box );
 
     free_list(LIST, root);
-    free_tree(LIST, CONTENT->nodes);
-    free_tree(LIST, CONTENT->edges);
-    free_list(LIST, CONTENT->subject);
-    free_list(LIST, CONTENT->node_pattern_acts);
-    free_list(LIST, CONTENT->edge_pattern_acts);
+    free_tree(LIST, CONTAINER->nodes);
+    free_tree(LIST, CONTAINER->edges);
+    free_list(LIST, CONTAINER->subject);
+    free_list(LIST, CONTAINER->node_pattern_acts);
+    free_list(LIST, CONTAINER->edge_pattern_acts);
 
     if (LIST->stat_elemnow) {
         E();

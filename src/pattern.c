@@ -8,8 +8,8 @@
 
 #include "pattern.h"
 
-static void pattern_update(CONTENT_t * CONTENT, elem_t * subject, state_t verb);
-static elem_t * pattern_match(CONTENT_t * CONTENT, elem_t * subject);
+static void pattern_update(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb);
+static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject);
 
 /*
  * A pattern is a SUBJECT in which one or more STRINGs contain an AST ('*')
@@ -35,41 +35,41 @@ static elem_t * pattern_match(CONTENT_t * CONTENT, elem_t * subject);
  */ 
  
 
-elem_t * pattern(CONTENT_t * CONTENT, elem_t * subject, state_t verb)
+elem_t * pattern(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb)
 {
-    PARSE_t *PARSE = CONTENT->PARSE;
+    GRAPH_t *GRAPH = CONTAINER->GRAPH;
     elem_t *newsubjects;
 
-    if ((CONTENT->is_pattern = ((TOKEN_t*)PARSE)->has_ast)) {
-        PARSE->stat_patternactcount++;
-        assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
-        pattern_update(CONTENT, subject, verb);
+    if ((CONTAINER->is_pattern = ((TOKEN_t*)GRAPH)->has_ast)) {
+        GRAPH->stat_patternactcount++;
+        assert(CONTAINER->subject_type == NODE || CONTAINER->subject_type == EDGE);
+        pattern_update(CONTAINER, subject, verb);
         return NULL;
     }
-    PARSE->stat_nonpatternactcount++;
-    newsubjects = pattern_match(CONTENT, subject);
+    GRAPH->stat_nonpatternactcount++;
+    newsubjects = pattern_match(CONTAINER, subject);
     return newsubjects;
 }
 
-static void pattern_update(CONTENT_t * CONTENT, elem_t * subject, state_t verb)
+static void pattern_update(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb)
 {
-    assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
+    assert(CONTAINER->subject_type == NODE || CONTAINER->subject_type == EDGE);
     if (verb == (char)QRY) {
         assert(0);  // FIXME - report error
     }
-    if (CONTENT->subject_type == NODE) {
+    if (CONTAINER->subject_type == NODE) {
         if (verb == (char)TLD) {
- //           remove_item(LIST, CONTENT->node_pattern_acts, obj);
+ //           remove_item(LIST, CONTAINER->node_pattern_acts, obj);
         } else {
- //           insert_item(LIST, CONTENT->node_pattern_acts, obj);
-            append_transfer(CONTENT->node_pattern_acts, subject);
+ //           insert_item(LIST, CONTAINER->node_pattern_acts, obj);
+            append_transfer(CONTAINER->node_pattern_acts, subject);
         }
     } else {
         if (verb == (char)TLD) {
- //           remove_item(LIST, CONTENT->edge_pattern_acts, obj);
+ //           remove_item(LIST, CONTAINER->edge_pattern_acts, obj);
         } else {
- //           insert_item(LIST, CONTENT->edge_pattern_acts, obj);
-            append_transfer(CONTENT->edge_pattern_acts, subject);
+ //           insert_item(LIST, CONTAINER->edge_pattern_acts, obj);
+            append_transfer(CONTAINER->edge_pattern_acts, subject);
         }
     }
 }
@@ -82,15 +82,15 @@ static void pattern_update(CONTENT_t * CONTENT, elem_t * subject, state_t verb)
  * and CONTAINER from the pattern.  Finally return for the current
  * subject to be appended with its own ATTRIBUTES and ACTIVITY.
  *
- * @param CONTENT container_context
+ * @param CONTAINER container_context
  * @param subject to be checked for pattern matches
  * @return newacts - with list of matched acts, or NULL
  */
 
-static elem_t * pattern_match(CONTENT_t * CONTENT, elem_t * subject)
+static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
-    LIST_t * LIST = (LIST_t *)PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    LIST_t * LIST = (LIST_t *)GRAPH;
     elem_t *newacts = NULL, *pattern_acts, *subj, *attr;
 
     assert(subject);
@@ -99,11 +99,11 @@ static elem_t * pattern_match(CONTENT_t * CONTENT, elem_t * subject)
 //E();
 //P(subject);
 
-    assert(CONTENT->subject_type == NODE || CONTENT->subject_type == EDGE);
-    if (CONTENT->subject_type == NODE) {
-        pattern_acts = CONTENT->node_pattern_acts;
+    assert(CONTAINER->subject_type == NODE || CONTAINER->subject_type == EDGE);
+    if (CONTAINER->subject_type == NODE) {
+        pattern_acts = CONTAINER->node_pattern_acts;
     } else {
-        pattern_acts = CONTENT->edge_pattern_acts;
+        pattern_acts = CONTAINER->edge_pattern_acts;
     }
 
     // iterate over available patterns
@@ -113,7 +113,7 @@ static elem_t * pattern_match(CONTENT_t * CONTENT, elem_t * subject)
         attr = subj->u.l.next;
 
         // FIXME - contents from pattern ??
-        if ((match(CONTENT, subject->u.l.first, subj->u.l.first)) == SUCCESS) {
+        if ((match(CONTAINER, subject->u.l.first, subj->u.l.first)) == SUCCESS) {
             // insert matched attrubutes, contents,
             // and then the subject again
             
@@ -121,15 +121,15 @@ static elem_t * pattern_match(CONTENT_t * CONTENT, elem_t * subject)
                 newacts = new_list(LIST, ACT);
             }
             append_addref(newacts, ref_list(LIST, subject));
-            emit_subject(CONTENT, subject);
+            emit_subject(CONTAINER, subject);
             if (attr && (state_t)attr->state == ATTRIBUTES) {
                 append_addref(newacts, ref_list(LIST, attr));
-                emit_attributes(CONTENT, attr);
+                emit_attributes(CONTAINER, attr);
             }
 
             // FIXME -- contents
 
-            PARSE->stat_patternmatches++;
+            GRAPH->stat_patternmatches++;
         }
     }
 

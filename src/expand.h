@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 #include "context.h"
-#include "content.h"
+#include "graph.h"
 
 void expand(LIST_t * LIST, elem_t *elem, elem_t *nodes, elem_t *edges);
 

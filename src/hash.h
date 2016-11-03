@@ -11,7 +11,7 @@ extern "C" {
 #include "list.h"
 
 #if 0
-hash_elem_t * hash_bucket(PARSE_t * PARSE, uint64_t hash);
+hash_elem_t * hash_bucket(GRAPH_t * GRAPH, uint64_t hash);
 #endif
 void hash_list(uint64_t *hash, elem_t *list);
 void long_to_base64(char *b64string, const uint64_t *hash);

@@ -9,7 +9,7 @@ extern "C" {
 
 #include "context.h"
 
-success_t match(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern);
+success_t match(CONTAINER_t * CONTAINER, elem_t * subject, elem_t * pattern);
 
 #ifdef __cplusplus
 }

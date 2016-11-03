@@ -12,7 +12,7 @@ extern "C" {
 #include "dispatch.h"
 #include "reduce.h"
 
-success_t doact(CONTENT_t *CONTENT, elem_t *act);
+success_t doact(CONTAINER_t *CONTAINER, elem_t *act);
 
 #ifdef __cplusplus
 }

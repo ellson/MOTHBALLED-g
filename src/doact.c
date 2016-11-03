@@ -8,10 +8,10 @@
 
 #include "doact.h"
 
-success_t doact(CONTENT_t *CONTENT, elem_t *act)
+success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
-    LIST_t *LIST = (LIST_t*)PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    LIST_t *LIST = (LIST_t*)GRAPH;
     elem_t *subject, *attributes, *elem;
     elem_t *newact, *newsubject, *newattributes;
     state_t verb = 0;
@@ -19,15 +19,15 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
     assert(act);
     assert(act->u.l.first);  // minimaly, an ACT must have a SUBJECT
 
-    PARSE->stat_inactcount++;
+    GRAPH->stat_inactcount++;
 
 //P(act);
     
     newact = new_list(LIST, ACT);
 
-    // VERB has been recorded in PARSE->verb during VERB exit processing 
+    // VERB has been recorded in GRAPH->verb during VERB exit processing 
 
-//S(PARSE->verb);
+//S(GRAPH->verb);
 
     subject = act->u.l.first;   // first item is SUBJECT
     assert(subject);
@@ -35,7 +35,7 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
 
 //====================== substitute sameas OBJECT(s) from previous SUBJECT
 //P(subject)
-    newsubject = sameas(CONTENT, subject);
+    newsubject = sameas(CONTAINER, subject);
 //P(subject);
     append_transfer(newact, newsubject);
 //----------------------- example (from two consecutive ACTs)
@@ -61,7 +61,7 @@ success_t doact(CONTENT_t *CONTENT, elem_t *act)
     if (attributes) {
         assert(attributes->state == (char)ATTRIBUTES);
 //P(attributes);
-        newattributes = attrid_merge(CONTENT, attributes);
+        newattributes = attrid_merge(CONTAINER, attributes);
 //P(newattributes);
         append_transfer(newact, newattributes);
     }
@@ -84,7 +84,7 @@ P(newact);
 #if 0
 //======================= collect, remove, or apply patterns
 //
-    new = pattern(CONTENT, newact, verb);
+    new = pattern(CONTAINER, newact, verb);
     free_list(LIST, newact);
     if (new) {
        newact = new;
@@ -99,7 +99,7 @@ P(newact);
 
 // FIXME so this is probably flawed - doesn't it need a loop?
     // dispatch events for the ACT just finished
-    new = dispatch(CONTENT, newsubject, verb);
+    new = dispatch(CONTAINER, newsubject, verb);
     if (new) {
         free_list(LIST, newsubject);
         newsubject = new;
@@ -107,9 +107,9 @@ P(newact);
 
     elem = newsubject->u.l.first;
     while (elem) {
-        PARSE->stat_outactcount++;
+        GRAPH->stat_outactcount++;
 P(elem);
-        reduce(CONTENT, elem);  // eliminate redundancy by insertion sorting into trees.
+        reduce(CONTAINER, elem);  // eliminate redundancy by insertion sorting into trees.
 
         elem = elem->u.l.next;
     }

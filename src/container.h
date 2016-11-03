@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-success_t container (PARSE_t * PARSE);
+success_t container(GRAPH_t * GRAPH);
 
 #ifdef __cplusplus
 }

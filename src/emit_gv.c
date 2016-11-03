@@ -7,27 +7,27 @@
 
 #include "emit.h"
 
-static void api_start_activity(CONTENT_t * CONTENT)
+static void api_start_activity(CONTAINER_t * CONTAINER)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
 
-    PARSE->sep = 0;
-    fprintf(PARSE->out, "graph {\n");
+    GRAPH->sep = 0;
+    fprintf(GRAPH->out, "graph {\n");
 }
 
-static void api_end_activity(CONTENT_t * CONTENT)
+static void api_end_activity(CONTAINER_t * CONTAINER)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
 
-    PARSE->sep = 0;
-    fprintf(PARSE->out, "\n}\n");
+    GRAPH->sep = 0;
+    fprintf(GRAPH->out, "\n}\n");
 }
 
-static void api_list(CONTENT_t * CONTENT, elem_t *list)
+static void api_list(CONTAINER_t * CONTAINER, elem_t *list)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
 
-    je_emit_list(PARSE, PARSE->out, list);
+    je_emit_list(GRAPH, GRAPH->out, list);
 }
 
 emit_t gv_api = { "gv",

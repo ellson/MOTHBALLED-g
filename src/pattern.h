@@ -11,7 +11,7 @@ extern "C" {
 #include "match.h"
 #include "tree.h"
 
-elem_t * pattern(CONTENT_t * CONTENT, elem_t * subject, state_t verb);
+elem_t * pattern(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb);
 
 
 #ifdef __cplusplus

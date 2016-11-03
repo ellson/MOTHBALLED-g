@@ -8,9 +8,9 @@ extern "C" {
 #endif
 
 #include "context.h"
-#include "content.h"
+#include "graph.h"
 
-void reduce(CONTENT_t * CONTENT, elem_t *list);
+void reduce(CONTAINER_t * CONTAINER, elem_t *list);
 
 #ifdef __cplusplus
 }

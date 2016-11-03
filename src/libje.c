@@ -10,7 +10,7 @@
 // private includes
 #include "ikea.h"
 #include "emit.h"
-#include "content.h"
+#include "graph.h"
 #include "container.h"
 
 // public include
@@ -20,7 +20,7 @@ success_t parse(SESSION_t * SESSION)
 {
     success_t rc;
 
-    rc = container(SESSION->PARSE);
+    rc = container(SESSION->GRAPH);
     return rc;
 }
 
@@ -35,7 +35,7 @@ success_t parse(SESSION_t * SESSION)
 SESSION_t *initialize(int *pargc, char *argv[], int optind)
 {
     SESSION_t *SESSION;
-    PARSE_t *PARSE;
+    GRAPH_t *GRAPH;
 
     if (! (SESSION = calloc(1, sizeof(SESSION_t))))
         FATAL("calloc()");
@@ -43,14 +43,14 @@ SESSION_t *initialize(int *pargc, char *argv[], int optind)
     SESSION->progname = argv[0];
     SESSION->out = stdout;
 
-    if (! (PARSE = calloc(1, sizeof(PARSE_t))))
+    if (! (GRAPH = calloc(1, sizeof(GRAPH_t))))
         FATAL("calloc()");
 
-    PARSE->SESSION = SESSION;
-    SESSION->PARSE = PARSE;
+    GRAPH->SESSION = SESSION;
+    SESSION->GRAPH = GRAPH;
 #if 1
     SESSION->progname = argv[0];
-    PARSE->out = stdout;
+    GRAPH->out = stdout;
 #endif
 
     argv = &argv[optind];
@@ -61,8 +61,8 @@ SESSION_t *initialize(int *pargc, char *argv[], int optind)
         *pargc = 1;
     }
 
-    PARSE->TOKEN.pargc = pargc;
-    PARSE->TOKEN.argv = argv;
+    GRAPH->TOKEN.pargc = pargc;
+    GRAPH->TOKEN.argv = argv;
 
     // gather session info, including starttime.
     //    subsequent calls to session() just reuse the info gathered in this first call.
@@ -71,10 +71,10 @@ SESSION_t *initialize(int *pargc, char *argv[], int optind)
     // create (or reopen) store for the containers
     SESSION->ikea_store = ikea_store_open( NULL );
 #if 1
-    PARSE->ikea_store = ikea_store_open( NULL );
+    GRAPH->ikea_store = ikea_store_open( NULL );
 #endif
 
-//    emit_initialize(PARSE);
+//    emit_initialize(GRAPH);
 
     return SESSION;
 }
@@ -82,22 +82,22 @@ SESSION_t *initialize(int *pargc, char *argv[], int optind)
 /**
  * finalize and free context
  *
- * @param PARSE context
+ * @param GRAPH context
  */
 void finalize( SESSION_t * SESSION )
 {
-   PARSE_t *PARSE = SESSION->PARSE;
-   emit_finalize(PARSE);
+   GRAPH_t *GRAPH = SESSION->GRAPH;
+   emit_finalize(GRAPH);
 
-   ikea_store_snapshot(PARSE->ikea_store);
-   ikea_store_close(PARSE->ikea_store);
+   ikea_store_snapshot(GRAPH->ikea_store);
+   ikea_store_close(GRAPH->ikea_store);
 
    // free context
-   free(PARSE);
+   free(GRAPH);
    free(SESSION);
 }
 
 void interrupt( SESSION_t * SESSION )
 {
-   ikea_store_close(SESSION->PARSE->ikea_store);
+   ikea_store_close(SESSION->GRAPH->ikea_store);
 }

@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 //opaque structs from the public interface
-typedef struct parse_s PARSE_t;
+typedef struct parse_s GRAPH_t;
 typedef struct session_s SESSION_t;
 
 typedef enum {

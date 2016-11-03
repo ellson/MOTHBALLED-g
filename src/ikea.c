@@ -408,7 +408,7 @@ void ikea_store_restore ( ikea_store_t * ikea_store )
                     pglob.gl_pathv[pathc]+len+1);
             exit(EXIT_FAILURE);
         }
-        hash_bucket(PARSE, hash); // reinsert into bucket list.
+        hash_bucket(GRAPH, hash); // reinsert into bucket list.
 #endif
     }
     free(glob_pattern);

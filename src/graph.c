@@ -6,31 +6,29 @@
 #include <string.h>
 #include <assert.h>
 
-#include "content.h"
+#include "graph.h"
 #include "container.h"
 
 // forward declarations
-
-static success_t
-parse_more_rep(PARSE_t * PARSE, unsigned char prop);
+static success_t more_rep(GRAPH_t * GRAPH, unsigned char prop);
 
 /**
  * parse G syntax input
  *
  * This parser recurses at two levels:
  *
- * parse() --> container() --> content() ---| -|  
- *           ^               ^  |           |  |
- *           |               |  -> doact()  |  |
- *           |               |              |  |
- *           |               --------<------|  |
- *           |                                 |
- *           ----------------<-----------------|
+ * parse() --> container() --> graph() ------| -|  
+ *           ^               ^   |           |  |
+ *           |               |   -> doact()  |  |
+ *           |               |               |  |
+ *           |               --------<-------|  |
+ *           |                                  |
+ *           ----------------<------------------|
  *
  * The outer recursions are through nested containment.
  *
  * The inner recursions are through the grammar state_machine at a single
- * level of containment - maintained in the CONTENT context
+ * level of containment - maintained in the CONTAINER context
  *
  * The top-level SESSION context is available to both and maintains the input state.
  *
@@ -41,7 +39,7 @@ parse_more_rep(PARSE_t * PARSE, unsigned char prop);
 /** 
  * iterate and recurse through state-machine at a single level of containment
  *
- *  @param CONTENT container context
+ *  @param CONTAINER context
  *  @param root - the parent's branch that we are adding to
  *  @param si input state
  *  @param prop grammar properties
@@ -49,12 +47,12 @@ parse_more_rep(PARSE_t * PARSE, unsigned char prop);
  *  @param repc sequence member counter
  *  @return SUCCESS or FAIL
  */
-success_t content(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
+success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
-    TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
-    LIST_t * LIST = (LIST_t *)PARSE;
-    INBUF_t * INBUF = (INBUF_t *)PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    TOKEN_t * TOKEN = (TOKEN_t *)GRAPH;
+    LIST_t * LIST = (LIST_t *)GRAPH;
+    INBUF_t * INBUF = (INBUF_t *)GRAPH;
     unsigned char nprop;
     char so;        // offset to next state, signed
     state_t ti, ni;
@@ -65,7 +63,7 @@ success_t content(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char p
 //E();
 
     rc = SUCCESS;
-    emit_start_state(CONTENT, si, prop, nest, repc);
+    emit_start_state(CONTAINER, si, prop, nest, repc);
 
     nest++;
     assert(nest >= 0);            // catch overflows
@@ -104,7 +102,7 @@ success_t content(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char p
         if (TOKEN->bi == LBE) {   // if not top-level of containment
             TOKEN->bi = NLL;
             // recursively process contained ACTIVITY in to its own root
-            rc = container(PARSE);
+            rc = container(GRAPH);
             TOKEN->bi = TOKEN->insi; // The char class that terminates the ACTIVITY
             goto done;
         }
@@ -124,15 +122,15 @@ success_t content(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char p
 
     // the remainder of the switch() is just state initialization
     case ACT:
-        PARSE->verb = 0;          // default "add"
+        GRAPH->verb = 0;          // default "add"
         break;
     case SUBJECT:
         TOKEN->has_ast = 0;       // maintain flag for '*' found anywhere in the subject
-        PARSE->has_cousin = 0;    // maintain flag for any NODEREF to COUSIN
+        GRAPH->has_cousin = 0;    // maintain flag for any NODEREF to COUSIN
                                   //  (requiring involvement of ancestors)
         break;
     case COUSIN:
-        PARSE->has_cousin = 1;    // maintain a flag for any NODEREF to COUSIN
+        GRAPH->has_cousin = 1;    // maintain a flag for any NODEREF to COUSIN
                                   //  (requiring involvement of ancestors)
         break;
     default:
@@ -154,27 +152,27 @@ success_t content(CONTENT_t * CONTENT, elem_t *root, state_t si, unsigned char p
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            if ((rc = content(CONTENT, branch, ni, nprop, nest, 0)) == SUCCESS) {
+            if ((rc = graph(CONTAINER, branch, ni, nprop, nest, 0)) == SUCCESS) {
                 break;                  // ALT satisfied
             }
             // we failed an ALT so continue iteration to try next ALT
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                if ((rc = content(CONTENT, branch, ni, nprop, nest, repc++)) == SUCCESS) {
-                    while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                        if ((rc = content(CONTENT, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                if ((rc = graph(CONTAINER, branch, ni, nprop, nest, repc++)) == SUCCESS) {
+                    while (more_rep(GRAPH, nprop) == SUCCESS) {
+                        if ((rc = graph(CONTAINER, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                             break;
                         }
                     }
                 }
                 rc = SUCCESS;           // OPTs always successful
             } else {                    // else not OPTional, at least one is mandatory
-                if ((rc = content(CONTENT, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                if ((rc = graph(CONTAINER, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                     break;
                 }
-                while (parse_more_rep(PARSE, nprop) == SUCCESS) {
-                    if ((rc = content(CONTENT, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                while (more_rep(GRAPH, nprop) == SUCCESS) {
+                    if ((rc = graph(CONTAINER, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                         break;
                     }
                 }
@@ -188,7 +186,7 @@ done: // State exit processing
     if (rc == SUCCESS) {
         switch (si) {
         case ACT:  // ACT is complete, process it
-            rc = doact(CONTENT, branch);
+            rc = doact(CONTAINER, branch);
             // this is the top recursion
             // no more need for this branch
             // don't bother appending to root
@@ -196,7 +194,7 @@ done: // State exit processing
 
         // drop some terminals that are no longer useful
         case VERB:  // stash VERB (if any) then drop it
-            PARSE->verb = branch->u.l.first->state;  // QRY or TLD
+            GRAPH->verb = branch->u.l.first->state;  // QRY or TLD
             break;
         case LBR:  // bracketing ATTRs
         case RBR:
@@ -223,7 +221,7 @@ done: // State exit processing
     nest--;
     assert(nest >= 0);
 
-    emit_end_state(CONTENT, si, rc, nest, repc);
+    emit_end_state(CONTAINER, si, rc, nest, repc);
 
 //E();
     return rc;
@@ -232,13 +230,13 @@ done: // State exit processing
 /**
  * test for more repetitions, emit a separator only if mandated
  *
- * @param PARSE context
+ * @param GRAPH context
  * @param prop properties from grammar
  * @return success = more, fail - no more
  */
-static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop)
+static success_t more_rep(GRAPH_t * GRAPH, unsigned char prop)
 {
-    TOKEN_t * TOKEN = (TOKEN_t *)PARSE;
+    TOKEN_t * TOKEN = (TOKEN_t *)GRAPH;
     state_t ei, bi;
 
     if (!(prop & (REP | SREP)))
@@ -254,7 +252,7 @@ static success_t parse_more_rep(PARSE_t * PARSE, unsigned char prop)
         return SUCCESS;    // more repetitions, but additional WS sep is optional
     }
     if (prop & SREP) {
-        emit_sep(PARSE);   // sep is non-optional, emit the minimal sep
+        emit_sep(GRAPH);   // sep is non-optional, emit the minimal sep
                            //    .. when low-level emit hook is used.
     }
     return SUCCESS;        // more repetitions

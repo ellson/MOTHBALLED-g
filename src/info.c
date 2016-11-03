@@ -28,19 +28,19 @@
 #define SESSION_BUF_SIZE 1024
 
 #define As(attr,valu) { \
-     append_string  (PARSE, &pos, attr); \
-     append_token   (PARSE, &pos, '='); \
-     append_string  (PARSE, &pos, valu); \
+     append_string  (GRAPH, &pos, attr); \
+     append_token   (GRAPH, &pos, '='); \
+     append_string  (GRAPH, &pos, valu); \
 }
 #define Au(attr,valu) { \
-     append_string  (PARSE, &pos, attr); \
-     append_token   (PARSE, &pos, '='); \
-     append_ulong  (PARSE, &pos, valu); \
+     append_string  (GRAPH, &pos, attr); \
+     append_token   (GRAPH, &pos, '='); \
+     append_ulong  (GRAPH, &pos, valu); \
 }
 #define Ar(attr,valu_s,valu_ns) { \
-     append_string  (PARSE, &pos, attr); \
-     append_token   (PARSE, &pos, '='); \
-     append_runtime  (PARSE, &pos, valu_s, valu_ns); \
+     append_string  (GRAPH, &pos, attr); \
+     append_token   (GRAPH, &pos, '='); \
+     append_runtime  (GRAPH, &pos, valu_s, valu_ns); \
 }
 
 /**
@@ -68,7 +68,7 @@
  */
 char * session(SESSION_t * SESSION)
 {
-    PARSE_t *PARSE = SESSION->PARSE;
+    GRAPH_t *GRAPH = SESSION->GRAPH;
     static char buf[SESSION_BUF_SIZE];
     static char *pos = &buf[0];  // NB. static. This initalization happens only once
     static struct passwd *pw;
@@ -119,9 +119,9 @@ char * session(SESSION_t * SESSION)
     // - minimal spacing - one SUBJECT per line
     // - alpha sorted nodes and attributes
 
-    PARSE->sep = '\0';
-    append_string  (PARSE, &pos, "stats_fixed");
-    append_token   (PARSE, &pos, '[');
+    GRAPH->sep = '\0';
+    append_string  (GRAPH, &pos, "stats_fixed");
+    append_token   (GRAPH, &pos, '[');
     Au("elemmallocsize",        LISTALLOCNUM * sizeof(elem_t));
     Au("elempermalloc",         LISTALLOCNUM);
     Au("elemsize",              sizeof(elem_t));
@@ -139,7 +139,7 @@ char * session(SESSION_t * SESSION)
     Au("uptime",                SESSION->uptime.tv_sec);
     As("username",              SESSION->username);
     Au("voidptrsize",           sizeof(void*));
-    append_token   (PARSE, &pos, ']');
+    append_token   (GRAPH, &pos, ']');
 
     assert(pos < buf+SESSION_BUF_SIZE);
     return buf;
@@ -157,10 +157,10 @@ char * session(SESSION_t * SESSION)
  */
 char * stats(SESSION_t * SESSION)
 {
-    PARSE_t *PARSE = SESSION->PARSE;
-    TOKEN_t *TOKEN = (TOKEN_t*)PARSE;
-    LIST_t *LIST = (LIST_t*)PARSE;
-    INBUF_t *INBUF = (INBUF_t*)PARSE;
+    GRAPH_t *GRAPH = SESSION->GRAPH;
+    TOKEN_t *TOKEN = (TOKEN_t*)GRAPH;
+    LIST_t *LIST = (LIST_t*)GRAPH;
+    INBUF_t *INBUF = (INBUF_t*)GRAPH;
     static char buf[STATS_BUF_SIZE];
     uint64_t runtime, lend, itot, etot;
 
@@ -204,9 +204,9 @@ char * stats(SESSION_t * SESSION)
     // - minimal spacing - one SUBJECT per line
     // - alpha sorted nodes and attributes
 
-    PARSE->sep = '\0';
-    append_string  (PARSE, &pos, "stats_running");
-    append_token   (PARSE, &pos, '[');
+    GRAPH->sep = '\0';
+    append_string  (GRAPH, &pos, "stats_running");
+    append_token   (GRAPH, &pos, '[');
     Au("charpersecond",         TOKEN->stat_incharcount+TEN9/runtime);
     Au("elemmalloccount",       LIST->stat_elemmalloc);
     Au("elemmalloctotal",       etot);
@@ -218,10 +218,10 @@ char * stats(SESSION_t * SESSION)
     Au("inbufmalloctotal",      itot);
     Au("inbufmax",              INBUF->stat_inbufmax);
     Au("inbufnow",              INBUF->stat_inbufnow);
-    Au("inactcount",            PARSE->stat_inactcount);
-    Au("inactpatterns",         PARSE->stat_patternactcount);
-    Au("inactnonpatterns",      PARSE->stat_nonpatternactcount);
-    Au("inactspersecond",       PARSE->stat_inactcount*TEN9/runtime);
+    Au("inactcount",            GRAPH->stat_inactcount);
+    Au("inactpatterns",         GRAPH->stat_patternactcount);
+    Au("inactnonpatterns",      GRAPH->stat_nonpatternactcount);
+    Au("inactspersecond",       GRAPH->stat_inactcount*TEN9/runtime);
     Au("incharcount",           TOKEN->stat_incharcount);
     Au("infragcount",           TOKEN->stat_infragcount);
     Au("infilecount",           TOKEN->stat_infilecount);
@@ -229,11 +229,11 @@ char * stats(SESSION_t * SESSION)
     Au("instringcount",         TOKEN->stat_instringcount);
     Au("malloctotal",           itot+etot);
     Au("nowtime",               nowtime.tv_sec);
-    Au("outactcount",           PARSE->stat_outactcount);
-    Au("patternmatches",        PARSE->stat_patternmatches);
+    Au("outactcount",           GRAPH->stat_outactcount);
+    Au("patternmatches",        GRAPH->stat_patternmatches);
     Ar("runtime",               runtime/TEN9, runtime%TEN9);
-    Au("sameas",                PARSE->stat_sameas);
-    append_token   (PARSE, &pos, ']');
+    Au("sameas",                GRAPH->stat_sameas);
+    append_token   (GRAPH, &pos, ']');
 
     assert(pos < buf+STATS_BUF_SIZE);
     return buf;

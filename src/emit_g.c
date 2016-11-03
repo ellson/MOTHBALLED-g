@@ -7,41 +7,41 @@
 
 #include "emit.h"
 
-static void api_start_activity(CONTENT_t * CONTENT)
+static void api_start_activity(CONTAINER_t * CONTAINER)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
 
-    PARSE->sep = 0;
-    if (PARSE->containment != 0) {
-        putc('{', PARSE->out);
+    GRAPH->sep = 0;
+    if (GRAPH->containment != 0) {
+        putc('{', GRAPH->out);
     }
 }
 
-static void api_end_activity(CONTENT_t * CONTENT)
+static void api_end_activity(CONTAINER_t * CONTAINER)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
 
-    PARSE->sep = 0;
-    if (PARSE->containment != 0) {
-        putc('}', PARSE->out);
+    GRAPH->sep = 0;
+    if (GRAPH->containment != 0) {
+        putc('}', GRAPH->out);
     }
     else {
-        putc('\n', PARSE->out);
+        putc('\n', GRAPH->out);
     }
 }
 
-static void api_subject(CONTENT_t * CONTENT, elem_t *list)
+static void api_subject(CONTAINER_t * CONTAINER, elem_t *list)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
 
-    je_emit_list(PARSE, PARSE->out, list);
+    je_emit_list(GRAPH, GRAPH->out, list);
 }
 
-static void api_attributes(CONTENT_t * CONTENT, elem_t *list)
+static void api_attributes(CONTAINER_t * CONTAINER, elem_t *list)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
 
-    je_emit_list(PARSE, PARSE->out, list);
+    je_emit_list(GRAPH, GRAPH->out, list);
 }
 
 emit_t g_api = { "g",
@@ -74,31 +74,31 @@ emit_t g_api = { "g",
     /* api_frag */ NULL,
 };
 
-static void api1_end_activity(CONTENT_t * CONTENT)
+static void api1_end_activity(CONTAINER_t * CONTAINER)
 {
-    PARSE_t * PARSE = CONTENT->PARSE;
+    GRAPH_t * GRAPH = CONTAINER->GRAPH;
 
-    if (PARSE->containment == 0) {
-        putc('\n', PARSE->out);
+    if (GRAPH->containment == 0) {
+        putc('\n', GRAPH->out);
     }
 }
 
-static void api1_sep(PARSE_t * PARSE)
+static void api1_sep(GRAPH_t * GRAPH)
 {
-    putc(' ', PARSE->out);
+    putc(' ', GRAPH->out);
 }
 
-static void api1_string(PARSE_t * PARSE, elem_t * branch)
+static void api1_string(GRAPH_t * GRAPH, elem_t * branch)
 {
     char sep;
 
     sep = 0;
-    print_elem(PARSE->out, branch, -1, &sep);
+    print_elem(GRAPH->out, branch, -1, &sep);
 }
 
-static void api1_token(PARSE_t * PARSE, char token)
+static void api1_token(GRAPH_t * GRAPH, char token)
 {
-    putc(token, PARSE->out);
+    putc(token, GRAPH->out);
 }
 
 emit_t g1_api = { "g1",
@@ -131,16 +131,16 @@ emit_t g1_api = { "g1",
     /* api_frag */ NULL,
 };
 
-static void api2_end_activity(CONTENT_t * CONTENT)
+static void api2_end_activity(CONTAINER_t * CONTAINER)
 {
-    putc('\n', CONTENT->PARSE->out);
+    putc('\n', CONTAINER->GRAPH->out);
 }
 
-static void api2_token(PARSE_t * PARSE, char token)
+static void api2_token(GRAPH_t * GRAPH, char token)
 {
-    putc('\n', PARSE->out);
-    putc(token, PARSE->out);
-    putc(' ', PARSE->out);
+    putc('\n', GRAPH->out);
+    putc(token, GRAPH->out);
+    putc(' ', GRAPH->out);
 }
 
 emit_t g2_api = { "g2",

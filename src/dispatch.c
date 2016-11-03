@@ -8,7 +8,7 @@
 #include "dispatch.h"
 
 static void
-dispatch_r(PARSE_t * PARSE, elem_t * list, elem_t *attributes,
+dispatch_r(GRAPH_t * GRAPH, elem_t * list, elem_t *attributes,
         elem_t * nodes, elem_t * edges, state_t verb);
 
 static elem_t *
@@ -24,10 +24,10 @@ assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
  *    - expand ENDPOINT_SETs
  *       - promote ENDPOINTS to common ancestor
  *           - extract NODES from EDGES for node induction
- *               - dispatch NODES (VERB NODE ATTRIBUTES CONTENT)
- *                   - if add or delete and CONTENT is from pattern, copy content before modifying (COW)
- *           - dispatch EDGE  (VERB EDGE ATTRIBUTES CONTENT)
- *               - if add or delete and CONTENT is from pattern, copy content before modifying (COW)
+ *               - dispatch NODES (VERB NODE ATTRIBUTES CONTAINER)
+ *                   - if add or delete and CONTAINER is from pattern, copy content before modifying (COW)
+ *           - dispatch EDGE  (VERB EDGE ATTRIBUTES CONTAINER)
+ *               - if add or delete and CONTAINER is from pattern, copy content before modifying (COW)
  *
  * VERBs (add), delete, query
  *
@@ -51,16 +51,16 @@ assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
  */
 
 /**
- * @param CONTENT container context
+ * @param CONTAINER container context
  * @param an ACT
  * @param verb - add, del, qry 
  * @return new list of ACTS
  */
 elem_t *
-dispatch(CONTENT_t * CONTENT, elem_t * act, state_t verb)
+dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb)
 {
-    PARSE_t *PARSE = CONTENT->PARSE;
-    LIST_t * LIST = (LIST_t *)PARSE;
+    GRAPH_t *GRAPH = CONTAINER->GRAPH;
+    LIST_t * LIST = (LIST_t *)GRAPH;
     state_t si;
     elem_t *new, *newacts, *elem, *nodes, *edges, *attributes;
     
@@ -78,13 +78,13 @@ dispatch(CONTENT_t * CONTENT, elem_t * act, state_t verb)
     attributes = new_list(LIST, 0);
 
     // expand OBJECT_LIST and ENDPOINTSETS
-    dispatch_r(PARSE, act, attributes, nodes, edges, verb);
+    dispatch_r(GRAPH, act, attributes, nodes, edges, verb);
 
     // if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
     //                      for each EDGE, generate new ACT: verb edge attributes
 
-    si = CONTENT->subject_type;
+    si = CONTAINER->subject_type;
     switch (si) {
     case NODE:
         elem = nodes->u.l.first;
@@ -95,7 +95,7 @@ dispatch(CONTENT_t * CONTENT, elem_t * act, state_t verb)
         }
         break;
     case EDGE:
-        if (PARSE->has_cousin) {
+        if (GRAPH->has_cousin) {
             // FIXME - deal with edges that require help from ancestors
             fprintf(stdout,"EDGE has COUSIN\n");
         }
@@ -144,10 +144,10 @@ dispatch(CONTENT_t * CONTENT, elem_t * act, state_t verb)
  * @param verb
  */
 static void
-dispatch_r(PARSE_t * PARSE, elem_t * list, elem_t * attributes,
+dispatch_r(GRAPH_t * GRAPH, elem_t * list, elem_t * attributes,
         elem_t * nodes, elem_t * edges, state_t verb)
 {
-    LIST_t *LIST = (LIST_t*)PARSE;
+    LIST_t *LIST = (LIST_t*)GRAPH;
     elem_t *elem, *new, *object;
     state_t si1, si2;
 
@@ -160,7 +160,7 @@ dispatch_r(PARSE_t * PARSE, elem_t * list, elem_t * attributes,
         si1 = (state_t) elem->state;
         switch (si1) {
         case ACT:
-            dispatch_r(PARSE, elem, attributes, nodes, edges, verb);
+            dispatch_r(GRAPH, elem, attributes, nodes, edges, verb);
             break;
         case ATTRIBUTES:
             new = ref_list(LIST, elem);
@@ -171,13 +171,13 @@ dispatch_r(PARSE_t * PARSE, elem_t * list, elem_t * attributes,
             si2 = (state_t)object->state;
             switch (si2) {
             case OBJECT:
-                dispatch_r(PARSE, object, attributes, nodes, edges, verb);
+                dispatch_r(GRAPH, object, attributes, nodes, edges, verb);
                 break;
             case OBJECT_LIST:
                 object = object->u.l.first;
                 while(object) {
                     assert((state_t)object->state == OBJECT);
-                    dispatch_r(PARSE, object, attributes, nodes, edges, verb);
+                    dispatch_r(GRAPH, object, attributes, nodes, edges, verb);
                     object = object->u.l.next;
                 }
                 break;

@@ -15,12 +15,12 @@
 /**
  * attempt to match one pattern to a subject
  *
- * @param CONTENT containers context
+ * @param CONTAINER containers context
  * @param subject 
  * @param pattern 
  * @return success/fail 
  */
-success_t match(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
+success_t match(CONTAINER_t * CONTAINER, elem_t * subject, elem_t * pattern)
 {
     elem_t *s_elem, *p_elem, *ts_elem, *tp_elem;
     unsigned char *s_cp, *p_cp;
@@ -47,7 +47,7 @@ success_t match(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
                 ts_elem = ts_elem->u.l.next;
                 tp_elem = tp_elem->u.l.next;
             }
-            if ((match(CONTENT, s_elem, p_elem)) == FAIL) {  // recurse
+            if ((match(CONTAINER, s_elem, p_elem)) == FAIL) {  // recurse
                 return FAIL;
             }
         } else {    // FRAGELEM
@@ -92,14 +92,14 @@ success_t match(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
 /**
  * attempt to match one pattern to a subject
  *
- * @param CONTENT container_context
+ * @param CONTAINER container_context
  * @param subject 
  * @param pattern 
  * @return success/fail 
  */
 
 static success_t
-pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
+pattern_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t * pattern)
 {
     elem_t *s_elem, *p_elem, *ts_elem, *tp_elem;
     unsigned char *s_cp, *p_cp;
@@ -124,7 +124,7 @@ pattern_r(CONTENT_t * CONTENT, elem_t * subject, elem_t * pattern)
                 ts_elem = ts_elem->u.l.next;
                 tp_elem = tp_elem->u.l.next;
             }
-            if ((pattern_r(CONTENT, s_elem, p_elem)) == FAIL) {  // recurse
+            if ((pattern_r(CONTAINER, s_elem, p_elem)) == FAIL) {  // recurse
                 return FAIL;
             }
         } else {    // FRAGELEM

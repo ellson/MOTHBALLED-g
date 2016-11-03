@@ -9,7 +9,7 @@ extern "C" {
 
 #include "context.h"
 
-elem_t * sameas(CONTENT_t * CONTENT, elem_t * subject);
+elem_t * sameas(CONTAINER_t * CONTAINER, elem_t * subject);
 
 #ifdef __cplusplus
 }
