@@ -30,7 +30,7 @@ static success_t more_rep(GRAPH_t * GRAPH, unsigned char prop);
  * The inner recursions are through the grammar state_machine at a single
  * level of containment.
  *
- * The top-level SESSION context is available to both and maintains the input state.
+ * The top-level THREAD context is available to both and maintains the input state.
  */
 
 /** 

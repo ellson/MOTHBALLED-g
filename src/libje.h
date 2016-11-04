@@ -10,20 +10,20 @@ extern "C" {
 #include "success.h"
 
 //opaque structs from the public interface
-typedef struct session_s SESSION_t;
+typedef struct thread_s THREAD_t;
 
 // libje.c
-SESSION_t *initialize( int *argc, char *argv[], int optind );
-void finalize( SESSION_t * SESSION );
-void interrupt( SESSION_t * SESSION );
-success_t parse(SESSION_t * SESSION);
+THREAD_t *initialize( int *argc, char *argv[], int optind );
+void finalize( THREAD_t * THREAD );
+void interrupt( THREAD_t * THREAD );
+success_t parse(THREAD_t * THREAD);
 
 // emit.c
 success_t select_emitter(char *name);
 
 // info.c
-char * session( SESSION_t * SESSION );
-char * stats( SESSION_t * SESSION );
+char * session( THREAD_t * THREAD );
+char * stats( THREAD_t * THREAD );
 
 // dumpg.c
 void set_sstyle( void );

@@ -26,7 +26,7 @@
  * The inner recursions are through the grammar state_machine at a single
  * level of containment - maintained in the CONTAINER context
  *
- * The top-level SESSION context is available to both and maintains the input state.
+ * The top-level THREAD context is available to both and maintains the input state.
  *
  * @param GRAPH context   
  * @return success/fail

@@ -8,9 +8,9 @@ extern "C" {
 #endif
 
 #include "emit.h"
-#include "session.h"
+#include "thread.h"
 
-char * session(SESSION_t * SESSION);
+char * session(THREAD_t * THREAD);
 
 #ifdef __cplusplus
 }

@@ -31,7 +31,6 @@ noinst_HEADERS = \
     print.h \
     reduce.h \
     sameas.h \
-    session.h \
     success.h \
     thread.h \
     token.h \

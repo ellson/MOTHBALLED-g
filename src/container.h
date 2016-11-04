@@ -8,7 +8,6 @@ extern "C" {
 #endif
 
 #include "graph.h"
-#include "thread.h"
 #include "ikea.h"
 
 typedef struct {                // CONTAINER context

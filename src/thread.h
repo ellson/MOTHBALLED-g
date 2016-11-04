@@ -7,23 +7,49 @@
 extern "C" {
 #endif
 
-#include "token.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#ifdef HAVE_SYSINFO
+#include <sys/sysinfo.h>
+#else
+#ifndef HAVE_CLOCK_GETTIME
+#include <sys/time.h>
+#endif
+#endif
+
+#include "container.h"
 #include "ikea.h"
 
-typedef struct {               // THREAD context
-    TOKEN_t TOKEN;             // TOKEN context.  Must be first to allow casting from THREAD
-    SESSION_t *SESSION;        // SESSION context at the top level of nested containment
-
-    int style;                 // degree of friendliness in print outputs
-    char sep;                  // the next separator
-                               // (either 0, or ' ' if following a STRING that
-                               // requires a separator,  but may be ignored if
-                               // the next character is a token which
-                               // implicitly separates.)
-
+struct thread_s {
+    CONTAINER_t *CONTAINER;    // A top level CONTAINER
     FILE *out;                 // typically stdout for parser debug outputs
+                               
     ikea_store_t *ikea_store;  // persistency
-} THREAD_t;
+
+    char needstats;            // flag set if -s on command line
+    char *progname;            // name of program
+    char *username;            // set by first call to g_session
+    char *hostname;          
+    char *osname;
+    char *osrelease;
+    char *osmachine;
+
+#if defined(HAVE_CLOCK_GETTIME)
+    // Y2038-unsafe struct - but should be ok for uptime
+    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    struct timespec uptime;     // time with subsec resolution since boot, used as the base for runtime calculations
+#else
+    // Y2038-unsafe struct - but should be ok for uptime
+    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    struct timeval uptime;      // time with subsec resolution since boot, used as the base for runtime calculations
+#endif
+    pid_t pid;
+};
 
 #ifdef __cplusplus
 }

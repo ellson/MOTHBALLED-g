@@ -11,14 +11,14 @@
 #include "libje.h"
 #include "fatal.h" 
 
-static SESSION_t * SESSION;  // the context - needs to be global for intr()
+static THREAD_t * THREAD;  // the context - needs to be global for intr()
 
 // if interrupted we try to gracefully snapshot the current state 
 static void intr(int s)
 {
     (void) s; // NOTUSED
 
-    interrupt(SESSION);
+    interrupt(THREAD);
 
     exit (EXIT_FAILURE);
 }
@@ -83,19 +83,19 @@ int main(int argc, char *argv[])
     }
 
     // create the top-level context for processing the inputs
-    SESSION = initialize(&argc, argv, optind);
+    THREAD = initialize(&argc, argv, optind);
 
     // parse the input 
-    parse(SESSION);
+    parse(THREAD);
 
     // and stats, if wanted 
     if (needstats) {
         // FIXME - need pretty-printer
-        fprintf (stderr, "%s\n", session(SESSION));
-        fprintf (stderr, "%s\n", stats(SESSION));
+        fprintf (stderr, "%s\n", session(THREAD));
+        fprintf (stderr, "%s\n", stats(THREAD));
     }
 
-    finalize(SESSION);
+    finalize(THREAD);
 
     exit(EXIT_SUCCESS);
 }

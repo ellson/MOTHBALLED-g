@@ -12,7 +12,7 @@
  * ATTRID and VALUE are stored in separate trees:
  * Both trees are sorted by ATTRID
  *
- * The ATTRID tree is common to all the CONTAINERs in a SESSION
+ * The ATTRID tree is common to all the CONTAINERs in a THREAD
  * ( FIXME - what about the meta graph, which includes all the stats ...)
  * This is to permit the FRAGLIST representing the ATTRID to
  * be inserted just once, on first use, and then shared by
@@ -27,7 +27,7 @@
  *                     .--------> ABC -------- > FRAGLIST of string VALUE
  *                                 |
  *                                 |
- *         SESSION's               | next
+ *         THREAD's               | next
  *         ATTRID tree             |
  *          /      \               |
  *       /    \  /    \   key      v    first
@@ -36,14 +36,14 @@
  *
  * At parse, we have an ATTRIBUTES list which applies to all the MEMBERs from the SUBJECT,
  * (which are all of the same type, NODE or EDGE).  At this point we merge
- * the ATTRID into the SESSION's ATTRID tree, adding a reference to the *new* version of
+ * the ATTRID into the THREAD's ATTRID tree, adding a reference to the *new* version of
  * any matching ATTRID, and freeing any older duplicate strings.
  * The current ATTRIBUTES are not modified. 
  *
  * After various transformations of the SUBJECT we get a list of individual
  * MEMBERS.  Then, the VALUES from the rewritten ATTRIBUTES get merged with any existing 
  * VALUES used by the object.  The latest VALUE list is saved in the MEMBER's VALUE trees,
- * but referring to the ATTRID from the SESSION's ATTRID tree.
+ * but referring to the ATTRID from the THREAD's ATTRID tree.
  */
  
 

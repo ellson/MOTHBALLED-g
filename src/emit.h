@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "session.h"
+#include "thread.h"
 
 // emit styles
 typedef enum {

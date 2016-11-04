@@ -25,7 +25,7 @@
 
 #include "info.h"
 
-#define SESSION_BUF_SIZE 1024
+#define THREAD_BUF_SIZE 1024
 
 #define As(attr,valu) { \
      append_string  (GRAPH, &pos, attr); \
@@ -63,15 +63,15 @@
  * is used. It is only filled on the first call,  if session() is
  * called again the same result is used.
  *
- * @param SESSION context
+ * @param THREAD context
  * @return formatted string result
  */
-char * session(SESSION_t * SESSION)
+char * session(THREAD_t * THREAD)
 {
-    CONTAINER_t *CONTAINER = SESSION->CONTAINER;
+    CONTAINER_t *CONTAINER = THREAD->CONTAINER;
     GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;   // FIXME - only used for output context
                                             //   which probably belongs in a THREAD context
-    static char buf[SESSION_BUF_SIZE];
+    static char buf[THREAD_BUF_SIZE];
     static char *pos = &buf[0];  // NB. static. This initalization happens only once
     static struct passwd *pw;
     static struct utsname unamebuf;
@@ -90,28 +90,28 @@ char * session(SESSION_t * SESSION)
 
     // gather info
     
-    SESSION->pid = getpid();
+    THREAD->pid = getpid();
     uid = geteuid();
     if (!(pw = getpwuid(uid)))
         FATAL("getpwuid()");
-    SESSION->username = pw->pw_name;
+    THREAD->username = pw->pw_name;
     if (uname(&unamebuf))
         FATAL("uname()");
-    SESSION->hostname = unamebuf.nodename;
-    SESSION->osname = unamebuf.sysname;
-    SESSION->osrelease = unamebuf.release;
-    SESSION->osmachine = unamebuf.machine;
+    THREAD->hostname = unamebuf.nodename;
+    THREAD->osname = unamebuf.sysname;
+    THREAD->osrelease = unamebuf.release;
+    THREAD->osmachine = unamebuf.machine;
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe function - but should be ok for uptime and starttime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (clock_gettime(CLOCK_BOOTTIME, &(SESSION->uptime)))
+    if (clock_gettime(CLOCK_BOOTTIME, &(THREAD->uptime)))
         FATAL("clock_gettime()");
     if (clock_gettime(CLOCK_REALTIME, &starttime))
         FATAL("clock_gettime()");
 #else
     // Y2038-unsafe function - but should be ok for uptime and starttime
     // ref: htt,ps://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (gettimeofday(&(SESSION->uptime), NULL))
+    if (gettimeofday(&(THREAD->uptime), NULL))
         FATAL("gettimeofday()");
     if (gettimeofday(&starttime, NULL))
         FATAL("gettimeofday()");
@@ -127,23 +127,23 @@ char * session(SESSION_t * SESSION)
     Au("elemmallocsize",        LISTALLOCNUM * sizeof(elem_t));
     Au("elempermalloc",         LISTALLOCNUM);
     Au("elemsize",              sizeof(elem_t));
-    As("hostname",              SESSION->hostname);
+    As("hostname",              THREAD->hostname);
     Au("inbufcapacity",         INBUFIZE);
     Au("inbufmallocsize",       INBUFALLOCNUM * sizeof(inbuf_t));
     Au("inbufpermalloc",        INBUFALLOCNUM);
     Au("inbufsize",             sizeof(inbuf_t));
-    As("osmachine",             SESSION->osmachine);
-    As("osname",                SESSION->osname);
-    As("osrelease",             SESSION->osrelease);
-    Au("pid",                   SESSION->pid);
-    As("progname",              SESSION->progname);
+    As("osmachine",             THREAD->osmachine);
+    As("osname",                THREAD->osname);
+    As("osrelease",             THREAD->osrelease);
+    Au("pid",                   THREAD->pid);
+    As("progname",              THREAD->progname);
     Au("starttime",             starttime.tv_sec);
-    Au("uptime",                SESSION->uptime.tv_sec);
-    As("username",              SESSION->username);
+    Au("uptime",                THREAD->uptime.tv_sec);
+    As("username",              THREAD->username);
     Au("voidptrsize",           sizeof(void*));
     append_token   (GRAPH, &pos, ']');
 
-    assert(pos < buf+SESSION_BUF_SIZE);
+    assert(pos < buf+THREAD_BUF_SIZE);
     return buf;
 }
 
@@ -154,12 +154,12 @@ char * session(SESSION_t * SESSION)
 /**
  * format running stats as a string
  *
- * @param SESSION context
+ * @param THREAD context
  * @return formatted string
  */
-char * stats(SESSION_t * SESSION)
+char * stats(THREAD_t * THREAD)
 {
-    CONTAINER_t *CONTAINER = SESSION->CONTAINER;
+    CONTAINER_t *CONTAINER = THREAD->CONTAINER;
     GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     TOKEN_t *TOKEN = (TOKEN_t*)GRAPH;
     LIST_t *LIST = (LIST_t*)GRAPH;
@@ -190,14 +190,14 @@ char * stats(SESSION_t * SESSION)
     if (clock_gettime(CLOCK_REALTIME, &nowtime))
         FATAL("clock_gettime()");
     runtime = ((uint64_t)uptime.tv_sec * TEN9 + (uint64_t)uptime.tv_nsec)
-            - ((uint64_t)(SESSION->uptime.tv_sec) * TEN9 + (uint64_t)(SESSION->uptime.tv_nsec));
+            - ((uint64_t)(THREAD->uptime.tv_sec) * TEN9 + (uint64_t)(THREAD->uptime.tv_nsec));
 #else
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (gettimeofday(&nowtime, NULL))
         FATAL("gettimeofday()");
     runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_usec) * TEN3
-            - ((uint64_t)(SESSION->uptime.tv_sec) * TEN9 + (uint64_t)(SESSION->uptime.tv_usec) * TEN3);
+            - ((uint64_t)(THREAD->uptime.tv_sec) * TEN9 + (uint64_t)(THREAD->uptime.tv_usec) * TEN3);
 #endif
     itot = INBUF->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t);
     etot = LIST->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);

@@ -13,7 +13,7 @@ extern "C" {
 typedef struct {               // GRAPH context
 // FIXME - move from THREAD
     TOKEN_t TOKEN;             // TOKEN context.  Must be first to allow casting from GRAPH
-    SESSION_t *SESSION;        // SESSION context at the top level of nested containment
+    THREAD_t *THREAD;        // THREAD context at the top level of nested containment
     FILE *out;                 // typically stdout for parser debug outputs
     ikea_store_t *ikea_store;  // persistency
     int style;                 // degree of friendliness in print outputs
