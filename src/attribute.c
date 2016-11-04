@@ -18,9 +18,9 @@
  * be inserted just once, on first use, and then shared by
  * reference from all NODEs or EDGEs that set a VALUE for that ATTRID.
  *
- * Every NODE and EDGE has its own VALUE tree
+ * Every NOUN (NODE or EDGE) has its own VALUE tree
  *
- *         an MEMBER's
+ *         an NOUN's
  *         VALUE tree
  *          /      \
  *       /    \  /    \   key           first
@@ -34,15 +34,15 @@
  *                    .---------> ABC ---------> FRAGLIST of string ATTRID
  *
  *
- * At parse, we have an ATTRIBUTES list which applies to all the MEMBERs from the SUBJECT,
+ * At parse, we have an ATTRIBUTES list which applies to all the NOUNs from the SUBJECT,
  * (which are all of the same type, NODE or EDGE).  At this point we merge
  * the ATTRID into the THREAD's ATTRID tree, adding a reference to the *new* version of
  * any matching ATTRID, and freeing any older duplicate strings.
  * The current ATTRIBUTES are not modified. 
  *
  * After various transformations of the SUBJECT we get a list of individual
- * MEMBERS.  Then, the VALUES from the rewritten ATTRIBUTES get merged with any existing 
- * VALUES used by the object.  The latest VALUE list is saved in the MEMBER's VALUE trees,
+ * NOUNS.  Then, the VALUES from the rewritten ATTRIBUTES get merged with any existing 
+ * VALUES used by the object.  The latest VALUE list is saved in the NOUN's VALUE trees,
  * but referring to the ATTRID from the THREAD's ATTRID tree.
  */
  

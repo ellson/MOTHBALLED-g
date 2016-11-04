@@ -43,7 +43,7 @@ success_t container(GRAPH_t * GRAPH)    // FIXME - I think the context should be
     LIST_t * LIST = (LIST_t *)GRAPH;
     elem_t *root = new_list(LIST, ACTIVITY);
 
-    CONTAINER->subject = new_list(LIST, SUBJECT);  // for sameas
+    CONTAINER->previous_subject = new_list(LIST, SUBJECT);  // for sameas
 
     CONTAINER->node_pattern_acts = new_list(LIST, 0);  // FIXME use tree
     CONTAINER->edge_pattern_acts = new_list(LIST, 0);  // FIXME use tree
@@ -82,7 +82,7 @@ success_t container(GRAPH_t * GRAPH)    // FIXME - I think the context should be
     free_list(LIST, root);
     free_tree(LIST, CONTAINER->nodes);
     free_tree(LIST, CONTAINER->edges);
-    free_list(LIST, CONTAINER->subject);
+    free_list(LIST, CONTAINER->previous_subject);
     free_list(LIST, CONTAINER->node_pattern_acts);
     free_list(LIST, CONTAINER->edge_pattern_acts);
 

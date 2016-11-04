@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
                 exit(EXIT_FAILURE);
             }
             break;
+#endif
         case 'd':
             switch (optnum) {
             case 0:
@@ -60,7 +61,6 @@ int main(int argc, char *argv[])
             }
 
             break;
-#endif
         case 's':
             needstats = 1;
             break;

@@ -33,7 +33,7 @@ success_t doact(GRAPH_t *GRAPH, elem_t *act)
     assert(subject);
     assert(subject->state == (char)SUBJECT);
 
-//====================== substitute sameas MEMBER(s) from previous SUBJECT
+//====================== substitute sameas NOUN(s) from previous SUBJECT
 //P(subject)
     newsubject = sameas(CONTAINER, subject);
 //P(subject);
@@ -41,16 +41,16 @@ success_t doact(GRAPH_t *GRAPH, elem_t *act)
 //----------------------- example (from two consecutive ACTs)
 // G:          <a b> <= c>
 //
-// subject:    SUBJECT MEMBER EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
-//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC b
-//             SUBJECT MEMBER EDGE LEG EQL
-//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC c
+// subject:    SUBJECT NOUN EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
+//                               LEG ENDPOINT SIBLING NODEREF NODEID ABC b
+//             SUBJECT NOUN EDGE LEG EQL
+//                               LEG ENDPOINT SIBLING NODEREF NODEID ABC c
 //
 //
-// newsubject: SUBJECT MEMBER EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
-//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC b
-//             SUBJECT MEMBER EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
-//                                 LEG ENDPOINT SIBLING NODEREF NODEID ABC c
+// newsubject: SUBJECT NOUN EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
+//                               LEG ENDPOINT SIBLING NODEREF NODEID ABC b
+//             SUBJECT NOUN EDGE LEG ENDPOINT SIBLING NODEREF NODEID ABC a
+//                               LEG ENDPOINT SIBLING NODEREF NODEID ABC c
 //----------------------- 
 
 //====================== stash ATTRID - there should be no structural change

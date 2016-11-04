@@ -20,7 +20,7 @@ assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
  *
  * FIXME - description needs updating
  *
- * - expand MEMBERSET
+ * - expand NOUNSET
  *    - expand ENDPOINT_SETs
  *       - promote ENDPOINTS to common ancestor
  *           - extract NODES from EDGES for node induction
@@ -77,7 +77,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb)
     edges = new_list(LIST, 0);
     attributes = new_list(LIST, 0);
 
-    // expand MEMBERSET and ENDPOINTSETS
+    // expand NOUNSET and ENDPOINTSETS
     dispatch_r(GRAPH, act, attributes, nodes, edges, verb);
 
     // if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
@@ -132,7 +132,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb)
 }
 
 /**
- * This function expands MEMBERSET of NODES or EDGES,
+ * This function expands NOUNSET of NODES or EDGES,
  *     then expands ENPOINTSETS in EDGES,
  *     and returns the expansion as list of simple nodes and edges
  *
@@ -170,13 +170,13 @@ dispatch_r(GRAPH_t * GRAPH, elem_t * list, elem_t * attributes,
             object = elem->u.l.first;
             si2 = (state_t)object->state;
             switch (si2) {
-            case MEMBER:
+            case NOUN:
                 dispatch_r(GRAPH, object, attributes, nodes, edges, verb);
                 break;
-            case MEMBERSET:
+            case NOUNSET:
                 object = object->u.l.first;
                 while(object) {
-                    assert((state_t)object->state == MEMBER);
+                    assert((state_t)object->state == NOUN);
                     dispatch_r(GRAPH, object, attributes, nodes, edges, verb);
                     object = object->u.l.next;
                 }

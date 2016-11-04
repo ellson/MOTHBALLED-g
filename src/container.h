@@ -9,14 +9,7 @@ extern "C" {
 
 struct container_s {            // CONTAINER context
     GRAPH_t GRAPH;              // GRAPH contents context. Must be first to allow casting from CONTAINER
-    elem_t *subject;            // Preceeding ACT's subject, until this ACT's
-                                // SUBJECT has been parsed and processd by sameas()
-                                //   - at which point it becomes this ACT's subject.
-                                // (So: in SUBJECT parsing it is the previous ACT's
-                                // subject and used for sameas() substitutions once
-                                // a new SUBJECT has been parsed. For ATTRIBUTES
-                                // and CONTAINERS it is this ACT.   It is the basis
-                                // of the name for the output files for contents.)
+    elem_t *previous_subject;   // For use by sameas()
     char is_pattern;            // flag set if '*' occurred in SUBJECT
     state_t subject_type;       // set by sameas() to record if the SUBJECT is NODE(s),
                                 //   or EDGE(s), and to check that it is not a mix

@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <assert.h>
 
+#include "thread.h"
 #include "sameas.h"
 
 static void
@@ -31,21 +32,22 @@ sameas(CONTAINER_t * CONTAINER, elem_t * subject)
 //E();
 //P(subject);
 
-    assert(CONTAINER->subject);
     assert(subject);
     assert((state_t)subject->state == SUBJECT);
+    assert (CONTAINER->previous_subject);
 
     newsubject = new_list(LIST, SUBJECT);
 
-    nextold = CONTAINER->subject->u.l.first;
+    nextold = CONTAINER->previous_subject->u.l.first;
     CONTAINER->subject_type = 0;  // will be set by sameas_r()
 
-    // rewrite subject into newsubject with any EQL elements substituted from oldsubject
+    // rewrite subject into newsubject with any EQL elements
+    // substituted from oldsubject
     sameas_r(CONTAINER, subject, &nextold, newsubject);
     assert(newsubject->u.l.first);
 
-    free_list(LIST, CONTAINER->subject);   // free the previous oldsubject
-    CONTAINER->subject = newsubject; // save the newsubject as oldsubject
+    free_list(LIST, CONTAINER->previous_subject);   // free the previous oldsubject
+    CONTAINER->previous_subject = newsubject; // save the newsubject as oldsubject
     newsubject->refs++;            // and increase its reference count
 
 //E();

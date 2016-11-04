@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-#include "thread.h"
-
 elem_t * sameas(CONTAINER_t * CONTAINER, elem_t * subject);
 
 #ifdef __cplusplus

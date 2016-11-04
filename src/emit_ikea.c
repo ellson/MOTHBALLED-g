@@ -68,7 +68,7 @@ static void ikea_list_r(CONTAINER_t * CONTAINER, elem_t * list)
                 case EDGE:
                     ikea_token(CONTAINER, "<");
                     break;
-                case MEMBERSET:
+                case NOUNSET:
                 case ENDPOINTSET:
                     ikea_token(CONTAINER, "(");
                     break;
@@ -95,7 +95,7 @@ static void ikea_list_r(CONTAINER_t * CONTAINER, elem_t * list)
         case EDGE:
             ikea_token(CONTAINER, ">");
             break;
-        case MEMBERSET:
+        case NOUNSET:
         case ENDPOINTSET:
             ikea_token(CONTAINER, ")");
             break;
