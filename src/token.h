@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "libje.h"
+#include "success.h"
 #include "frag.h"
 
 typedef struct {

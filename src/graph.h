@@ -18,6 +18,7 @@ typedef struct {               // GRAPH context
     char has_cousin;           // flag set if a COUSIN is found in any EDGE of the ACT
                                //  (forward EDGE to ancestors for processing)
 
+    int style;                 // degree of friendliness in print outputs
     char sep;                  // the next separator
                                // (either 0, or ' ' if following a STRING that
                                // requires a separator,  but may be ignored if
@@ -37,7 +38,6 @@ typedef struct {               // GRAPH context
 //FIXME -- output context
 
     FILE *out;                 // typically stdout for parser debug outputs
-    style_t style;             // spacing style in emitted outputs
     ikea_store_t *ikea_store;  // persistency
     ikea_box_t *namehash_buckets[64];
 } GRAPH_t;

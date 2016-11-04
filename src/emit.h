@@ -9,6 +9,12 @@ extern "C" {
 
 #include "session.h"
 
+// emit styles
+typedef enum {
+     MINIMUM_SPACE_STYLE = 0,
+     SHELL_FRIENDLY_STYLE = 1
+} style_t;
+
 typedef struct {
     char *name;
     void (*initialize) (GRAPH_t * GRAPH);

@@ -28,7 +28,6 @@ extern "C" {
 struct session_s {
     CONTAINER_t *CONTAINER;    // A top level CONTAINER
     FILE *out;                 // typically stdout for parser debug outputs
-    style_t style;             // spacing style in emitted outputs
                                
     ikea_store_t *ikea_store;  // persistency
     ikea_box_t *namehash_buckets[64];

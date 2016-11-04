@@ -7,19 +7,10 @@
 extern "C" {
 #endif
 
+#include "success.h"
+
 //opaque structs from the public interface
 typedef struct session_s SESSION_t;
-
-typedef enum {
-    SUCCESS,
-    FAIL
-} success_t;
-
-// emit styles
-typedef enum {
-    MINIMUM_SPACE_STYLE = 0,
-    SHELL_FRIENDLY_STYLE = 1
-} style_t;
 
 // libje.c
 SESSION_t *initialize( int *argc, char *argv[], int optind );
