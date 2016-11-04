@@ -37,16 +37,33 @@ void session(int *pargc, char *argv[], int optind)
     struct utsname unamebuf;
     uid_t uid;
     pid_t pid;
+
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     struct timespec uptime;   
     struct timespec starttime; 
+    if (clock_gettime(CLOCK_BOOTTIME, &(uptime)))
+        FATAL("clock_gettime()");
+    session.uptime = uptime.tv_sec;
+    session.uptime_nsec = uptime.tv_nsec;
+    if (clock_gettime(CLOCK_REALTIME, &(starttime)))
+        FATAL("clock_gettime()");
+    session.starttime = starttime.tv_sec;
+    session.starttime_nsec = starttime.tv_nsec;
 #else
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     struct timeval uptime;   
     struct timeval starttime;   
+    if (gettimeofday(&(uptime), NULL))
+        FATAL("gettimeofday()");
+    session.uptime = uptime.tv_sec;
+    session.uptime_nsec = uptime.tv_usec * TEN3;
+    if (gettimeofday(&starttime, NULL))
+        FATAL("gettimeofday()");
+    session.starttime = starttime.tv_sec;
+    session.starttime_nsec = starttime.tv_usec * TEN3;
 #endif
 
     pid = geteuid();
@@ -61,29 +78,6 @@ void session(int *pargc, char *argv[], int optind)
     session.osname = unamebuf.sysname;
     session.osrelease = unamebuf.release;
     session.osmachine = unamebuf.machine;
-#if defined(HAVE_CLOCK_GETTIME)
-    // Y2038-unsafe function - but should be ok for uptime and starttime
-    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (clock_gettime(CLOCK_BOOTTIME, &(uptime)))
-        FATAL("clock_gettime()");
-    session.uptime = uptime.tv_sec;
-    session.uptime_nsec = uptime.tv_nsec;
-    if (clock_gettime(CLOCK_REALTIME, &(starttime)))
-        FATAL("clock_gettime()");
-    session.starttime = starttime.tv_sec;
-    session.starttime_nsec = starttime.tv_nsec;
-#else
-    // Y2038-unsafe function - but should be ok for uptime and starttime
-    // ref: htt,ps://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (gettimeofday(&(uptime), NULL))
-        FATAL("gettimeofday()");
-    session.uptime = uptime.tv_sec;
-    session.uptime_nsec = uptime.tv_usec * TEN3;
-    if (gettimeofday(&starttime, NULL))
-        FATAL("gettimeofday()");
-    session.starttime = starttime.tv_sec;
-    session.starttime_nsec = starttime.tv_usec * TEN3;
-#endif
 
     // run a THREAD to process the input
     session.THREAD = thread(&session, pargc, argv, optind);

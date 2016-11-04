@@ -79,6 +79,7 @@ success_t container(THREAD_t * THREAD)
 
     THREAD->stat_containdepth--;
 
+E();
     ikea_box_close ( container.ikea_box );
 
     free_list(LIST, root);
