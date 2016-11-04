@@ -9,7 +9,7 @@
 
 static void api_start_activity(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
 
     GRAPH->sep = 0;
     if (GRAPH->containment != 0) {
@@ -19,7 +19,7 @@ static void api_start_activity(CONTAINER_t * CONTAINER)
 
 static void api_end_activity(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
 
     GRAPH->sep = 0;
     if (GRAPH->containment != 0) {
@@ -32,14 +32,14 @@ static void api_end_activity(CONTAINER_t * CONTAINER)
 
 static void api_subject(CONTAINER_t * CONTAINER, elem_t *list)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
 
     je_emit_list(GRAPH, GRAPH->out, list);
 }
 
 static void api_attributes(CONTAINER_t * CONTAINER, elem_t *list)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
 
     je_emit_list(GRAPH, GRAPH->out, list);
 }
@@ -76,7 +76,7 @@ emit_t g_api = { "g",
 
 static void api1_end_activity(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
 
     if (GRAPH->containment == 0) {
         putc('\n', GRAPH->out);
@@ -133,7 +133,9 @@ emit_t g1_api = { "g1",
 
 static void api2_end_activity(CONTAINER_t * CONTAINER)
 {
-    putc('\n', CONTAINER->GRAPH->out);
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
+
+    putc('\n', GRAPH->out);
 }
 
 static void api2_token(GRAPH_t * GRAPH, char token)

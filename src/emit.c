@@ -21,21 +21,21 @@ static emit_t *emitters[] =
 
 static void api_act(CONTAINER_t * CONTAINER, elem_t *elem)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
 
     if (!CONTAINER->out)
         return;
 
 #if 0
     // render through libcgraph to svg
-    gvrender_list(CONTAINER->GRAPH, stdout, elem);
+    gvrender_list(GRAPH, stdout, elem);
     putc('\n', stdout);   // NL after
 #endif
 
     GRAPH->sep = 0;         // suppress space before (because preceded by BOF or NL)
     // emit in g format
-    je_emit_list(CONTAINER->GRAPH, CONTAINER->out, elem);
-    putc('\n', CONTAINER->out);   // NL after
+    je_emit_list(GRAPH, GRAPH->out, elem);
+    putc('\n', GRAPH->out);   // NL after
 }
 
 // this is default emitter used when writing to the file-per-container

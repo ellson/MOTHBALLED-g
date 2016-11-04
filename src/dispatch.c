@@ -59,7 +59,7 @@ assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
 elem_t *
 dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb)
 {
-    GRAPH_t *GRAPH = CONTAINER->GRAPH;
+    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     LIST_t * LIST = (LIST_t *)GRAPH;
     state_t si;
     elem_t *new, *newacts, *elem, *nodes, *edges, *attributes;

@@ -11,8 +11,7 @@ extern "C" {
 #include "frag.h"
 
 typedef struct {
-    LIST_t LIST;             // Must be first (to allow casting from GRAPH_t)
-
+    LIST_t LIST;               // LIST context.  Must be first to allow casting from TOKEN
     int *pargc;                // remaining filenames from command line
     char **argv;
     char *filename;            // name of file currently being processed, or "-" for stdin

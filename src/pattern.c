@@ -37,7 +37,7 @@ static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject);
 
 elem_t * pattern(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb)
 {
-    GRAPH_t *GRAPH = CONTAINER->GRAPH;
+    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     elem_t *newsubjects;
 
     if ((CONTAINER->is_pattern = ((TOKEN_t*)GRAPH)->has_ast)) {
@@ -89,7 +89,7 @@ static void pattern_update(CONTAINER_t * CONTAINER, elem_t * subject, state_t ve
 
 static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
     LIST_t * LIST = (LIST_t *)GRAPH;
     elem_t *newacts = NULL, *pattern_acts, *subj, *attr;
 
@@ -121,10 +121,10 @@ static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject)
                 newacts = new_list(LIST, ACT);
             }
             append_addref(newacts, ref_list(LIST, subject));
-            emit_subject(CONTAINER, subject);
+//            emit_subject(CONTAINER, subject);
             if (attr && (state_t)attr->state == ATTRIBUTES) {
                 append_addref(newacts, ref_list(LIST, attr));
-                emit_attributes(CONTAINER, attr);
+//                emit_attributes(CONTAINER, attr);
             }
 
             // FIXME -- contents

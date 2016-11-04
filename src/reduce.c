@@ -8,7 +8,7 @@
 
 void reduce(CONTAINER_t * CONTAINER, elem_t *list)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
     LIST_t *LIST = (LIST_t*)GRAPH;
     state_t si, verb = 0, subjtype = 0;
     elem_t *elem, *subject, *attributes = NULL, *disambig = NULL;

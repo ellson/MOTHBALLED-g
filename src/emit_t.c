@@ -9,7 +9,7 @@
 
 static void api_start_activity(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
     FILE *chan = GRAPH->out;
 
     GRAPH->sep = 0;
@@ -27,7 +27,8 @@ static void api_start_activity(CONTAINER_t * CONTAINER)
 static void
 api_start_state(CONTAINER_t * CONTAINER, char class, unsigned char prop, int nest, int repc)
 {
-    FILE *chan = CONTAINER->GRAPH->out;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
+    FILE *chan = GRAPH->out;
 
     fprintf(chan, "\n   ");
     putc(char_prop(prop, '.'), chan);
@@ -55,7 +56,8 @@ static void api_token(GRAPH_t * GRAPH, char token)
 static void
 api_end_state(CONTAINER_t * CONTAINER, char class, success_t rc, int nest, int repc)
 {
-    FILE *chan = CONTAINER->GRAPH->out;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
+    FILE *chan = GRAPH->out;
 
     fprintf(chan, "\n   %d%4d%4d%4d   ", rc, class, nest, repc);
     print_len_frag(chan, NAMEP(class));
@@ -63,7 +65,7 @@ api_end_state(CONTAINER_t * CONTAINER, char class, success_t rc, int nest, int r
 
 static void api_end_activity(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
     FILE *chan = GRAPH->out;
 
     GRAPH->sep = 0;
@@ -102,11 +104,12 @@ emit_t t_api = { "t",
 
 static void api1_act(CONTAINER_t * CONTAINER, elem_t * tree)
 {
-    FILE *chan = CONTAINER->GRAPH->out;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
+    FILE *chan = GRAPH->out;
     char sep;
 
     sep = ' ';
-    fprintf(chan, "%3d ACT", CONTAINER->GRAPH->containment);
+    fprintf(chan, "%3d ACT", GRAPH->containment);
     print_elem(chan, tree, 7, &sep);
 }
 

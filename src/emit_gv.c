@@ -9,7 +9,7 @@
 
 static void api_start_activity(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
 
     GRAPH->sep = 0;
     fprintf(GRAPH->out, "graph {\n");
@@ -17,7 +17,7 @@ static void api_start_activity(CONTAINER_t * CONTAINER)
 
 static void api_end_activity(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
 
     GRAPH->sep = 0;
     fprintf(GRAPH->out, "\n}\n");
@@ -25,7 +25,7 @@ static void api_end_activity(CONTAINER_t * CONTAINER)
 
 static void api_list(CONTAINER_t * CONTAINER, elem_t *list)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
 
     je_emit_list(GRAPH, GRAPH->out, list);
 }

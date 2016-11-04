@@ -17,7 +17,8 @@ static void ikea_print_frags(ikea_box_t * ikea_box, state_t liststate, elem_t * 
 
 void emit_ikea(CONTAINER_t * CONTAINER, elem_t *elem)
 {
-    CONTAINER->GRAPH->sep = 0; // suppress space before (because preceded by BOF or NL)
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
+    GRAPH->sep = 0; // suppress space before (because preceded by BOF or NL)
     // emit in compact g format
     ikea_list_r(CONTAINER, elem);
     ikea_box_append(CONTAINER->ikea_box, "\n", 1); // NL after each act
@@ -25,13 +26,15 @@ void emit_ikea(CONTAINER_t * CONTAINER, elem_t *elem)
 
 static void ikea_token(CONTAINER_t * CONTAINER, char *tok)
 {
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
     ikea_box_append(CONTAINER->ikea_box, tok, 1);
-    CONTAINER->GRAPH->sep = 0;
+    GRAPH->sep = 0;
 }
 
 // recursive function
 static void ikea_list_r(CONTAINER_t * CONTAINER, elem_t * list)
 {
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
     elem_t *elem;
     elemtype_t type;
     int cnt;
@@ -55,7 +58,7 @@ static void ikea_list_r(CONTAINER_t * CONTAINER, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-        ikea_print_frags(CONTAINER->ikea_box, liststate, elem, &(CONTAINER->GRAPH->sep));
+        ikea_print_frags(CONTAINER->ikea_box, liststate, elem, &(GRAPH->sep));
         break;
     case LISTELEM:
         cnt = 0;

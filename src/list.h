@@ -47,8 +47,8 @@ struct elem_s {
                             //  size of the struct
 };
 
-typedef struct {
-    INBUF_t INBUF;          // Header for inbuf management   
+typedef struct {            // LIST context
+    INBUF_t INBUF;          // INBUF context, must be first to allow casting from LIST
     elem_t *free_elem_list; // linked list of unused list elems
     long stat_elemmax;      // list stats
     long stat_elemnow;

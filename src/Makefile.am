@@ -12,7 +12,6 @@ noinst_HEADERS = \
     attribute.h \
     compare.h \
     container.h \
-    context.h \
     dispatch.h \
     doact.h \
     emit.h \

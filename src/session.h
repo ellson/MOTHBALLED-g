@@ -22,12 +22,11 @@ extern "C" {
 #endif
 #endif
 
-#include "context.h"
-#include "token.h"
+#include "container.h"
 #include "ikea.h"
 
 struct session_s {
-    GRAPH_t *GRAPH;
+    CONTAINER_t *CONTAINER;    // A top level CONTAINER
     FILE *out;                 // typically stdout for parser debug outputs
     style_t style;             // spacing style in emitted outputs
                                

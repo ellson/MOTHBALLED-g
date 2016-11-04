@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include "container.h"
+#include "doact.h"
 
 // forward declarations
 static success_t more_rep(GRAPH_t * GRAPH, unsigned char prop);
@@ -30,9 +31,6 @@ static success_t more_rep(GRAPH_t * GRAPH, unsigned char prop);
  * level of containment.
  *
  * The top-level SESSION context is available to both and maintains the input state.
- *
- * @param SESSION context
- * @return success/fail
  */
 
 /** 
@@ -249,9 +247,9 @@ static success_t more_rep(GRAPH_t * GRAPH, unsigned char prop)
         || (ei != ABC && ei != AST && ei != DQT)) {
         return SUCCESS;    // more repetitions, but additional WS sep is optional
     }
-    if (prop & SREP) {
-        emit_sep(GRAPH);   // sep is non-optional, emit the minimal sep
-                           //    .. when low-level emit hook is used.
-    }
+//    if (prop & SREP) {
+//        emit_sep(GRAPH);   // sep is non-optional, emit the minimal sep
+//                           //    .. when low-level emit hook is used.
+//    }
     return SUCCESS;        // more repetitions
 }

@@ -8,7 +8,6 @@
 
 #include "attribute.h"
 
-
 /**
  * ATTRID and VALUE are stored in separate trees:
  * Both trees are sorted by ATTRID
@@ -56,7 +55,7 @@
  */
 elem_t * attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
     LIST_t *LIST = (LIST_t*)GRAPH;
     elem_t *attr, *attrid, *attrid_str, *newattributes, *newattr, *new;
     state_t si;
@@ -91,7 +90,7 @@ P(attrid_str);
 
 void value_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
     LIST_t *LIST = (LIST_t*)GRAPH;
     elem_t *attr, *attrid, *attrid_str, *valassign, *value, *value_str;
     state_t si;

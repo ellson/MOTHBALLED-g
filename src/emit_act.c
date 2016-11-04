@@ -76,7 +76,7 @@ void je_emit_act(CONTAINER_t * CONTAINER, elem_t *list)
 #define DOTLANG 1
 static void emit_act_func(CONTAINER_t * CONTAINER, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes)
 {
-    GRAPH_t * GRAPH = CONTAINER->GRAPH;
+    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
     GRAPH->sep = '\0';
 
     switch (verb) {
@@ -138,6 +138,7 @@ static void emit_act_func(CONTAINER_t * CONTAINER, state_t verb, state_t subjtyp
 // recursive function
 static void emit_act_list_r(CONTAINER_t * CONTAINER, elem_t * list)
 {
+    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     elem_t *elem;
     elemtype_t type;
     state_t liststate = 0;
@@ -147,16 +148,16 @@ static void emit_act_list_r(CONTAINER_t * CONTAINER, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-        emit_act_print_frags(liststate, elem, &(CONTAINER->GRAPH->sep));
+        emit_act_print_frags(liststate, elem, &(GRAPH->sep));
         break;
     case SHORTSTRELEM:
-        emit_act_print_shortstr(elem, &(CONTAINER->GRAPH->sep));
+        emit_act_print_shortstr(elem, &(GRAPH->sep));
         break;
     case LISTELEM:
         while (elem) {
             if ((state_t)(elem->state) == EQL) {
                 putc('=', stdout);
-                CONTAINER->GRAPH->sep = '\0';
+                GRAPH->sep = '\0';
             }
             else {
                 emit_act_list_r(CONTAINER, elem);    // recurse

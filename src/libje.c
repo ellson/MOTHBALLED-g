@@ -18,9 +18,10 @@
 
 success_t parse(SESSION_t * SESSION)
 {
+    GRAPH_t *GRAPH = (GRAPH_t*)(SESSION->CONTAINER);
     success_t rc;
 
-    rc = container(SESSION->GRAPH);
+    rc = container(GRAPH);   // FIXME - who allocated GRAPH ??
     return rc;
 }
 
@@ -35,19 +36,23 @@ success_t parse(SESSION_t * SESSION)
 SESSION_t *initialize(int *pargc, char *argv[], int optind)
 {
     SESSION_t *SESSION;
+    CONTAINER_t *CONTAINER;
     GRAPH_t *GRAPH;
 
+    // FIXME - I think SESSION and CONTAINER can just be onthe stack of THREAD ??
+    //
     if (! (SESSION = calloc(1, sizeof(SESSION_t))))
         FATAL("calloc()");
 
     SESSION->progname = argv[0];
     SESSION->out = stdout;
 
-    if (! (GRAPH = calloc(1, sizeof(GRAPH_t))))
+    if (! (CONTAINER = calloc(1, sizeof(CONTAINER_t))))
         FATAL("calloc()");
 
+    GRAPH = (GRAPH_t*)CONTAINER;
     GRAPH->SESSION = SESSION;
-    SESSION->GRAPH = GRAPH;
+    SESSION->CONTAINER = CONTAINER;
 #if 1
     SESSION->progname = argv[0];
     GRAPH->out = stdout;
@@ -82,11 +87,12 @@ SESSION_t *initialize(int *pargc, char *argv[], int optind)
 /**
  * finalize and free context
  *
- * @param GRAPH context
+ * @param SESSION context
  */
 void finalize( SESSION_t * SESSION )
 {
-   GRAPH_t *GRAPH = SESSION->GRAPH;
+   CONTAINER_t *CONTAINER = SESSION->CONTAINER;
+   GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
    emit_finalize(GRAPH);
 
    ikea_store_snapshot(GRAPH->ikea_store);
@@ -99,5 +105,7 @@ void finalize( SESSION_t * SESSION )
 
 void interrupt( SESSION_t * SESSION )
 {
-   ikea_store_close(SESSION->GRAPH->ikea_store);
+   CONTAINER_t *CONTAINER = SESSION->CONTAINER;
+   GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
+   ikea_store_close(GRAPH->ikea_store);
 }

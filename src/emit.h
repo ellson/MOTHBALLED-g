@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "container.h"
+#include "session.h"
 
 typedef struct {
     char *name;

@@ -8,8 +8,39 @@ extern "C" {
 #endif
 
 #include "token.h"
-#include "doact.h"
-#include "sameas.h"
+#include "ikea.h"
+
+typedef struct {               // GRAPH context
+    TOKEN_t TOKEN;             // TOKEN context.  Must be first to allow casting from GRAPH
+    SESSION_t *SESSION;        // SESSION context at the top level of nested containment
+
+    state_t verb;              // after parsing, 0 "add", TLD "del", QRY "query"
+    char has_cousin;           // flag set if a COUSIN is found in any EDGE of the ACT
+                               //  (forward EDGE to ancestors for processing)
+
+    char sep;                  // the next separator
+                               // (either 0, or ' ' if following a STRING that
+                               // requires a separator,  but may be ignored if
+                               // the next character is a token which
+                               // implicitly separates.)
+
+    int containment;           // depth of containment
+    long stat_inactcount;
+    long stat_outactcount;
+    long stat_sameas;
+    long stat_patternactcount;
+    long stat_nonpatternactcount;
+    long stat_patternmatches;
+    long stat_containercount;
+
+
+//FIXME -- output context
+
+    FILE *out;                 // typically stdout for parser debug outputs
+    style_t style;             // spacing style in emitted outputs
+    ikea_store_t *ikea_store;  // persistency
+    ikea_box_t *namehash_buckets[64];
+} GRAPH_t;
 
 // functions
 success_t graph(GRAPH_t * GRAPH, elem_t * root, state_t si, unsigned char prop, int nest, int repc);

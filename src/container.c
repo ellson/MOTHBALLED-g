@@ -40,13 +40,13 @@ success_t container(GRAPH_t * GRAPH)
     LIST_t * LIST = (LIST_t *)GRAPH;
     elem_t *root = new_list(LIST, ACTIVITY);
 
-    CONTAINER->GRAPH = GRAPH;
+//    CONTAINER->GRAPH = GRAPH;
     CONTAINER->subject = new_list(LIST, SUBJECT);
     CONTAINER->node_pattern_acts = new_list(LIST, 0);
     CONTAINER->edge_pattern_acts = new_list(LIST, 0);
     CONTAINER->ikea_box = ikea_box_open(GRAPH->ikea_store, NULL);
     CONTAINER->out = stdout;
-    emit_start_activity(CONTAINER);
+//    emit_start_activity(CONTAINER);
     GRAPH->containment++;            // containment nesting level
     GRAPH->stat_containercount++;    // number of containers
 
@@ -72,7 +72,7 @@ success_t container(GRAPH_t * GRAPH)
 //   (Paterns are in effect now, but may not have been at the creation of existing objects.)
 
     GRAPH->containment--;
-    emit_end_activity(CONTAINER);
+//    emit_end_activity(CONTAINER);
 
     ikea_box_close ( CONTAINER->ikea_box );
 

@@ -68,7 +68,9 @@
  */
 char * session(SESSION_t * SESSION)
 {
-    GRAPH_t *GRAPH = SESSION->GRAPH;
+    CONTAINER_t *CONTAINER = SESSION->CONTAINER;
+    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;   // FIXME - only used for output context
+                                            //   which probably belongs in a THREAD context
     static char buf[SESSION_BUF_SIZE];
     static char *pos = &buf[0];  // NB. static. This initalization happens only once
     static struct passwd *pw;
@@ -157,7 +159,8 @@ char * session(SESSION_t * SESSION)
  */
 char * stats(SESSION_t * SESSION)
 {
-    GRAPH_t *GRAPH = SESSION->GRAPH;
+    CONTAINER_t *CONTAINER = SESSION->CONTAINER;
+    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     TOKEN_t *TOKEN = (TOKEN_t*)GRAPH;
     LIST_t *LIST = (LIST_t*)GRAPH;
     INBUF_t *INBUF = (INBUF_t*)GRAPH;
