@@ -28,10 +28,13 @@
  *
  * The top-level SESSION context is available to both and maintains the input state.
  *
- * @param GRAPH context
+ * @param GRAPH context   
  * @return success/fail
  */
-success_t container(GRAPH_t * GRAPH)
+success_t container(GRAPH_t * GRAPH)    // FIXME - I think the context should be THREAD
+                                        //   (which is where TOKEN, LIST, INBUF should be)
+                                        // new CONTAINER is created on the call stack
+                                        // why do we need any references to the parent GRAPH ?
 {
     CONTAINER_t container_context = { 0 };
     CONTAINER_t * CONTAINER = &container_context;
@@ -40,11 +43,13 @@ success_t container(GRAPH_t * GRAPH)
     LIST_t * LIST = (LIST_t *)GRAPH;
     elem_t *root = new_list(LIST, ACTIVITY);
 
-//    CONTAINER->GRAPH = GRAPH;
-    CONTAINER->subject = new_list(LIST, SUBJECT);
-    CONTAINER->node_pattern_acts = new_list(LIST, 0);
-    CONTAINER->edge_pattern_acts = new_list(LIST, 0);
+    CONTAINER->subject = new_list(LIST, SUBJECT);  // for sameas
+
+    CONTAINER->node_pattern_acts = new_list(LIST, 0);  // FIXME use tree
+    CONTAINER->edge_pattern_acts = new_list(LIST, 0);  // FIXME use tree
+
     CONTAINER->ikea_box = ikea_box_open(GRAPH->ikea_store, NULL);
+
     CONTAINER->out = stdout;
     GRAPH->containment++;            // containment nesting level
     GRAPH->stat_containercount++;    // number of containers
@@ -56,6 +61,7 @@ success_t container(GRAPH_t * GRAPH)
             token_error(TOKEN, TOKEN->state, "Parse error. Last good state was:");
         }
     }
+
     if (CONTAINER->nodes) {
         GRAPH->sep = ' ';
         print_tree(GRAPH->out, CONTAINER->nodes, &(GRAPH->sep));

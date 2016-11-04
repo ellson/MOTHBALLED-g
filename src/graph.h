@@ -11,34 +11,37 @@ extern "C" {
 #include "ikea.h"
 
 typedef struct {               // GRAPH context
+// FIXME - move from THREAD
     TOKEN_t TOKEN;             // TOKEN context.  Must be first to allow casting from GRAPH
     SESSION_t *SESSION;        // SESSION context at the top level of nested containment
-
-    state_t verb;              // after parsing, 0 "add", TLD "del", QRY "query"
-    char has_cousin;           // flag set if a COUSIN is found in any EDGE of the ACT
-                               //  (forward EDGE to ancestors for processing)
-
+    FILE *out;                 // typically stdout for parser debug outputs
+    ikea_store_t *ikea_store;  // persistency
     int style;                 // degree of friendliness in print outputs
     char sep;                  // the next separator
                                // (either 0, or ' ' if following a STRING that
                                // requires a separator,  but may be ignored if
                                // the next character is a token which
                                // implicitly separates.)
+//
 
+// FIXME - move to CONTAINER
     int containment;           // depth of containment
+    long stat_containercount;
+//
+
+    // FIXME  - do I need to take verb default from parent graph ?
+    state_t verb;              // after parsing, 0 "add", TLD "del", QRY "query"
+
+    char has_cousin;           // flag set if a COUSIN is found in any EDGE of the ACT
+                               //  (forward EDGE to ancestors for processing)
+
+    // ok as per-graph counts - may also need at THREAD level for total i/o stats
     long stat_inactcount;
     long stat_outactcount;
     long stat_sameas;
     long stat_patternactcount;
     long stat_nonpatternactcount;
     long stat_patternmatches;
-    long stat_containercount;
-
-
-//FIXME -- output context
-
-    FILE *out;                 // typically stdout for parser debug outputs
-    ikea_store_t *ikea_store;  // persistency
 } GRAPH_t;
 
 // functions

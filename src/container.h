@@ -8,10 +8,12 @@ extern "C" {
 #endif
 
 #include "graph.h"
+#include "thread.h"
 #include "ikea.h"
 
 typedef struct {                // CONTAINER context
     GRAPH_t GRAPH;              // GRAPH contents context. Must be first to allow casting from CONTAINER
+    THREAD_t *THREAD;           // THREAD context  - for i/o and events
     elem_t *subject;            // Preceeding ACT's subject, until this ACT's
                                 // SUBJECT has been parsed and processd by sameas()
                                 //   - at which point it becomes this ACT's subject.
