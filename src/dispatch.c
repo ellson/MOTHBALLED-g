@@ -5,10 +5,13 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "thread.h"
+#include "print.h"
+#include "expand.h"
 #include "dispatch.h"
 
 static void
-dispatch_r(GRAPH_t * GRAPH, elem_t * list, elem_t *attributes,
+dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *attributes,
         elem_t * nodes, elem_t * edges, state_t verb);
 
 static elem_t *
@@ -60,7 +63,8 @@ elem_t *
 dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb)
 {
     GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
-    LIST_t * LIST = (LIST_t *)GRAPH;
+    THREAD_t *THREAD = CONTAINER->THREAD;
+    LIST_t * LIST = (LIST_t *)THREAD;
     state_t si;
     elem_t *new, *newacts, *elem, *nodes, *edges, *attributes;
     
@@ -78,7 +82,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb)
     attributes = new_list(LIST, 0);
 
     // expand NOUNSET and ENDPOINTSETS
-    dispatch_r(GRAPH, act, attributes, nodes, edges, verb);
+    dispatch_r(CONTAINER, act, attributes, nodes, edges, verb);
 
     // if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
@@ -144,10 +148,12 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb)
  * @param verb
  */
 static void
-dispatch_r(GRAPH_t * GRAPH, elem_t * list, elem_t * attributes,
+dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
         elem_t * nodes, elem_t * edges, state_t verb)
 {
-    LIST_t *LIST = (LIST_t*)GRAPH;
+    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
+    THREAD_t *THREAD = CONTAINER->THREAD;
+    LIST_t *LIST = (LIST_t*)THREAD;
     elem_t *elem, *new, *object;
     state_t si1, si2;
 
@@ -160,7 +166,7 @@ dispatch_r(GRAPH_t * GRAPH, elem_t * list, elem_t * attributes,
         si1 = (state_t) elem->state;
         switch (si1) {
         case ACT:
-            dispatch_r(GRAPH, elem, attributes, nodes, edges, verb);
+            dispatch_r(CONTAINER, elem, attributes, nodes, edges, verb);
             break;
         case ATTRIBUTES:
             new = ref_list(LIST, elem);
@@ -171,13 +177,13 @@ dispatch_r(GRAPH_t * GRAPH, elem_t * list, elem_t * attributes,
             si2 = (state_t)object->state;
             switch (si2) {
             case NOUN:
-                dispatch_r(GRAPH, object, attributes, nodes, edges, verb);
+                dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
                 break;
             case NOUNSET:
                 object = object->u.l.first;
                 while(object) {
                     assert((state_t)object->state == NOUN);
-                    dispatch_r(GRAPH, object, attributes, nodes, edges, verb);
+                    dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
                     object = object->u.l.next;
                 }
                 break;
@@ -192,7 +198,7 @@ dispatch_r(GRAPH_t * GRAPH, elem_t * list, elem_t * attributes,
             append_transfer(nodes, new);
             break;
         case EDGE:
-            expand(LIST, elem, nodes, edges);
+            expand(CONTAINER, elem, nodes, edges);
             break;
         case VERB:  // ignore - already dealt with
             break;

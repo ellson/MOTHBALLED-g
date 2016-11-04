@@ -6,7 +6,10 @@
 #include <sys/types.h>
 #include <assert.h>
 
+#include "thread.h"
+#include "print.h"
 #include "match.h"
+
 
 // FIXME - this code is wrong - needs fixes from compare.c (attempted in #else)
 

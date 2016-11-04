@@ -7,6 +7,8 @@
 #include <assert.h>
 
 #include "thread.h"
+#include "print.h"
+#include "container.h"
 
 /**
  * parse G syntax input
@@ -28,32 +30,34 @@
  *
  * The top-level THREAD context is available to both and maintains the input state.
  *
- * @param GRAPH context   
+ * @param THREAD context   
  * @return success/fail
  */
-success_t container(GRAPH_t * GRAPH)    // FIXME - I think the context should be THREAD
-                                        //   (which is where TOKEN, LIST, INBUF should be)
-                                        // new CONTAINER is created on the call stack
-                                        // why do we need any references to the parent GRAPH ?
+success_t container(THREAD_t * THREAD)
 {
-    CONTAINER_t container_context = { 0 };
-    CONTAINER_t * CONTAINER = &container_context;
+    CONTAINER_t container = { 0 };
+    TOKEN_t * TOKEN = (TOKEN_t *)THREAD;
+    LIST_t * LIST = (LIST_t *)TOKEN;
+    elem_t *root;
     success_t rc;
-    TOKEN_t * TOKEN = (TOKEN_t *)GRAPH;
-    LIST_t * LIST = (LIST_t *)GRAPH;
-    elem_t *root = new_list(LIST, ACTIVITY);
 
-    CONTAINER->previous_subject = new_list(LIST, SUBJECT);  // for sameas
+    root = new_list(LIST, ACTIVITY);
 
-    CONTAINER->node_pattern_acts = new_list(LIST, 0);  // FIXME use tree
-    CONTAINER->edge_pattern_acts = new_list(LIST, 0);  // FIXME use tree
+    container.THREAD = THREAD;
+    container.previous_subject = new_list(LIST, SUBJECT);  // for sameas
 
-    CONTAINER->ikea_box = ikea_box_open(GRAPH->ikea_store, NULL);
+    container.node_pattern_acts = new_list(LIST, 0);  // FIXME use tree
+    container.edge_pattern_acts = new_list(LIST, 0);  // FIXME use tree
 
-    GRAPH->containment++;            // containment nesting level
-    GRAPH->stat_containercount++;    // number of containers
+    container.ikea_box = ikea_box_open(THREAD->ikea_store, NULL);
 
-    if ((rc = graph(GRAPH, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
+    THREAD->stat_containdepth++;      // containment nesting level
+    if (THREAD->stat_containdepth > THREAD->stat_containdepthmax) {
+        THREAD->stat_containdepthmax = THREAD->stat_containdepth;
+    }
+    THREAD->stat_containcount++;    // number of containers
+
+    if ((rc = graph(&container, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
@@ -61,28 +65,28 @@ success_t container(GRAPH_t * GRAPH)    // FIXME - I think the context should be
         }
     }
 
-    if (CONTAINER->nodes) {
+    if (container.nodes) {
         THREAD->sep = ' ';
-        print_elem(THREAD, CONTAINER->nodes, &(THREAD->sep));
+        print_elem(THREAD, container.nodes, 0);
     }
-    if (CONTAINER->edges) {
+    if (container.edges) {
         THREAD->sep = ' ';
-        print_elem(THREAD, CONTAINER->edges, &(THREAD->sep));
+        print_elem(THREAD, container.edges, 0);
     }
 
 // FIXME - don't forget to include NODE and EDGE patterns, after NODES and EDGES
 //   (Paterns are in effect now, but may not have been at the creation of existing objects.)
 
-    GRAPH->containment--;
+    THREAD->stat_containdepth--;
 
-    ikea_box_close ( CONTAINER->ikea_box );
+    ikea_box_close ( container.ikea_box );
 
     free_list(LIST, root);
-    free_tree(LIST, CONTAINER->nodes);
-    free_tree(LIST, CONTAINER->edges);
-    free_list(LIST, CONTAINER->previous_subject);
-    free_list(LIST, CONTAINER->node_pattern_acts);
-    free_list(LIST, CONTAINER->edge_pattern_acts);
+    free_tree(LIST, container.nodes);
+    free_tree(LIST, container.edges);
+    free_list(LIST, container.previous_subject);
+    free_list(LIST, container.node_pattern_acts);
+    free_list(LIST, container.edge_pattern_acts);
 
     if (LIST->stat_elemnow) {
         E();

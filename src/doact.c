@@ -6,12 +6,20 @@
 #include <string.h>
 #include <assert.h>
 
+#include "thread.h"
+#include "attribute.h"
+#include "pattern.h"
+#include "dispatch.h"
+#include "reduce.h"
+#include "sameas.h"
+#include "print.h"
 #include "doact.h"
 
-success_t doact(GRAPH_t *GRAPH, elem_t *act)
+success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 {
-    CONTAINER_t * CONTAINER = (CONTAINER_t*)GRAPH;
-    LIST_t *LIST = (LIST_t*)GRAPH;
+    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
+    THREAD_t *THREAD = CONTAINER->THREAD;
+    LIST_t *LIST = (LIST_t*)THREAD;
     elem_t *subject, *attributes, *elem;
     elem_t *newact, *newsubject, *newattributes;
     state_t verb = 0;

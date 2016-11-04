@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <assert.h>
 
+#include "thread.h"
+#include "print.h"
 #include "compare.h"
 
 /**

@@ -7,9 +7,7 @@
 extern "C" {
 #endif
 
-#include "thread.h"
-#include "expand.h"
-
+// functions
 elem_t * dispatch(CONTAINER_t * CONTAINER, elem_t *act, state_t verb);
 
 #ifdef __cplusplus

@@ -9,6 +9,7 @@ extern "C" {
 
 struct container_s {            // CONTAINER context
     GRAPH_t GRAPH;              // GRAPH contents context. Must be first to allow casting from CONTAINER
+    THREAD_t *THREAD;          // THREAD context
     elem_t *previous_subject;   // For use by sameas()
     char is_pattern;            // flag set if '*' occurred in SUBJECT
     state_t subject_type;       // set by sameas() to record if the SUBJECT is NODE(s),
@@ -19,14 +20,13 @@ struct container_s {            // CONTAINER context
     elem_t *nodes;              // tree of unique nodes
     elem_t *edges;              // tree of unique edges
 
-// FIXME - move to THREAD
     ikea_box_t *ikea_box;       // box for these contents
 //
 
 };
 
 // functions
-success_t container(GRAPH_t *GRAPH);
+success_t container(THREAD_t *THREAD);
 
 #ifdef __cplusplus
 }

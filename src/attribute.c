@@ -6,6 +6,11 @@
 #include <sys/types.h>
 #include <assert.h>
 
+#include "thread.h"
+#include "print.h"
+#include "compare.h"
+#include "match.h"
+#include "tree.h"
 #include "attribute.h"
 
 /**
@@ -56,7 +61,8 @@
 elem_t * attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 {
     GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
-    LIST_t *LIST = (LIST_t*)GRAPH;
+    THREAD_t *THREAD = CONTAINER->THREAD;
+    LIST_t *LIST = (LIST_t*)THREAD;
     elem_t *attr, *attrid, *attrid_str, *newattributes, *newattr, *new;
     state_t si;
 
@@ -91,7 +97,8 @@ P(attrid_str);
 void value_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 {
     GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
-    LIST_t *LIST = (LIST_t*)GRAPH;
+    THREAD_t *THREAD = CONTAINER->THREAD;
+    LIST_t *LIST = (LIST_t*)THREAD;
     elem_t *attr, *attrid, *attrid_str, *valassign, *value, *value_str;
     state_t si;
 

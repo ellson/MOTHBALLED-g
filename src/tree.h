@@ -7,10 +7,7 @@
 extern "C" {
 #endif
 
-#include "thread.h"
-#include "compare.h"
-#include "merge.h"
-
+// functions
 elem_t * search_item(elem_t * p, elem_t * key);
 elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t * key);
 elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key);

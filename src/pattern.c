@@ -6,6 +6,10 @@
 #include <sys/types.h>
 #include <assert.h>
 
+#include "thread.h"
+#include "print.h"
+#include "match.h"
+#include "compare.h"
 #include "pattern.h"
 
 static void pattern_update(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb);

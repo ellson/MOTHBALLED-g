@@ -130,11 +130,12 @@ static void print_tree(FILE * chan, elem_t * p, char *sep)
  * @param indent if not -ve, then the initial indent
  * @param sep if not NULL then a character to be printed first
  */
-void print_elem(THREAD_t * THREAD, elem_t * elem, int indent, char *sep)
+void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
 {
     FILE *chan = THREAD->out;
     elemtype_t type;
     int ind, cnt, width;
+    char *sep = &(THREAD->sep);
 
     if (elem) {
         type = (elemtype_t) (elem->type);
@@ -160,7 +161,7 @@ void print_elem(THREAD_t * THREAD, elem_t * elem, int indent, char *sep)
                 }
                 width = print_len_frag(chan, NAMEP(elem->state));
                 ind = indent + width + 1;
-                print_elem(chan, elem->u.l.first, ind, sep);    // recurse
+                print_elem(THREAD, elem->u.l.first, ind);    // recurse
                 elem = elem->u.l.next;
             }
             break;

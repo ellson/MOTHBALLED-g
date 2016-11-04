@@ -7,9 +7,7 @@
 extern "C" {
 #endif
 
-#include "match.h"
-#include "tree.h"
-
+// functions
 elem_t * pattern(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb);
 
 

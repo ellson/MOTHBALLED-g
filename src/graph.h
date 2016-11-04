@@ -10,7 +10,6 @@ extern "C" {
 #include "doact.h"
 
 struct graph_s {               // GRAPH context
-    THREAD_t *THREAD;          // THREAD context
 
 // FIXME - move to CONTAINER
     int containment;           // depth of containment
@@ -33,24 +32,7 @@ struct graph_s {               // GRAPH context
 };
 
 // functions
-success_t graph(GRAPH_t * GRAPH, elem_t * root, state_t si, unsigned char prop, int nest, int repc);
-
-// macro to print an elem
-#define P(L) { \
-   fprintf(stdout, "\nelem at: %s:%d\n", __FILE__, __LINE__); \
-   GRAPH->sep = ' '; \
-   print_elem(stdout, L, 0, &(GRAPH->sep)); \
-   putc('\n', stdout);}
-
-// macro to print current element count
-   #define E() { \
-   printf("elemnow at %s:%d is %ld\n", __FILE__, __LINE__, ((LIST_t*)GRAPH)->stat_elemnow);}
-
-// macro to print a stat_t in is text form.
-   #define S(state) { \
-   fprintf(stdout, "state at: %s:%d is: ", __FILE__, __LINE__); \
-   print_len_frag(stdout, NAMEP(state)); \
-   putc('\n', stdout);}
+success_t graph(CONTAINER_t * CONTAINER, elem_t * root, state_t si, unsigned char prop, int nest, int repc);
 
 #ifdef __cplusplus
 }

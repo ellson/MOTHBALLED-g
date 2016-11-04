@@ -23,28 +23,30 @@
 #endif
 #endif
 
-// public include
-#include "libg_session.h"
-
 // private includes
 #include "thread.h"
 #include "session.h"
+//
+// public include
+#include "libg_session.h"
 
 void session(int *pargc, char *argv[], int optind)
 {
     SESSION_t session;
-    passwd *pw;
-    utsname unamebuf;
+    struct passwd *pw;
+    struct utsname unamebuf;
     uid_t uid;
     pid_t pid;
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    struct timespec uptime;     // time with subsec resolution since boot, used as the base for runtime calculations
+    struct timespec uptime;   
+    struct timespec starttime; 
 #else
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    struct timeval uptime;      // time with subsec resolution since boot, used as the base for runtime calculations
+    struct timeval uptime;   
+    struct timeval starttime;   
 #endif
 
     pid = geteuid();
@@ -79,8 +81,8 @@ void session(int *pargc, char *argv[], int optind)
     session.uptime_nsec = uptime.tv_usec * TEN3;
     if (gettimeofday(&starttime, NULL))
         FATAL("gettimeofday()");
-    session.starttime = uptime.tv_sec;
-    session.starttime_nsec = uptime.tv_usec * TEN3;
+    session.starttime = starttime.tv_sec;
+    session.starttime_nsec = starttime.tv_usec * TEN3;
 #endif
 
     // run a THREAD to process the input

@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "thread.h"
+#include "print.h"
 #include "expand.h"
 
 static void expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges);
@@ -16,14 +18,16 @@ static void expand_hub(LIST_t * LIST, elem_t *tail, elem_t *head, elem_t *disamb
  *    a list of nodes reference by the edge
  *    a list of simple edges, each with the same disambiguation as the compound edge
  * 
- * @param LIST context
+ * @param CONTAINER context
  * @param list - a simple or compound edge
  * @param nodes - resulting nodes
  * @param edges - resulting simple edges
  */
-void expand(LIST_t * LIST, elem_t *list, elem_t *nodes, elem_t *edges)
+void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
 {
-    GRAPH_t *GRAPH = (GRAPH_t*)LIST;
+    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
+    THREAD_t *THREAD = CONTAINER->THREAD;
+    LIST_t *LIST = (LIST_t*)THREAD; 
     elem_t *elem, *epset, *ep, *np, *new, *disambig = NULL;
     elem_t *newepset, *newleglist, *singletonepset = NULL;
     state_t si1, si2, si3;

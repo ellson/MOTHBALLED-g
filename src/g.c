@@ -9,18 +9,19 @@
 #include <time.h>
 #include <sys/types.h>
 
+#include "success.h"
 #include "libg_session.h"
 #include "fatal.h" 
-
-static THREAD_t * THREAD;  // the context - needs to be global for intr()
 
 // if interrupted we try to gracefully snapshot the current state 
 static void intr(int s)
 {
     (void) s; // NOTUSED
 
+#if 0
+// FIXME - once we know what we  really want from command line interrupts
     interrupt(THREAD);
-
+#endif
     exit (EXIT_FAILURE);
 }
 
@@ -86,19 +87,7 @@ int main(int argc, char *argv[])
     }
 
     // create the top-level context for processing the inputs
-    THREAD = initialize(&argc, argv, optind);
-
-    // parse the input 
-    parse(THREAD);
-
-    // and stats, if wanted 
-    if (needstats) {
-        // FIXME - need pretty-printer
-        fprintf (stderr, "%s\n", session(THREAD));
-        fprintf (stderr, "%s\n", stats(THREAD));
-    }
-
-    finalize(THREAD);
+    session(&argc, argv, optind);
 
     exit(EXIT_SUCCESS);
 }

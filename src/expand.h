@@ -7,9 +7,8 @@
 extern "C" {
 #endif
 
-#include "thread.h"
-
-void expand(LIST_t * LIST, elem_t *elem, elem_t *nodes, elem_t *edges);
+// functions
+void expand(CONTAINER_t * CONTAINER, elem_t *elem, elem_t *nodes, elem_t *edges);
 
 #ifdef __cplusplus
 }

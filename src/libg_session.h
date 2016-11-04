@@ -7,22 +7,11 @@
 extern "C" {
 #endif
 
-// FIXME - these should no be in public header
-#include "success.h"
-#include "thread.h"
-
 // session.c
-THREAD_t *initialize( int *argc, char *argv[], int optind );
-void finalize( THREAD_t * THREAD );
-void interrupt( THREAD_t * THREAD );
-success_t parse(THREAD_t * THREAD);
+void session(int *pargc, char *argv[], int optind);
 
 // emit.c
 success_t select_emitter(char *name);
-
-// info.c
-char * session( THREAD_t * THREAD );
-char * stats( THREAD_t * THREAD );
 
 // dumpg.c
 void set_sstyle( void );

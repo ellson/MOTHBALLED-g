@@ -12,9 +12,9 @@ THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind)
                                     // if thread() just starts the thread
     THREAD_t *THREAD = &thread_s;
     TOKEN_t *TOKEN = (TOKEN_t*)THREAD;
+    success_t rc;
 
     THREAD->out = stdout;
-    THREAD->err = stderr;
 
     argv = &argv[optind];
     *pargc -= optind;

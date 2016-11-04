@@ -7,8 +7,7 @@
 extern "C" {
 #endif
 
-#include "print.h"
-
+// functions
 int compare(elem_t * a, elem_t * b);
 
 #ifdef __cplusplus

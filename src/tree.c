@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "fatal.h"
+#include "inbuf.h"
+#include "list.h"
 #include "tree.h"
 
 /**

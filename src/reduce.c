@@ -4,11 +4,15 @@
 #include <stdint.h>
 #include <assert.h>
 
+#include "thread.h"
+#include "tree.h"
+#include "print.h"
 #include "reduce.h"
 
 void reduce(CONTAINER_t * CONTAINER, elem_t *list)
 {
     GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
+    THREAD_t *THREAD = CONTAINER->THREAD;
     LIST_t *LIST = (LIST_t*)GRAPH;
     state_t si, verb = 0, subjtype = 0;
     elem_t *elem, *subject, *attributes = NULL, *disambig = NULL;

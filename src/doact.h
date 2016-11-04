@@ -7,13 +7,8 @@
 extern "C" {
 #endif
 
-#include "attribute.h"
-#include "pattern.h"
-#include "dispatch.h"
-#include "reduce.h"
-#include "sameas.h"
-
-success_t doact(GRAPH_t *GRAPH, elem_t *act);
+// functions
+success_t doact(CONTAINER_t *CONTAINER, elem_t *act);
 
 #ifdef __cplusplus
 }

@@ -23,6 +23,8 @@
 #endif
 #endif
 
+#include "thread.h"
+#include "print.h"
 #include "info.h"
 
 #define THREAD_BUF_SIZE 2048
@@ -61,7 +63,7 @@
 char * info_session(CONTAINER_t * CONTAINER)
 {
     GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER; 
-    THREAD_t *THREAD = GRAPH->THREAD;
+    THREAD_t *THREAD = CONTAINER->THREAD;
     SESSION_t *SESSION = THREAD->SESSION;
 
 // FIXME - caa'tn do this in threaded code!!
@@ -77,7 +79,7 @@ char * info_session(CONTAINER_t * CONTAINER)
 
     THREAD->sep = '\0';
     append_string  (THREAD, &pos, "stats_fixed");
-    append_token   (GRAPH, &pos, '[');
+    append_token   (THREAD, &pos, '[');
     Au("elemmallocsize",        LISTALLOCNUM * sizeof(elem_t));
     Au("elempermalloc",         LISTALLOCNUM);
     Au("elemsize",              sizeof(elem_t));
@@ -91,11 +93,11 @@ char * info_session(CONTAINER_t * CONTAINER)
     As("osrelease",             SESSION->osrelease);
     Au("pid",                   SESSION->pid);
     As("progname",              SESSION->progname);
-    Au("starttime",             SESSION->starttime.tv_sec);
-    Au("uptime",                SESSION->uptime.tv_sec);
+    Au("starttime",             SESSION->starttime);
+    Au("uptime",                SESSION->uptime);
     As("username",              SESSION->username);
     Au("voidptrsize",           sizeof(void*));
-    append_token   (GRAPH, &pos, ']');
+    append_token   (THREAD, &pos, ']');
 
     assert(pos < buf+THREAD_BUF_SIZE);
     return buf;
@@ -143,14 +145,14 @@ char * stats(THREAD_t * THREAD)
     if (clock_gettime(CLOCK_REALTIME, &nowtime))
         FATAL("clock_gettime()");
     runtime = ((uint64_t)uptime.tv_sec * TEN9 + (uint64_t)uptime.tv_nsec)
-            - ((uint64_t)(SESSION->uptime.tv_sec) * TEN9 + (uint64_t)(SESSION->uptime.tv_nsec));
+            - (SESSION->uptime * TEN9 + SESSION->uptime_nsec);
 #else
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (gettimeofday(&nowtime, NULL))
         FATAL("gettimeofday()");
     runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_usec) * TEN3
-            - ((uint64_t)(SESSION->uptime.tv_sec) * TEN9 + (uint64_t)(SESSION->uptime.tv_usec) * TEN3);
+            - (SESSION->uptime * TEN9 + SESSION->uptime_nsec);
 #endif
     itot = INBUF->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t);
     etot = LIST->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
@@ -164,6 +166,9 @@ char * stats(THREAD_t * THREAD)
     append_string  (THREAD, &pos, "stats_running");
     append_token   (THREAD, &pos, '[');
     Au("charpersecond",         TOKEN->stat_incharcount+TEN9/runtime);
+    Au("containcount",          THREAD->stat_containcount);
+    Au("containdepth",          THREAD->stat_containdepth);
+    Au("containdepthmax",       THREAD->stat_containdepthmax);
     Au("elemmalloccount",       LIST->stat_elemmalloc);
     Au("elemmalloctotal",       etot);
     Au("elemmax",               LIST->stat_elemmax);

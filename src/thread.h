@@ -35,10 +35,13 @@ struct thread_s {
                                // requires a separator,  but may be ignored if
                                // the next character is a token which
                                // implicitly separates.)
+    uint64_t stat_containdepth;      
+    uint64_t stat_containdepthmax;      
+    uint64_t stat_containcount;      
 };
 
 // functions
-void thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind);
+THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind);
 
 #ifdef __cplusplus
 }
