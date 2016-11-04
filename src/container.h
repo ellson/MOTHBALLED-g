@@ -7,12 +7,8 @@
 extern "C" {
 #endif
 
-#include "graph.h"
-#include "ikea.h"
-
-typedef struct {                // CONTAINER context
+struct container_s {            // CONTAINER context
     GRAPH_t GRAPH;              // GRAPH contents context. Must be first to allow casting from CONTAINER
-    THREAD_t *THREAD;           // THREAD context  - for i/o and events
     elem_t *subject;            // Preceeding ACT's subject, until this ACT's
                                 // SUBJECT has been parsed and processd by sameas()
                                 //   - at which point it becomes this ACT's subject.
@@ -30,12 +26,11 @@ typedef struct {                // CONTAINER context
     elem_t *nodes;              // tree of unique nodes
     elem_t *edges;              // tree of unique edges
 
+// FIXME - move to THREAD
     ikea_box_t *ikea_box;       // box for these contents
-    FILE *out;                  // the output file for this container
+//
 
-    // FIXME  - place for fork header for layout process...
-
-} CONTAINER_t;
+};
 
 // functions
 success_t container(GRAPH_t *GRAPH);

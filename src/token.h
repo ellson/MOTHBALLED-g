@@ -7,10 +7,6 @@
 extern "C" {
 #endif
 
-#include "libje.h"
-#include "success.h"
-#include "print.h"
-
 typedef struct {
     LIST_t LIST;               // LIST context.  Must be first to allow casting from TOKEN
     int *pargc;                // remaining filenames from command line

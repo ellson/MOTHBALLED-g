@@ -23,6 +23,9 @@
 #endif
 #endif
 
+#include "fatal.h"
+#include "inbuf.h"
+#include "list.h"
 #include "ikea.h"
 
 /**

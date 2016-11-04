@@ -7,7 +7,13 @@
 #include <string.h>
 #include <assert.h>
 
+#include "fatal.h"
+#include "inbuf.h"
+#include "list.h"
+#include "success.h"
+#include "grammar.h"
 #include "token.h"
+#include "print.h"
 
 /**
  * report an error during parsing with context info.

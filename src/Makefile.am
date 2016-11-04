@@ -14,8 +14,6 @@ noinst_HEADERS = \
     container.h \
     dispatch.h \
     doact.h \
-    emit.h \
-    emit_act.h \
     expand.h \
     fatal.h \
     grammar.h \
@@ -36,6 +34,10 @@ noinst_HEADERS = \
     token.h \
     tree.h
 
+#    emit.h \
+#    emit_act.h \
+#
+
 noinst_LTLIBRARIES = libje_C.la
 lib_LTLIBRARIES = libje.la
 #pkgconfig_DATA = libje.pc
@@ -47,12 +49,6 @@ libje_C_la_SOURCES = \
     dispatch.c \
     doact.c \
     dumpg.c \
-    emit.c \
-    emit_act.c \
-    emit_g.c \
-    emit_gv.c \
-    emit_ikea.c \
-    emit_t.c \
     expand.c \
     fatal.c \
     grammar.c \
@@ -72,6 +68,14 @@ libje_C_la_SOURCES = \
     sslhash.c \
     token.c \
     tree.c
+
+#    emit.c \
+#    emit_act.c \
+#    emit_g.c \
+#    emit_gv.c \
+#    emit_ikea.c \
+#    emit_t.c \
+#	
 
 libje_C_la_LIBADD =
 

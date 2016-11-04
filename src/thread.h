@@ -22,10 +22,23 @@ extern "C" {
 #endif
 #endif
 
-#include "container.h"
+typedef struct graph_s GRAPH_t;
+typedef struct container_s CONTAINER_t;
+typedef struct thread_s THREAD_t;
+
+#include "fatal.h"
+#include "inbuf.h"
+#include "list.h"
+#include "success.h"
+#include "grammar.h"
+#include "token.h"
 #include "ikea.h"
+#include "graph.h"
+#include "container.h"
 
 struct thread_s {
+    TOKEN_t TOKEN;             // TOKEN context.  Must be first to allow casting from THREAD
+
     CONTAINER_t *CONTAINER;    // A top level CONTAINER
     FILE *out;                 // typically stdout for parser debug outputs
                                

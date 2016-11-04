@@ -4,6 +4,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "fatal.h"
 #include "inbuf.h"
 
 /**

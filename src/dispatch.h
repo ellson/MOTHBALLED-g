@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "container.h"
+#include "thread.h"
 #include "expand.h"
 
 elem_t * dispatch(CONTAINER_t * CONTAINER, elem_t *act, state_t verb);

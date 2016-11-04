@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <assert.h>
 
+#include "fatal.h"
+#include "inbuf.h"
 #include "list.h"
 
 static void free_list_r(LIST_t * LIST, elem_t * list);

@@ -5,6 +5,10 @@
 #include <string.h>
 #include <assert.h>
 
+#include "fatal.h"
+#include "inbuf.h"
+#include "list.h"
+#include "success.h"
 #include "hash.h"
 
 static void hash_list_r(uint64_t *hash, elem_t *list);

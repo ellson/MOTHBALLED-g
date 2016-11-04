@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "container.h"
+#include "thread.h"
 
 elem_t * sameas(CONTAINER_t * CONTAINER, elem_t * subject);
 

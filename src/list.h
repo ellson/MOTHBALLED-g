@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-#include "inbuf.h"
-
 typedef enum {
     LISTELEM = 0,           // must be 0 for static or calloc allocation of list headers
     FRAGELEM = 1,

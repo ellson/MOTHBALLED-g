@@ -7,14 +7,13 @@
 extern "C" {
 #endif
 
-#include "token.h"
-#include "ikea.h"
+#include "doact.h"
 
-typedef struct {               // GRAPH context
-// FIXME - move from THREAD
-    TOKEN_t TOKEN;             // TOKEN context.  Must be first to allow casting from GRAPH
-    THREAD_t *THREAD;        // THREAD context at the top level of nested containment
-    FILE *out;                 // typically stdout for parser debug outputs
+struct graph_s {               // GRAPH context
+    THREAD_t *THREAD;          // THREAD context at the top level of nested containment
+
+    
+// FIXME - move to THREAD
     ikea_store_t *ikea_store;  // persistency
     int style;                 // degree of friendliness in print outputs
     char sep;                  // the next separator
@@ -42,17 +41,17 @@ typedef struct {               // GRAPH context
     long stat_patternactcount;
     long stat_nonpatternactcount;
     long stat_patternmatches;
-} GRAPH_t;
+};
 
 // functions
 success_t graph(GRAPH_t * GRAPH, elem_t * root, state_t si, unsigned char prop, int nest, int repc);
 
 // macro to print an elem
 #define P(L) { \
-   fprintf(GRAPH->out, "\nelem at: %s:%d\n", __FILE__, __LINE__); \
+   fprintf(stdout, "\nelem at: %s:%d\n", __FILE__, __LINE__); \
    GRAPH->sep = ' '; \
-   print_elem(GRAPH->out, L, 0, &(GRAPH->sep)); \
-   putc('\n', GRAPH->out);}
+   print_elem(stdout, L, 0, &(GRAPH->sep)); \
+   putc('\n', stdout);}
 
 // macro to print current element count
    #define E() { \
@@ -60,9 +59,9 @@ success_t graph(GRAPH_t * GRAPH, elem_t * root, state_t si, unsigned char prop, 
 
 // macro to print a stat_t in is text form.
    #define S(state) { \
-   fprintf(GRAPH->out, "state at: %s:%d is: ", __FILE__, __LINE__); \
-   print_len_frag(GRAPH->out, NAMEP(state)); \
-   putc('\n', GRAPH->out);}
+   fprintf(stdout, "state at: %s:%d is: ", __FILE__, __LINE__); \
+   print_len_frag(stdout, NAMEP(state)); \
+   putc('\n', stdout);}
 
 #ifdef __cplusplus
 }

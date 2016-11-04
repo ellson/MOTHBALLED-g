@@ -8,9 +8,7 @@ extern "C" {
 #endif
 
 #include "success.h"
-
-//opaque structs from the public interface
-typedef struct thread_s THREAD_t;
+#include "thread.h"
 
 // libje.c
 THREAD_t *initialize( int *argc, char *argv[], int optind );

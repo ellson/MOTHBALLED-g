@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "container.h"
+#include "thread.h"
 
 void expand(LIST_t * LIST, elem_t *elem, elem_t *nodes, elem_t *edges);
 

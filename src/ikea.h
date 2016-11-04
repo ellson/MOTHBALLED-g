@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-#include "list.h"
-
 typedef struct ikea_store_s ikea_store_t;
 typedef struct ikea_box_s ikea_box_t;
 

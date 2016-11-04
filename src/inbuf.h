@@ -7,9 +7,6 @@
 extern "C" {
 #endif
 
-#include "fatal.h"
-
-
 // My guess is that INBUFIZE should match the average ACT size, so that inbufs get released
 // roughly as ACTs are processed.    I could be wrong - may need experimentation.
 //

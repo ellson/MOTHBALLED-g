@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "container.h"
+#include "thread.h"
 #include "compare.h"
 #include "merge.h"
 

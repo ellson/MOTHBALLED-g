@@ -6,8 +6,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "container.h"
-#include "doact.h"
+#include "thread.h"
 
 // forward declarations
 static success_t more_rep(GRAPH_t * GRAPH, unsigned char prop);
@@ -46,9 +45,10 @@ static success_t more_rep(GRAPH_t * GRAPH, unsigned char prop);
  */
 success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
 {
-    TOKEN_t * TOKEN = (TOKEN_t *)GRAPH;
-    LIST_t * LIST = (LIST_t *)GRAPH;
-    INBUF_t * INBUF = (INBUF_t *)GRAPH;
+    THREAD_t * THREAD = GRAPH->THREAD;
+    TOKEN_t * TOKEN = (TOKEN_t*)THREAD;
+    LIST_t * LIST = (LIST_t*)TOKEN;
+    INBUF_t * INBUF = (INBUF_t*)LIST;
     unsigned char nprop;
     char so;        // offset to next state, signed
     state_t ti, ni;

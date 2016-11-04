@@ -6,7 +6,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "container.h"
+#include "thread.h"
 
 /**
  * parse G syntax input
@@ -50,7 +50,6 @@ success_t container(GRAPH_t * GRAPH)    // FIXME - I think the context should be
 
     CONTAINER->ikea_box = ikea_box_open(GRAPH->ikea_store, NULL);
 
-    CONTAINER->out = stdout;
     GRAPH->containment++;            // containment nesting level
     GRAPH->stat_containercount++;    // number of containers
 
@@ -64,13 +63,13 @@ success_t container(GRAPH_t * GRAPH)    // FIXME - I think the context should be
 
     if (CONTAINER->nodes) {
         GRAPH->sep = ' ';
-        print_tree(GRAPH->out, CONTAINER->nodes, &(GRAPH->sep));
-        putc('\n', GRAPH->out);
+        print_tree(stdout, CONTAINER->nodes, &(GRAPH->sep));
+        putc('\n', stdout);
     }
     if (CONTAINER->edges) {
         GRAPH->sep = ' ';
-        print_tree(GRAPH->out, CONTAINER->edges, &(GRAPH->sep));
-        putc('\n', GRAPH->out);
+        print_tree(stdout, CONTAINER->edges, &(GRAPH->sep));
+        putc('\n', stdout);
     }
 
 // FIXME - don't forget to include NODE and EDGE patterns, after NODES and EDGES

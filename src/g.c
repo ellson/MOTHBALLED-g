@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
@@ -35,6 +36,7 @@ int main(int argc, char *argv[])
         else
             optnum = 0;
         switch (opt) {
+#if 0
         case 'T':
             if (select_emitter(optarg) == FAIL) {
                 fprintf(stderr, "No back-end found for format: -T%s\n", optarg);
@@ -58,6 +60,7 @@ int main(int argc, char *argv[])
             }
 
             break;
+#endif
         case 's':
             needstats = 1;
             break;

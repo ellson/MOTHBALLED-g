@@ -9,7 +9,6 @@
 
 // private includes
 #include "ikea.h"
-#include "container.h"
 #include "thread.h"
 
 // public include
@@ -37,6 +36,7 @@ THREAD_t *initialize(int *pargc, char *argv[], int optind)
     THREAD_t *THREAD;
     CONTAINER_t *CONTAINER;
     GRAPH_t *GRAPH;
+    TOKEN_t *TOKEN;
 
     // FIXME - I think THREAD and CONTAINER can just be onthe stack of THREAD ??
     //
@@ -45,6 +45,7 @@ THREAD_t *initialize(int *pargc, char *argv[], int optind)
 
     THREAD->progname = argv[0];
     THREAD->out = stdout;
+    TOKEN = (TOKEN_t*)THREAD;
 
     if (! (CONTAINER = calloc(1, sizeof(CONTAINER_t))))
         FATAL("calloc()");
@@ -54,7 +55,6 @@ THREAD_t *initialize(int *pargc, char *argv[], int optind)
     THREAD->CONTAINER = CONTAINER;
 #if 1
     THREAD->progname = argv[0];
-    GRAPH->out = stdout;
 #endif
 
     argv = &argv[optind];
@@ -65,8 +65,8 @@ THREAD_t *initialize(int *pargc, char *argv[], int optind)
         *pargc = 1;
     }
 
-    GRAPH->TOKEN.pargc = pargc;
-    GRAPH->TOKEN.argv = argv;
+    TOKEN->pargc = pargc;
+    TOKEN->argv = argv;
 
     // gather session info, including starttime.
     //    subsequent calls to session() just reuse the info gathered in this first call.

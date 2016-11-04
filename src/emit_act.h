@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "container.h"
+#include "thread.h"
 
 void je_emit_act(CONTAINER_t * CONTAINER, elem_t *list);
 

@@ -173,3 +173,56 @@ void print_tree(FILE *chan, elem_t * p, char *sep)
     }
 }
 
+
+void append_token(GRAPH_t * GRAPH, char **pos, char tok)
+{
+    // FIXME - check available buffer space
+                        // ignore sep before
+    *(*pos)++ = (unsigned char)tok;    // copy token
+    **pos = '\0';       // and replace terminating NULL
+    GRAPH->sep = 0;        // no sep required after tokens
+}
+
+void append_string(GRAPH_t * GRAPH, char **pos, char *string)
+{
+    int len;
+
+    // FIXME - check available buffer space
+    if (GRAPH->sep) {
+        *(*pos)++ = GRAPH->sep; // sep before, if any
+    }
+    len = sprintf(*pos,"%s",string);  // copy string
+    if (len < 0)
+        FATAL("sprintf()");
+    GRAPH->sep = ' ';      // sep required after strings 
+    *pos += len;
+}
+
+void append_ulong(GRAPH_t * GRAPH, char **pos, uint64_t integer)
+{
+    int len;
+
+    // FIXME - check available buffer space
+    if (GRAPH->sep) {
+        *(*pos)++ = GRAPH->sep; // sep before, if any
+    }
+    len = sprintf(*pos,"%lu",(unsigned long)integer); // format integer to string
+    if (len < 0)
+        FATAL("sprintf()");
+    GRAPH->sep = ' ';      // sep required after strings
+    *pos += len;
+}
+
+// special case formatter for runtime
+void append_runtime(GRAPH_t * GRAPH, char **pos, uint64_t run_sec, uint64_t run_ns)
+{
+    int len;
+
+    // FIXME - check available buffer space
+    if (GRAPH->sep) *(*pos)++ = GRAPH->sep; // sep before, if any
+    len = sprintf(*pos,"%lu.%09lu",(unsigned long)run_sec, (unsigned long)run_ns);
+    if (len < 0)
+        FATAL("sprintf()");
+    GRAPH->sep = ' ';   // sep required after strings
+    *pos += len;
+}

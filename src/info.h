@@ -7,10 +7,9 @@
 extern "C" {
 #endif
 
-#include "emit.h"
 #include "thread.h"
 
-char * session(THREAD_t * THREAD);
+char * info(THREAD_t * THREAD);
 
 #ifdef __cplusplus
 }
