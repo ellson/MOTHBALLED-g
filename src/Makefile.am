@@ -18,7 +18,6 @@ noinst_HEADERS = \
     emit_act.h \
     expand.h \
     fatal.h \
-    frag.h \
     grammar.h \
     graph.h \
     hash.h \
@@ -29,6 +28,7 @@ noinst_HEADERS = \
     match.h \
     merge.h \
     pattern.h \
+    print.h \
     reduce.h \
     sameas.h \
     session.h \
@@ -55,7 +55,6 @@ libje_C_la_SOURCES = \
     emit_t.c \
     expand.c \
     fatal.c \
-    frag.c \
     grammar.c \
     graph.c \
     hash.c \
@@ -67,6 +66,7 @@ libje_C_la_SOURCES = \
     match.c \
     merge.c \
     pattern.c \
+    print.c \
     reduce.c \
     sameas.c \
     sslhash.c \
