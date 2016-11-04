@@ -30,7 +30,6 @@ struct session_s {
     FILE *out;                 // typically stdout for parser debug outputs
                                
     ikea_store_t *ikea_store;  // persistency
-    ikea_box_t *namehash_buckets[64];
 
     char needstats;            // flag set if -s on command line
     char *progname;            // name of program

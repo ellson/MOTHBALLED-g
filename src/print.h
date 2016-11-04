@@ -1,7 +1,7 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#ifndef FRAG_H
-#define FRAG_H
+#ifndef PRINT_H
+#define PRINT_H
 
 #ifdef __cplusplus
 extern "C" {

@@ -33,6 +33,7 @@ noinst_HEADERS = \
     sameas.h \
     session.h \
     success.h \
+    thread.h \
     token.h \
     tree.h
 
