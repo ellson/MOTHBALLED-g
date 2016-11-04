@@ -6,9 +6,10 @@
 
 #include "thread.h"
 
-void thread(SESSION_t *SESSION, int *pargc, char *argv[])
+THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind)
 {
-    THREAD_t thread_s = { 0 };
+    THREAD_t thread_s = { 0 };      // FIXME - may need to calloced
+                                    // if thread() just starts the thread
     THREAD_t *THREAD = &thread_s;
     TOKEN_t *TOKEN = (TOKEN_t*)THREAD;
 
@@ -26,23 +27,22 @@ void thread(SESSION_t *SESSION, int *pargc, char *argv[])
     TOKEN->pargc = pargc;
     TOKEN->argv = argv;
 
-    // gather session info, including starttime.
-    //    subsequent calls to session() just reuse the info gathered in this first call.
-    session(THREAD);
-    
     // create (or reopen) store for the containers
     THREAD->ikea_store = ikea_store_open( NULL );
 
+// FIXME - fork() here ??
     // run until completion
     rc = container(THREAD);
 
     ikea_store_snapshot(THREAD->ikea_store);
     ikea_store_close(THREAD->ikea_store);
 
-    // free context
+    // clean up
 #if 0
 // FIXME
     free(GRAPH);
     free(THREAD);
 #endif
+
+    return NULL;
 }

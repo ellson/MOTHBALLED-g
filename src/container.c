@@ -62,14 +62,12 @@ success_t container(GRAPH_t * GRAPH)    // FIXME - I think the context should be
     }
 
     if (CONTAINER->nodes) {
-        GRAPH->sep = ' ';
-        print_tree(stdout, CONTAINER->nodes, &(GRAPH->sep));
-        putc('\n', stdout);
+        THREAD->sep = ' ';
+        print_elem(THREAD, CONTAINER->nodes, &(THREAD->sep));
     }
     if (CONTAINER->edges) {
-        GRAPH->sep = ' ';
-        print_tree(stdout, CONTAINER->edges, &(GRAPH->sep));
-        putc('\n', stdout);
+        THREAD->sep = ' ';
+        print_elem(THREAD, CONTAINER->edges, &(THREAD->sep));
     }
 
 // FIXME - don't forget to include NODE and EDGE patterns, after NODES and EDGES

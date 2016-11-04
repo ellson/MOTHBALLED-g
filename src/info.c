@@ -25,34 +25,26 @@
 
 #include "info.h"
 
-#define THREAD_BUF_SIZE 1024
+#define THREAD_BUF_SIZE 2048
 
 #define As(attr,valu) { \
-     append_string  (GRAPH, &pos, attr); \
-     append_token   (GRAPH, &pos, '='); \
-     append_string  (GRAPH, &pos, valu); \
+     append_string  (THREAD, &pos, attr); \
+     append_token   (THREAD, &pos, '='); \
+     append_string  (THREAD, &pos, valu); \
 }
 #define Au(attr,valu) { \
-     append_string  (GRAPH, &pos, attr); \
-     append_token   (GRAPH, &pos, '='); \
-     append_ulong  (GRAPH, &pos, valu); \
+     append_string  (THREAD, &pos, attr); \
+     append_token   (THREAD, &pos, '='); \
+     append_ulong  (THREAD, &pos, valu); \
 }
 #define Ar(attr,valu_s,valu_ns) { \
-     append_string  (GRAPH, &pos, attr); \
-     append_token   (GRAPH, &pos, '='); \
-     append_runtime  (GRAPH, &pos, valu_s, valu_ns); \
+     append_string  (THREAD, &pos, attr); \
+     append_token   (THREAD, &pos, '='); \
+     append_runtime  (THREAD, &pos, valu_s, valu_ns); \
 }
 
 /**
- * This code collects info from the environment to:
- *  - populate session info into attributes of a 'g' NODE
- *  - provide a readable unique session name for session-freeze tar file names
- *  - capture start time for stats.
- *
- * This code is very likely Linux specific, and may need canoditionals
- * for porting to other OS.
- *
- * The resulting info is collected into a buffer using minimal
+ * The info is formatted into a buffer using minimal
  * spacing g format
  * e.g.      "stats_fixed[progname=g username=ellson hostname=work .... ]
  *
@@ -63,83 +55,45 @@
  * is used. It is only filled on the first call,  if session() is
  * called again the same result is used.
  *
- * @param THREAD context
+ * @param CONTAINER context
  * @return formatted string result
  */
-char * session(THREAD_t * THREAD)
+char * info_session(CONTAINER_t * CONTAINER)
 {
-    CONTAINER_t *CONTAINER = THREAD->CONTAINER;
-    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;   // FIXME - only used for output context
-                                            //   which probably belongs in a THREAD context
+    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER; 
+    THREAD_t *THREAD = GRAPH->THREAD;
+    SESSION_t *SESSION = THREAD->SESSION;
+
+// FIXME - caa'tn do this in threaded code!!
     static char buf[THREAD_BUF_SIZE];
     static char *pos = &buf[0];  // NB. static. This initalization happens only once
-    static struct passwd *pw;
-    static struct utsname unamebuf;
-    static uid_t uid;
-#ifdef HAVE_CLOCK_GETTIME
-    // Y2038-unsafe - FIXME
-    static struct timespec starttime;
-#else
-    // Y2038-unsafe - FIXME
-    static struct timeval starttime;
-#endif
-
     if (pos != &buf[0]) { // have we been here before?
         return buf;
     }
-
-    // gather info
-    
-    THREAD->pid = getpid();
-    uid = geteuid();
-    if (!(pw = getpwuid(uid)))
-        FATAL("getpwuid()");
-    THREAD->username = pw->pw_name;
-    if (uname(&unamebuf))
-        FATAL("uname()");
-    THREAD->hostname = unamebuf.nodename;
-    THREAD->osname = unamebuf.sysname;
-    THREAD->osrelease = unamebuf.release;
-    THREAD->osmachine = unamebuf.machine;
-#if defined(HAVE_CLOCK_GETTIME)
-    // Y2038-unsafe function - but should be ok for uptime and starttime
-    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (clock_gettime(CLOCK_BOOTTIME, &(THREAD->uptime)))
-        FATAL("clock_gettime()");
-    if (clock_gettime(CLOCK_REALTIME, &starttime))
-        FATAL("clock_gettime()");
-#else
-    // Y2038-unsafe function - but should be ok for uptime and starttime
-    // ref: htt,ps://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    if (gettimeofday(&(THREAD->uptime), NULL))
-        FATAL("gettimeofday()");
-    if (gettimeofday(&starttime, NULL))
-        FATAL("gettimeofday()");
-#endif
 
     // write in canonical g format
     // - minimal spacing - one SUBJECT per line
     // - alpha sorted nodes and attributes
 
-    GRAPH->sep = '\0';
-    append_string  (GRAPH, &pos, "stats_fixed");
+    THREAD->sep = '\0';
+    append_string  (THREAD, &pos, "stats_fixed");
     append_token   (GRAPH, &pos, '[');
     Au("elemmallocsize",        LISTALLOCNUM * sizeof(elem_t));
     Au("elempermalloc",         LISTALLOCNUM);
     Au("elemsize",              sizeof(elem_t));
-    As("hostname",              THREAD->hostname);
+    As("hostname",              SESSION->hostname);
     Au("inbufcapacity",         INBUFIZE);
     Au("inbufmallocsize",       INBUFALLOCNUM * sizeof(inbuf_t));
     Au("inbufpermalloc",        INBUFALLOCNUM);
     Au("inbufsize",             sizeof(inbuf_t));
-    As("osmachine",             THREAD->osmachine);
-    As("osname",                THREAD->osname);
-    As("osrelease",             THREAD->osrelease);
-    Au("pid",                   THREAD->pid);
-    As("progname",              THREAD->progname);
-    Au("starttime",             starttime.tv_sec);
-    Au("uptime",                THREAD->uptime.tv_sec);
-    As("username",              THREAD->username);
+    As("osmachine",             SESSION->osmachine);
+    As("osname",                SESSION->osname);
+    As("osrelease",             SESSION->osrelease);
+    Au("pid",                   SESSION->pid);
+    As("progname",              SESSION->progname);
+    Au("starttime",             SESSION->starttime.tv_sec);
+    Au("uptime",                SESSION->uptime.tv_sec);
+    As("username",              SESSION->username);
     Au("voidptrsize",           sizeof(void*));
     append_token   (GRAPH, &pos, ']');
 
@@ -148,8 +102,6 @@ char * session(THREAD_t * THREAD)
 }
 
 #define STATS_BUF_SIZE 2048
-#define TEN9 1000000000
-#define TEN3 1000
 
 /**
  * format running stats as a string
@@ -161,9 +113,10 @@ char * stats(THREAD_t * THREAD)
 {
     CONTAINER_t *CONTAINER = THREAD->CONTAINER;
     GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
-    TOKEN_t *TOKEN = (TOKEN_t*)GRAPH;
-    LIST_t *LIST = (LIST_t*)GRAPH;
-    INBUF_t *INBUF = (INBUF_t*)GRAPH;
+    SESSION_t *SESSION = THREAD->SESSION;
+    TOKEN_t *TOKEN = (TOKEN_t*)THREAD;
+    LIST_t *LIST = (LIST_t*)TOKEN;
+    INBUF_t *INBUF = (INBUF_t*)LIST;
     static char buf[STATS_BUF_SIZE];
     uint64_t runtime, lend, itot, etot;
 
@@ -190,14 +143,14 @@ char * stats(THREAD_t * THREAD)
     if (clock_gettime(CLOCK_REALTIME, &nowtime))
         FATAL("clock_gettime()");
     runtime = ((uint64_t)uptime.tv_sec * TEN9 + (uint64_t)uptime.tv_nsec)
-            - ((uint64_t)(THREAD->uptime.tv_sec) * TEN9 + (uint64_t)(THREAD->uptime.tv_nsec));
+            - ((uint64_t)(SESSION->uptime.tv_sec) * TEN9 + (uint64_t)(SESSION->uptime.tv_nsec));
 #else
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (gettimeofday(&nowtime, NULL))
         FATAL("gettimeofday()");
     runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_usec) * TEN3
-            - ((uint64_t)(THREAD->uptime.tv_sec) * TEN9 + (uint64_t)(THREAD->uptime.tv_usec) * TEN3);
+            - ((uint64_t)(SESSION->uptime.tv_sec) * TEN9 + (uint64_t)(SESSION->uptime.tv_usec) * TEN3);
 #endif
     itot = INBUF->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t);
     etot = LIST->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
@@ -207,9 +160,9 @@ char * stats(THREAD_t * THREAD)
     // - minimal spacing - one SUBJECT per line
     // - alpha sorted nodes and attributes
 
-    GRAPH->sep = '\0';
-    append_string  (GRAPH, &pos, "stats_running");
-    append_token   (GRAPH, &pos, '[');
+    THREAD->sep = '\0';
+    append_string  (THREAD, &pos, "stats_running");
+    append_token   (THREAD, &pos, '[');
     Au("charpersecond",         TOKEN->stat_incharcount+TEN9/runtime);
     Au("elemmalloccount",       LIST->stat_elemmalloc);
     Au("elemmalloctotal",       etot);
@@ -236,7 +189,7 @@ char * stats(THREAD_t * THREAD)
     Au("patternmatches",        GRAPH->stat_patternmatches);
     Ar("runtime",               runtime/TEN9, runtime%TEN9);
     Au("sameas",                GRAPH->stat_sameas);
-    append_token   (GRAPH, &pos, ']');
+    append_token   (THREAD, &pos, ']');
 
     assert(pos < buf+STATS_BUF_SIZE);
     return buf;

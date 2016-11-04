@@ -27,7 +27,7 @@ struct thread_s {
     TOKEN_t TOKEN;             // TOKEN context. May be cast from THREAD
     CONTAINER_t *CONTAINER;    // The top level CONTAINER in this THREAD
     SESSION_t *SESSION;        // The SESSION that started this THREAD
-    FILE *out, *err;           // typically stdout for parser debug outputs
+    FILE *out;                 // typically stdout for parser debug outputs
     ikea_store_t *ikea_store;  // persistency
     int style;                 // degree of friendliness in print outputs
     char sep;                  // the next separator
@@ -38,7 +38,7 @@ struct thread_s {
 };
 
 // functions
-void thread(SESSION_t *SESSION, int *pargc, char *argv[]);
+void thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind);
 
 #ifdef __cplusplus
 }

@@ -7,41 +7,28 @@
 extern "C" {
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include <time.h>
-#include <sys/types.h>
-#include <unistd.h>
-#ifdef HAVE_SYSINFO
-#include <sys/sysinfo.h>
-#else
-#ifndef HAVE_CLOCK_GETTIME
-#include <sys/time.h>
-#endif
-#endif
+#define TEN9 1000000000
+#define TEN3 1000
 
 struct session_s {
     THREAD_t *THREAD;          // THREADs in this SESSION
+
+// FIXME - replace with a properly formed QRY
     char needstats;            // flag set if -s on command line
-    char *progname;            // name of program
-    char *username;            // set by first call to g_session
+//
+
+    // infor collected by session();
+    char *progname;
+    char *username;
     char *hostname;          
     char *osname;
     char *osrelease;
     char *osmachine;
-
-#if defined(HAVE_CLOCK_GETTIME)
-    // Y2038-unsafe struct - but should be ok for uptime
-    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    struct timespec uptime;     // time with subsec resolution since boot, used as the base for runtime calculations
-#else
-    // Y2038-unsafe struct - but should be ok for uptime
-    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    struct timeval uptime;      // time with subsec resolution since boot, used as the base for runtime calculations
-#endif
-    pid_t pid;
+    uint64_t pid;
+    uint64_t uptime;
+    uint64_t uptime_nsec;
+    uint64_t starttime;
+    uint64_t starttime_nsec;
 };
 
 #ifdef __cplusplus

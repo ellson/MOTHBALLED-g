@@ -4,103 +4,85 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
+#include <sys/utsname.h>
 #include <sys/types.h>
+#include <unistd.h>
+#include <pwd.h>
 #include <errno.h>
+#include <assert.h>
 
-// private includes
-#include "ikea.h"
-#include "thread.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef HAVE_SYSINFO
+#include <sys/sysinfo.h>
+#else
+#ifndef HAVE_CLOCK_GETTIME
+#include <sys/time.h>
+#endif
+#endif
 
 // public include
-#include "libje.h"
+#include "libg_session.h"
 
-success_t parse(THREAD_t * THREAD)
+// private includes
+#include "thread.h"
+#include "session.h"
+
+void session(int *pargc, char *argv[], int optind)
 {
-    GRAPH_t *GRAPH = (GRAPH_t*)(THREAD->CONTAINER);
-    success_t rc;
-
-    rc = container(GRAPH);   // FIXME - who allocated GRAPH ??
-    return rc;
-}
-
-/**
- * initialize context and process file args
- *
- * @param pargc
- * @param argv
- * @param optind
- * @return context
- */
-THREAD_t *initialize(int *pargc, char *argv[], int optind)
-{
-    THREAD_t *THREAD;
-    CONTAINER_t *CONTAINER;
-    GRAPH_t *GRAPH;
-    TOKEN_t *TOKEN;
-
-    // FIXME - I think THREAD and CONTAINER can just be onthe stack of THREAD ??
-    //
-    if (! (THREAD = calloc(1, sizeof(THREAD_t))))
-        FATAL("calloc()");
-
-    THREAD->progname = argv[0];
-    THREAD->out = stdout;
-    TOKEN = (TOKEN_t*)THREAD;
-
-    if (! (CONTAINER = calloc(1, sizeof(CONTAINER_t))))
-        FATAL("calloc()");
-
-    GRAPH = (GRAPH_t*)CONTAINER;
-    GRAPH->THREAD = THREAD;
-    THREAD->CONTAINER = CONTAINER;
-#if 1
-    THREAD->progname = argv[0];
+    SESSION_t session;
+    passwd *pw;
+    utsname unamebuf;
+    uid_t uid;
+    pid_t pid;
+#if defined(HAVE_CLOCK_GETTIME)
+    // Y2038-unsafe struct - but should be ok for uptime
+    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    struct timespec uptime;     // time with subsec resolution since boot, used as the base for runtime calculations
+#else
+    // Y2038-unsafe struct - but should be ok for uptime
+    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    struct timeval uptime;      // time with subsec resolution since boot, used as the base for runtime calculations
 #endif
 
-    argv = &argv[optind];
-    *pargc -= optind;
-
-    if (*pargc == 0) {    // No file args,  default to stdin
-        argv[0] = "-";
-        *pargc = 1;
-    }
-
-    TOKEN->pargc = pargc;
-    TOKEN->argv = argv;
-
-    // gather session info, including starttime.
-    //    subsequent calls to session() just reuse the info gathered in this first call.
-    session(THREAD);
-    
-    // create (or reopen) store for the containers
-    THREAD->ikea_store = ikea_store_open( NULL );
-#if 1
-    GRAPH->ikea_store = ikea_store_open( NULL );
+    pid = geteuid();
+    session.pid = pid;
+    uid = geteuid();
+    if (!(pw = getpwuid(uid)))
+        FATAL("getpwuid()");
+    session.username = pw->pw_name;
+    if (uname(&unamebuf))
+        FATAL("uname()");
+    session.hostname = unamebuf.nodename;
+    session.osname = unamebuf.sysname;
+    session.osrelease = unamebuf.release;
+    session.osmachine = unamebuf.machine;
+#if defined(HAVE_CLOCK_GETTIME)
+    // Y2038-unsafe function - but should be ok for uptime and starttime
+    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    if (clock_gettime(CLOCK_BOOTTIME, &(uptime)))
+        FATAL("clock_gettime()");
+    session.uptime = uptime.tv_sec;
+    session.uptime_nsec = uptime.tv_nsec;
+    if (clock_gettime(CLOCK_REALTIME, &(starttime)))
+        FATAL("clock_gettime()");
+    session.starttime = starttime.tv_sec;
+    session.starttime_nsec = starttime.tv_nsec;
+#else
+    // Y2038-unsafe function - but should be ok for uptime and starttime
+    // ref: htt,ps://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    if (gettimeofday(&(uptime), NULL))
+        FATAL("gettimeofday()");
+    session.uptime = uptime.tv_sec;
+    session.uptime_nsec = uptime.tv_usec * TEN3;
+    if (gettimeofday(&starttime, NULL))
+        FATAL("gettimeofday()");
+    session.starttime = uptime.tv_sec;
+    session.starttime_nsec = uptime.tv_usec * TEN3;
 #endif
-    return THREAD;
-}
 
-/**
- * finalize and free context
- *
- * @param THREAD context
- */
-void finalize( THREAD_t * THREAD )
-{
-   CONTAINER_t *CONTAINER = THREAD->CONTAINER;
-   GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
-
-   ikea_store_snapshot(GRAPH->ikea_store);
-   ikea_store_close(GRAPH->ikea_store);
-
-   // free context
-   free(GRAPH);
-   free(THREAD);
-}
-
-void interrupt( THREAD_t * THREAD )
-{
-   CONTAINER_t *CONTAINER = THREAD->CONTAINER;
-   GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
-   ikea_store_close(GRAPH->ikea_store);
+    // run a THREAD to process the input
+    session.THREAD = thread(&session, pargc, argv, optind);
 }
