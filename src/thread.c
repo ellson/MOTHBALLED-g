@@ -3,59 +3,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <time.h>
-#include <sys/types.h>
-#include <errno.h>
 
-// private includes
-#include "ikea.h"
-#include "container.h"
 #include "thread.h"
 
-// public include
-#include "libje.h"
-
-success_t parse(THREAD_t * THREAD)
+void thread(SESSION_t *SESSION, int *pargc, char *argv[])
 {
-    GRAPH_t *GRAPH = (GRAPH_t*)(THREAD->CONTAINER);
-    success_t rc;
+    THREAD_t thread_s = { 0 };
+    THREAD_t *THREAD = &thread_s;
+    TOKEN_t *TOKEN = (TOKEN_t*)THREAD;
 
-    rc = container(GRAPH);   // FIXME - who allocated GRAPH ??
-    return rc;
-}
-
-/**
- * initialize context and process file args
- *
- * @param pargc
- * @param argv
- * @param optind
- * @return context
- */
-THREAD_t *initialize(int *pargc, char *argv[], int optind)
-{
-    THREAD_t *THREAD;
-    CONTAINER_t *CONTAINER;
-    GRAPH_t *GRAPH;
-
-    // FIXME - I think THREAD and CONTAINER can just be onthe stack of THREAD ??
-    //
-    if (! (THREAD = calloc(1, sizeof(THREAD_t))))
-        FATAL("calloc()");
-
-    THREAD->progname = argv[0];
     THREAD->out = stdout;
-
-    if (! (CONTAINER = calloc(1, sizeof(CONTAINER_t))))
-        FATAL("calloc()");
-
-    GRAPH = (GRAPH_t*)CONTAINER;
-    GRAPH->THREAD = THREAD;
-    THREAD->CONTAINER = CONTAINER;
-#if 1
-    THREAD->progname = argv[0];
-    GRAPH->out = stdout;
-#endif
+    THREAD->err = stderr;
 
     argv = &argv[optind];
     *pargc -= optind;
@@ -65,8 +23,8 @@ THREAD_t *initialize(int *pargc, char *argv[], int optind)
         *pargc = 1;
     }
 
-    GRAPH->TOKEN.pargc = pargc;
-    GRAPH->TOKEN.argv = argv;
+    TOKEN->pargc = pargc;
+    TOKEN->argv = argv;
 
     // gather session info, including starttime.
     //    subsequent calls to session() just reuse the info gathered in this first call.
@@ -74,33 +32,17 @@ THREAD_t *initialize(int *pargc, char *argv[], int optind)
     
     // create (or reopen) store for the containers
     THREAD->ikea_store = ikea_store_open( NULL );
-#if 1
-    GRAPH->ikea_store = ikea_store_open( NULL );
+
+    // run until completion
+    rc = container(THREAD);
+
+    ikea_store_snapshot(THREAD->ikea_store);
+    ikea_store_close(THREAD->ikea_store);
+
+    // free context
+#if 0
+// FIXME
+    free(GRAPH);
+    free(THREAD);
 #endif
-    return THREAD;
-}
-
-/**
- * finalize and free context
- *
- * @param THREAD context
- */
-void finalize( THREAD_t * THREAD )
-{
-   CONTAINER_t *CONTAINER = THREAD->CONTAINER;
-   GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
-
-   ikea_store_snapshot(GRAPH->ikea_store);
-   ikea_store_close(GRAPH->ikea_store);
-
-   // free context
-   free(GRAPH);
-   free(THREAD);
-}
-
-void interrupt( THREAD_t * THREAD )
-{
-   CONTAINER_t *CONTAINER = THREAD->CONTAINER;
-   GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
-   ikea_store_close(GRAPH->ikea_store);
 }

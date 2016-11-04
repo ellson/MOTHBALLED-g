@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 typedef struct {
-    LIST_t LIST;               // LIST context.  Must be first to allow casting from TOKEN
+    LIST_t LIST;               // LIST context. Maybe cast from TOKEN 
     int *pargc;                // remaining filenames from command line
     char **argv;
     char *filename;            // name of file currently being processed, or "-" for stdin

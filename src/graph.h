@@ -10,18 +10,7 @@ extern "C" {
 #include "doact.h"
 
 struct graph_s {               // GRAPH context
-    THREAD_t *THREAD;          // THREAD context at the top level of nested containment
-
-    
-// FIXME - move to THREAD
-    ikea_store_t *ikea_store;  // persistency
-    int style;                 // degree of friendliness in print outputs
-    char sep;                  // the next separator
-                               // (either 0, or ' ' if following a STRING that
-                               // requires a separator,  but may be ignored if
-                               // the next character is a token which
-                               // implicitly separates.)
-//
+    THREAD_t *THREAD;          // THREAD context
 
 // FIXME - move to CONTAINER
     int containment;           // depth of containment

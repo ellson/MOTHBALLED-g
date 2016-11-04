@@ -9,7 +9,7 @@
 #include <time.h>
 #include <sys/types.h>
 
-#include "libje.h"
+#include "libg_session.h"
 #include "fatal.h" 
 
 static THREAD_t * THREAD;  // the context - needs to be global for intr()

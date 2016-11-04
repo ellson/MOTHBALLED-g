@@ -46,7 +46,7 @@ struct elem_s {
 };
 
 typedef struct {            // LIST context
-    INBUF_t INBUF;          // INBUF context, must be first to allow casting from LIST
+    INBUF_t INBUF;          // INBUF context, may be cast from LIST
     elem_t *free_elem_list; // linked list of unused list elems
     long stat_elemmax;      // list stats
     long stat_elemnow;

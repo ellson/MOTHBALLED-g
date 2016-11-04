@@ -7,10 +7,11 @@
 extern "C" {
 #endif
 
+// FIXME - these should no be in public header
 #include "success.h"
 #include "thread.h"
 
-// libje.c
+// session.c
 THREAD_t *initialize( int *argc, char *argv[], int optind );
 void finalize( THREAD_t * THREAD );
 void interrupt( THREAD_t * THREAD );
