@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "container.h"
+#include "tree.h"
 
 void reduce(CONTAINER_t * CONTAINER, elem_t *list);
 

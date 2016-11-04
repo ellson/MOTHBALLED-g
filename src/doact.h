@@ -11,6 +11,7 @@ extern "C" {
 #include "pattern.h"
 #include "dispatch.h"
 #include "reduce.h"
+#include "sameas.h"
 
 success_t doact(GRAPH_t *GRAPH, elem_t *act);
 
