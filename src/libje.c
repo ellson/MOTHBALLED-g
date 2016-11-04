@@ -9,7 +9,6 @@
 
 // private includes
 #include "ikea.h"
-#include "emit.h"
 #include "container.h"
 #include "session.h"
 
@@ -78,9 +77,6 @@ SESSION_t *initialize(int *pargc, char *argv[], int optind)
 #if 1
     GRAPH->ikea_store = ikea_store_open( NULL );
 #endif
-
-//    emit_initialize(GRAPH);
-
     return SESSION;
 }
 
@@ -93,7 +89,6 @@ void finalize( SESSION_t * SESSION )
 {
    CONTAINER_t *CONTAINER = SESSION->CONTAINER;
    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
-   emit_finalize(GRAPH);
 
    ikea_store_snapshot(GRAPH->ikea_store);
    ikea_store_close(GRAPH->ikea_store);

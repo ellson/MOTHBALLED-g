@@ -121,10 +121,8 @@ static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject)
                 newacts = new_list(LIST, ACT);
             }
             append_addref(newacts, ref_list(LIST, subject));
-//            emit_subject(CONTAINER, subject);
             if (attr && (state_t)attr->state == ATTRIBUTES) {
                 append_addref(newacts, ref_list(LIST, attr));
-//                emit_attributes(CONTAINER, attr);
             }
 
             // FIXME -- contents

@@ -59,7 +59,6 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
 //E();
 
     rc = SUCCESS;
-//    emit_start_state(GRAPH, si, prop, nest, repc);
 
     nest++;
     assert(nest >= 0);            // catch overflows
@@ -217,14 +216,12 @@ done: // State exit processing
     nest--;
     assert(nest >= 0);
 
-//    emit_end_state(GRAPH, si, rc, nest, repc);
-
 //E();
     return rc;
 }
 
 /**
- * test for more repetitions, emit a separator only if mandated
+ * test for more repetitions
  *
  * @param GRAPH context
  * @param prop properties from grammar
@@ -235,9 +232,9 @@ static success_t more_rep(GRAPH_t * GRAPH, unsigned char prop)
     TOKEN_t * TOKEN = (TOKEN_t *)GRAPH;
     state_t ei, bi;
 
-    if (!(prop & (REP | SREP)))
+    if (!(prop & (REP | SREP))) {
         return FAIL;
-
+    }
     ei = TOKEN->ei;
     if (ei == RPN || ei == RAN || ei == RBR || ei == RBE) {
         return FAIL;       // no more repetitions
@@ -247,9 +244,5 @@ static success_t more_rep(GRAPH_t * GRAPH, unsigned char prop)
         || (ei != ABC && ei != AST && ei != DQT)) {
         return SUCCESS;    // more repetitions, but additional WS sep is optional
     }
-//    if (prop & SREP) {
-//        emit_sep(GRAPH);   // sep is non-optional, emit the minimal sep
-//                           //    .. when low-level emit hook is used.
-//    }
     return SUCCESS;        // more repetitions
 }
