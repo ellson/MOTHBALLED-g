@@ -199,7 +199,6 @@ done: // State exit processing
             break;
         case SIBLING: // skip over SIBLING
         case COUSIN: // skip over COUSIN
-        case CHILD: // skip over CHILD
             append_addref(root, branch->u.l.first);
             break;
         case LBR:  // bracketing ATTRs
