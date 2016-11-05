@@ -19,15 +19,16 @@ typedef struct {
     state_t ei;                // ei, bi are used to determine whitespace needs around STRINGs
     state_t bi;
     state_t state;             // last state entered
+    state_t quote_state;       // ABC or DQT, DQT if STRING contains DQT fragments
     char in_quote;             // flag set if between "..."
     char has_ast;              // flag set if an '*' is found in a STRING
-    char has_quote;            // flag set if STRING contains one or more DQT fragments
     long linecount_at_start;   // activity line count when this file was opened.
     long stat_lfcount;
     long stat_crcount;
     long stat_incharcount;
     long stat_infragcount;
-    long stat_instringcount;
+    long stat_instringshort;
+    long stat_instringlong;
     long stat_infilecount;       // various stats
 } TOKEN_t;
 

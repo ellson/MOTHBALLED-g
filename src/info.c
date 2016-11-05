@@ -29,20 +29,30 @@
 
 #define THREAD_BUF_SIZE 2048
 
+// Percentage values (value * 100) / total %
+#define Ap(attr,valu,total) { \
+     append_string  (THREAD, &pos, attr); \
+     append_token   (THREAD, &pos, '='); \
+     append_ulong   (THREAD, &pos, (valu * 100) / total); \
+     append_token   (THREAD, &pos, '%'); \
+}
+// Runtime values  (sec.ns)
+#define Ar(attr,valu_s,valu_ns) { \
+     append_string  (THREAD, &pos, attr); \
+     append_token   (THREAD, &pos, '='); \
+     append_runtime (THREAD, &pos, valu_s, valu_ns); \
+}
+// String values
 #define As(attr,valu) { \
      append_string  (THREAD, &pos, attr); \
      append_token   (THREAD, &pos, '='); \
      append_string  (THREAD, &pos, valu); \
 }
+// Integer values
 #define Au(attr,valu) { \
      append_string  (THREAD, &pos, attr); \
      append_token   (THREAD, &pos, '='); \
      append_ulong  (THREAD, &pos, valu); \
-}
-#define Ar(attr,valu_s,valu_ns) { \
-     append_string  (THREAD, &pos, attr); \
-     append_token   (THREAD, &pos, '='); \
-     append_runtime  (THREAD, &pos, valu_s, valu_ns); \
 }
 
 /**
@@ -119,7 +129,7 @@ char * stats(THREAD_t * THREAD)
     LIST_t *LIST = (LIST_t*)TOKEN;
     INBUF_t *INBUF = (INBUF_t*)LIST;
     static char buf[STATS_BUF_SIZE];
-    uint64_t runtime, lend, itot, etot;
+    uint64_t runtime, lend, itot, etot, istr;
 
     char *pos = &buf[0];  // NB non-static.  stats are updated and re-formatted on each call
     
@@ -156,6 +166,7 @@ char * stats(THREAD_t * THREAD)
     itot = INBUF->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t);
     etot = LIST->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
     lend = (TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount);
+    istr = TOKEN->stat_instringshort + TOKEN->stat_instringlong; 
   
     // write in canonical g format
     // - minimal spacing - one SUBJECT per line
@@ -186,7 +197,8 @@ char * stats(THREAD_t * THREAD)
     Au("infragcount",           TOKEN->stat_infragcount);
     Au("infilecount",           TOKEN->stat_infilecount);
     Au("inlinecount",           lend + 1);
-    Au("instringcount",         TOKEN->stat_instringcount);
+    Au("instringcount",         istr);
+    Ap("instringshort",         TOKEN->stat_instringshort, istr);
     Au("malloctotal",           itot+etot);
     Au("nowtime",               nowtime.tv_sec);
     Au("outactcount",           GRAPH->stat_outactcount);

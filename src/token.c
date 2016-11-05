@@ -301,7 +301,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
             slen++;
         } else if (TOKEN->insi == DQT) {
             TOKEN->in_quote = 1;
-            TOKEN->has_quote = 1;
+            TOKEN->quote_state = DQT;
             TOKEN->insi = char2state[*++(TOKEN->in)];
             continue;
         } else {
@@ -311,6 +311,31 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
         TOKEN->stat_infragcount++;
     }
     return slen;
+}
+
+static elem_t *
+token_pack_string(TOKEN_t *TOKEN, int slen, elem_t * elem) {
+    elem_t *new, *frag;
+
+    if (slen <= sizeof(((elem_t*)0)->u.s.str)) {
+        TOKEN->stat_instringshort++;
+#if 0
+        new = new_shortstr((LIST_t*)TOKEN, TOKEN->quote_state);
+        frag = elem;
+        while (frag) {
+            // copy chars here
+            frag = frag->u.f.next;
+        }
+        free_list((LIST_t*)TOKEN, elem);
+        return new;
+#endif
+        elem->state = TOKEN->quote_state;
+        return elem;
+    } else {
+        TOKEN->stat_instringlong++;
+        elem->state = TOKEN->quote_state;
+        return elem;
+    }
 }
 
 /**
@@ -326,10 +351,9 @@ success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist)
     int len, slen;
 // frags = 0;
 
-    TOKEN->has_quote = 0;
+    TOKEN->quote_state = ABC;
     slen = token_string_fragment(TOKEN, fraglist);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
-//        frags++;
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
@@ -339,16 +363,7 @@ success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist)
         slen += len;
     }
     if (slen > 0) {
-        TOKEN->stat_instringcount++;
-        if (TOKEN->has_quote) {
-            fraglist->state = DQT;
-        } else {
-            fraglist->state = ABC;
-        }
-        // FIXME can't we use fraglist->len for something useful?
-        //           either the length of the composite string,
-        //           or the number of fragments
-        //           If so, do the same for vstring
+        token_pack_string(TOKEN, slen, fraglist);
         return SUCCESS;
     }
     return FAIL;
@@ -435,7 +450,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
             slen++;
         } else if (TOKEN->insi == DQT) {
             TOKEN->in_quote = 1;
-            TOKEN->has_quote = 1;
+            TOKEN->quote_state = DQT;
             TOKEN->insi = char2state[*++(TOKEN->in)];
             continue;
         } else {
@@ -458,7 +473,7 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
 {
     int len, slen;
 
-    TOKEN->has_quote = 0;
+    TOKEN->quote_state = ABC;
     slen = token_vstring_fragment(TOKEN, fraglist);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
@@ -470,12 +485,7 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
         slen += len;
     }
     if (slen > 0) {
-        TOKEN->stat_instringcount++;     //FIXME - could we use a separate count for vstring?
-        if (TOKEN->has_quote) {
-            fraglist->state = DQT;
-        } else {
-            fraglist->state = ABC;
-        }
+        token_pack_string(TOKEN, slen, fraglist);
         return SUCCESS;
     } 
     return FAIL;
