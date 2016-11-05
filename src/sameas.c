@@ -31,7 +31,7 @@ sameas(CONTAINER_t * CONTAINER, elem_t * subject)
     elem_t *nextold, *newsubject;
 
 //E();
-P(subject);
+//P(subject);
 
     assert(subject);
     assert((state_t)subject->state == SUBJECT);
@@ -76,6 +76,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
     elem_t *object;
     state_t si;
 
+//P(subject);
     assert (subject->type == (char)LISTELEM);
 
     elem = subject->u.l.first;
@@ -115,6 +116,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
             break;
         case DISAMBIG:
         case NODEID:
+        case PORTID:
             new = ref_list(LIST, elem);
             append_transfer(newlist, new);
             if (*nextold) {    // doesn't matter if old is shorter
