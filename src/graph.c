@@ -182,6 +182,7 @@ success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
 done: // State exit processing
     if (rc == SUCCESS) {
         switch (si) {
+
         case ACT:  // ACT is complete, process it
             rc = doact(CONTAINER, branch);
             // this is the top recursion
@@ -193,8 +194,8 @@ done: // State exit processing
         case VERB:  // VERB - after stashing away its value
             GRAPH->verb = branch->u.l.first->state;  // QRY or TLD
             break;
-        case VALASSIGN: // VALASSIGN, but keep VALUE
-            append_addref(root, branch->u.l.first);
+        case VALASSIGN: // ignore VALASSIGN EQL, but keep VALUE
+            append_addref(root, branch->u.l.first->u.l.next);
             break;
         case LBR:  // bracketing ATTRs
         case RBR:
@@ -204,13 +205,6 @@ done: // State exit processing
         case RPN:
         case TIC:  // prefixing DISAMBID
             break;
-        case EQL:
-            // we can ignore EQL in VALASSIGN, but not when used in SUBJECT for sameas
-            if (root->state != (char)VALASSIGN) {
-                append_addref(root, branch);
-            }
-            break;
-
         default:
             // everything else is appended to parent's branch
             append_addref(root, branch);
