@@ -9,7 +9,8 @@ DONE currenly fixed, + added assert to immediately detect new leaks
 -- maybe insert real: < > `
 
 4. breakout PARSE_t from CONTEXT_t
-WIP - this part is done - still working on a THREAD SESSION split
+DONE - renamed PARSE_t to THREAD_t
+     - and split out SESSION_t
 
 5. common match code for patterns and queries
 
@@ -19,6 +20,7 @@ WIP - this part is done - still working on a THREAD SESSION split
 - can we find a syntax for REs that fits?
 
 7. parent{graph patterns stats cron net...}
+DUPLICATE with 16.
 
 8. thread and event model
 - parser per thread

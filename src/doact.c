@@ -20,9 +20,8 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     THREAD_t *THREAD = CONTAINER->THREAD;
     LIST_t *LIST = (LIST_t*)THREAD;
-    elem_t *subject, *attributes, *elem;
+    elem_t *subject, *attributes;
     elem_t *newact, *newsubject, *newattributes;
-    state_t verb = 0;
 
     assert(act);
     assert(act->u.l.first);  // minimaly, an ACT must have a SUBJECT

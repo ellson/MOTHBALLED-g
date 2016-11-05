@@ -61,7 +61,7 @@
 elem_t * attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *attr, *attrid, *attrid_str, *newattributes, *newattr, *new;
+    elem_t *attr, *attrid, *attrid_str, *newattributes, *new;
 
     assert(attributes);
     assert((state_t)attributes->state == ATTRIBUTES);
@@ -95,7 +95,6 @@ void value_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *attr, *attrid, *attrid_str, *valassign, *value, *value_str;
-    state_t si;
 
     assert(attributes);
     assert((state_t)attributes->state == ATTRIBUTES);

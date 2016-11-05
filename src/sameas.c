@@ -25,8 +25,8 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
 elem_t *
 sameas(CONTAINER_t * CONTAINER, elem_t * subject)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
-    LIST_t * LIST = (LIST_t *)GRAPH;
+    THREAD_t * THREAD = CONTAINER->THREAD;
+    LIST_t * LIST = (LIST_t *)THREAD;
     elem_t *nextold, *newsubject;
 
 //E();
@@ -67,9 +67,10 @@ sameas(CONTAINER_t * CONTAINER, elem_t * subject)
 static void
 sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
-    TOKEN_t * TOKEN = (TOKEN_t *)GRAPH;
-    LIST_t * LIST = (LIST_t *)GRAPH;
+    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
+    THREAD_t * THREAD = CONTAINER->THREAD;
+    TOKEN_t * TOKEN = (TOKEN_t *)THREAD;
+    LIST_t * LIST = (LIST_t *)TOKEN;
     elem_t *elem, *new, *nextoldelem = NULL;
     elem_t *object;
     state_t si;

@@ -25,7 +25,6 @@ static void expand_hub(LIST_t * LIST, elem_t *tail, elem_t *head, elem_t *disamb
  */
 void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
 {
-    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     THREAD_t *THREAD = CONTAINER->THREAD;
     LIST_t *LIST = (LIST_t*)THREAD; 
     elem_t *elem, *epset, *ep, *np, *new, *disambig = NULL;

@@ -177,7 +177,6 @@ void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
 
 void append_token(THREAD_t * THREAD, char **pos, char tok)
 {
-    FILE *chan = THREAD->out;
     // FIXME - check available buffer space
                         // ignore sep before
     *(*pos)++ = (unsigned char)tok;    // copy token

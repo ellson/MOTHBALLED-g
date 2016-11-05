@@ -62,7 +62,6 @@
  */
 char * info_session(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER; 
     THREAD_t *THREAD = CONTAINER->THREAD;
     SESSION_t *SESSION = THREAD->SESSION;
 

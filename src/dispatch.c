@@ -151,7 +151,6 @@ static void
 dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
         elem_t * nodes, elem_t * edges, state_t verb)
 {
-    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     THREAD_t *THREAD = CONTAINER->THREAD;
     LIST_t *LIST = (LIST_t*)THREAD;
     elem_t *elem, *new, *object;
@@ -224,9 +223,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
 static elem_t *
 assemble_act(LIST_t * LIST, elem_t *elem, elem_t *attributes, state_t verb)
 {
-    TOKEN_t * IN = (TOKEN_t *)LIST;
-    elem_t *new;
-    elem_t *act;
+    elem_t *new, *act;
 
     act = new_list(LIST, ACT);  // return list
 

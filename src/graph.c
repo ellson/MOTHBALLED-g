@@ -54,7 +54,7 @@ success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     char so;        // offset to next state, signed
     state_t ti, ni;
     success_t rc;
-    elem_t *new, *branch = new_list(LIST, si);
+    elem_t *branch = new_list(LIST, si);
     static unsigned char nullstring[] = { '\0' };
 
 //E();
