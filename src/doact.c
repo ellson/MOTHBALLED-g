@@ -76,14 +76,14 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 // G:              a[foo=bar abc=xyz]
 //
 // attributes:     ATTRIBUTES ATTR ATTRID ABC foo
-//                                 VALASSIGN VALUE ABC bar
+//                                 VALUE ABC bar
 //                            ATTR ATTRID ABC abc
-//                                 VALASSIGN VALUE ABC xyz
+//                                 VALUE ABC xyz
 //            
 // newattribute:   ATTRIBUTES ATTR ATTRID ABC foo
-//                                 VALASSIGN VALUE ABC bar
+//                                 VALUE ABC bar
 //                            ATTR ATTRID ABC abc
-//                                 VALASSIGN VALUE ABC xyz
+//                                 VALUE ABC xyz
 //----------------------- 
 
 P(newact);

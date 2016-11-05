@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include "thread.h"
+#include "print.h"
 
 // forward declarations
 static success_t more_rep(TOKEN_t * TOKEN, unsigned char prop);
@@ -188,9 +189,12 @@ done: // State exit processing
             // don't bother appending to root
             break;
 
-        // drop some terminals that are no longer useful
-        case VERB:  // stash VERB (if any) then drop it
+        // drop various bits of the tree that are no longer useful
+        case VERB:  // VERB - after stashing away its value
             GRAPH->verb = branch->u.l.first->state;  // QRY or TLD
+            break;
+        case VALASSIGN: // VALASSIGN, but keep VALUE
+            append_addref(root, branch->u.l.first);
             break;
         case LBR:  // bracketing ATTRs
         case RBR:

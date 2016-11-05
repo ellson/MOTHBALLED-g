@@ -94,7 +94,7 @@ P(attrid_str);
 void value_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *attr, *attrid, *attrid_str, *valassign, *value, *value_str;
+    elem_t *attr, *attrid, *attrid_str, *value, *value_str;
 
     assert(attributes);
     assert((state_t)attributes->state == ATTRIBUTES);
@@ -109,11 +109,10 @@ void value_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
         assert((state_t)attrid->state == ATTRID);
 
         attrid_str = attrid->u.l.first;
-//P(attrid_str);
+P(attrid_str);
 
-        valassign = attr->u.l.first->u.l.next;
-        if (valassign) {
-            value = valassign->u.l.first;
+        value = attr->u.l.first;
+        if (value) {
             assert((state_t)value->state == VALUE);
 
             value_str = value->u.l.first;
