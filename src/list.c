@@ -275,23 +275,25 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
  * @param str string to be stored in elem, max 12 chars on 32 bit machines
  * @return a new intialized elem_t
  */
-elem_t *new_shortstr(LIST_t * LIST, char state, char * str)
+elem_t * new_shortstr(LIST_t * LIST, char state, char * str)
 {
     elem_t *elem;
-    int len;
+    int len = 0;
     char c;
 
     elem = new_elem_sub(LIST);
 
-    // complete frag elem initialization
+    // complete shortstr elem initialization
     elem->type = SHORTSTRELEM; // type
-    elem->state = state;       // state_machine state that created this shortstr
-    for (len = 0; len < sizeof(((elem_t*)0)->u.s.str) && (c = str[len]) != '\0'; len++) {
-        elem->u.s.str[len] = c;
+    elem->state = state;       // ABC or DQT for strings
+    if (str) {  // Allow NULL for external string copying
+        while (len < sizeof(((elem_t*)0)->u.s.str) && (c = str[len]) != '\0') {
+            elem->u.s.str[len++] = c;
+        }
     }
     elem->len = len;        // length of stored string
     elem->refs = 1;         // initial ref count
-    elem->state = 0;        // notused
+    elem->state = state;    // ABC or DQT for strings
     elem->height = 0;       // notused
     return elem;
 }

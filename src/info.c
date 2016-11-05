@@ -166,7 +166,7 @@ char * stats(THREAD_t * THREAD)
     itot = INBUF->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t);
     etot = LIST->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
     lend = (TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount);
-    istr = TOKEN->stat_instringshort + TOKEN->stat_instringshort; 
+    istr = TOKEN->stat_instringshort + TOKEN->stat_instringlong; 
   
     // write in canonical g format
     // - minimal spacing - one SUBJECT per line
