@@ -204,6 +204,8 @@ done: // State exit processing
         case LPN:  // bracketing NOUNs or ENDPOINTs
         case RPN:
         case TIC:  // prefixing DISAMBID
+        case HAT:  // indicating PARENT
+        case FSL:  // prefixing CHILD
             break;
         default:
             // everything else is appended to parent's branch
