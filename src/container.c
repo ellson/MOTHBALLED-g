@@ -49,13 +49,13 @@ success_t container(THREAD_t * THREAD)
     container.node_pattern_acts = new_list(LIST, 0);  // FIXME use tree
     container.edge_pattern_acts = new_list(LIST, 0);  // FIXME use tree
 
-    container.ikea_box = ikea_box_open(THREAD->ikea_store, NULL);
-
     THREAD->stat_containdepth++;      // containment nesting level
     if (THREAD->stat_containdepth > THREAD->stat_containdepthmax) {
         THREAD->stat_containdepthmax = THREAD->stat_containdepth;
     }
     THREAD->stat_containcount++;    // number of containers
+
+    container.ikea_box = ikea_box_open(THREAD->ikea_store, NULL);
 
     if ((rc = graph(&container, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
         if (TOKEN->insi == NLL) {    // EOF is OK
@@ -68,8 +68,13 @@ success_t container(THREAD_t * THREAD)
     if (container.nodes) {
         THREAD->sep = ' ';
         print_elem(THREAD, container.nodes, 0);
+
+//        ikea_box_append(ikea_box, data, data_len)
+
     }
     if (container.edges) {
+//        ikea_box_append(ikea_box, data, data_len)
+
         THREAD->sep = ' ';
         print_elem(THREAD, container.edges, 0);
     }
@@ -77,8 +82,9 @@ success_t container(THREAD_t * THREAD)
 // FIXME - don't forget to include NODE and EDGE patterns, after NODES and EDGES
 //   (Paterns are in effect now, but may not have been at the creation of existing objects.)
 
-    THREAD->stat_containdepth--;
     ikea_box_close ( container.ikea_box );
+
+    THREAD->stat_containdepth--;
 
     free_list(LIST, root);
     free_tree(LIST, container.nodes);

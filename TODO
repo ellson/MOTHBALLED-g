@@ -24,7 +24,7 @@ DUPLICATE with 16.
 
 8. thread and event model
 - parser per thread
-- allow multiple ACTIVITY streams per parser (ACTS treated atomically)
+- allow multiple ACTIVITY streams per CONTAINER (doact.c mutexes on outacts so as to treated atomically)
 - inotify input events
   - on last non-stdin file on command line?
   - on file with special option ?
