@@ -123,12 +123,10 @@ success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
         break;
     case SUBJECT:
         TOKEN->has_ast = 0;       // maintain flag for '*' found anywhere in the subject
-        GRAPH->has_cousin = 0;    // maintain flag for any NODEREF to COUSIN
-                                  //  (requiring involvement of ancestors)
+        GRAPH->has_cousin = 0;    // maintain flag for any PARENT involvement
         break;
-    case COUSIN:
-        GRAPH->has_cousin = 1;    // maintain a flag for any NODEREF to COUSIN
-                                  //  (requiring involvement of ancestors)
+    case PARENT:
+        GRAPH->has_cousin = 1;    // maintain a flag for any PARENT involvement
         break;
     default:
         break;
@@ -203,14 +201,14 @@ done: // State exit processing
 //     <c:1 ^^/d:2/e:3 f:4/g:5/h:7>
 //
         case CHILD:
-#endif
         case SIBLING:
-        case COUSIN:
+#endif
+        case FAMILY:
+        case RELATIVE:
         case PORT:
         case NODEREF:
         case NOUN:
         case NOUNSET:
-//        case ENDPOINT:
         case ENDPOINTSET:
             append_addref(root, branch->u.l.first);
             break;

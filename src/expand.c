@@ -71,7 +71,7 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                         append_addref(nodes, new);
                         // FIXME - induce CHILDren in this node's container
                         break;
-                    case COUSIN:
+                    case PARENT:
                         // FIXME - route to ancestors
                         break;
                     default:
