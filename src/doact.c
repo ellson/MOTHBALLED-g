@@ -29,36 +29,85 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     GRAPH->stat_inactcount++;
 
 //P(act);
+//---------------------- love this example
+// G:     (<a b> <c:1 ^^d:2/e:3 f:4/g:5/h:7 (i:8 j:9)>`baz)[foo=bar bar=foo]
+//
+// act:   ACT SUBJECT EDGE LEG ENDPOINT SIS NODEID ABC a
+//                         LEG ENDPOINT SIS NODEID ABC b
+//                    EDGE LEG ENDPOINT SIS NODEID ABC c
+//                                          PORTID ABC 1
+//                         LEG ENDPOINT MUM
+//                                      MUM
+//                                      SIS NODEID ABC d
+//                                          PORTID ABC 2
+//                                      KID NODEID ABC e
+//                                          PORTID ABC 3
+//                         LEG ENDPOINT SIS NODEID ABC f
+//                                          PORTID ABC 4
+//                                      KID NODEID ABC g
+//                                          PORTID ABC 5
+//                                      KID NODEID ABC h
+//                                          PORTID ABC 7
+//                         LEG ENDPOINT SIS NODEID ABC i
+//                                          PORTID ABC 8
+//                             ENDPOINT SIS NODEID ABC j
+//                                          PORTID ABC 9
+//                         DISAMBIG DISAMBID ABC baz
+//            ATTRIBUTES ATTR ATTRID ABC foo
+//                            VALUE ABC bar
+//                       ATTR ATTRID ABC bar
+//                            VALUE ABC foo
+//----------------------- 
     
+
+
+
     newact = new_list(LIST, ACT);
 
-    // VERB has been recorded in GRAPH->verb during VERB exit processing 
-
+// VERB has been recorded in GRAPH->verb during VERB exit processing 
 //S(GRAPH->verb);
 
     subject = act->u.l.first;   // first item is SUBJECT
     assert(subject);
     assert(subject->state == (char)SUBJECT);
 
-//====================== substitute sameas NOUN(s) from previous SUBJECT
+
+
+
+//====================== substitute sameas LEGs, or NODEs from previous SUBJECT
 //P(subject)
     newsubject = sameas(CONTAINER, subject);
-//P(subject);
+//P(newsubject);
     append_transfer(newact, newsubject);
-//----------------------- example (from two consecutive ACTs)
+//----------------------- example of consecutive EDGE ACTs
 // G:          <a b> <= c>
 //
-// subject:    SUBJECT NOUN EDGE LEG ENDPOINT SIS NODEID ABC a
-//                               LEG ENDPOINT SIS NODEID ABC b
-//             SUBJECT NOUN EDGE LEG EQL
-//                               LEG ENDPOINT SIS NODEID ABC c
+// subject:    SUBJECT EDGE LEG ENDPOINT SIS NODEID ABC a
+//                          LEG ENDPOINT SIS NODEID ABC b
+//             SUBJECT EDGE LEG EQL
+//                          LEG ENDPOINT SIS NODEID ABC c
 //
 //
-// newsubject: SUBJECT NOUN EDGE LEG ENDPOINT SIS NODEID ABC a
-//                               LEG ENDPOINT SIS NODEID ABC b
-//             SUBJECT NOUN EDGE LEG ENDPOINT SIS NODEID ABC a
-//                               LEG ENDPOINT SIS NODEID ABC c
+// newsubject: SUBJECT EDGE LEG ENDPOINT SIS NODEID ABC a
+//                          LEG ENDPOINT SIS NODEID ABC b
+//             SUBJECT EDGE LEG ENDPOINT SIS NODEID ABC a
+//                          LEG ENDPOINT SIS NODEID ABC c
 //----------------------- 
+//----------------------- example of consecutive NODE ACTs
+// G:          (a b) (= c)
+//
+// subject:    SUBJECT NODE NODEID ABC a
+//                     NODE NODEID ABC b
+//             SUBJECT NODE EQL
+//                     NODE NODEID ABC c
+//
+// newsubject: SUBJECT NODE NODEID ABC a
+//                     NODE NODEID ABC b
+//             SUBJECT NODE NODEID ABC a
+//                     NODE NODEID ABC c
+//----------------------- 
+
+
 
 //====================== stash ATTRID - there should be no structural change
 //                                      to ATTRIBUTES,  just the STRING
