@@ -206,6 +206,7 @@ done: // State exit processing
         case TIC:  // prefixing DISAMBID
         case HAT:  // indicating PARENT
         case FSL:  // prefixing CHILD
+        case CLN:  // prefixing PORT
             break;
         default:
             // everything else is appended to parent's branch

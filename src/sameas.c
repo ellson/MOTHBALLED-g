@@ -6,6 +6,7 @@
 #include <assert.h>
 
 #include "thread.h"
+#include "print.h"
 #include "sameas.h"
 
 static void
@@ -30,7 +31,7 @@ sameas(CONTAINER_t * CONTAINER, elem_t * subject)
     elem_t *nextold, *newsubject;
 
 //E();
-//P(subject);
+P(subject);
 
     assert(subject);
     assert((state_t)subject->state == SUBJECT);
