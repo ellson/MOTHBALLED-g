@@ -313,6 +313,21 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
     return slen;
 }
 
+static void
+fraglist2shortstring(TOKEN_t *TOKEN, int slen, elem_t * elem) {
+    if (slen <= sizeof(((elem_t*)0)->u.s.str)) {
+        TOKEN->stat_instringshort++;
+//  FIXME        printf("candidate\n");
+    } else {
+        TOKEN->stat_instringlong++;
+    }
+    if (TOKEN->has_quote) {
+        elem->state = DQT;
+    } else {
+        elem->state = ABC;
+    }
+}
+
 /**
  * collect fragments to form a STRING token
  *
@@ -329,7 +344,6 @@ success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist)
     TOKEN->has_quote = 0;
     slen = token_string_fragment(TOKEN, fraglist);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
-//        frags++;
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
@@ -339,16 +353,7 @@ success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist)
         slen += len;
     }
     if (slen > 0) {
-        TOKEN->stat_instringcount++;
-        if (TOKEN->has_quote) {
-            fraglist->state = DQT;
-        } else {
-            fraglist->state = ABC;
-        }
-        // FIXME can't we use fraglist->len for something useful?
-        //           either the length of the composite string,
-        //           or the number of fragments
-        //           If so, do the same for vstring
+        fraglist2shortstring(TOKEN, slen, fraglist);
         return SUCCESS;
     }
     return FAIL;
@@ -470,12 +475,7 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
         slen += len;
     }
     if (slen > 0) {
-        TOKEN->stat_instringcount++;     //FIXME - could we use a separate count for vstring?
-        if (TOKEN->has_quote) {
-            fraglist->state = DQT;
-        } else {
-            fraglist->state = ABC;
-        }
+        fraglist2shortstring(TOKEN, slen, fraglist);
         return SUCCESS;
     } 
     return FAIL;

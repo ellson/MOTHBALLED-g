@@ -27,7 +27,8 @@ typedef struct {
     long stat_crcount;
     long stat_incharcount;
     long stat_infragcount;
-    long stat_instringcount;
+    long stat_instringshort;
+    long stat_instringlong;
     long stat_infilecount;       // various stats
 } TOKEN_t;
 
