@@ -197,6 +197,11 @@ done: // State exit processing
         case VALASSIGN: // ignore VALASSIGN EQL, but keep VALUE
             append_addref(root, branch->u.l.first->u.l.next);
             break;
+        case SIBLING: // skip over SIBLING
+        case COUSIN: // skip over COUSIN
+        case CHILD: // skip over CHILD
+            append_addref(root, branch->u.l.first);
+            break;
         case LBR:  // bracketing ATTRs
         case RBR:
         case LAN:  // bracketing LEGs
