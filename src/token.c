@@ -25,11 +25,17 @@
 void token_error(TOKEN_t * TOKEN, state_t si, char *message)
 {
     unsigned char *p, c;
+    char *fn = "stdin", *q="\"";
 
+    if (strcmp(TOKEN->filename, "-")) {
+        fn = TOKEN->filename;
+    } else {
+        q = "";
+    }
     fprintf(stderr, "Error: %s ", message);
     print_len_frag(stderr, NAMEP(si));
-    fprintf(stderr, "\n      in \"%s\" line: %ld just before: \"",
-        TOKEN->filename,
+    fprintf(stderr, "\n      from %s%s%s line: %ld just before: \"",
+        q,fn,q,
         (TOKEN->stat_lfcount ?
             TOKEN->stat_lfcount :
             TOKEN->stat_crcount) - TOKEN->linecount_at_start + 1);

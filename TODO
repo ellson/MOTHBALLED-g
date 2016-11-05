@@ -107,6 +107,7 @@ DUPLICATE with 16.
     during state exit processing in grammar.c, to:
         ATTR ATTRID ABC abc
              VALUE ABC xyz 
+DONE - see state exit code in graph.c
 
 
             
