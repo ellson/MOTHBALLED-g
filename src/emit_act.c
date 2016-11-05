@@ -41,9 +41,9 @@ void je_emit_act(CONTAINER_t * CONTAINER, elem_t *list)
     liststate = (state_t) elem->state;
     switch (liststate) {
     case NODE:
-    case SIBLING:
+    case SIS:
         subject = elem;
-        subjtype = liststate; // NODE or SIBLING
+        subjtype = liststate; // NODE or SIS
         break;
     case EDGE:
         subject = elem->u.l.first;  // ENDPOINTS (legs)
@@ -51,7 +51,7 @@ void je_emit_act(CONTAINER_t * CONTAINER, elem_t *list)
         subjtype = liststate; // EDGE
         break;
     default:
-        assert(0); // SUBJECT must be NODE,SIBLING, or EDGE
+        assert(0); // SUBJECT must be NODE,SIS, or EDGE
         break;
     }
     elem = elem->u.l.next;
@@ -99,7 +99,7 @@ static void emit_act_func(CONTAINER_t * CONTAINER, state_t verb, state_t subjtyp
     case NODE:
         emit_act_list_r(CONTAINER, subject->u.l.first); // skip NODEID
         break;
-    case SIBLING:
+    case SIS:
         emit_act_list_r(CONTAINER, subject->u.l.first->u.l.first); // skip NODEREF NODEID
         break;
     case EDGE:

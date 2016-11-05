@@ -114,9 +114,10 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
             sameas_r(CONTAINER, elem, &nextoldelem, object);    // recurse, adding result to a sublist
             append_addref(newlist, object);
             break;
-        case DISAMBIG:
-        case NODEID:
         case PORTID:
+        case NODEID:
+        case DISAMBIG:
+        case ENDPOINT:
             new = ref_list(LIST, elem);
             append_transfer(newlist, new);
             if (*nextold) {    // doesn't matter if old is shorter

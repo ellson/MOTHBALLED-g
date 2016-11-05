@@ -25,9 +25,9 @@ P(list);
     si = (state_t) elem->state;
     switch (si) {
     case NODE:
-    case SIBLING:
+    case SIS:
         subject = elem;
-        subjtype = si; // NODE or SIBLING
+        subjtype = si; // NODE or SIS
         break;
     case EDGE:
         subject = elem->u.l.first;  // ENDPOINTS (legs)
@@ -36,7 +36,7 @@ P(list);
         break;
     default:
         S(si);
-        assert(0); // SUBJECT must be NODE,SIBLING, or EDGE
+        assert(0); // SUBJECT must be NODE,SIS, or EDGE
         break;
     }
     elem = elem->u.l.next;
@@ -60,7 +60,7 @@ P(list);
                 CONTAINER->nodes,
                 subject->u.l.first); // skip NODEID
         break;
-    case SIBLING:
+    case SIS:
         CONTAINER->nodes = insert_item((LIST_t*)CONTAINER,
                 CONTAINER->nodes,
                 subject->u.l.first->u.l.first); // skip NODEREF NODEID

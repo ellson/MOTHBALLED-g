@@ -48,16 +48,16 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 //----------------------- example (from two consecutive ACTs)
 // G:          <a b> <= c>
 //
-// subject:    SUBJECT NOUN EDGE LEG ENDPOINT SIBLING NODEID ABC a
-//                               LEG ENDPOINT SIBLING NODEID ABC b
+// subject:    SUBJECT NOUN EDGE LEG ENDPOINT SIS NODEID ABC a
+//                               LEG ENDPOINT SIS NODEID ABC b
 //             SUBJECT NOUN EDGE LEG EQL
-//                               LEG ENDPOINT SIBLING NODEID ABC c
+//                               LEG ENDPOINT SIS NODEID ABC c
 //
 //
-// newsubject: SUBJECT NOUN EDGE LEG ENDPOINT SIBLING NODEID ABC a
-//                               LEG ENDPOINT SIBLING NODEID ABC b
-//             SUBJECT NOUN EDGE LEG ENDPOINT SIBLING NODEID ABC a
-//                               LEG ENDPOINT SIBLING NODEID ABC c
+// newsubject: SUBJECT NOUN EDGE LEG ENDPOINT SIS NODEID ABC a
+//                               LEG ENDPOINT SIS NODEID ABC b
+//             SUBJECT NOUN EDGE LEG ENDPOINT SIS NODEID ABC a
+//                               LEG ENDPOINT SIS NODEID ABC c
 //----------------------- 
 
 //====================== stash ATTRID - there should be no structural change

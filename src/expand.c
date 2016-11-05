@@ -66,12 +66,12 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                     np = ep->u.l.first;
                     si3 = np->state;
                     switch (si3) {
-                    case SIBLING:
+                    case SIS:
                         new = ref_list(LIST, np);
                         append_addref(nodes, new);
-                        // FIXME - induce CHILDren in this node's container
+                        // FIXME - induce KIDs in this node's container
                         break;
-                    case PARENT:
+                    case MUM:
                         // FIXME - route to ancestors
                         break;
                     default:

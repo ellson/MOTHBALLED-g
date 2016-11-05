@@ -123,10 +123,10 @@ success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
         break;
     case SUBJECT:
         TOKEN->has_ast = 0;       // maintain flag for '*' found anywhere in the subject
-        GRAPH->has_cousin = 0;    // maintain flag for any PARENT involvement
+        GRAPH->has_cousin = 0;    // maintain flag for any MUM involvement
         break;
-    case PARENT:
-        GRAPH->has_cousin = 1;    // maintain a flag for any PARENT involvement
+    case MUM:
+        GRAPH->has_cousin = 1;    // maintain a flag for any MUM involvement
         break;
     default:
         break;
@@ -200,8 +200,8 @@ done: // State exit processing
 //  enabling drops PORTID from 'd' and 'g' in: 
 //     <c:1 ^^/d:2/e:3 f:4/g:5/h:7>
 //
-        case CHILD:
-        case SIBLING:
+        case KID:
+        case SIS:
 #endif
         case FAMILY:
         case RELATIVE:
@@ -219,8 +219,8 @@ done: // State exit processing
         case LPN:  // bracketing NOUNs or ENDPOINTs
         case RPN:
         case TIC:  // prefixing DISAMBID
-        case HAT:  // indicating PARENT
-        case FSL:  // prefixing CHILD
+        case HAT:  // indicating MUM
+        case FSL:  // prefixing KID
         case CLN:  // prefixing PORT
             break;
         default:

@@ -274,7 +274,7 @@ static void gvrender_list(GRAPH_t * GRAPH, FILE *chan, elem_t * list)
                 case VALASSIGN:
 //                    je_emit_token(GRAPH, chan, '=');
                     break;
-                case CHILD:
+                case KID:
 //                    je_emit_token(GRAPH, chan, '/');
                     break;
                 default:
@@ -357,7 +357,7 @@ void je_emit_list(GRAPH_t * GRAPH, FILE *chan, elem_t * list)
                 case VALASSIGN:
                     je_emit_token(GRAPH, chan, '=');
                     break;
-                case CHILD:
+                case KID:
                     je_emit_token(GRAPH, chan, '/');
                     break;
                 default:
