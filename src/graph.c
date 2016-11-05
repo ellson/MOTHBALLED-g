@@ -199,12 +199,21 @@ done: // State exit processing
             break;
 #if 0
 // FIXME - something flakey about doing this
-        case SIBLING: // skip over SIBLING
-        case COUSIN: // skip over COUSIN
-        case CHILD: // skip over CHILD
+//  enabling drops PORTID from 'd' and 'g' in: 
+//     <c:1 ^^/d:2/e:3 f:4/g:5/h:7>
+//
+        case CHILD:
+#endif
+        case SIBLING:
+        case COUSIN:
+        case PORT:
+        case NODEREF:
+        case NOUN:
+        case NOUNSET:
+//        case ENDPOINT:
+        case ENDPOINTSET:
             append_addref(root, branch->u.l.first);
             break;
-#endif
         case LBR:  // bracketing ATTRs
         case RBR:
         case LAN:  // bracketing LEGs

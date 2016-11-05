@@ -334,6 +334,8 @@ elem_t *ref_list(LIST_t * LIST, elem_t * list)
  */
 void append_transfer(elem_t * list, elem_t * elem)
 {
+    assert(list->type == (char)LISTELEM);
+    assert(elem->refs > 0);
     if (list->u.l.first) {
         list->u.l.last->u.l.next = elem;
     } else {
@@ -354,14 +356,9 @@ void append_transfer(elem_t * list, elem_t * elem)
  */
 void append_addref(elem_t * list, elem_t * elem)
 {
-    assert(list->type == (char)LISTELEM);
-
     append_transfer(list, elem);
-
-    if (elem->type == (char)LISTELEM) {
-        elem->refs++; 
-        assert(elem->refs > 0);
-    }
+    elem->refs++; 
+    assert(elem->refs > 0);
 }
 
 /**
