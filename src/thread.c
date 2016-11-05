@@ -9,10 +9,7 @@
 THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind)
 {
     THREAD_t thread = { 0 };      // FIXME - may need to calloced
-                                    // if thread() just starts the thread
     success_t rc;
-
-    thread.out = stdout;
 
     argv = &argv[optind];
     *pargc -= optind;
@@ -22,10 +19,10 @@ THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind)
         *pargc = 1;
     }
 
+    thread.SESSION = SESSION;
+    thread.out = stdout;
     thread.TOKEN.pargc = pargc;
     thread.TOKEN.argv = argv;
-
-    // create (or reopen) store for the containers
     thread.ikea_store = ikea_store_open( NULL );
 
 // FIXME - fork() here ??

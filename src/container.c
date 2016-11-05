@@ -41,6 +41,7 @@ success_t container(THREAD_t * THREAD)
     elem_t *root;
     success_t rc;
 
+E();
     root = new_list(LIST, ACTIVITY);
 
     container.THREAD = THREAD;
@@ -82,11 +83,19 @@ success_t container(THREAD_t * THREAD)
 E();
     ikea_box_close ( container.ikea_box );
 
+E();
+P(root);
     free_list(LIST, root);
+E();
     free_tree(LIST, container.nodes);
+E();
     free_tree(LIST, container.edges);
+E();
+P(container.previous_subject);
     free_list(LIST, container.previous_subject);
+E();
     free_list(LIST, container.node_pattern_acts);
+E();
     free_list(LIST, container.edge_pattern_acts);
 
     if (LIST->stat_elemnow) {

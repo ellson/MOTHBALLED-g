@@ -60,16 +60,13 @@
  */
 elem_t * attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
     THREAD_t *THREAD = CONTAINER->THREAD;
-    LIST_t *LIST = (LIST_t*)THREAD;
     elem_t *attr, *attrid, *attrid_str, *newattributes, *newattr, *new;
-    state_t si;
 
     assert(attributes);
     assert((state_t)attributes->state == ATTRIBUTES);
 
-    newattributes = new_list(LIST, ATTRIBUTES);
+    newattributes = new_list((LIST_t*)THREAD, ATTRIBUTES);
 
     attr = attributes->u.l.first;
     while (attr) {
@@ -84,7 +81,7 @@ elem_t * attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
         attrid_str = attrid->u.l.first;
 P(attrid_str);
 
-        new = ref_list(LIST, attr);
+        new = ref_list((LIST_t*)THREAD, attr);
         append_transfer(newattributes, new);    // FIXME not right yet ...
 
         attr = attr->u.l.next;
@@ -96,9 +93,7 @@ P(attrid_str);
 
 void value_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
     THREAD_t *THREAD = CONTAINER->THREAD;
-    LIST_t *LIST = (LIST_t*)THREAD;
     elem_t *attr, *attrid, *attrid_str, *valassign, *value, *value_str;
     state_t si;
 

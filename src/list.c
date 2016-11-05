@@ -100,29 +100,28 @@ void free_list(LIST_t * LIST, elem_t * elem)
     elem_t *next;
 
     while (elem) {
+        assert(LIST->stat_elemnow > 0);
+        assert(elem->refs > 0);
         next = elem->u.l.next;
         switch ((elemtype_t)(elem->type)) {
         case LISTELEM:
-            assert(elem->refs > 0);
             if (--(elem->refs)) {
                 return;    // stop at any point with additional refs
             }
             free_list_r(LIST, elem); // recursively free lists that have no references
             break;
         case FRAGELEM:
-            assert(elem->refs > 0);
             if (--(elem->refs)) {
                 return;    // stop at any point with additional refs
             }
             assert(elem->u.f.inbuf->refs > 0);
             if (--(elem->u.f.inbuf->refs) == 0) {
-                free_inbuf(&(LIST->INBUF), elem->u.f.inbuf);
+                free_inbuf((INBUF_t*)LIST, elem->u.f.inbuf);
             }
             LIST->stat_fragnow--;    // maintain stats
             break;
         case SHORTSTRELEM:
             // these are self contained singletons,  nothing else to clean up
-            assert(elem->refs > 0);
             if (--(elem->refs)) {
                 return;    // stop at any point with additional refs
             }
@@ -152,6 +151,7 @@ static void free_list_r(LIST_t * LIST, elem_t * list)
 {
     assert(list);
     assert(list->type == (char)LISTELEM);
+    assert(list->refs >= 0);  
 
     // free list of elem, but really just put them back
     // on the elem_freelist (declared at the top of this file)`
@@ -160,6 +160,7 @@ static void free_list_r(LIST_t * LIST, elem_t * list)
     // clean up emptied list
     list->u.l.first = NULL;
     list->u.l.last = NULL;
+    list->len = 0;
     // Note: ref count of the empty list is not modified.
     // It may be still referenced, even though it is now empty.
 }
@@ -378,7 +379,8 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
 
     assert(list);
     assert(list->type == (char)LISTELEM);
-    assert(list->u.l.last);                  // must be at least one elem in the list
+    assert(list->u.l.last);    // must be at least one elem in the list
+    assert(list->len > 0);     // must be at least one elem in the list
 
     if (! elem) {                            // if removing the first elem
         old = list->u.l.first;
@@ -391,6 +393,7 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
     if (list->u.l.last == old) {             // if removing the last element
         list->u.l.last = elem;               // then elem is the new last (or NULL)
     }
+    assert(old->refs > 0);
     list->len--;                             // list has one less elem
     free_list_r(LIST, old);                  // free the removed elem
 }
