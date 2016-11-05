@@ -317,9 +317,9 @@ static elem_t *
 token_pack_string(TOKEN_t *TOKEN, int slen, elem_t * elem) {
     elem_t *new, *frag;
 
-#if 0
     if (slen <= sizeof(((elem_t*)0)->u.s.str)) {
         TOKEN->stat_instringshort++;
+#if 0
         new = new_shortstr((LIST_t*)TOKEN, TOKEN->quote_state);
         frag = elem;
         while (frag) {
@@ -328,14 +328,14 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t * elem) {
         }
         free_list((LIST_t*)TOKEN, elem);
         return new;
+#endif
+        elem->state = TOKEN->quote_state;
+        return elem;
     } else {
         TOKEN->stat_instringlong++;
         elem->state = TOKEN->quote_state;
         return elem;
     }
-#endif
-    elem->state = TOKEN->quote_state;
-    return elem;
 }
 
 /**
