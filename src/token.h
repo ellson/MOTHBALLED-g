@@ -13,7 +13,8 @@ typedef struct {
     char **argv;
     char *filename;            // name of file currently being processed, or "-" for stdin
     FILE *file;                // open file handle for file currently being processed
-    unsigned char *in;         // next charater to be processed
+    FILE *out, *err;           // output files
+    unsigned char *in;         // next character to be processed
     state_t insi;              // state represented by last character read
     state_t ei;                // ei, bi are used to determine whitespace needs around STRINGs
     state_t bi;
@@ -30,7 +31,7 @@ typedef struct {
     long stat_infilecount;       // various stats
 } TOKEN_t;
 
-void token_error(TOKEN_t * TOKEN, state_t si, char *message);
+void token_error(TOKEN_t * TOKEN, char *message, state_t si);
 success_t token_whitespace(TOKEN_t * TOKEN);
 success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist);
 success_t token_vstring(TOKEN_t * TOKEN, elem_t * fraglist);

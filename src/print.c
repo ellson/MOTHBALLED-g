@@ -9,7 +9,7 @@
 /**
  * Print a single fragment of len contiguous characters.
  *
- * @param THREAD context for i/o
+ * @param chan FILE for output
  * @param len number of contiguous characters to be output
  * @param frag pointer to the first character in the fragment
  */
@@ -23,7 +23,7 @@ static void print_one_frag(FILE * chan, unsigned int len, unsigned char *frag)
 /**
  * Print a len_frag (an 8bit length, followed by that number of characters)
  *
- * @param THREAD context for i/o
+ * @param chan FILE for output
  * @param len_frag an 8bit length, followed by that number of characters
  */
 uint16_t print_len_frag(FILE * chan, unsigned char *len_frag)
@@ -39,7 +39,7 @@ uint16_t print_len_frag(FILE * chan, unsigned char *len_frag)
  * The composite string is quoted as necessary to comply with g syntax
  * (although not necessarily in the same way as in the original input).
  *
- * @param THREAD context for i/o
+ * @param chan FILE for output
  * @param state an indicator if the string is to be quoted
  * @param elem the first frag of the fragllist
  * @param sep if not NULL then a character to be printed first
@@ -86,6 +86,13 @@ static void print_frags(FILE * chan, state_t state, elem_t * elem, char *sep)
     *sep = ' ';
 }
 
+/**
+ * Print the string content of a SHORTSTR elem
+ *
+ * @param chan FILE for output
+ * @param elem the shortstring elem
+ * @param sep if not NULL then a character to be printed first
+ */
 static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
 {
     assert(elem->type == (char)SHORTSTRELEM);
@@ -100,7 +107,7 @@ static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
 /**
  * print a tree from left to right.  i.e in insertion sort order
  *
- * @param THREAD context for i/o
+ * @param chan FILE for output
  * @param p the root of the tree (should be in the middle of the resulting list)
  * @param sep the separator beween items
  */
@@ -132,7 +139,7 @@ static void print_tree(FILE * chan, elem_t * p, char *sep)
  */
 void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
 {
-    FILE *chan = THREAD->out;
+    FILE *chan = ((TOKEN_t*)THREAD)->out;
     elemtype_t type;
     int ind, cnt, width;
     char *sep = &(THREAD->sep);

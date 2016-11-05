@@ -18,9 +18,7 @@ struct graph_s {               // GRAPH context
 
     // FIXME  - do I need to take verb default from parent graph ?
     state_t verb;              // after parsing, 0 "add", TLD "del", QRY "query"
-
-    char has_cousin;           // flag set if a COUSIN is found in any EDGE of the ACT
-                               //  (forward EDGE to ancestors for processing)
+    char need_mum;           // flag set if MUM is referenced
 
     // ok as per-graph counts - may also need at THREAD level for total i/o stats
     long stat_inactcount;

@@ -19,7 +19,8 @@ THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind)
     }
 
     thread.SESSION = SESSION;
-    thread.out = stdout;
+    thread.TOKEN.out = stdout;
+    thread.TOKEN.err = stderr;
     thread.TOKEN.pargc = pargc;
     thread.TOKEN.argv = argv;
     thread.ikea_store = ikea_store_open( NULL );

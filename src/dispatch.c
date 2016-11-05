@@ -38,17 +38,17 @@ assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
  * of all the endpoints.
  *
  * So an edge to an external node:, e.g
- *                      <sibling ^/uncle/cousin>
+ *                      <sis ^aunt/cousin>
  * is dealt with as follows:    // FIXME - not right
  *       1. node "sibling" is induced (created in the local
  *              graph of siblings, if it isn't already there.)
  *       2. the edge is sent though a special channel to
- *              the nameless parent of the the current siblings.
+ *              the nameless parent (mum) of the the current siblings.
  *              That parent, prepends its name to all noderefs
- *              without a ^/, and removes one ^/ from all the others,
+ *              without a ^, and removes one ^ from all the others,
  *              So. in the parent's graph, the edge becomes:
- *                      <mum/sibling uncle/cousin>
- *              If there still ^/ left, then the process
+ *                      <mum/sis aunt/cousin>
+ *              If there still ^ left, then the process
  *              is repeated, sending it though the nameless channel to
  *              their parent, which applies the same rule:
  */
@@ -99,7 +99,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb)
         }
         break;
     case EDGE:
-        if (GRAPH->has_cousin) {
+        if (GRAPH->need_mum) {
             // FIXME - deal with edges that require help from ancestors
             fprintf(stdout,"EDGE has COUSIN\n");
         }

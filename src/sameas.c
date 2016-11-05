@@ -93,9 +93,9 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
                     // all members of the SUBJECT must be of the same type: NODE or EDGE
                     // (this is really a shortcut to avoid extra productions in the grammar)
                     if (si == NODE) {
-                        token_error(TOKEN, si, "EDGE subject includes");
+                        token_error(TOKEN, "EDGE subject includes", si);
                     } else {
-                        token_error(TOKEN, si, "NODE subject includes");
+                        token_error(TOKEN, "NODE subject includes", si);
                     }
                 }
             }
@@ -132,7 +132,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
                 *nextold = (*nextold)->u.l.next;
                 GRAPH->stat_sameas++;
             } else {
-                token_error(TOKEN, si, "No corresponding object found for same-as substitution");
+                token_error(TOKEN, "No corresponding object found for same-as substitution", si);
             }
             break;
         default:

@@ -61,7 +61,7 @@ success_t container(THREAD_t * THREAD)
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
-            token_error(TOKEN, TOKEN->state, "Parse error. Last good state was:");
+            token_error(TOKEN, "Parse error. Last good state was:", TOKEN->bi);
         }
     }
 

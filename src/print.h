@@ -18,20 +18,20 @@ void append_runtime(THREAD_t * THREAD, char **pos, uint64_t run_sec, uint64_t ru
 
 // macro to print an elem
 #define P(L) { \
-   fprintf(THREAD->out, "\nelem at: %s:%d\n", __FILE__, __LINE__); \
+   fprintf(((TOKEN_t*)THREAD)->out, "\nelem at: %s:%d\n", __FILE__, __LINE__); \
    THREAD->sep = ' '; \
    print_elem(THREAD, L, 0); \
-   putc('\n', THREAD->out);}
+   putc('\n', ((TOKEN_t*)THREAD)->out);}
 
 // macro to print current element count
    #define E() { \
-   fprintf(THREAD->out, "elemnow at %s:%d is %ld\n", __FILE__, __LINE__, ((LIST_t*)THREAD)->stat_elemnow);}
+   fprintf(((TOKEN_t*)THREAD)->out, "elemnow at %s:%d is %ld\n", __FILE__, __LINE__, ((LIST_t*)THREAD)->stat_elemnow);}
 
 // macro to print a stat_t in is text form.
    #define S(state) { \
-   fprintf(THREAD->out, "state at: %s:%d is: ", __FILE__, __LINE__); \
-   print_len_frag(THREAD->out, NAMEP(state)); \
-   putc('\n', THREAD->out);}
+   fprintf(((TOKEN_t*)THREAD)->out, "state at: %s:%d is: ", __FILE__, __LINE__); \
+   print_len_frag(((TOKEN_t*)THREAD)->out, NAMEP(state)); \
+   putc('\n', ((TOKEN_t*)THREAD)->out);}
 
 #ifdef __cplusplus
 }

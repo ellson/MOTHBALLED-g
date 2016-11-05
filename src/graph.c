@@ -123,10 +123,10 @@ success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
         break;
     case SUBJECT:
         TOKEN->has_ast = 0;       // maintain flag for '*' found anywhere in the subject
-        GRAPH->has_cousin = 0;    // maintain flag for any MUM involvement
+        GRAPH->need_mum = 0;    // maintain flag for any MUM involvement
         break;
     case MUM:
-        GRAPH->has_cousin = 1;    // maintain a flag for any MUM involvement
+        GRAPH->need_mum = 1;    // maintain a flag for any MUM involvement
         break;
     default:
         break;

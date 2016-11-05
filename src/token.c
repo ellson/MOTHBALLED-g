@@ -19,10 +19,10 @@
  * report an error during parsing with context info.
  *
  * @param TOKEN context
- * @param si parser state
  * @param message error description
+ * @param si parser state
  */
-void token_error(TOKEN_t * TOKEN, state_t si, char *message)
+void token_error(TOKEN_t * TOKEN, char *message, state_t si)
 {
     unsigned char *p, c;
     char *fn = "stdin", *q="\"";
@@ -32,9 +32,9 @@ void token_error(TOKEN_t * TOKEN, state_t si, char *message)
     } else {
         q = "";
     }
-    fprintf(stderr, "Error: %s ", message);
-    print_len_frag(stderr, NAMEP(si));
-    fprintf(stderr, "\n      from %s%s%s line: %ld just before: \"",
+    fprintf(TOKEN->err, "Error: %s ", message);
+    print_len_frag(TOKEN->err, NAMEP(si));
+    fprintf(TOKEN->err, "\n       from %s%s%s line: %ld while processing: \"",
         q,fn,q,
         (TOKEN->stat_lfcount ?
             TOKEN->stat_lfcount :
@@ -44,9 +44,9 @@ void token_error(TOKEN_t * TOKEN, state_t si, char *message)
         if (c == '\n' || c == '\r') {
             break;
         }
-        putc(c, stderr);
+        putc(c, TOKEN->err);
     }
-    fprintf(stderr, "\"\n");
+    fprintf(TOKEN->err, "\"\n");
     exit(EXIT_FAILURE);
 }
 
@@ -83,7 +83,7 @@ static success_t token_more_in(TOKEN_t * TOKEN)
             //   be more user-friendly to check that we are not in a quote string
             //   whenever EOF occurs.
             if (TOKEN->in_quote) {
-                token_error(TOKEN, NLL, "EOF in the middle of a quote string");
+                token_error(TOKEN, "EOF in the middle of a quote string", NLL);
             }
 // FIXME don't close stdin
 // FIXME - stall for more more input   (inotify events ?)
