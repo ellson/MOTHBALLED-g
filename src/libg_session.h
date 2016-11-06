@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 // session.c
-void session(int *pargc, char *argv[], int optind);
+void session(int *pargc, char *argv[], int optind, char needstats);
 
 // emit.c
 success_t select_emitter(char *name);

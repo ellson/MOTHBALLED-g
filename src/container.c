@@ -9,6 +9,7 @@
 #include "thread.h"
 #include "print.h"
 #include "container.h"
+#include "info.h"
 
 /**
  * parse G syntax input
@@ -85,6 +86,11 @@ success_t container(THREAD_t * THREAD)
     ikea_box_close ( container.ikea_box );
 
     THREAD->stat_containdepth--;
+
+    if (THREAD->SESSION->needstats) {
+        fprintf(TOKEN->out, "%s\n\n", info_session(&container));
+        fprintf(TOKEN->out, "%s\n\n", info_stats(&container));
+    }
 
     free_list(LIST, root);
     free_tree(LIST, container.nodes);

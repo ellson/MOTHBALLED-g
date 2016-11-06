@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
     }
 
     // create the top-level context for processing the inputs
-    session(&argc, argv, optind);
+    session(&argc, argv, optind, needstats);
 
     exit(EXIT_SUCCESS);
 }

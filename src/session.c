@@ -30,7 +30,7 @@
 // public include
 #include "libg_session.h"
 
-void session(int *pargc, char *argv[], int optind)
+void session(int *pargc, char *argv[], int optind, char needstats)
 {
     SESSION_t session;
     struct passwd *pw;
@@ -66,6 +66,7 @@ void session(int *pargc, char *argv[], int optind)
     session.starttime_nsec = starttime.tv_usec * TEN3;
 #endif
 
+    session.progname = argv[0];
     pid = geteuid();
     session.pid = pid;
     uid = geteuid();
@@ -78,6 +79,7 @@ void session(int *pargc, char *argv[], int optind)
     session.osname = unamebuf.sysname;
     session.osrelease = unamebuf.release;
     session.osmachine = unamebuf.machine;
+    session.needstats = needstats;
 
     // run a THREAD to process the input
     session.THREAD = thread(&session, pargc, argv, optind);

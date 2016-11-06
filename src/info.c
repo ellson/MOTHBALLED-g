@@ -27,15 +27,8 @@
 #include "print.h"
 #include "info.h"
 
-#define THREAD_BUF_SIZE 2048
+#define BUF_SIZE 2048
 
-// Percentage values (value * 100) / total %
-#define Ap(attr,valu,total) { \
-     append_string  (THREAD, &pos, attr); \
-     append_token   (THREAD, &pos, '='); \
-     append_ulong   (THREAD, &pos, (valu * 100) / total); \
-     append_token   (THREAD, &pos, '%'); \
-}
 // Runtime values  (sec.ns)
 #define Ar(attr,valu_s,valu_ns) { \
      append_string  (THREAD, &pos, attr); \
@@ -52,7 +45,7 @@
 #define Au(attr,valu) { \
      append_string  (THREAD, &pos, attr); \
      append_token   (THREAD, &pos, '='); \
-     append_ulong  (THREAD, &pos, valu); \
+     append_ulong   (THREAD, &pos, valu); \
 }
 
 /**
@@ -75,9 +68,10 @@ char * info_session(CONTAINER_t * CONTAINER)
     THREAD_t *THREAD = CONTAINER->THREAD;
     SESSION_t *SESSION = THREAD->SESSION;
 
-// FIXME - caa'tn do this in threaded code!!
-    static char buf[THREAD_BUF_SIZE];
+// FIXME - can't do this in threaded code!!
+    static char buf[BUF_SIZE];
     static char *pos = &buf[0];  // NB. static. This initalization happens only once
+
     if (pos != &buf[0]) { // have we been here before?
         return buf;
     }
@@ -108,11 +102,10 @@ char * info_session(CONTAINER_t * CONTAINER)
     Au("voidptrsize",           sizeof(void*));
     append_token   (THREAD, &pos, ']');
 
-    assert(pos < buf+THREAD_BUF_SIZE);
+    assert(pos < buf+BUF_SIZE);
     return buf;
 }
 
-#define STATS_BUF_SIZE 2048
 
 /**
  * format running stats as a string
@@ -120,17 +113,19 @@ char * info_session(CONTAINER_t * CONTAINER)
  * @param THREAD context
  * @return formatted string
  */
-char * stats(THREAD_t * THREAD)
+char * info_stats(CONTAINER_t * CONTAINER)
 {
-    CONTAINER_t *CONTAINER = THREAD->CONTAINER;
+    THREAD_t *THREAD = CONTAINER->THREAD;
     GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     SESSION_t *SESSION = THREAD->SESSION;
     TOKEN_t *TOKEN = (TOKEN_t*)THREAD;
     LIST_t *LIST = (LIST_t*)TOKEN;
     INBUF_t *INBUF = (INBUF_t*)LIST;
-    static char buf[STATS_BUF_SIZE];
     uint64_t runtime, lend, itot, etot, istr;
+    char percent[6];
 
+// FIXME - can't do this in threaded code!!
+    static char buf[BUF_SIZE];
     char *pos = &buf[0];  // NB non-static.  stats are updated and re-formatted on each call
     
 #ifdef HAVE_CLOCK_GETTIME
@@ -138,17 +133,6 @@ char * stats(THREAD_t * THREAD)
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     static struct timespec uptime;
     static struct timespec nowtime;
-#else
-    // Y2038-unsafe struct - but should be ok for uptime
-    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
-    static struct timeval nowtime;
-#endif
-
-    // gather info
-    
-#if defined(HAVE_CLOCK_GETTIME)
-    // Y2038-unsafe struct - but should be ok for uptime
-    // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
     if (clock_gettime(CLOCK_BOOTTIME, &uptime))
         FATAL("clock_gettime()");
     if (clock_gettime(CLOCK_REALTIME, &nowtime))
@@ -158,15 +142,18 @@ char * stats(THREAD_t * THREAD)
 #else
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
+    static struct timeval nowtime;
     if (gettimeofday(&nowtime, NULL))
         FATAL("gettimeofday()");
     runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_usec) * TEN3
             - (SESSION->uptime * TEN9 + SESSION->uptime_nsec);
 #endif
+
     itot = INBUF->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t);
     etot = LIST->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
     lend = (TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount);
     istr = TOKEN->stat_instringshort + TOKEN->stat_instringlong; 
+    sprintf(percent,"%d%%", (TOKEN->stat_instringshort * 100)/ istr);
   
     // write in canonical g format
     // - minimal spacing - one SUBJECT per line
@@ -198,7 +185,7 @@ char * stats(THREAD_t * THREAD)
     Au("infilecount",           TOKEN->stat_infilecount);
     Au("inlinecount",           lend + 1);
     Au("instringcount",         istr);
-    Ap("instringshort",         TOKEN->stat_instringshort, istr);
+    As("instringshort",         percent);
     Au("malloctotal",           itot+etot);
     Au("nowtime",               nowtime.tv_sec);
     Au("outactcount",           GRAPH->stat_outactcount);
@@ -207,6 +194,6 @@ char * stats(THREAD_t * THREAD)
     Au("sameas",                GRAPH->stat_sameas);
     append_token   (THREAD, &pos, ']');
 
-    assert(pos < buf+STATS_BUF_SIZE);
+    assert(pos < buf+BUF_SIZE);
     return buf;
 }
