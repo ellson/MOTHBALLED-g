@@ -6,7 +6,6 @@
 #include <assert.h>
 
 #include "thread.h"
-#include "print.h"
 #include "expand.h"
 
 static void expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges);

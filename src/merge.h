@@ -7,8 +7,7 @@
 extern "C" {
 #endif
 
-#include "print.h"
-
+// functions
 elem_t * merge(elem_t * new, elem_t * old);
 
 #ifdef __cplusplus

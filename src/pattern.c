@@ -7,7 +7,6 @@
 #include <assert.h>
 
 #include "thread.h"
-#include "print.h"
 #include "match.h"
 #include "compare.h"
 #include "pattern.h"

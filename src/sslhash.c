@@ -5,6 +5,7 @@
 #include <openssl/evp.h>
 #include <assert.h>
 
+#include "thread.h"
 #include "sslhash.h"
 
 static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list);

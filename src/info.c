@@ -24,7 +24,6 @@
 #endif
 
 #include "thread.h"
-#include "print.h"
 #include "info.h"
 
 #define BUF_SIZE 2048

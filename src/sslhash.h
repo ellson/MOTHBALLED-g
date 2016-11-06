@@ -7,12 +7,11 @@
 #include "config.h"
 #endif
 
-#include "print.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+// functions
 void sslhash_list(uint64_t *hash, elem_t *list);
 
 #ifdef __cplusplus

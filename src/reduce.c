@@ -5,8 +5,6 @@
 #include <assert.h>
 
 #include "thread.h"
-#include "tree.h"
-#include "print.h"
 #include "reduce.h"
 
 void reduce(CONTAINER_t * CONTAINER, elem_t *list)

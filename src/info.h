@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-#include "thread.h"
-
 // functions
 char * info_session(CONTAINER_t *CONTAINER);
 char * info_stats(CONTAINER_t *CONTAINER);

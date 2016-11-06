@@ -7,33 +7,37 @@
 #include <assert.h>
 
 #include "thread.h"
-#include "print.h"
+#include "doact.h"
 
 // forward declarations
 static success_t more_rep(TOKEN_t * TOKEN, unsigned char prop);
 
-/**
- * parse G syntax input
- *
- * This parser recurses at two levels:
- *
- * thread() --> container() --> graph() ------| -|  
- *            ^               ^   |           |  |
- *            |               |   -> doact()  |  |
- *            |               |               |  |
- *            |               --------<-------|  |
- *            |                                  |
- *            ----------------<------------------|
- *
- * The outer recursions are through nested containment.
- *
- * The inner recursions are through the grammar state_machine at a single
- * level of containment.
- *
- * The top-level THREAD context is available to both and maintains the input state.
- */
+/** ********************************************************
+ * parse G syntax input                                    *
+ *                                                         *
+ * This parser recurses at two levels:                     *
+ *                                                         *
+ *  input                                                  *
+ *    |                                                    *
+ *    V                                                    *
+ * thread() --> container() --> graph() ------| -|         *
+ *            ^               ^   |           |  |         *
+ *            |               |   -> doact()  |  |         *
+ *            |               |               |  |         *
+ *            |               --------<-------|  |         *
+ *            |                                  |         *
+ *            ----------------<------------------|         *
+ *                                                         *
+ * The outer recursions are through nested containment.    *
+ *                                                         *
+ * The inner recursions are through the grammar            *
+ * state_machine at a single level of containment.         *
+ *                                                         *
+ * The top-level THREAD context is available to both and   *
+ * maintains the input state.                              *
+ ********************************************************* */
 
-/** 
+/**
  * iterate and recurse through state-machine at a single level of containment
  *
  *  @param CONTAINER context
@@ -220,7 +224,7 @@ done: // State exit processing
             append_addref(root, branch);
             break;
         }
-    } 
+    }
     free_list(LIST, branch);
     nest--;
     assert(nest >= 0);

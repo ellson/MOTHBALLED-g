@@ -19,9 +19,12 @@ typedef struct session_s SESSION_t;
 #include "grammar.h"
 #include "token.h"
 #include "ikea.h"
+#include "tree.h"
 #include "graph.h"
 #include "container.h"
 #include "session.h"
+#include "print.h"
+#include "info.h"
 
 struct thread_s {
     TOKEN_t TOKEN;             // TOKEN context. May be cast from THREAD

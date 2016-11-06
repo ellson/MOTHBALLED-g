@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "print.h"
+#include "thread.h"
 
 /**
  * Print a single fragment of len contiguous characters.

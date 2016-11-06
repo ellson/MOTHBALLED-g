@@ -6,7 +6,6 @@
 #include <assert.h>
 
 #include "thread.h"
-#include "print.h"
 #include "sameas.h"
 
 static void

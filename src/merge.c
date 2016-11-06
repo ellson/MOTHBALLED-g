@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <assert.h>
 
+#include "thread.h"
 #include "merge.h"
 
 /**

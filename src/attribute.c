@@ -7,10 +7,8 @@
 #include <assert.h>
 
 #include "thread.h"
-#include "print.h"
 #include "compare.h"
 #include "match.h"
-#include "tree.h"
 #include "attribute.h"
 
 /**

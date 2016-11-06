@@ -5,7 +5,7 @@
 #include <time.h>
 #include <sys/types.h>
 
-#include "print.h"
+#include "thread.h"
 
 #define OUT stdout
 #define ERR stderr

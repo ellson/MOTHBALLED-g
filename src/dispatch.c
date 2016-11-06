@@ -6,7 +6,6 @@
 #include <assert.h>
 
 #include "thread.h"
-#include "print.h"
 #include "expand.h"
 #include "dispatch.h"
 

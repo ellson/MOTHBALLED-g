@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-#include "doact.h"
-
 struct graph_s {               // GRAPH context
 
 // FIXME - move to CONTAINER
