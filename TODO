@@ -110,4 +110,12 @@ DUPLICATE with 16.
 DONE - see state exit code in graph.c
 
 
+20. Error recovery ( something less that FATAL on input errors )
+
+    - return last good ACT in warning message ...
+    - sender does what?
+   or
+    - QRY  (ask mum) - gets ACT number of QRY.
+    - report last good ACT by ACT number
+
             

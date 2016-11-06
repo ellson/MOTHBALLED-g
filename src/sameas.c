@@ -131,6 +131,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
                 *nextold = (*nextold)->u.l.next;
                 GRAPH->stat_sameas++;
             } else {
+                // e.g. :      a (b =)
                 token_error(TOKEN, "No corresponding object found for same-as substitution", si);
             }
             break;
