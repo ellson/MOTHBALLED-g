@@ -266,6 +266,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
             } else if (TOKEN->insi == BSL) {
                 TOKEN->in_quote = 2;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
+                TOKEN->has_bsl = 1;
                 continue;
             } else if (TOKEN->insi == NLL) {
                 break;
@@ -293,7 +294,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
             elem = new_frag(LIST, ABC, len, frag);
             slen += len;
         } else if (TOKEN->insi == AST) {
-            TOKEN->has_ast = 1;
+            TOKEN->has_ast = TOKEN->is_pattern = 1;
             frag = TOKEN->in;
             while ((TOKEN->insi = char2state[*++(TOKEN->in)]) == AST) {
             }    // extra '*' ignored
@@ -314,28 +315,35 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
 }
 
 static elem_t *
-token_pack_string(TOKEN_t *TOKEN, int slen, elem_t * elem) {
-    elem_t *new, *frag;
+token_pack_string(TOKEN_t *TOKEN, int slen, elem_t **fraglist) {
+    elem_t *new, *old, *frag;
+    unsigned char *src, *dst;
+    int i;
 
-    if (slen <= sizeof(((elem_t*)0)->u.s.str)) {
+    // string must be short and not with special AST or BSL fragments
+    if (slen <= sizeof(((elem_t*)0)->u.s.str)
+                && !TOKEN->has_ast && !TOKEN->has_bsl) {
         TOKEN->stat_instringshort++;
-#if 0
-        new = new_shortstr((LIST_t*)TOKEN, TOKEN->quote_state);
-        frag = elem;
+#if 1
+// FIXME has_ast, has_bsl  not working
+
+        new = *fraglist;
+        old = frag = new->u.l.first;
+        dst = new->u.s.str;
+        new->type = SHORTSTRELEM;
         while (frag) {
-            // copy chars here
+            for (i = frag->len, src = frag->u.f.frag; i; --i) {
+                *dst++ = *src++;
+            }
             frag = frag->u.f.next;
         }
-        free_list((LIST_t*)TOKEN, elem);
-        return new;
+        free_list((LIST_t*)TOKEN, old);
+        new->len = slen;
 #endif
-        elem->state = TOKEN->quote_state;
-        return elem;
     } else {
         TOKEN->stat_instringlong++;
-        elem->state = TOKEN->quote_state;
-        return elem;
     }
+    (*fraglist)->state = TOKEN->quote_state;
 }
 
 /**
@@ -346,24 +354,24 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t * elem) {
  * @return success/fail
  */
  
-success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist)
+success_t token_string(TOKEN_t * TOKEN, elem_t **fraglist)
 {
     int len, slen;
-// frags = 0;
 
+    TOKEN->has_ast = TOKEN->has_bsl = 0;
     TOKEN->quote_state = ABC;
-    slen = token_string_fragment(TOKEN, fraglist);    // leading string
+    slen = token_string_fragment(TOKEN, *fraglist);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        if ((len = token_string_fragment(TOKEN, fraglist)) == 0) {
+        if ((len = token_string_fragment(TOKEN, *fraglist)) == 0) {
             break;
         }
         slen += len;
     }
     if (slen > 0) {
-        token_pack_string(TOKEN, slen, fraglist);
+        token_pack_string(TOKEN, slen, fraglist); // may replace fraglist with a shortstr elem
         return SUCCESS;
     }
     return FAIL;
@@ -378,7 +386,7 @@ success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist)
  * @param fraglist
  * @return length of string
  */
-static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
+static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
 {
     LIST_t *LIST = (LIST_t *)TOKEN;
     unsigned char *frag;
@@ -402,6 +410,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
             } else if (TOKEN->insi == BSL) {
                 TOKEN->in_quote = 2;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
+                TOKEN->has_bsl = 1;
                 continue;
             } else if (TOKEN->insi == NLL) {
                 break;
@@ -440,9 +449,9 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
             elem = new_frag(LIST, ABC, len, frag);
             slen += len;
 
-        // but '*' are still special  (maybe used ias wild card in queries)
+        // but '*' are still special  (maybe used as wild card in queries)
         } else if (TOKEN->insi == AST) {
-            TOKEN->has_ast = 1;
+            TOKEN->has_ast = TOKEN->is_pattern = 1;
             frag = TOKEN->in;
             while ((TOKEN->insi = char2state[*++(TOKEN->in)]) == AST) {
             }    // extra '*' ignored
@@ -469,23 +478,24 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
  * @param fraglist
  * @return success/fail
  */
-success_t token_vstring(TOKEN_t * TOKEN, elem_t * fraglist)
+success_t token_vstring(TOKEN_t * TOKEN, elem_t **fraglist)
 {
     int len, slen;
 
+    TOKEN->has_ast = TOKEN->has_bsl = 0;
     TOKEN->quote_state = ABC;
-    slen = token_vstring_fragment(TOKEN, fraglist);    // leading string
+    slen = token_vstring_fragment(TOKEN, *fraglist);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        if ((len = token_vstring_fragment(TOKEN, fraglist)) == 0) {
+        if ((len = token_vstring_fragment(TOKEN, *fraglist)) == 0) {
             break;
         }
         slen += len;
     }
     if (slen > 0) {
-        token_pack_string(TOKEN, slen, fraglist);
+        token_pack_string(TOKEN, slen, fraglist); // may replace fraglist with a shortstr elem
         return SUCCESS;
     } 
     return FAIL;

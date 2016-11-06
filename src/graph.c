@@ -55,13 +55,13 @@ success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     char so;        // offset to next state, signed
     state_t ti, ni;
     success_t rc;
-    elem_t *branch = new_list(LIST, si);
+    elem_t *branch;
     static unsigned char nullstring[] = { '\0' };
 
 //E();
 
     rc = SUCCESS;
-
+    branch = new_list(LIST, si);
     nest++;
     assert(nest >= 0);            // catch overflows
 
@@ -106,13 +106,13 @@ success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
         break;
 
     case STRING:                  // Strings
-        rc = token_string(TOKEN, branch);
+        rc = token_string(TOKEN, &branch);
         TOKEN->bi = TOKEN->insi;  // the char class that terminates the STRING
         goto done;
         break;
 
     case VSTRING:                 // Value Strings
-        rc = token_vstring(TOKEN, branch);
+        rc = token_vstring(TOKEN, &branch);
         TOKEN->bi = TOKEN->insi;  // the char class that terminates the VSTRING
         goto done;
         break;
@@ -122,7 +122,7 @@ success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
         GRAPH->verb = 0;          // default "add"
         break;
     case SUBJECT:
-        TOKEN->has_ast = 0;       // maintain flag for '*' found anywhere in the subject
+        TOKEN->is_pattern = 0;  // maintain flag for '*' found anywhere in the subject
         GRAPH->need_mum = 0;    // maintain flag for any MUM involvement
         break;
     case MUM:
@@ -195,14 +195,6 @@ done: // State exit processing
         case VALASSIGN: // ignore VALASSIGN EQL, but keep VALUE
             append_addref(root, branch->u.l.first->u.l.next);
             break;
-#if 0
-// FIXME - something flakey about doing this
-//  enabling drops PORTID from 'd' and 'g' in: 
-//     <c:1 ^^/d:2/e:3 f:4/g:5/h:7>
-//
-        case KID:
-        case SIS:
-#endif
         case FAMILY:
         case RELATIVE:
         case PORT:

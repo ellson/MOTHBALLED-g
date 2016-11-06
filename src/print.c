@@ -101,7 +101,14 @@ static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
     if (*sep) {
         putc(*sep, chan);
     }
+    if (elem->state == DQT) {
+        putc('"', chan);
+    }
     print_one_frag(chan, elem->len, elem->u.s.str);
+    if (elem->state == DQT) {
+        putc('"', chan);
+    }
+    *sep = ' ';
 }
 
 /**
@@ -173,6 +180,8 @@ void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
             }
             break;
         case SHORTSTRELEM:
+            putc(' ', chan);
+            print_len_frag(chan, NAMEP(elem->state));
             print_shortstr(chan, elem, sep);
             break;
         case TREEELEM:

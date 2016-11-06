@@ -44,7 +44,7 @@ elem_t * pattern(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb)
     GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     elem_t *newsubjects;
 
-    if ((CONTAINER->is_pattern = ((TOKEN_t*)GRAPH)->has_ast)) {
+    if ((CONTAINER->is_pattern = ((TOKEN_t*)GRAPH)->is_pattern)) {
         GRAPH->stat_patternactcount++;
         assert(CONTAINER->subject_type == NODE || CONTAINER->subject_type == EDGE);
         pattern_update(CONTAINER, subject, verb);

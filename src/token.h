@@ -21,7 +21,9 @@ typedef struct {
     state_t state;             // last state entered
     state_t quote_state;       // ABC or DQT, DQT if STRING contains DQT fragments
     char in_quote;             // flag set if between "..."
+    char is_pattern;           // flag set if an '*' is found in any STRING in SUBJECT
     char has_ast;              // flag set if an '*' is found in a STRING
+    char has_bsl;              // flag set if an '\' is found in a STRING
     long linecount_at_start;   // activity line count when this file was opened.
     long stat_lfcount;
     long stat_crcount;
@@ -34,8 +36,8 @@ typedef struct {
 
 void token_error(TOKEN_t * TOKEN, char *message, state_t si);
 success_t token_whitespace(TOKEN_t * TOKEN);
-success_t token_string(TOKEN_t * TOKEN, elem_t * fraglist);
-success_t token_vstring(TOKEN_t * TOKEN, elem_t * fraglist);
+success_t token_string(TOKEN_t * TOKEN, elem_t **fraglist);
+success_t token_vstring(TOKEN_t * TOKEN, elem_t **fraglist);
 success_t token(TOKEN_t * TOKEN);
 
 #ifdef __cplusplus
