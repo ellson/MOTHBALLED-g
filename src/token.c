@@ -15,6 +15,8 @@
 #include "token.h"
 #include "print.h"
 
+#define LIST() ((LIST_t*)TOKEN)
+
 /**
  * report an error during parsing with context info.
  *
@@ -270,7 +272,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
                 TOKEN->in_quote = 1;
                 frag = TOKEN->in;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
-                elem = new_frag((LIST_t*)TOKEN, BSL, 1, frag);
+                elem = new_frag(LIST(), BSL, 1, frag);
                 slen++;
             } else if (TOKEN->insi == DQT) {
                 TOKEN->in_quote = 0;
@@ -294,7 +296,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
                     len++;
                 }
                 TOKEN->insi = insi;
-                elem = new_frag((LIST_t*)TOKEN, DQT, len, frag);
+                elem = new_frag(LIST(), DQT, len, frag);
                 slen += len;
             }
         } else if (TOKEN->insi == ABC) {
@@ -304,14 +306,14 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
                 len++;
             }
             TOKEN->insi = insi;
-            elem = new_frag((LIST_t*)TOKEN, ABC, len, frag);
+            elem = new_frag(LIST(), ABC, len, frag);
             slen += len;
         } else if (TOKEN->insi == AST) {
             TOKEN->has_ast = TOKEN->is_pattern = 1;
             frag = TOKEN->in;
             while ((TOKEN->insi = char2state[*++(TOKEN->in)]) == AST) {
             }    // extra '*' ignored
-            elem = new_frag((LIST_t*)TOKEN, AST, 1, frag);
+            elem = new_frag(LIST(), AST, 1, frag);
             slen++;
         } else if (TOKEN->insi == DQT) {
             TOKEN->in_quote = 1;
@@ -329,34 +331,37 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
 
 static elem_t *
 token_pack_string(TOKEN_t *TOKEN, int slen, elem_t **fraglist) {
-    elem_t *new, *old, *frag;
+    elem_t *new, *frag;
     unsigned char *src, *dst;
     int i;
 
     // string must be short and not with special AST or BSL fragments
     if (slen <= sizeof(((elem_t*)0)->u.s.str)
                 && !TOKEN->has_ast && !TOKEN->has_bsl) {
-        TOKEN->stat_instringshort++;
 #if 0
-// FIXME has_ast, has_bsl  not working
+        TOKEN->stat_instringshort++;
 
-        new = *fraglist;
-        old = frag = new->u.l.first;
+        new = new_shortstr(LIST(), TOKEN->quote_state, NULL);
         dst = new->u.s.str;
-        new->type = SHORTSTRELEM;
+        frag = (*fraglist)->u.l.first;
         while (frag) {
             for (i = frag->len, src = frag->u.f.frag; i; --i) {
                 *dst++ = *src++;
             }
             frag = frag->u.f.next;
         }
-        free_list((LIST_t*)TOKEN, old);
         new->len = slen;
+
+        free_list(LIST(), *fraglist);
+        *fraglist = new;
+#else
+        TOKEN->stat_instringlong++;
+        (*fraglist)->state = TOKEN->quote_state;
 #endif
     } else {
         TOKEN->stat_instringlong++;
+        (*fraglist)->state = TOKEN->quote_state;
     }
-    (*fraglist)->state = TOKEN->quote_state;
 }
 
 /**
@@ -413,7 +418,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
                 TOKEN->in_quote = 1;
                 frag = TOKEN->in;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
-                elem = new_frag((LIST_t*)TOKEN, BSL, 1, frag);
+                elem = new_frag(LIST(), BSL, 1, frag);
                 slen++;
             } else if (TOKEN->insi == DQT) {
                 TOKEN->in_quote = 0;
@@ -437,7 +442,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
                     len++;
                 }
                 TOKEN->insi = insi;
-                elem = new_frag((LIST_t*)TOKEN, DQT, len, frag);
+                elem = new_frag(LIST(), DQT, len, frag);
                 slen += len;
             }
         // In the unquoted portions of VSTRING we allow '/' '\' ':' '?'
@@ -458,7 +463,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
                 len++;
             }
             TOKEN->insi = insi;
-            elem = new_frag((LIST_t*)TOKEN, ABC, len, frag);
+            elem = new_frag(LIST(), ABC, len, frag);
             slen += len;
 
         // but '*' are still special  (maybe used as wild card in queries)
@@ -467,7 +472,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
             frag = TOKEN->in;
             while ((TOKEN->insi = char2state[*++(TOKEN->in)]) == AST) {
             }    // extra '*' ignored
-            elem = new_frag((LIST_t*)TOKEN, AST, 1, frag);
+            elem = new_frag(LIST(), AST, 1, frag);
             slen++;
         } else if (TOKEN->insi == DQT) {
             TOKEN->in_quote = 1;
