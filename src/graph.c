@@ -51,12 +51,14 @@ static success_t more_rep(TOKEN_t * TOKEN, unsigned char prop);
  *  @param repc sequence member counter
  *  @return SUCCESS or FAIL
  */
+
+#define TOKEN() ((TOKEN_t*)THREAD)
+#define LIST() ((LIST_t*)THREAD)
+#define INBUF() ((INBUF_t*)THREAD)
+
 success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
 {
     THREAD_t * THREAD = ((CONTAINER_t*)GRAPH)->THREAD;
-    TOKEN_t * TOKEN = (TOKEN_t*)THREAD;
-    LIST_t * LIST = (LIST_t*)THREAD;
-    INBUF_t * INBUF = (INBUF_t*)THREAD;
     unsigned char nprop;
     char so;        // offset to next state, signed
     state_t ti, ni;
@@ -67,59 +69,59 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
 //E();
 
     rc = SUCCESS;
-    branch = new_list(LIST, si);
+    branch = new_list(LIST(), si);
     nest++;
     assert(nest >= 0);            // catch overflows
 
-    if (!INBUF->inbuf) {          // state_machine just started
-        TOKEN->bi = WS;           // pretend preceeded by WS to satisfy toplevel SREP or REP
+    if (! INBUF()->inbuf) {          // state_machine just started
+        TOKEN()->bi = WS;           // pretend preceeded by WS to satisfy toplevel SREP or REP
                                   // (Note, first REP of a sequence *can* be preceeded
                                   // by WS, just not the rest of the REPs. )
-        TOKEN->in = nullstring;   // fake it;
-        TOKEN->insi = NLL;        // pretend last input was the EOF of a prior file.
+        TOKEN()->in = nullstring;   // fake it;
+        TOKEN()->insi = NLL;        // pretend last input was the EOF of a prior file.
     }
 
     // Entering state
-    TOKEN->state = si;            // record of last state entered, for error messages.
+    TOKEN()->state = si;            // record of last state entered, for error messages.
 
     // deal with "terminal" states: Whitespace, Tokens, and Contained activity, Strings
 
-    TOKEN->ei = TOKEN->insi;      // the char class that ended the last token
+    TOKEN()->ei = TOKEN()->insi;      // the char class that ended the last token
 
     // Whitespace
-    if ((rc = token_whitespace(TOKEN)) == FAIL) {
+    if ((rc = token_whitespace(TOKEN())) == FAIL) {
         goto done;                // EOF during whitespace
     }
 
     // Special character tokens
-    if (si == TOKEN->insi) {      // single character terminals matching
+    if (si == TOKEN()->insi) {      // single character terminals matching
                                   //  state_machine expectation
-        TOKEN->bi = TOKEN->insi;
-        rc = token(TOKEN);
-        TOKEN->ei = TOKEN->insi;
+        TOKEN()->bi = TOKEN()->insi;
+        rc = token(TOKEN());
+        TOKEN()->ei = TOKEN()->insi;
         goto done;
     }
 
     switch (si) {
     case ACTIVITY:                // Recursion into Contained activity
-        if (TOKEN->bi == LBE) {   // if not top-level of containment
-            TOKEN->bi = NLL;
+        if (TOKEN()->bi == LBE) {   // if not top-level of containment
+            TOKEN()->bi = NLL;
             // recursively process contained ACTIVITY in to its own root
             rc = container(THREAD);
-            TOKEN->bi = TOKEN->insi; // The char class that terminates the ACTIVITY
+            TOKEN()->bi = TOKEN()->insi; // The char class that terminates the ACTIVITY
             goto done;
         }
         break;
 
     case STRING:                  // Strings
-        rc = token_string(TOKEN, &branch);
-        TOKEN->bi = TOKEN->insi;  // the char class that terminates the STRING
+        rc = token_string(TOKEN(), &branch);
+        TOKEN()->bi = TOKEN()->insi;  // the char class that terminates the STRING
         goto done;
         break;
 
     case VSTRING:                 // Value Strings
-        rc = token_vstring(TOKEN, &branch);
-        TOKEN->bi = TOKEN->insi;  // the char class that terminates the VSTRING
+        rc = token_vstring(TOKEN(), &branch);
+        TOKEN()->bi = TOKEN()->insi;  // the char class that terminates the VSTRING
         goto done;
         break;
 
@@ -128,7 +130,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
         GRAPH->verb = 0;          // default "add"
         break;
     case SUBJECT:
-        TOKEN->is_pattern = 0;  // maintain flag for '*' found anywhere in the subject
+        TOKEN()->is_pattern = 0;  // maintain flag for '*' found anywhere in the subject
         GRAPH->need_mum = 0;    // maintain flag for any MUM involvement
         break;
     case MUM:
@@ -161,7 +163,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
             repc = 0;
             if (nprop & OPT) {          // OPTional
                 if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) == SUCCESS) {
-                    while (more_rep(TOKEN, nprop) == SUCCESS) {
+                    while (more_rep(TOKEN(), nprop) == SUCCESS) {
                         if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                             break;
                         }
@@ -172,7 +174,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
                 if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                     break;
                 }
-                while (more_rep(TOKEN, nprop) == SUCCESS) {
+                while (more_rep(TOKEN(), nprop) == SUCCESS) {
                     if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                         break;
                     }
@@ -227,7 +229,7 @@ done: // State exit processing
             break;
         }
     }
-    free_list(LIST, branch);
+    free_list(LIST(), branch);
     nest--;
     assert(nest >= 0);
 
