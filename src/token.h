@@ -16,7 +16,6 @@ struct token_s {
     FILE *out, *err;           // output files
     unsigned char *in;         // next character to be processed
     state_t insi;              // state represented by last character read
-    state_t ei;                // ei, bi are used to determine whitespace needs around STRINGs
     state_t bi;
     state_t state;             // last state entered
     state_t quote_state;       // ABC or DQT, DQT if STRING contains DQT fragments
