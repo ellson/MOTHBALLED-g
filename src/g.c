@@ -2,15 +2,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
 #include <unistd.h>
 #include <signal.h>
-#include <time.h>
-#include <sys/types.h>
 
-#include "types.h"
-#include "fatal.h" 
 #include "libg_session.h"
 
 // if interrupted we try to gracefully snapshot the current state 
@@ -39,7 +33,7 @@ int main(int argc, char *argv[])
         switch (opt) {
 #if 0
         case 'T':
-            if (select_emitter(optarg) == FAIL) {
+            if (select_emitter(optarg) != 0) {
                 fprintf(stderr, "No back-end found for format: -T%s\n", optarg);
                 exit(EXIT_FAILURE);
             }

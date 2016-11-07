@@ -90,7 +90,7 @@ libg_session_la_LIBADD = $(libg_session_C_la_LIBADD)
 
 bin_PROGRAMS = g g_static
 
-BUILT_SOURCES = grammar.h
+BUILT_SOURCES = grammar.h grammar.c
 
 g_SOURCES = g.c
 g_CPPFLAGS = 
@@ -100,9 +100,9 @@ g_static_SOURCES = g.c
 g_static_CPPFLAGS = 
 g_static_LDADD = libg_session_C.la @LIBS@
 
-grammar.h: grammar.c
+grammar.c: grammar.h
 
-grammar.c grammar.ebnf grammar.gv: grammar.g gacc.sh
+grammar.h grammar.ebnf grammar.gv: grammar.g gacc.sh
 	./gacc.sh grammar.g
 
 grammar.svg: grammar.gv

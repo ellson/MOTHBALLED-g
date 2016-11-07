@@ -1,7 +1,7 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#ifndef LIBJE_H
-#define LIBJE_H
+#ifndef LIBG_SESSION_H
+#define LIBG_SESSION_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,7 +11,7 @@ extern "C" {
 void session(int *pargc, char *argv[], int optind, char needstats);
 
 // emit.c
-success_t select_emitter(char *name);
+int select_emitter(char *name);
 
 // dumpg.c
 void set_sstyle( void );
