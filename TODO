@@ -9,8 +9,7 @@ DONE currenly fixed, + added assert to immediately detect new leaks
 -- maybe insert real: < > `
 
 4. breakout PARSE_t from CONTEXT_t
-DONE - renamed PARSE_t to THREAD_t
-     - and split out SESSION_t
+DONE - renamed PARSE_t to THREAD_t and split out SESSION_t
 
 5. common match code for patterns and queries
 
@@ -42,7 +41,7 @@ DUPLICATE with 16.
                      -- maybe treat as if stdin -- return results to stdout
 - return multiple results from applying a match
 - edge queries
-- meta queries:  ?^g ?^p  ?^s  ?^n    (graph, patterns, stats, net)
+- meta queries (crazy aunts):  ?^G ?^S ?^N ?^D    (grammar, stats, net, sync)
 
 10. persistence - ikea() idea seems ok
 - deal with container updates (11.)
@@ -50,10 +49,11 @@ DUPLICATE with 16.
 11. container updates
 - requires:
   1. reading in previous contents
-  2. updating,
-  3. saving and  computing new content hash
-  4. updating content hash in containing object
-  5. removing old contents iff no nonger referenced
+  2. verify that content matches contenthash (optional, maybe)
+  3. updating,
+  4. saving and  computing new contentx hash
+  5. updating contentx hash in containing object
+  6. removing old contents iff no nonger referenced
 
 12. ?? separate threads/processes for:
 	- layout computation
@@ -85,6 +85,7 @@ DUPLICATE with 16.
 
 15. Use SHORTSTR to replace FRAGLISTs whenever string length is short enough
     (Optimization of shorage and key matching in trees)
+PARTIALLY DONE - double frees elems
 
 16. Meta graphs:
       - grammar - Aunt Gudrun - devine knowledge
@@ -96,13 +97,14 @@ DUPLICATE with 16.
                 - also include version info.
 
       - graph - maybe no name
-           -- nodes
-           -- edges
+           -- nodes + attributes + edges?
+           -- edges + attribtes
            -- patterns
 
 17. THREAD stats  (maybe add to SESSION stats?)
 
 18. Extend grammar to enforce NOUNSET members to be all NODEs or all EDGEs
+TRIED but FAILED ...
 
 19. Try to eliminate elements like VALASSIGN
         ATTR ATTRID ABC abc
@@ -113,13 +115,13 @@ DUPLICATE with 16.
              VALUE ABC xyz 
 DONE - see state exit code in graph.c
 
-
 20. Error recovery ( something less that FATAL on input errors )
 
     - return last good ACT in warning message ...
     - sender does what?
    or
-    - QRY  (ask mum) - gets ACT number of QRY.
+    - QRY  (ask dottie) - gets ACT number of QRY, and id to match QRY itself
     - report last good ACT by ACT number
 
             
+21. may need EDGE trees per NODE to support navigational queries
