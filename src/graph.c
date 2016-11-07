@@ -47,20 +47,8 @@
  * maintains the input state.
  */
 
-/**
- * test for more repetitions
- *
- * @param prop properties from grammar
- * @param ei the state that terminated the previous token
- * @return 1 = more, 0 = no more
- */
-static int more_rep(unsigned char prop, state_t ei)
-{
-    if ((!(prop & (REP | SREP))) || ei == RPN || ei == RAN || ei == RBR || ei == RBE) {
-        return 0;       // no more repetitions
-    }
-    return 1;
-}
+#define MORE_REP(prop, ei) \
+    ((prop & (REP | SREP)) && ei != RPN && ei != RAN && ei != RBR && ei != RBE)
 
 /**
  * iterate and recurse through state-machine at a single level of containment
@@ -78,7 +66,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
     THREAD_t * THREAD = ((CONTAINER_t*)GRAPH)->THREAD;
     unsigned char nprop;
     char so;        // offset to next state, signed
-    state_t ti, ni;
+    state_t ti, ni, ei;
     success_t rc;
     elem_t *branch;
     static unsigned char nullstring[] = { '\0' };
@@ -103,7 +91,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
 
     // deal with "terminal" states: Whitespace, Tokens, and Contained activity, Strings
 
-    TOKEN()->ei = TOKEN()->insi;  // the char class that ended the last token
+    ei = TOKEN()->insi;  // the char class that ended the last token
 
     // Whitespace
     if ((rc = token_whitespace(TOKEN())) == FAIL) {
@@ -115,7 +103,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
                                   //  state_machine expectation
         TOKEN()->bi = TOKEN()->insi;
         rc = token(TOKEN());
-        TOKEN()->ei = TOKEN()->insi;
+        ei = TOKEN()->insi;
         goto done;
     }
 
@@ -180,7 +168,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
             repc = 0;
             if (nprop & OPT) {          // OPTional
                 if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) == SUCCESS) {
-                    while (more_rep(nprop, TOKEN()->ei)) {
+                    while (MORE_REP(nprop, ei)) {
                         if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                             break;
                         }
@@ -191,7 +179,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
                 if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                     break;
                 }
-                while (more_rep(nprop, TOKEN()->ei)) {
+                while (MORE_REP(nprop, ei)) {
                     if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                         break;
                     }
