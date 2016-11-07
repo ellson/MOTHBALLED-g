@@ -9,6 +9,7 @@
 #include "thread.h"
 #include "container.h"
 #include "info.h"
+#include "session.h"
 
 /**
  * parse G syntax input

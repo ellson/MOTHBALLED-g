@@ -23,6 +23,7 @@
 #endif
 #endif
 
+#include "types.h"
 #include "fatal.h"
 #include "inbuf.h"
 #include "list.h"

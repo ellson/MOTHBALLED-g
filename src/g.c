@@ -9,9 +9,9 @@
 #include <time.h>
 #include <sys/types.h>
 
-#include "success.h"
-#include "libg_session.h"
+#include "types.h"
 #include "fatal.h" 
+#include "libg_session.h"
 
 // if interrupted we try to gracefully snapshot the current state 
 static void intr(int s)

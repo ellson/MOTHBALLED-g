@@ -5,6 +5,10 @@
 #include <openssl/evp.h>
 #include <assert.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "thread.h"
 #include "sslhash.h"
 

@@ -3,10 +3,6 @@
 #ifndef SSLHASH_H
 #define SSLHASH_H
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif

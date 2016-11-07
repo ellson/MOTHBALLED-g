@@ -24,6 +24,7 @@
 #endif
 
 #include "thread.h"
+#include "session.h"
 #include "info.h"
 
 #define BUF_SIZE 2048
@@ -87,9 +88,9 @@ char * info_session(CONTAINER_t * CONTAINER)
     Au("elemsize",              sizeof(elem_t));
     As("hostname",              SESSION->hostname);
     Au("inbufcapacity",         INBUFIZE);
-    Au("inbufmallocsize",       INBUFALLOCNUM * sizeof(inbuf_t));
+    Au("inbufmallocsize",       INBUFALLOCNUM * sizeof(inbufelem_t));
     Au("inbufpermalloc",        INBUFALLOCNUM);
-    Au("inbufsize",             sizeof(inbuf_t));
+    Au("inbufsize",             sizeof(inbufelem_t));
     As("osmachine",             SESSION->osmachine);
     As("osname",                SESSION->osname);
     As("osrelease",             SESSION->osrelease);
@@ -148,7 +149,7 @@ char * info_stats(CONTAINER_t * CONTAINER)
             - (SESSION->uptime * TEN9 + SESSION->uptime_nsec);
 #endif
 
-    itot = INBUF->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbuf_t);
+    itot = INBUF->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbufelem_t);
     etot = LIST->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
     lend = (TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount);
     istr = TOKEN->stat_instringshort + TOKEN->stat_instringlong; 

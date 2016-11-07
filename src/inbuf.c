@@ -4,6 +4,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "types.h"
 #include "fatal.h"
 #include "inbuf.h"
 
@@ -12,14 +13,14 @@
  *
  * @param INBUF context
  */
-inbuf_t * new_inbuf(INBUF_t *INBUF)
+inbufelem_t * new_inbuf(INBUF_t *INBUF)
 {
-    inbuf_t *inbuf, *next;
+    inbufelem_t *inbuf, *next;
     int i;
 
     if (!INBUF->free_inbuf_list) {    // if no inbufs in free_inbuf_list
 
-        INBUF->free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbuf_t));
+        INBUF->free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbufelem_t));
         if (!INBUF->free_inbuf_list) 
             FATAL("malloc()");
         INBUF->stat_inbufmalloc++;
@@ -53,7 +54,7 @@ inbuf_t * new_inbuf(INBUF_t *INBUF)
  * @param INBUF context
  * @param inbuf
  */
-void free_inbuf(INBUF_t * INBUF, inbuf_t * inbuf)
+void free_inbuf(INBUF_t * INBUF, inbufelem_t * inbuf)
 {
     assert(inbuf);
 

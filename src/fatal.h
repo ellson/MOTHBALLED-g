@@ -7,6 +7,7 @@
 extern "C" {
 #endif
 
+// functions
 void fatal(const char *file, int line, const char *format, ...);
 
 #define FATAL(...) {fatal(__FILE__, __LINE__, __VA_ARGS__);}

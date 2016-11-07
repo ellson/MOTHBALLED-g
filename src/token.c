@@ -7,12 +7,13 @@
 #include <string.h>
 #include <assert.h>
 
+#include "types.h"
 #include "fatal.h"
 #include "inbuf.h"
 #include "list.h"
-#include "success.h"
 #include "grammar.h"
 #include "token.h"
+#include "print.h"
 
 /**
  * report an error during parsing with context info.
@@ -126,7 +127,7 @@ static success_t token_more_in(TOKEN_t * TOKEN)
     // slurp in data from file stream
     size = fread(TOKEN->in, 1, &(INBUF->inbuf->end_of_buf) - TOKEN->in, TOKEN->file);
     TOKEN->in[size] = '\0';    // ensure terminated (we have an extras
-    //    character in inbuf_t for this )
+    //    character in inbuf for this )
     TOKEN->insi = char2state[*TOKEN->in];
 
     TOKEN->stat_incharcount += size;
@@ -337,7 +338,7 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t **fraglist) {
     if (slen <= sizeof(((elem_t*)0)->u.s.str)
                 && !TOKEN->has_ast && !TOKEN->has_bsl) {
         TOKEN->stat_instringshort++;
-#if 1
+#if 0
 // FIXME has_ast, has_bsl  not working
 
         new = *fraglist;

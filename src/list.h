@@ -14,7 +14,6 @@ typedef enum {
     TREEELEM = 3
 } elemtype_t;
 
-typedef struct elem_s elem_t;
 struct elem_s { 
     union {
         struct {
@@ -24,7 +23,7 @@ struct elem_s {
         } l;
         struct {
             elem_t *next;          // next frag in fraglist list
-            inbuf_t *inbuf;        // inbuf containing frag - for memory management
+            inbufelem_t *inbuf;    // inbuf containing frag - for memory management
             unsigned char *frag;   // pointer to beginning of frag
         } f;
         struct {
@@ -45,7 +44,7 @@ struct elem_s {
                             //  size of the struct
 };
 
-typedef struct {            // LIST context
+struct list_s {             // LIST context
     INBUF_t INBUF;          // INBUF context, may be cast from LIST
     elem_t *free_elem_list; // linked list of unused list elems
     long stat_elemmax;      // list stats
@@ -53,10 +52,11 @@ typedef struct {            // LIST context
     long stat_elemmalloc;
     long stat_fragnow;
     long stat_fragmax;
-} LIST_t;
+};
 
 #define LISTALLOCNUM 512
 
+// functions
 elem_t *new_list(LIST_t * LIST, char state);
 elem_t *new_tree(LIST_t * LIST, elem_t *key);
 elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag);

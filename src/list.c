@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <assert.h>
 
+#include "types.h"
 #include "fatal.h"
 #include "inbuf.h"
 #include "list.h"

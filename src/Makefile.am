@@ -30,10 +30,10 @@ noinst_HEADERS = \
     reduce.h \
     sameas.h \
     session.h \
-    success.h \
     thread.h \
     token.h \
-    tree.h
+    tree.h \
+    types.h
 
 #    emit.h \
 #    emit_act.h \

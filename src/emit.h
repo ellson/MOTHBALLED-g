@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-#include "thread.h"
-
 // emit styles
 typedef enum {
      MINIMUM_SPACE_STYLE = 0,

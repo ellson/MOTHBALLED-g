@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-typedef struct {
+struct token_s {
     LIST_t LIST;               // LIST context. Maybe cast from TOKEN 
     int *pargc;                // remaining filenames from command line
     char **argv;
@@ -32,7 +32,7 @@ typedef struct {
     long stat_instringshort;
     long stat_instringlong;
     long stat_infilecount;       // various stats
-} TOKEN_t;
+};
 
 void token_error(TOKEN_t * TOKEN, char *message, state_t si);
 success_t token_whitespace(TOKEN_t * TOKEN);

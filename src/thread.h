@@ -7,15 +7,10 @@
 extern "C" {
 #endif
 
-typedef struct graph_s GRAPH_t;
-typedef struct container_s CONTAINER_t;
-typedef struct thread_s THREAD_t;
-typedef struct session_s SESSION_t;
-
+#include "types.h"
 #include "fatal.h"
 #include "inbuf.h"
 #include "list.h"
-#include "success.h"
 #include "grammar.h"
 #include "token.h"
 #include "ikea.h"

@@ -7,9 +7,6 @@
 extern "C" {
 #endif
 
-typedef struct ikea_store_s ikea_store_t;
-typedef struct ikea_box_s ikea_box_t;
-
 ikea_store_t * ikea_store_open( const char * oldstore );
 void ikea_store_snapshot ( ikea_store_t *ikea_store );
 void ikea_store_restore ( ikea_store_t *ikea_store );
