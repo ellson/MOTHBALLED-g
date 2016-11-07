@@ -338,7 +338,7 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t **fraglist) {
     // string must be short and not with special AST or BSL fragments
     if (slen <= sizeof(((elem_t*)0)->u.s.str)
                 && !TOKEN->has_ast && !TOKEN->has_bsl) {
-#if 1
+#if 0
         TOKEN->stat_instringshort++;
 
         new = new_shortstr(LIST(), TOKEN->quote_state, NULL);
@@ -530,30 +530,4 @@ success_t token(TOKEN_t * TOKEN)
 {
     TOKEN->insi = char2state[*++(TOKEN->in)];
     return SUCCESS;
-}
-
-/**
- * test for more repetitions
- *
- * @param TOKEN context
- * @param prop properties from grammar
- * @return success = more, fail - no more
- */
-success_t token_more_rep(TOKEN_t * TOKEN, unsigned char prop)
-{
-    state_t ei, bi;
-
-    if (!(prop & (REP | SREP))) {
-        return FAIL;
-    }
-    ei = TOKEN->ei;
-    if (ei == RPN || ei == RAN || ei == RBR || ei == RBE) {
-        return FAIL;       // no more repetitions
-    }
-    bi = TOKEN->bi;
-    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE
-        || (ei != ABC && ei != AST && ei != DQT)) {
-        return SUCCESS;    // more repetitions, but additional WS sep is optional
-    }
-    return SUCCESS;        // more repetitions
 }

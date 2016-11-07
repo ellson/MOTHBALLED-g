@@ -48,6 +48,21 @@
  */
 
 /**
+ * test for more repetitions
+ *
+ * @param prop properties from grammar
+ * @param ei the state that terminated the previous token
+ * @return 1 = more, 0 = no more
+ */
+static int more_rep(unsigned char prop, state_t ei)
+{
+    if ((!(prop & (REP | SREP))) || ei == RPN || ei == RAN || ei == RBR || ei == RBE) {
+        return 0;       // no more repetitions
+    }
+    return 1;
+}
+
+/**
  * iterate and recurse through state-machine at a single level of containment
  *
  *  @param GRAPH context
@@ -75,20 +90,20 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
     nest++;
     assert(nest >= 0);            // catch overflows
 
-    if (! INBUF()->inbuf) {          // state_machine just started
-        TOKEN()->bi = WS;           // pretend preceeded by WS to satisfy toplevel SREP or REP
+    if (! INBUF()->inbuf) {       // state_machine just started
+        TOKEN()->bi = WS;         // pretend preceeded by WS to satisfy toplevel SREP or REP
                                   // (Note, first REP of a sequence *can* be preceeded
                                   // by WS, just not the rest of the REPs. )
-        TOKEN()->in = nullstring;   // fake it;
-        TOKEN()->insi = NLL;        // pretend last input was the EOF of a prior file.
+        TOKEN()->in = nullstring; // fake it;
+        TOKEN()->insi = NLL;      // pretend last input was the EOF of a prior file.
     }
 
     // Entering state
-    TOKEN()->state = si;            // record of last state entered, for error messages.
+    TOKEN()->state = si;          // record of last state entered, for error messages.
 
     // deal with "terminal" states: Whitespace, Tokens, and Contained activity, Strings
 
-    TOKEN()->ei = TOKEN()->insi;      // the char class that ended the last token
+    TOKEN()->ei = TOKEN()->insi;  // the char class that ended the last token
 
     // Whitespace
     if ((rc = token_whitespace(TOKEN())) == FAIL) {
@@ -96,7 +111,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
     }
 
     // Special character tokens
-    if (si == TOKEN()->insi) {      // single character terminals matching
+    if (si == TOKEN()->insi) {    // single character terminals matching
                                   //  state_machine expectation
         TOKEN()->bi = TOKEN()->insi;
         rc = token(TOKEN());
@@ -165,7 +180,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
             repc = 0;
             if (nprop & OPT) {          // OPTional
                 if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) == SUCCESS) {
-                    while (token_more_rep(TOKEN(), nprop) == SUCCESS) {
+                    while (more_rep(nprop, TOKEN()->ei)) {
                         if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                             break;
                         }
@@ -176,7 +191,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
                 if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                     break;
                 }
-                while (token_more_rep(TOKEN(), nprop) == SUCCESS) {
+                while (more_rep(nprop, TOKEN()->ei)) {
                     if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                         break;
                     }
