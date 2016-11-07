@@ -9,9 +9,6 @@
 #include "thread.h"
 #include "doact.h"
 
-// forward declarations
-static success_t more_rep(TOKEN_t * TOKEN, unsigned char prop);
-
 // FIXME - doxygen doesn't like this ASCII diagram
 //            -- special  mean of trailing | ???
 
@@ -163,7 +160,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
             repc = 0;
             if (nprop & OPT) {          // OPTional
                 if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) == SUCCESS) {
-                    while (more_rep(TOKEN(), nprop) == SUCCESS) {
+                    while (token_more_rep(TOKEN(), nprop) == SUCCESS) {
                         if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                             break;
                         }
@@ -174,7 +171,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
                 if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                     break;
                 }
-                while (more_rep(TOKEN(), nprop) == SUCCESS) {
+                while (token_more_rep(TOKEN(), nprop) == SUCCESS) {
                     if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                         break;
                     }
@@ -235,30 +232,4 @@ done: // State exit processing
 
 //E();
     return rc;
-}
-
-/**
- * test for more repetitions
- *
- * @param TOKEN context
- * @param prop properties from grammar
- * @return success = more, fail - no more
- */
-static success_t more_rep(TOKEN_t * TOKEN, unsigned char prop)
-{
-    state_t ei, bi;
-
-    if (!(prop & (REP | SREP))) {
-        return FAIL;
-    }
-    ei = TOKEN->ei;
-    if (ei == RPN || ei == RAN || ei == RBR || ei == RBE) {
-        return FAIL;       // no more repetitions
-    }
-    bi = TOKEN->bi;
-    if (bi == RPN || bi == RAN || bi == RBR || bi == RBE
-        || (ei != ABC && ei != AST && ei != DQT)) {
-        return SUCCESS;    // more repetitions, but additional WS sep is optional
-    }
-    return SUCCESS;        // more repetitions
 }
