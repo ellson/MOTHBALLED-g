@@ -329,7 +329,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
     return slen;
 }
 
-static elem_t *
+static void
 token_pack_string(TOKEN_t *TOKEN, int slen, elem_t **fraglist) {
     elem_t *new, *frag;
     unsigned char *src, *dst;
@@ -352,7 +352,9 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t **fraglist) {
         }
         new->len = slen;
 
+        // FIXME - some problem with double freeing of this ???
         free_list(LIST(), *fraglist);
+
         *fraglist = new;
 #else
         TOKEN->stat_instringlong++;
