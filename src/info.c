@@ -48,6 +48,12 @@
      append_ulong   (THREAD, &pos, valu); \
 }
 
+#define TOKEN() ((TOKEN_t*)THREAD)
+#define LIST() ((LIST_t*)THREAD)
+#define INBUF() ((INBUF_t*)THREAD)
+
+#define GRAPH() ((GRAPH_t*)CONTAINER)
+
 /**
  * The info is formatted into a buffer using minimal
  * spacing g format
@@ -110,17 +116,13 @@ char * info_session(CONTAINER_t * CONTAINER)
 /**
  * format running stats as a string
  *
- * @param THREAD context
+ * @param CONTAINER context
  * @return formatted string
  */
 char * info_stats(CONTAINER_t * CONTAINER)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     SESSION_t *SESSION = THREAD->SESSION;
-    TOKEN_t *TOKEN = (TOKEN_t*)THREAD;
-    LIST_t *LIST = (LIST_t*)TOKEN;
-    INBUF_t *INBUF = (INBUF_t*)LIST;
     uint64_t runtime, lend, itot, etot, istr;
     char percent[6];
 
@@ -149,11 +151,11 @@ char * info_stats(CONTAINER_t * CONTAINER)
             - (SESSION->uptime * TEN9 + SESSION->uptime_nsec);
 #endif
 
-    itot = INBUF->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbufelem_t);
-    etot = LIST->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
-    lend = (TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount);
-    istr = TOKEN->stat_instringshort + TOKEN->stat_instringlong; 
-    sprintf(percent,"%d%%", (TOKEN->stat_instringshort * 100)/ istr);
+    itot = INBUF()->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbufelem_t);
+    etot = LIST()->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
+    lend = (TOKEN()->stat_lfcount ? TOKEN()->stat_lfcount : TOKEN()->stat_crcount);
+    istr = TOKEN()->stat_instringshort + TOKEN()->stat_instringlong; 
+    sprintf(percent,"%d%%", (TOKEN()->stat_instringshort * 100)/ istr);
   
     // write in canonical g format
     // - minimal spacing - one SUBJECT per line
@@ -162,36 +164,36 @@ char * info_stats(CONTAINER_t * CONTAINER)
     THREAD->sep = '\0';
     append_string  (THREAD, &pos, "stats_running");
     append_token   (THREAD, &pos, '[');
-    Au("charpersecond",         TOKEN->stat_incharcount+TEN9/runtime);
+    Au("charpersecond",         TOKEN()->stat_incharcount+TEN9/runtime);
     Au("containcount",          THREAD->stat_containcount);
     Au("containdepth",          THREAD->stat_containdepth);
     Au("containdepthmax",       THREAD->stat_containdepthmax);
-    Au("elemmalloccount",       LIST->stat_elemmalloc);
+    Au("elemmalloccount",       LIST()->stat_elemmalloc);
     Au("elemmalloctotal",       etot);
-    Au("elemmax",               LIST->stat_elemmax);
-    Au("elemnow",               LIST->stat_elemnow);
-    Au("fragmax",               LIST->stat_fragmax);
-    Au("fragnow",               LIST->stat_fragnow);
-    Au("inbufmalloccount",      INBUF->stat_inbufmalloc);
+    Au("elemmax",               LIST()->stat_elemmax);
+    Au("elemnow",               LIST()->stat_elemnow);
+    Au("fragmax",               LIST()->stat_fragmax);
+    Au("fragnow",               LIST()->stat_fragnow);
+    Au("inbufmalloccount",      INBUF()->stat_inbufmalloc);
     Au("inbufmalloctotal",      itot);
-    Au("inbufmax",              INBUF->stat_inbufmax);
-    Au("inbufnow",              INBUF->stat_inbufnow);
-    Au("inactcount",            GRAPH->stat_inactcount);
-    Au("inactpatterns",         GRAPH->stat_patternactcount);
-    Au("inactnonpatterns",      GRAPH->stat_nonpatternactcount);
-    Au("inactspersecond",       GRAPH->stat_inactcount*TEN9/runtime);
-    Au("incharcount",           TOKEN->stat_incharcount);
-    Au("infragcount",           TOKEN->stat_infragcount);
-    Au("infilecount",           TOKEN->stat_infilecount);
+    Au("inbufmax",              INBUF()->stat_inbufmax);
+    Au("inbufnow",              INBUF()->stat_inbufnow);
+    Au("inactcount",            GRAPH()->stat_inactcount);
+    Au("inactpatterns",         GRAPH()->stat_patternactcount);
+    Au("inactnonpatterns",      GRAPH()->stat_nonpatternactcount);
+    Au("inactspersecond",       GRAPH()->stat_inactcount*TEN9/runtime);
+    Au("incharcount",           TOKEN()->stat_incharcount);
+    Au("infragcount",           TOKEN()->stat_infragcount);
+    Au("infilecount",           TOKEN()->stat_infilecount);
     Au("inlinecount",           lend + 1);
     Au("instringcount",         istr);
     As("instringshort",         percent);
     Au("malloctotal",           itot+etot);
     Au("nowtime",               nowtime.tv_sec);
-    Au("outactcount",           GRAPH->stat_outactcount);
-    Au("patternmatches",        GRAPH->stat_patternmatches);
+    Au("outactcount",           GRAPH()->stat_outactcount);
+    Au("patternmatches",        GRAPH()->stat_patternmatches);
     Ar("runtime",               runtime/TEN9, runtime%TEN9);
-    Au("sameas",                GRAPH->stat_sameas);
+    Au("sameas",                GRAPH()->stat_sameas);
     append_token   (THREAD, &pos, ']');
 
     assert(pos < buf+BUF_SIZE);
