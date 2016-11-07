@@ -12,11 +12,9 @@ static void
 sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * newlist);
 
 /**
- * rewrite subject into a newsubject
- * compare subject with oldsubject
- * substitue EQL in newsubject from corresponding member of
- *   oldsubject (or error if old not available)
- *      replace subject and oldsubject with newsubject
+ * Replace subject with a newsubject in which all EQL have
+ * beeb substitued from the previous_subject, and save the newsubject
+ * as the previous_subject for next time.
  *
  * @param CONTAINER container context
  * @param subject a subject tree from the parser (may be multiple object with same attributes)
@@ -25,8 +23,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
 elem_t *
 sameas(CONTAINER_t * CONTAINER, elem_t * subject)
 {
-    THREAD_t * THREAD = CONTAINER->THREAD;
-    LIST_t * LIST = (LIST_t *)THREAD;
+    LIST_t * LIST = (LIST_t *)(CONTAINER->THREAD);
     elem_t *nextold, *newsubject;
 
 //E();
@@ -67,10 +64,7 @@ sameas(CONTAINER_t * CONTAINER, elem_t * subject)
 static void
 sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * newlist)
 {
-    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
-    THREAD_t * THREAD = CONTAINER->THREAD;
-    TOKEN_t * TOKEN = (TOKEN_t *)THREAD;
-    LIST_t * LIST = (LIST_t *)TOKEN;
+    LIST_t * LIST = (LIST_t *)(CONTAINER->THREAD);
     elem_t *elem, *new, *nextoldelem = NULL;
     elem_t *object;
     state_t si;
@@ -92,9 +86,11 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
                     // all members of the SUBJECT must be of the same type: NODE or EDGE
                     // (this is really a shortcut to avoid extra productions in the grammar)
                     if (si == NODE) {
-                        token_error(TOKEN, "EDGE subject includes", si);
+                        token_error((TOKEN_t*)LIST,
+                                "EDGE subject includes", si);
                     } else {
-                        token_error(TOKEN, "NODE subject includes", si);
+                        token_error((TOKEN_t*)LIST,
+                                "NODE subject includes", si);
                     }
                 }
             }
@@ -129,10 +125,11 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
                 new = ref_list(LIST, *nextold);
                 append_transfer(newlist, new);
                 *nextold = (*nextold)->u.l.next;
-                GRAPH->stat_sameas++;
+                ((GRAPH_t*)CONTAINER)->stat_sameas++;
             } else {
                 // e.g. :      a (b =)
-                token_error(TOKEN, "No corresponding object found for same-as substitution", si);
+                token_error((TOKEN_t*)LIST,
+                        "No corresponding object found for same-as substitution", si);
             }
             break;
         default:

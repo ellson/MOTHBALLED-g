@@ -21,8 +21,6 @@ struct container_s {            // CONTAINER context
     elem_t *edges;              // tree of unique edges
 
     ikea_box_t *ikea_box;       // box for these contents
-//
-
 };
 
 // functions
