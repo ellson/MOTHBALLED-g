@@ -59,9 +59,10 @@
  *  @param prop grammar properties
  *  @param nest recursion nesting level (containment level)
  *  @param repc sequence member counter
+ *  @param bi from state
  *  @return SUCCESS or FAIL
  */
-success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
+success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, int nest, int repc, state_t bi)
 {
     THREAD_t * THREAD = ((CONTAINER_t*)GRAPH)->THREAD;
     unsigned char nprop;
@@ -79,7 +80,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
     assert(nest >= 0);            // catch overflows
 
     if (! INBUF()->inbuf) {       // state_machine just started
-        TOKEN()->bi = WS;         // pretend preceeded by WS to satisfy toplevel SREP or REP
+        bi = WS;                  // pretend preceeded by WS to satisfy toplevel SREP or REP
                                   // (Note, first REP of a sequence *can* be preceeded
                                   // by WS, just not the rest of the REPs. )
         TOKEN()->in = nullstring; // fake it;
@@ -87,7 +88,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
     }
 
     // Entering state
-    TOKEN()->state = si;          // record of last state entered, for error messages.
+    TOKEN()->state = bi;          // record of last state entered, for error messages.
 
     // deal with "terminal" states: Whitespace, Tokens, and Contained activity, Strings
 
@@ -101,32 +102,30 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
     // Special character tokens
     if (si == TOKEN()->insi) {    // single character terminals matching
                                   //  state_machine expectation
-        TOKEN()->bi = TOKEN()->insi;
-        rc = token(TOKEN());
-        ei = TOKEN()->insi;
+        bi = TOKEN()->insi;
+        ei = token(TOKEN());
         goto done;
     }
 
     switch (si) {
-    case ACTIVITY:                // Recursion into Contained activity
-        if (TOKEN()->bi == LBE) {   // if not top-level of containment
-            TOKEN()->bi = NLL;
+    case ACTIVITY:         // Recursion into Contained activity
+        if (bi == LBE) {   // if not top-level of containment
             // recursively process contained ACTIVITY in to its own root
             rc = container(THREAD);
-            TOKEN()->bi = TOKEN()->insi; // The char class that terminates the ACTIVITY
+            bi = TOKEN()->insi; // The char class that terminates the ACTIVITY
             goto done;
         }
         break;
 
     case STRING:                  // Strings
         rc = token_string(TOKEN(), &branch);
-        TOKEN()->bi = TOKEN()->insi;  // the char class that terminates the STRING
+        bi = TOKEN()->insi;  // the char class that terminates the STRING
         goto done;
         break;
 
     case VSTRING:                 // Value Strings
         rc = token_vstring(TOKEN(), &branch);
-        TOKEN()->bi = TOKEN()->insi;  // the char class that terminates the VSTRING
+        bi = TOKEN()->insi;  // the char class that terminates the VSTRING
         goto done;
         break;
 
@@ -160,27 +159,27 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            if ((rc = graph(GRAPH, branch, ni, nprop, nest, 0)) == SUCCESS) {
+            if ((rc = graph(GRAPH, branch, ni, nprop, nest, 0, bi)) == SUCCESS) {
                 break;                  // ALT satisfied
             }
             // we failed an ALT so continue iteration to try next ALT
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) == SUCCESS) {
+                if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++, bi)) == SUCCESS) {
                     while (MORE_REP(nprop, ei)) {
-                        if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                        if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                             break;
                         }
                     }
                 }
                 rc = SUCCESS;           // OPTs always successful
             } else {                    // else not OPTional, at least one is mandatory
-                if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                     break;
                 }
                 while (MORE_REP(nprop, ei)) {
-                    if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                    if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                         break;
                     }
                 }

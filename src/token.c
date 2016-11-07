@@ -524,10 +524,9 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t **fraglist)
  * process single character tokens
  *
  * @param TOKEN context
- * @return success/fail
+ * @return the state of the character just read
  */
-success_t token(TOKEN_t * TOKEN)
+state_t token(TOKEN_t * TOKEN)
 {
-    TOKEN->insi = char2state[*++(TOKEN->in)];
-    return SUCCESS;
+    return (TOKEN->insi = char2state[*++(TOKEN->in)]);
 }

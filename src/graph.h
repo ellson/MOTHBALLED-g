@@ -28,7 +28,7 @@ struct graph_s {               // GRAPH context
 };
 
 // functions
-success_t graph(GRAPH_t * GRAPH, elem_t * root, state_t si, unsigned char prop, int nest, int repc);
+success_t graph(GRAPH_t * GRAPH, elem_t * root, state_t si, unsigned char prop, int nest, int repc, state_t bi);
 
 #ifdef __cplusplus
 }

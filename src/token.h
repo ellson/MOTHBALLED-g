@@ -16,7 +16,6 @@ struct token_s {
     FILE *out, *err;           // output files
     unsigned char *in;         // next character to be processed
     state_t insi;              // state represented by last character read
-    state_t bi;
     state_t state;             // last state entered
     state_t quote_state;       // ABC or DQT, DQT if STRING contains DQT fragments
     char in_quote;             // flag set if between "..."
@@ -37,7 +36,7 @@ void token_error(TOKEN_t * TOKEN, char *message, state_t si);
 success_t token_whitespace(TOKEN_t * TOKEN);
 success_t token_string(TOKEN_t * TOKEN, elem_t **fraglist);
 success_t token_vstring(TOKEN_t * TOKEN, elem_t **fraglist);
-success_t token(TOKEN_t * TOKEN);
+state_t token(TOKEN_t * TOKEN);
 
 #ifdef __cplusplus
 }
