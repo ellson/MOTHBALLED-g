@@ -258,7 +258,6 @@ success_t token_whitespace(TOKEN_t * TOKEN)
  */
 static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
 {
-    LIST_t *LIST = (LIST_t *)TOKEN;
     unsigned char *frag;
     state_t insi;
     int slen, len;
@@ -271,7 +270,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
                 TOKEN->in_quote = 1;
                 frag = TOKEN->in;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
-                elem = new_frag(LIST, BSL, 1, frag);
+                elem = new_frag((LIST_t*)TOKEN, BSL, 1, frag);
                 slen++;
             } else if (TOKEN->insi == DQT) {
                 TOKEN->in_quote = 0;
@@ -295,7 +294,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
                     len++;
                 }
                 TOKEN->insi = insi;
-                elem = new_frag(LIST, DQT, len, frag);
+                elem = new_frag((LIST_t*)TOKEN, DQT, len, frag);
                 slen += len;
             }
         } else if (TOKEN->insi == ABC) {
@@ -305,14 +304,14 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
                 len++;
             }
             TOKEN->insi = insi;
-            elem = new_frag(LIST, ABC, len, frag);
+            elem = new_frag((LIST_t*)TOKEN, ABC, len, frag);
             slen += len;
         } else if (TOKEN->insi == AST) {
             TOKEN->has_ast = TOKEN->is_pattern = 1;
             frag = TOKEN->in;
             while ((TOKEN->insi = char2state[*++(TOKEN->in)]) == AST) {
             }    // extra '*' ignored
-            elem = new_frag(LIST, AST, 1, frag);
+            elem = new_frag((LIST_t*)TOKEN, AST, 1, frag);
             slen++;
         } else if (TOKEN->insi == DQT) {
             TOKEN->in_quote = 1;
@@ -402,7 +401,6 @@ success_t token_string(TOKEN_t * TOKEN, elem_t **fraglist)
  */
 static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
 {
-    LIST_t *LIST = (LIST_t *)TOKEN;
     unsigned char *frag;
     state_t insi;
     int slen, len;
@@ -415,7 +413,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
                 TOKEN->in_quote = 1;
                 frag = TOKEN->in;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
-                elem = new_frag(LIST, BSL, 1, frag);
+                elem = new_frag((LIST_t*)TOKEN, BSL, 1, frag);
                 slen++;
             } else if (TOKEN->insi == DQT) {
                 TOKEN->in_quote = 0;
@@ -439,7 +437,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
                     len++;
                 }
                 TOKEN->insi = insi;
-                elem = new_frag(LIST, DQT, len, frag);
+                elem = new_frag((LIST_t*)TOKEN, DQT, len, frag);
                 slen += len;
             }
         // In the unquoted portions of VSTRING we allow '/' '\' ':' '?'
@@ -460,7 +458,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
                 len++;
             }
             TOKEN->insi = insi;
-            elem = new_frag(LIST, ABC, len, frag);
+            elem = new_frag((LIST_t*)TOKEN, ABC, len, frag);
             slen += len;
 
         // but '*' are still special  (maybe used as wild card in queries)
@@ -469,7 +467,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
             frag = TOKEN->in;
             while ((TOKEN->insi = char2state[*++(TOKEN->in)]) == AST) {
             }    // extra '*' ignored
-            elem = new_frag(LIST, AST, 1, frag);
+            elem = new_frag((LIST_t*)TOKEN, AST, 1, frag);
             slen++;
         } else if (TOKEN->insi == DQT) {
             TOKEN->in_quote = 1;

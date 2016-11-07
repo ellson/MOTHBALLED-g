@@ -12,35 +12,38 @@
 // forward declarations
 static success_t more_rep(TOKEN_t * TOKEN, unsigned char prop);
 
-/** ********************************************************
- * parse G syntax input                                    *
- *                                                         *
- * This parser recurses at two levels:                     *
- *                                                         *
- *  input                                                  *
- *    |                                                    *
- *    V                                                    *
- * thread() --> container() --> graph() ------| -|         *
- *            ^               ^   |           |  |         *
- *            |               |   -> doact()  |  |         *
- *            |               |               |  |         *
- *            |               --------<-------|  |         *
- *            |                                  |         *
- *            ----------------<------------------|         *
- *                                                         *
- * The outer recursions are through nested containment.    *
- *                                                         *
- * The inner recursions are through the grammar            *
- * state_machine at a single level of containment.         *
- *                                                         *
- * The top-level THREAD context is available to both and   *
- * maintains the input state.                              *
- ********************************************************* */
+// FIXME - doxygen doesn't like this ASCII diagram
+//            -- special  mean of trailing | ???
+
+/**
+ * parse G syntax input
+ *
+ * This parser recurses at two levels:
+ *
+ *  input
+ *    |
+ *    V
+ * thread() --> container() --> graph() ------| -|
+ *            ^               ^   |           |  |
+ *            |               |   -> doact()  |  |
+ *            |               |               |  |
+ *            |               --------<-------|  |
+ *            |                                  |
+ *            ----------------<------------------|
+ *
+ * The outer recursions are through nested containment.
+ *
+ * The inner recursions are through the grammar state_machine
+ * at a single level of containment.
+ * 
+ * The top-level THREAD context is available to both and
+ * maintains the input state.
+ */
 
 /**
  * iterate and recurse through state-machine at a single level of containment
  *
- *  @param CONTAINER context
+ *  @param GRAPH context
  *  @param root - the parent's branch that we are adding to
  *  @param si input state
  *  @param prop grammar properties
@@ -48,13 +51,12 @@ static success_t more_rep(TOKEN_t * TOKEN, unsigned char prop);
  *  @param repc sequence member counter
  *  @return SUCCESS or FAIL
  */
-success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
+success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
 {
-    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
-    THREAD_t * THREAD = CONTAINER->THREAD;
+    THREAD_t * THREAD = ((CONTAINER_t*)GRAPH)->THREAD;
     TOKEN_t * TOKEN = (TOKEN_t*)THREAD;
-    LIST_t * LIST = (LIST_t*)TOKEN;
-    INBUF_t * INBUF = (INBUF_t*)LIST;
+    LIST_t * LIST = (LIST_t*)THREAD;
+    INBUF_t * INBUF = (INBUF_t*)THREAD;
     unsigned char nprop;
     char so;        // offset to next state, signed
     state_t ti, ni;
@@ -151,27 +153,27 @@ success_t graph(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            if ((rc = graph(CONTAINER, branch, ni, nprop, nest, 0)) == SUCCESS) {
+            if ((rc = graph(GRAPH, branch, ni, nprop, nest, 0)) == SUCCESS) {
                 break;                  // ALT satisfied
             }
             // we failed an ALT so continue iteration to try next ALT
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                if ((rc = graph(CONTAINER, branch, ni, nprop, nest, repc++)) == SUCCESS) {
+                if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) == SUCCESS) {
                     while (more_rep(TOKEN, nprop) == SUCCESS) {
-                        if ((rc = graph(CONTAINER, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                        if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                             break;
                         }
                     }
                 }
                 rc = SUCCESS;           // OPTs always successful
             } else {                    // else not OPTional, at least one is mandatory
-                if ((rc = graph(CONTAINER, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                     break;
                 }
                 while (more_rep(TOKEN, nprop) == SUCCESS) {
-                    if ((rc = graph(CONTAINER, branch, ni, nprop, nest, repc++)) != SUCCESS) {
+                    if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++)) != SUCCESS) {
                         break;
                     }
                 }
@@ -186,7 +188,7 @@ done: // State exit processing
         switch (si) {
 
         case ACT:  // ACT is complete, process it
-            rc = doact(CONTAINER, branch);
+            rc = doact((CONTAINER_t*)GRAPH, branch);
             // this is the top recursion
             // no more need for this branch
             // don't bother appending to root

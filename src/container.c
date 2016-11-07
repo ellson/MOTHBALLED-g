@@ -58,7 +58,7 @@ success_t container(THREAD_t * THREAD)
 
     container.ikea_box = ikea_box_open(THREAD->ikea_store, NULL);
 
-    if ((rc = graph(&container, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
+    if ((rc = graph((GRAPH_t*)&container, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
         if (TOKEN->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {

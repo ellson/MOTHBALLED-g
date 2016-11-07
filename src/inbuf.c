@@ -11,21 +11,21 @@
 /**
  * allocate an inbuf for g input (takes from freelist if possible)
  *
- * @param C context
+ * @param INBUF context
  */
-inbufelem_t * new_inbuf(INBUF_t *C)
+inbufelem_t * new_inbuf(INBUF_t *INBUF)
 {
     inbufelem_t *inbuf, *next;
     int i;
 
-    if (!C->free_inbuf_list) {    // if no inbufs in free_inbuf_list
+    if (!INBUF->free_inbuf_list) {    // if no inbufs in free_inbuf_list
 
-        C->free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbufelem_t));
-        if (!C->free_inbuf_list) 
+        INBUF->free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbufelem_t));
+        if (!INBUF->free_inbuf_list) 
             FATAL("malloc()");
-        C->stat_inbufmalloc++;
+        INBUF->stat_inbufmalloc++;
 
-        next = C->free_inbuf_list;    // link the new inbufs into free_inbuf_list
+        next = INBUF->free_inbuf_list;    // link the new inbufs into free_inbuf_list
         i = INBUFALLOCNUM;
         while (i--) {
             inbuf = next++;
@@ -34,16 +34,16 @@ inbufelem_t * new_inbuf(INBUF_t *C)
         inbuf->next = NULL;    // terminate last inbuf
 
     }
-    inbuf = C->free_inbuf_list;    // use first inbuf from free_inbuf_list
-    C->free_inbuf_list = inbuf->next;    // update list to point to next available
+    inbuf = INBUF->free_inbuf_list;    // use first inbuf from free_inbuf_list
+    INBUF->free_inbuf_list = inbuf->next;    // update list to point to next available
 
     inbuf->next = NULL;
     inbuf->refs = 0;
     inbuf->end_of_buf = '\0';    // parse() sees this null like an EOF
 
-    C->stat_inbufnow++;    // stats
-    if (C->stat_inbufnow > C->stat_inbufmax) {
-        C->stat_inbufmax = C->stat_inbufnow;
+    INBUF->stat_inbufnow++;    // stats
+    if (INBUF->stat_inbufnow > INBUF->stat_inbufmax) {
+        INBUF->stat_inbufmax = INBUF->stat_inbufnow;
     }
     return inbuf;
 }
@@ -51,16 +51,16 @@ inbufelem_t * new_inbuf(INBUF_t *C)
 /**
  * free an inbuf (not really freed, maintains freelist for reuse)
  *
- * @param C context
+ * @param INBUF context
  * @param inbuf
  */
-void free_inbuf(INBUF_t * C, inbufelem_t * inbuf)
+void free_inbuf(INBUF_t * INBUF, inbufelem_t * inbuf)
 {
     assert(inbuf);
 
     // insert inbuf into inbuf_freelist
-    inbuf->next = C->free_inbuf_list;
-    C->free_inbuf_list = inbuf;
+    inbuf->next = INBUF->free_inbuf_list;
+    INBUF->free_inbuf_list = inbuf;
 
-    C->stat_inbufnow--;    // stats
+    INBUF->stat_inbufnow--;    // stats
 }
