@@ -338,7 +338,7 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t **fraglist) {
     // string must be short and not with special AST or BSL fragments
     if (slen <= sizeof(((elem_t*)0)->u.s.str)
                 && !TOKEN->has_ast && !TOKEN->has_bsl) {
-#if 0
+#if 1
         TOKEN->stat_instringshort++;
 
         new = new_shortstr(LIST(), TOKEN->quote_state, NULL);

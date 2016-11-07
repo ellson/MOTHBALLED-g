@@ -21,11 +21,11 @@ static void intr(int s)
 
 int main(int argc, char *argv[])
 {
-    int opt, optnum, needstats = 0, needrestore = 0;
+    int opt, optnum, needstats = 0;
 
     signal(SIGINT, intr);
 
-    while ((opt = getopt(argc, argv, "T:d::g::t::sr")) != -1) {
+    while ((opt = getopt(argc, argv, "d::s")) != -1) {
         if (optarg)
             optnum = atoi(optarg);
         else
@@ -59,9 +59,6 @@ int main(int argc, char *argv[])
         case 's':
             needstats = 1;
             break;
-        case 'r':
-            needrestore = 1;
-            break;
         default:
 
 // FIXME no -g or -t support any more ??
@@ -74,7 +71,8 @@ int main(int argc, char *argv[])
 // FIXME - allow multiple -p in loop
 // FIXME - do -p / -P processing here so can print resored pre-parsed graphs
 //
-            fprintf(stderr,"Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
+//            fprintf(stderr,"Usage: %s [-d[01] | [-s] [-t[01]] | [-g[01]] [files] [-]  \n", argv[0]);
+            fprintf(stderr,"Usage: %s [-d[01] [-s] [files] [-]\n", argv[0]);
             exit(EXIT_FAILURE);
             break;
         }
