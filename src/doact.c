@@ -14,11 +14,12 @@
 #include "sameas.h"
 #include "doact.h"
 
+#define LIST() ((LIST_t*)THREAD)
+
 success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 {
     GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     THREAD_t *THREAD = CONTAINER->THREAD;
-    LIST_t *LIST = (LIST_t*)THREAD;
     elem_t *subject, *attributes;
     elem_t *newact, *newsubject, *newattributes;
 
@@ -61,7 +62,7 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 
 
 
-    newact = new_list(LIST, ACT);
+    newact = new_list(LIST(), ACT);
 
 // VERB has been recorded in GRAPH->verb during VERB exit processing 
 //S(GRAPH->verb);
@@ -140,7 +141,7 @@ P(newact);
 //======================= collect, remove, or apply patterns
 //
     new = pattern(CONTAINER, newact, verb);
-    free_list(LIST, newact);
+    free_list(LIST(), newact);
     if (new) {
        newact = new;
     } else {
@@ -156,7 +157,7 @@ P(newact);
     // dispatch events for the ACT just finished
     new = dispatch(CONTAINER, newsubject, verb);
     if (new) {
-        free_list(LIST, newsubject);
+        free_list(LIST(), newsubject);
         newsubject = new;
     }
 
@@ -170,7 +171,7 @@ P(elem);
     }
 #endif
     
-    free_list(LIST, newact);
+    free_list(LIST(), newact);
 
     return SUCCESS;
 }
