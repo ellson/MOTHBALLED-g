@@ -11,44 +11,54 @@
 #include "info.h"
 #include "session.h"
 
+#define TOKEN() ((TOKEN_t*)THREAD)
+#define LIST() ((LIST_t*)THREAD)
+
+// FIXME - doxygen doesn't like this ASCII diagram
+//            -- special  mean of trailing | ???
+
 /**
  * parse G syntax input
  *
  * This parser recurses at two levels:
  *
- * parse() --> container() --> graph() -----| -|  
- *           ^               ^   |          |  |
- *           |               |   -> doact() |  |
- *           |               |              |  |
- *           |               --------<------|  |
- *           |                                 |
- *           ----------------<-----------------|
+ *  input
+ *    |
+ *    V
+ * thread() --> container() --> graph() ------| -|
+ *            ^               ^   |           |  |
+ *            |               |   -> doact()  |  |
+ *            |               |               |  |
+ *            |               --------<-------|  |
+ *            |                                  |
+ *            ----------------<------------------|
  *
  * The outer recursions are through nested containment.
  *
- * The inner recursions are through the grammar state_machine at a single
- * level of containment - maintained in the CONTAINER context
- *
- * The top-level THREAD context is available to both and maintains the input state.
- *
+ * The inner recursions are through the grammar state_machine
+ * at a single level of containment.
+ * 
+ * The top-level THREAD context is available to both and
+ * maintains the input state.
+ */
+
+/**
  * @param THREAD context   
  * @return success/fail
  */
 success_t container(THREAD_t * THREAD)
 {
     CONTAINER_t container = { 0 };
-    TOKEN_t * TOKEN = (TOKEN_t *)THREAD;
-    LIST_t * LIST = (LIST_t *)TOKEN;
     elem_t *root;
     success_t rc;
 
-    root = new_list(LIST, ACTIVITY);
+    root = new_list(LIST(), ACTIVITY);
 
     container.THREAD = THREAD;
-    container.previous_subject = new_list(LIST, SUBJECT);  // for sameas
+    container.previous_subject = new_list(LIST(), SUBJECT);  // for sameas
 
-    container.node_pattern_acts = new_list(LIST, 0);  // FIXME use tree
-    container.edge_pattern_acts = new_list(LIST, 0);  // FIXME use tree
+    container.node_pattern_acts = new_list(LIST(), 0);  // FIXME use tree
+    container.edge_pattern_acts = new_list(LIST(), 0);  // FIXME use tree
 
     THREAD->stat_containdepth++;      // containment nesting level
     if (THREAD->stat_containdepth > THREAD->stat_containdepthmax) {
@@ -59,10 +69,10 @@ success_t container(THREAD_t * THREAD)
     container.ikea_box = ikea_box_open(THREAD->ikea_store, NULL);
 
     if ((rc = graph((GRAPH_t*)&container, root, ACTIVITY, SREP, 0, 0)) == FAIL) {
-        if (TOKEN->insi == NLL) {    // EOF is OK
+        if (TOKEN()->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
-            token_error(TOKEN, "Parse error near token:", TOKEN->bi);
+            token_error(TOKEN(), "Parse error near token:", TOKEN()->bi);
         }
     }
 
@@ -88,20 +98,20 @@ success_t container(THREAD_t * THREAD)
     THREAD->stat_containdepth--;
 
     if (THREAD->SESSION->needstats) {
-        fprintf(TOKEN->out, "%s\n\n", info_session(&container));
-        fprintf(TOKEN->out, "%s\n\n", info_stats(&container));
+        fprintf(TOKEN()->out, "%s\n\n", info_session(&container));
+        fprintf(TOKEN()->out, "%s\n\n", info_stats(&container));
     }
 
-    free_list(LIST, root);
-    free_tree(LIST, container.nodes);
-    free_tree(LIST, container.edges);
-    free_list(LIST, container.previous_subject);
-    free_list(LIST, container.node_pattern_acts);
-    free_list(LIST, container.edge_pattern_acts);
+    free_list(LIST(), root);
+    free_tree(LIST(), container.nodes);
+    free_tree(LIST(), container.edges);
+    free_list(LIST(), container.previous_subject);
+    free_list(LIST(), container.node_pattern_acts);
+    free_list(LIST(), container.edge_pattern_acts);
 
-    if (LIST->stat_elemnow) {
+    if (LIST()->stat_elemnow) {
         E();
-        assert(LIST->stat_elemnow == 0);   // check for elem leaks
+        assert(LIST()->stat_elemnow == 0);   // check for elem leaks
     }
 
     return rc;

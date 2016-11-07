@@ -15,6 +15,10 @@
 #include "container.h"
 #include "doact.h"
 
+#define TOKEN() ((TOKEN_t*)THREAD)
+#define LIST() ((LIST_t*)THREAD)
+#define INBUF() ((INBUF_t*)THREAD)
+
 // FIXME - doxygen doesn't like this ASCII diagram
 //            -- special  mean of trailing | ???
 
@@ -54,11 +58,6 @@
  *  @param repc sequence member counter
  *  @return SUCCESS or FAIL
  */
-
-#define TOKEN() ((TOKEN_t*)THREAD)
-#define LIST() ((LIST_t*)THREAD)
-#define INBUF() ((INBUF_t*)THREAD)
-
 success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, int nest, int repc)
 {
     THREAD_t * THREAD = ((CONTAINER_t*)GRAPH)->THREAD;
