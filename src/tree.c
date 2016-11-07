@@ -5,10 +5,12 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "thread.h"
+#include "types.h"
+#include "inbuf.h"
+#include "list.h"
+#include "tree.h"
 #include "compare.h"
 #include "merge.h"
-#include "tree.h"
 
 /**
  * return the larger of two ints

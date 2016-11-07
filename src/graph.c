@@ -6,7 +6,13 @@
 #include <string.h>
 #include <assert.h>
 
-#include "thread.h"
+#include "types.h"
+#include "inbuf.h"
+#include "list.h"
+#include "grammar.h"
+#include "token.h"
+#include "graph.h"
+#include "container.h"
 #include "doact.h"
 
 // FIXME - doxygen doesn't like this ASCII diagram
