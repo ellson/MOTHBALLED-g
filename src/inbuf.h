@@ -28,13 +28,13 @@ struct inbufelem_s {
     unsigned char end_of_buf;    // maintain a '\0' here 
 };
 
-typedef struct {
+struct inbuf_s {
     inbufelem_t *inbuf;            // the active input buffer
     inbufelem_t *free_inbuf_list;  // linked list of unused inbufs
     long stat_inbufmalloc;
     long stat_inbufmax;
     long stat_inbufnow;
-} INBUF_t;
+};
 
 // functions
 inbufelem_t * new_inbuf(INBUF_t * INBUF);
