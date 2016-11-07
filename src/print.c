@@ -6,6 +6,8 @@
 
 #include "thread.h"
 
+#define TOKEN() ((TOKEN_t*)THREAD)
+
 /**
  * Print a single fragment of len contiguous characters.
  *
@@ -142,11 +144,10 @@ static void print_tree(FILE * chan, elem_t * p, char *sep)
  * @param THREAD context for i/o
  * @param elem to be printed
  * @param indent if not -ve, then the initial indent
- * @param sep if not NULL then a character to be printed first
  */
 void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
 {
-    FILE *chan = ((TOKEN_t*)THREAD)->out;
+    FILE *chan = TOKEN()->out;
     elemtype_t type;
     int ind, cnt, width;
     char *sep = &(THREAD->sep);
