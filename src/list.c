@@ -10,7 +10,7 @@
 #include "inbuf.h"
 #include "list.h"
 
-static void free_list_r(LIST_t * LIST, elem_t * list);
+static void free_list_r(LIST_t * C, elem_t * list);
 
 /**
  * Private function to manage the allocation an elem_t
@@ -18,22 +18,22 @@ static void free_list_r(LIST_t * LIST, elem_t * list);
  * elem_t are allocated in blocks and maintained in a free_elem_t list.
  * Freeing an elem_t actually means returning to this list.
  *
- * @param LIST the top-level context in which all lists are managed
+ * @param C the top-level context in which all lists are managed
  * @return a new intialized elem_t
  */
-static elem_t *new_elem_sub(LIST_t * LIST)
+static elem_t *new_elem_sub(LIST_t * C)
 {
     elem_t *elem, *next;
     int i;
 
-    if (!LIST->free_elem_list) {    // if no elems in free_elem_list
+    if (!C->free_elem_list) {    // if no elems in free_elem_list
 
-        LIST->free_elem_list = malloc(LISTALLOCNUM * sizeof(elem_t));
-        if (!LIST->free_elem_list)
+        C->free_elem_list = malloc(LISTALLOCNUM * sizeof(elem_t));
+        if (!C->free_elem_list)
             FATAL("malloc()");
-        LIST->stat_elemmalloc++;
+        C->stat_elemmalloc++;
 
-        next = LIST->free_elem_list;    // link the new elems into free_elem_list
+        next = C->free_elem_list;    // link the new elems into free_elem_list
         i = LISTALLOCNUM;
         while (i--) {
             elem = next++;
@@ -42,12 +42,12 @@ static elem_t *new_elem_sub(LIST_t * LIST)
         elem->u.l.next = NULL;    // terminate last elem
 
     }
-    elem = LIST->free_elem_list;    // use first elem from free_elem_list
-    LIST->free_elem_list = elem->u.l.next; // update list to point to next available
+    elem = C->free_elem_list;    // use first elem from free_elem_list
+    C->free_elem_list = elem->u.l.next; // update list to point to next available
 
-    LIST->stat_elemnow++;        // stats
-    if (LIST->stat_elemnow > LIST->stat_elemmax) {
-        LIST->stat_elemmax = LIST->stat_elemnow;
+    C->stat_elemnow++;        // stats
+    if (C->stat_elemnow > C->stat_elemmax) {
+        C->stat_elemmax = C->stat_elemnow;
     }
 
     // N.B. elem is uninitialized
@@ -58,15 +58,15 @@ static elem_t *new_elem_sub(LIST_t * LIST)
  * Return a pointer to an elem_t which is an empty list
  * The elem_t is memory managed without caller involvement.
  *
- * @param LIST the top-level context in which all lists are managed
+ * @param C the top-level context in which all lists are managed
  * @param state a one character value stored with the elem, no internal meaning
  * @return a new intialized elem_t
  */
-elem_t *new_list(LIST_t * LIST, char state)
+elem_t *new_list(LIST_t * C, char state)
 {
     elem_t *elem;
 
-    elem = new_elem_sub(LIST);
+    elem = new_elem_sub(C);
 
     assert(elem);
     // complete elem initialization
@@ -93,15 +93,15 @@ elem_t *new_list(LIST_t * LIST, char state)
  * inbufs are decremented and the inbuf freed if there are no more fragments
  * in use.
  *
- * @param LIST the top-level context in which all lists are managed
+ * @param C the top-level context in which all lists are managed
  * @param elem - a list header
  */
-void free_list(LIST_t * LIST, elem_t * elem)
+void free_list(LIST_t * C, elem_t * elem)
 {
     elem_t *next;
 
     while (elem) {
-        assert(LIST->stat_elemnow > 0);
+        assert(C->stat_elemnow > 0);
         assert(elem->refs > 0);
         next = elem->u.l.next;
         switch ((elemtype_t)(elem->type)) {
@@ -109,7 +109,7 @@ void free_list(LIST_t * LIST, elem_t * elem)
             if (--(elem->refs)) {
                 return;    // stop at any point with additional refs
             }
-            free_list_r(LIST, elem); // recursively free lists that have no references
+            free_list_r(C, elem); // recursively free lists that have no references
             break;
         case FRAGELEM:
             if (--(elem->refs)) {
@@ -117,9 +117,9 @@ void free_list(LIST_t * LIST, elem_t * elem)
             }
             assert(elem->u.f.inbuf->refs > 0);
             if (--(elem->u.f.inbuf->refs) == 0) {
-                free_inbuf((INBUF_t*)LIST, elem->u.f.inbuf);
+                free_inbuf((INBUF_t*)C, elem->u.f.inbuf);
             }
-            LIST->stat_fragnow--;    // maintain stats
+            C->stat_fragnow--;    // maintain stats
             break;
         case SHORTSTRELEM:
             // these are self contained singletons,  nothing else to clean up
@@ -129,14 +129,14 @@ void free_list(LIST_t * LIST, elem_t * elem)
             next = NULL;
             break;
         case TREEELEM:
-            free_tree(LIST, elem);
+            free_tree(C, elem);
             next = NULL;
             break;
         }
         // insert elem at beginning of freelist
-        elem->u.l.next = LIST->free_elem_list;
-        LIST->free_elem_list = elem;
-        LIST->stat_elemnow--;    // maintain stats
+        elem->u.l.next = C->free_elem_list;
+        C->free_elem_list = elem;
+        C->stat_elemnow--;    // maintain stats
 
         elem = next;
     }
@@ -145,10 +145,10 @@ void free_list(LIST_t * LIST, elem_t * elem)
 /**
  * Free the contents of a list, but not the list itself
  *  
- * @param LIST the top-level context in which all lists are managed
+ * @param C the top-level context in which all lists are managed
  * @param list elem whose contents are to be freed
  */
-static void free_list_r(LIST_t * LIST, elem_t * list)
+static void free_list_r(LIST_t * C, elem_t * list)
 {
     assert(list);
     assert(list->type == (char)LISTELEM);
@@ -156,7 +156,7 @@ static void free_list_r(LIST_t * LIST, elem_t * list)
 
     // free list of elem, but really just put them back
     // on the elem_freelist (declared at the top of this file)`
-    free_list(LIST, list->u.l.first);
+    free_list(C, list->u.l.first);
 
     // clean up emptied list
     list->u.l.first = NULL;
@@ -170,11 +170,11 @@ static void free_list_r(LIST_t * LIST, elem_t * list)
  * Return a pointer to an elem_t which is a tree node with a key (reference too a list)
  * The elem_t is memory managed without caller involvement.
  *
- * @param LIST the top-level context in which all lists are managed
+ * @param C the top-level context in which all lists are managed
  * @param key a list containing (as some point) some frags wihich are the key
  * @return a new intialized elem_t
  */
-elem_t *new_tree(LIST_t * LIST, elem_t *key)
+elem_t *new_tree(LIST_t * C, elem_t *key)
 {
     elem_t *elem;
 
@@ -183,7 +183,7 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
     key->refs++;
     assert(key->refs > 0);
 
-    elem = new_elem_sub(LIST);
+    elem = new_elem_sub(C);
     assert(elem);
 
     // complete elem initialization
@@ -199,28 +199,28 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
     return elem;
 }
 
-void free_tree_item(LIST_t *LIST, elem_t * p)
+void free_tree_item(LIST_t *C, elem_t * p)
 {
     assert(p->u.t.key);
     assert(p->u.t.key->type == (char)LISTELEM);
     p->u.t.key->refs--;
-    free_list_r(LIST, p->u.t.key);
+    free_list_r(C, p->u.t.key);
 
     // return p to the freelist
-    p->u.l.next = LIST->free_elem_list;
-    LIST->free_elem_list = p;
-    LIST->stat_elemnow--;    // maintain stats
+    p->u.l.next = C->free_elem_list;
+    C->free_elem_list = p;
+    C->stat_elemnow--;    // maintain stats
 }
 
-void free_tree(LIST_t *LIST, elem_t * p)
+void free_tree(LIST_t *C, elem_t * p)
 {
     if ( !p ) {
         return;
     }
     assert(p->type = (char)TREEELEM);
-    free_tree(LIST, p->u.t.left);
-    free_tree(LIST, p->u.t.right);
-    free_tree_item(LIST, p);
+    free_tree(C, p->u.t.left);
+    free_tree(C, p->u.t.right);
+    free_tree_item(C, p);
 }
 
 /**
@@ -228,39 +228,38 @@ void free_tree(LIST_t *LIST, elem_t * p)
  * (start address and length).
  * The elem_t is memory managed without caller involvement.
  *
- * @param LIST the top-level context in which all lists are managed
+ * @param C the top-level context in which all lists are managed
  * @param state a one character value stored with the elem, no internal meaning
  * @param len fragment length
  * @param frag pointer to first character of contiguous fragment of len chars
  * @return a new intialized elem_t
  */
-elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
+elem_t *new_frag(LIST_t * C, char state, uint16_t len, unsigned char *frag)
 {
-    INBUF_t * INBUF = &(LIST->INBUF);
     elem_t *elem;
 
-    assert(INBUF->inbuf);
-    assert(INBUF->inbuf->refs >= 0);
+    assert(((INBUF_t*)C)->inbuf);
+    assert(((INBUF_t*)C)->inbuf->refs >= 0);
     assert(frag);
     assert(len > 0);
 
-    elem = new_elem_sub(LIST);
+    elem = new_elem_sub(C);
 
     // complete frag elem initialization
     elem->type = FRAGELEM;  // type
     elem->state = state;    // state_machine state that created this frag
     elem->u.f.next = NULL;  // clear next
-    elem->u.f.inbuf = INBUF->inbuf; // record inbuf for ref counting
+    elem->u.f.inbuf = ((INBUF_t*)C)->inbuf; // record inbuf for ref counting
     elem->u.f.frag = frag;  // pointer to begging of frag
     elem->len = len;        // length of frag
     elem->refs = 1;         // initial ref count
     elem->height = 0;       // notused
 
-    INBUF->inbuf->refs++;   // increment reference count in inbuf.
+    ((INBUF_t*)C)->inbuf->refs++;   // increment reference count in inbuf.
     
-    LIST->stat_fragnow++;        // stats
-    if (LIST->stat_fragnow > LIST->stat_fragmax) {
-        LIST->stat_fragmax = LIST->stat_fragnow;
+    C->stat_fragnow++;        // stats
+    if (C->stat_fragnow > C->stat_fragmax) {
+        C->stat_fragmax = C->stat_fragnow;
     }
     return elem;
 }
@@ -271,18 +270,18 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
  * The string is stored in the struct.  Maximum length sizeof(void*)*3
  * The stored string is *not* NUL terminated;
  *
- * @param LIST the top-level context in which all lists are managed
+ * @param C the top-level context in which all lists are managed
  * @param state a one character value stored with the elem, no internal meaning
  * @param str string to be stored in elem, max 12 chars on 32 bit machines
  * @return a new intialized elem_t
  */
-elem_t * new_shortstr(LIST_t * LIST, char state, char * str)
+elem_t * new_shortstr(LIST_t * C, char state, char * str)
 {
     elem_t *elem;
     int len = 0;
     char c;
 
-    elem = new_elem_sub(LIST);
+    elem = new_elem_sub(C);
 
     // complete shortstr elem initialization
     elem->type = SHORTSTRELEM; // type
@@ -302,17 +301,17 @@ elem_t * new_shortstr(LIST_t * LIST, char state, char * str)
 /**
  * Create a new list with the same content, by reference, as the input list.
  *
- * @param LIST the top-level context in which all lists are managed
+ * @param C the top-level context in which all lists are managed
  * @param list a header to a list to be referenced
  * @return a new intialized elem_t which is now also a header of the referenced list
  */
-elem_t *ref_list(LIST_t * LIST, elem_t * list)
+elem_t *ref_list(LIST_t * C, elem_t * list)
 {
     elem_t *elem;
 
     assert(list->type == (char)LISTELEM);
 
-    elem = new_elem_sub(LIST);
+    elem = new_elem_sub(C);
 
     elem->type = LISTELEM;       // type
     elem->refs = 1;
@@ -369,11 +368,11 @@ void append_addref(elem_t * list, elem_t * elem)
  *
  *  The removed element is freed.
  *
- * @param LIST the top-level context in which all lists are managed
+ * @param C the top-level context in which all lists are managed
  * @param list header of the list to be shortened
  * @param elem the elem preceeding the elem to be removed (or NULL to remove 1st elem)
  */
-void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
+void remove_next_from_list(LIST_t * C, elem_t * list, elem_t *elem)
 {
     elem_t *old;
 
@@ -395,5 +394,5 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
     }
     assert(old->refs > 0);
     list->len--;                             // list has one less elem
-    free_list_r(LIST, old);                  // free the removed elem
+    free_list_r(C, old);                  // free the removed elem
 }
