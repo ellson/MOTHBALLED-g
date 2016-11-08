@@ -118,13 +118,13 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
         break;
 
     case STRING:                  // Strings
-        rc = token_string(TOKEN(), &branch);
+        rc = token_string(TOKEN(), branch);
         bi = TOKEN()->insi;  // the char class that terminates the STRING
         goto done;
         break;
 
     case VSTRING:                 // Value Strings
-        rc = token_vstring(TOKEN(), &branch);
+        rc = token_vstring(TOKEN(), branch);
         bi = TOKEN()->insi;  // the char class that terminates the VSTRING
         goto done;
         break;

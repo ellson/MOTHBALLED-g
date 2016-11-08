@@ -34,8 +34,8 @@ struct token_s {
 
 void token_error(TOKEN_t * TOKEN, char *message, state_t si);
 success_t token_whitespace(TOKEN_t * TOKEN);
-success_t token_string(TOKEN_t * TOKEN, elem_t **fraglist);
-success_t token_vstring(TOKEN_t * TOKEN, elem_t **fraglist);
+success_t token_string(TOKEN_t * TOKEN, elem_t *fraglist);
+success_t token_vstring(TOKEN_t * TOKEN, elem_t *fraglist);
 state_t token(TOKEN_t * TOKEN);
 
 #ifdef __cplusplus

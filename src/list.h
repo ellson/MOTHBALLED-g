@@ -35,13 +35,23 @@ struct elem_s {
             elem_t *right;         // left elem of tree
         } t;
     } u;
-    uint16_t height;        // (belongs to u.t.) height of elem in tree
-    int16_t refs;           // (belongs to u.l.) don't free this list until refs == 0
-    uint16_t len;           // (shared by u.l. u.f. u.s.)
+    // N.B. 1) Just type *has* to be outside of union
+    //    but moving the rest inside would increase the size of the struct.
+    // N.B. 2) height and len could be a union, but that would
+    //    not reduce the size of the struct on either 32 or 64 bit machines
+    //    because of the rounding up of size to n* sizeof(void*).
+    uint16_t height;        // LISTELEM: not used
+                            // FRAGELEM: not used
+                            // SHORTSTR: not used
+                            // TREEELEM: height of elem in tree
+    uint16_t len;           // LISTELEM: number of elems between u.l.first and u.l.last
+                            // FRAGELEM: number of characters in u.f.frag
+                            // SHORTSTR: number of characters in u.s.str
+                            // TREEELEM: not used
+    int16_t refs;           // don't free elem until refs == 0
     char state;             // state_machine state that generated this elem
-    char type;              // just this *has* to be outside of union
-                            //  but to move the rest inside would increase the
-                            //  size of the struct
+    char type;              // as in elemtype_t
+    // N.B. 3) Using elemtype_t (int) would increase the size of the struct
 };
 
 struct list_s {             // LIST context

@@ -330,7 +330,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
 }
 
 static void
-token_pack_string(TOKEN_t *TOKEN, int slen, elem_t **fraglist) {
+token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *fraglist) {
     elem_t *new, *frag;
     unsigned char *src, *dst;
     int i;
@@ -343,7 +343,7 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t **fraglist) {
 
         new = new_shortstr(LIST(), TOKEN->quote_state, NULL);
         dst = new->u.s.str;
-        frag = (*fraglist)->u.l.first;
+        frag = fraglist->u.l.first;
         while (frag) {
             for (i = frag->len, src = frag->u.f.frag; i; --i) {
                 *dst++ = *src++;
@@ -355,14 +355,14 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t **fraglist) {
         // FIXME - some problem with double freeing of this ???
         free_list(LIST(), *fraglist);
 
-        *fraglist = new;
+        fraglist = new;
 #else
         TOKEN->stat_instringlong++;
-        (*fraglist)->state = TOKEN->quote_state;
+        fraglist->state = TOKEN->quote_state;
 #endif
     } else {
         TOKEN->stat_instringlong++;
-        (*fraglist)->state = TOKEN->quote_state;
+        fraglist->state = TOKEN->quote_state;
     }
 }
 
@@ -374,18 +374,18 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t **fraglist) {
  * @return success/fail
  */
  
-success_t token_string(TOKEN_t * TOKEN, elem_t **fraglist)
+success_t token_string(TOKEN_t * TOKEN, elem_t *fraglist)
 {
     int len, slen;
 
     TOKEN->has_ast = TOKEN->has_bsl = 0;
     TOKEN->quote_state = ABC;
-    slen = token_string_fragment(TOKEN, *fraglist);    // leading string
+    slen = token_string_fragment(TOKEN, fraglist);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        if ((len = token_string_fragment(TOKEN, *fraglist)) == 0) {
+        if ((len = token_string_fragment(TOKEN, fraglist)) == 0) {
             break;
         }
         slen += len;
@@ -497,18 +497,18 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
  * @param fraglist
  * @return success/fail
  */
-success_t token_vstring(TOKEN_t * TOKEN, elem_t **fraglist)
+success_t token_vstring(TOKEN_t * TOKEN, elem_t *fraglist)
 {
     int len, slen;
 
     TOKEN->has_ast = TOKEN->has_bsl = 0;
     TOKEN->quote_state = ABC;
-    slen = token_vstring_fragment(TOKEN, *fraglist);    // leading string
+    slen = token_vstring_fragment(TOKEN, fraglist);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        if ((len = token_vstring_fragment(TOKEN, *fraglist)) == 0) {
+        if ((len = token_vstring_fragment(TOKEN, fraglist)) == 0) {
             break;
         }
         slen += len;
