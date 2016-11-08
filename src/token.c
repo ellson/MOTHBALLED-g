@@ -257,10 +257,10 @@ success_t token_whitespace(TOKEN_t * TOKEN)
  * load STRING fragments
  *
  * @param TOKEN context
- * @param fraglist - list of frags constituting a string
+ * @param string - list of frags constituting a string
  * @return length of string
  */
-static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
+static int token_string_fragment(TOKEN_t * TOKEN, elem_t * string)
 {
     unsigned char *frag;
     state_t insi;
@@ -325,21 +325,21 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
         } else {
             break;
         }
-        append_transfer(fraglist, elem);
+        append_transfer(string, elem);
         TOKEN->stat_infragcount++;
     }
     return slen;
 }
 
 /**
- * if a fraglist is suitable, convert to a shortstr
+ * if a string is suitable, convert to a shortstr
  *
  * @param TOKEN context
- * @param slen - string length of the fraglist
- * @param fraglist
+ * @param slen - string length of the string
+ * @param string
  */
 static void
-token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *fraglist) {
+token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
     elem_t *frag, *next;
     unsigned char *src, *dst;
     int i;
@@ -350,8 +350,8 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *fraglist) {
 #if 0
         TOKEN->stat_instringshort++;
 
-        frag = fraglist->u.l.first;
-        dst = fraglist->u.s.str;
+        frag = string->u.l.first;
+        dst = string->u.s.str;
         while (frag) {
             next = frag->u.f.next;
             (frag->u.f.inbuf->refs)--;
@@ -363,45 +363,45 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *fraglist) {
             LIST()->stat_elemnow--;    // maintain stats
             frag = next;
         }
-        fraglist->type = SHORTSTRELEM; // frag is now shortstr
-        fraglist->len = slen; // save length of string
+        string->type = SHORTSTRELEM; // frag is now shortstr
+        string->len = slen; // save length of string
 
-//FIXME - ok till this point -- but fraglist refcount is getting messed up
+//FIXME - ok till this point -- but string refcount is getting messed up
 #else
         TOKEN->stat_instringlong++;
 #endif
     } else {
         TOKEN->stat_instringlong++;
     }
-    fraglist->state = TOKEN->quote_state;
+    string->state = TOKEN->quote_state;
 }
 
 /**
  * collect fragments to form a STRING token
  *
  * @param TOKEN context
- * @param fraglist
+ * @param string
  * @return success/fail
  */
  
-success_t token_string(TOKEN_t * TOKEN, elem_t *fraglist)
+success_t token_string(TOKEN_t * TOKEN, elem_t *string)
 {
     int len, slen;
 
     TOKEN->has_ast = TOKEN->has_bsl = 0;
     TOKEN->quote_state = ABC;
-    slen = token_string_fragment(TOKEN, fraglist);    // leading string
+    slen = token_string_fragment(TOKEN, string);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        if ((len = token_string_fragment(TOKEN, fraglist)) == 0) {
+        if ((len = token_string_fragment(TOKEN, string)) == 0) {
             break;
         }
         slen += len;
     }
     if (slen > 0) {
-        token_pack_string(TOKEN, slen, fraglist); // may replace fraglist with a shortstr elem
+        token_pack_string(TOKEN, slen, string); // may replace string with a shortstr elem
         return SUCCESS;
     }
     return FAIL;
@@ -413,10 +413,10 @@ success_t token_string(TOKEN_t * TOKEN, elem_t *fraglist)
  * FIXME - add support for additonal quoting formats  (HTML-like, ...)
  *
  * @param TOKEN context
- * @param fraglist
+ * @param string
  * @return length of string
  */
-static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
+static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
 {
     unsigned char *frag;
     state_t insi;
@@ -494,7 +494,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
         } else {
             break;
         }
-        append_transfer(fraglist, elem);
+        append_transfer(string, elem);
         TOKEN->stat_infragcount++;
     }
     return slen;
@@ -504,27 +504,27 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *fraglist)
  * collect fragments to form a VSTRING token
  *
  * @param TOKEN context
- * @param fraglist
+ * @param string
  * @return success/fail
  */
-success_t token_vstring(TOKEN_t * TOKEN, elem_t *fraglist)
+success_t token_vstring(TOKEN_t * TOKEN, elem_t *string)
 {
     int len, slen;
 
     TOKEN->has_ast = TOKEN->has_bsl = 0;
     TOKEN->quote_state = ABC;
-    slen = token_vstring_fragment(TOKEN, fraglist);    // leading string
+    slen = token_vstring_fragment(TOKEN, string);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        if ((len = token_vstring_fragment(TOKEN, fraglist)) == 0) {
+        if ((len = token_vstring_fragment(TOKEN, string)) == 0) {
             break;
         }
         slen += len;
     }
     if (slen > 0) {
-        token_pack_string(TOKEN, slen, fraglist); // may replace fraglist with a shortstr elem
+        token_pack_string(TOKEN, slen, string); // may replace string with a shortstr elem
         return SUCCESS;
     } 
     return FAIL;
