@@ -261,8 +261,7 @@ void free_list(LIST_t * LIST, elem_t * elem)
             break;
         case TREEELEM:
             free_tree(LIST, elem);
-            next = NULL;
-            break;
+            return;
         }
         // insert elem at beginning of freelist
         elem->u.l.next = LIST->free_elem_list;
