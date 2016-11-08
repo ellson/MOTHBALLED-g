@@ -351,7 +351,7 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
     // string must be short and not with special AST or BSL fragments
     if (slen <= sizeof(((elem_t*)0)->u.s.str)
                 && !TOKEN->has_ast && !TOKEN->has_bsl) {
-#if 0
+#if 1
         TOKEN->stat_instringshort++;
 
         frag = string->u.l.first;
@@ -366,21 +366,14 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
             }
             frag->u.l.next = LIST()->free_elem_list;
             LIST()->free_elem_list = frag;
+            assert(LIST()->stat_fragnow >0);
+            assert(LIST()->stat_elemnow >0);
             LIST()->stat_fragnow--;    // maintain stats
             LIST()->stat_elemnow--;
             frag = next;
         }
         string->type = SHORTSTRELEM; // frag is now shortstr
         string->len = slen; // save length of string
-
-putc('"', stdout);
-for (i=string->len, src=string->u.s.str; i; --i) {
-    putc(*src++, stdout);
-}
-putc('"', stdout);
-putc('\n', stdout);
-
-//FIXME - ok till this point -- but string refcount is getting messed up
 #else
         TOKEN->stat_instringlong++;
 #endif

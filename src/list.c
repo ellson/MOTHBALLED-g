@@ -335,7 +335,7 @@ elem_t *ref_list(LIST_t * LIST, elem_t * list)
     elem->u.l.first = list->u.l.first; // copy details
     elem->u.l.last = list->u.l.last;
     elem->len = list->len;
-    if (list->u.l.first && list->u.l.first->type == LISTELEM) {
+    if (list->u.l.first) {
         list->u.l.first->refs++;    // increment ref count
     }
     return elem;
