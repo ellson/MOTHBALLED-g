@@ -80,7 +80,9 @@ static success_t token_more_in(TOKEN_t * TOKEN)
     if (INBUF->inbuf) {        // if there is an existing active-inbuf
         if (TOKEN->in == &(INBUF->inbuf->end_of_buf)) {    // if it is full
             if ((--(INBUF->inbuf->refs)) == 0) {    // dereference active-inbuf
-                free_inbuf(INBUF, INBUF->inbuf);    // free if no refs left (unlikely)
+                free_inbuf(INBUF, INBUF->inbuf);    // free if no refs left
+                         // can happen it held only framents that were ignore, or
+                         // which were copied out into SHORTSTRELEM
             }
             INBUF->inbuf = new_inbuf(INBUF);    // get new
             assert(INBUF->inbuf);
@@ -329,41 +331,51 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
     return slen;
 }
 
+/**
+ * if a fraglist is suitable, convert to a shortstr
+ *
+ * @param TOKEN context
+ * @param slen - string length of the fraglist
+ * @param fraglist
+ */
 static void
 token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *fraglist) {
-    elem_t *new, *frag;
+    elem_t *new, *frag, *next;
     unsigned char *src, *dst;
     int i;
 
     // string must be short and not with special AST or BSL fragments
     if (slen <= sizeof(((elem_t*)0)->u.s.str)
                 && !TOKEN->has_ast && !TOKEN->has_bsl) {
-#if 0
+#if 1
         TOKEN->stat_instringshort++;
 
-        new = new_shortstr(LIST(), TOKEN->quote_state, NULL);
+        new = frag = fraglist->u.l.first;
         dst = new->u.s.str;
-        frag = fraglist->u.l.first;
         while (frag) {
+            next = frag->u.f.next;
+            (frag->u.f.inbuf->refs)--;
             for (i = frag->len, src = frag->u.f.frag; i; --i) {
                 *dst++ = *src++;
             }
-            frag = frag->u.f.next;
+            if (frag != new) {
+                frag->u.l.next = LIST()->free_elem_list;
+                LIST()->free_elem_list = frag;
+                LIST()->stat_elemnow--;    // maintain stats
+            }
+            frag = next;
         }
-        new->len = slen;
-
-        // FIXME - some problem with double freeing of this ???
-        free_list(LIST(), *fraglist);
-
-        fraglist = new;
+        new->type = SHORTSTRELEM; // frag is now shortstr
+        new->len = slen; // save length of string
+        fraglist->len = 1;
+        fraglist->u.l.first = fraglist->u.l.last = new;
 #else
         TOKEN->stat_instringlong++;
-        fraglist->state = TOKEN->quote_state;
 #endif
     } else {
         TOKEN->stat_instringlong++;
-        fraglist->state = TOKEN->quote_state;
     }
+    fraglist->state = TOKEN->quote_state;
 }
 
 /**
