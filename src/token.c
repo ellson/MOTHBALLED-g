@@ -340,35 +340,33 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * fraglist)
  */
 static void
 token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *fraglist) {
-    elem_t *new, *frag, *next;
+    elem_t *frag, *next;
     unsigned char *src, *dst;
     int i;
 
     // string must be short and not with special AST or BSL fragments
     if (slen <= sizeof(((elem_t*)0)->u.s.str)
                 && !TOKEN->has_ast && !TOKEN->has_bsl) {
-#if 1
+#if 0
         TOKEN->stat_instringshort++;
 
-        new = frag = fraglist->u.l.first;
-        dst = new->u.s.str;
+        frag = fraglist->u.l.first;
+        dst = fraglist->u.s.str;
         while (frag) {
             next = frag->u.f.next;
             (frag->u.f.inbuf->refs)--;
             for (i = frag->len, src = frag->u.f.frag; i; --i) {
                 *dst++ = *src++;
             }
-            if (frag != new) {
-                frag->u.l.next = LIST()->free_elem_list;
-                LIST()->free_elem_list = frag;
-                LIST()->stat_elemnow--;    // maintain stats
-            }
+            frag->u.l.next = LIST()->free_elem_list;
+            LIST()->free_elem_list = frag;
+            LIST()->stat_elemnow--;    // maintain stats
             frag = next;
         }
-        new->type = SHORTSTRELEM; // frag is now shortstr
-        new->len = slen; // save length of string
-        fraglist->len = 1;
-        fraglist->u.l.first = fraglist->u.l.last = new;
+        fraglist->type = SHORTSTRELEM; // frag is now shortstr
+        fraglist->len = slen; // save length of string
+
+//FIXME - ok till this point -- but fraglist refcount is getting messed up
 #else
         TOKEN->stat_instringlong++;
 #endif
