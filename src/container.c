@@ -98,8 +98,8 @@ success_t container(THREAD_t * THREAD)
     THREAD->stat_containdepth--;
 
     if (THREAD->SESSION->needstats) {
-        fprintf(TOKEN()->out, "%s\n\n", info_session(&container));
-        fprintf(TOKEN()->out, "%s\n\n", info_stats(&container));
+        fprintf(TOKEN()->out, "\n%s\n", info_session(&container));
+        fprintf(TOKEN()->out, "%s\n", info_stats(&container));
     }
 
     free_list(LIST(), root);

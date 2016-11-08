@@ -336,6 +336,9 @@ elem_t *ref_list(LIST_t * LIST, elem_t * list)
     elem->u.l.last = list->u.l.last;
     elem->len = list->len;
     if (list->u.l.first) {
+        // can't add refs to trees because the root element
+        // changes on rebalancing
+        assert(list->u.l.first->type != TREEELEM);
         list->u.l.first->refs++;    // increment ref count
     }
     return elem;
