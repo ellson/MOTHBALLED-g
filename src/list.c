@@ -240,7 +240,7 @@ void free_list(LIST_t * LIST, elem_t * elem)
             if (--(elem->refs)) {
                 return;    // stop at any point with additional refs
             }
-            free_list_r(LIST, elem); // recursively free lists that have no references
+            free_list_r(LIST, elem); // recursively free content lists that have no references
             break;
         case FRAGELEM:
             if (--(elem->refs)) {
@@ -260,6 +260,7 @@ void free_list(LIST_t * LIST, elem_t * elem)
             next = NULL;
             break;
         case TREEELEM:
+            // trees are not ref count, must be used exactly once.
             free_tree(LIST, elem);
             return;
         }

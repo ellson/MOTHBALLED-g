@@ -344,6 +344,10 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
     unsigned char *src, *dst;
     int i;
 
+    assert(string);
+    assert(string->type == (char)LISTELEM);
+    assert(string->refs > 0);
+
     // string must be short and not with special AST or BSL fragments
     if (slen <= sizeof(((elem_t*)0)->u.s.str)
                 && !TOKEN->has_ast && !TOKEN->has_bsl) {
@@ -353,6 +357,8 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
         frag = string->u.l.first;
         dst = string->u.s.str;
         while (frag) {
+            assert(frag->type == (char)FRAGELEM);
+            assert(frag->refs == 1);
             next = frag->u.f.next;
             (frag->u.f.inbuf->refs)--;
             for (i = frag->len, src = frag->u.f.frag; i; --i) {
@@ -360,11 +366,19 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
             }
             frag->u.l.next = LIST()->free_elem_list;
             LIST()->free_elem_list = frag;
-            LIST()->stat_elemnow--;    // maintain stats
+            LIST()->stat_fragnow--;    // maintain stats
+            LIST()->stat_elemnow--;
             frag = next;
         }
         string->type = SHORTSTRELEM; // frag is now shortstr
         string->len = slen; // save length of string
+
+putc('"', stdout);
+for (i=string->len, src=string->u.s.str; i; --i) {
+    putc(*src++, stdout);
+}
+putc('"', stdout);
+putc('\n', stdout);
 
 //FIXME - ok till this point -- but string refcount is getting messed up
 #else
@@ -387,6 +401,10 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
 success_t token_string(TOKEN_t * TOKEN, elem_t *string)
 {
     int len, slen;
+
+    assert(string);
+    assert(string->type == (char)LISTELEM);
+    assert(string->refs > 0);
 
     TOKEN->has_ast = TOKEN->has_bsl = 0;
     TOKEN->quote_state = ABC;
@@ -511,7 +529,11 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *string)
 {
     int len, slen;
 
+    assert(string);
+    assert(string->type == (char)LISTELEM);
+    assert(string->refs > 0);
     TOKEN->has_ast = TOKEN->has_bsl = 0;
+
     TOKEN->quote_state = ABC;
     slen = token_vstring_fragment(TOKEN, string);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace

@@ -11,6 +11,7 @@
 #include "compare.h"
 #include "pattern.h"
 
+
 static void pattern_update(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb);
 static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject);
 
@@ -43,6 +44,7 @@ elem_t * pattern(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb)
     GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     elem_t *newsubjects;
 
+    // FIXME - this can't be right!
     if ((CONTAINER->is_pattern = ((TOKEN_t*)GRAPH)->is_pattern)) {
         GRAPH->stat_patternactcount++;
         assert(CONTAINER->subject_type == NODE || CONTAINER->subject_type == EDGE);
