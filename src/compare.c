@@ -31,7 +31,7 @@ int compare(elem_t * a, elem_t * b)
             //  e.g.   icomparison <abc d> with <a bcd>
             return compare(a_elem, b_elem);
         } else {    // FRAGELEM or SHORTSTRELEM
-            assert(a_elem->type != LISTELEM && b_elem->type != LISTELEM)
+            assert(a_elem->type != LISTELEM && b_elem->type != LISTELEM);
 
             a_cp = ta_elem->u.f.frag;
             a_len = ta_elem->len;
