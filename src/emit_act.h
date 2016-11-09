@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-// functions
 void je_emit_act(CONTAINER_t * CONTAINER, elem_t *list);
 
 #ifdef __cplusplus

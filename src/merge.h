@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-// functions
 elem_t * merge(elem_t * new, elem_t * old);
 
 #ifdef __cplusplus

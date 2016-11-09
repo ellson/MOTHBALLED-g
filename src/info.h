@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-// functions
 char * info_session(CONTAINER_t *CONTAINER);
 char * info_stats(CONTAINER_t *CONTAINER);
 

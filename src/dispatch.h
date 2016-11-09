@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-// functions
 elem_t * dispatch(CONTAINER_t * CONTAINER, elem_t *act, state_t verb, state_t mum);
 
 #ifdef __cplusplus

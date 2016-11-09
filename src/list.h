@@ -66,7 +66,6 @@ struct list_s {             // LIST context
 
 #define LISTALLOCNUM 512
 
-// functions
 elem_t *new_list(LIST_t * LIST, char state);
 elem_t *new_tree(LIST_t * LIST, elem_t *key);
 elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag);

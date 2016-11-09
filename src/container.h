@@ -33,7 +33,6 @@ struct container_s {            // CONTAINER context
     long stat_outactcount;
 };
 
-// functions
 success_t container(THREAD_t *THREAD);
 
 #ifdef __cplusplus

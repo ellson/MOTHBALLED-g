@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-// functions
 void sslhash_list(uint64_t *hash, elem_t *list);
 
 #ifdef __cplusplus

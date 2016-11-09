@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-// functions
 uint16_t print_len_frag(FILE * chan, unsigned char *len_frag);
 void print_elem(THREAD_t * THREAD, elem_t * elem, int indent);
 void append_token(THREAD_t * THREAD, char **pos, char tok);
