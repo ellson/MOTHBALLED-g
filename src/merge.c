@@ -8,18 +8,17 @@
 #include "merge.h"
 
 /**
- * merge old and new attributes
+ * merge old and new key lists
  *
- * @param new 
- * @param old 
- * @return merge
+ * @param LIST 
+ * @param oldkey 
+ * @param newkey 
  */
-elem_t * merge(elem_t * new, elem_t * old)
+void merge(LIST_t *LIST, elem_t * oldkey, elem_t * newkey)
 {
 
 // FIXME
 
-    old->refs--;
-    new->refs++;
-    return new;
+    oldkey->refs--;
+    newkey->refs++;
 }

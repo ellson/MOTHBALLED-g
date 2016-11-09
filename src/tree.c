@@ -161,7 +161,7 @@ elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t * key)
         }
     }
     else {
-        p->u.t.key = merge(key, p->u.t.key);
+        merge(LIST, p->u.t.key, key);
     }
     return balance(p);
 }
