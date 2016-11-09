@@ -7,20 +7,22 @@
 extern "C" {
 #endif
 
-typedef struct session_s SESSION_t;
+typedef struct session_s SESSION_t;       // session.h
 
-typedef struct thread_s THREAD_t;
-typedef struct token_s TOKEN_t;
-typedef struct list_s LIST_t;
-typedef struct inbuf_s INBUF_t;
+// THREAD_t TOKEN_t LIST_t INBUF_t are inter-castable
+//   from since all 4 structs share the same start
+typedef struct thread_s THREAD_t;         // thread.h
+typedef struct token_s TOKEN_t;           // token.h
+typedef struct list_s LIST_t;             // list.h
+typedef struct inbuf_s INBUF_t;           // inbuf.h
 
-typedef struct elem_s elem_t;
-typedef struct inbufelem_s inbufelem_t;
+typedef struct elem_s elem_t;             // list.h
+typedef struct inbufelem_s inbufelem_t;   // inbuf.h
 
-typedef struct container_s CONTAINER_t;
+typedef struct container_s CONTAINER_t;   // container.h
 
-typedef struct ikea_store_s ikea_store_t;
-typedef struct ikea_box_s ikea_box_t;
+typedef struct ikea_store_s ikea_store_t; // ikea.h
+typedef struct ikea_box_s ikea_box_t;     // ikea.h
 
 typedef enum {
         SUCCESS,
