@@ -14,7 +14,7 @@ static void init(iter_t *iter, elem_t *elem)
         case FRAGELEM:
             iter->cp = elem->u.f.frag;
             iter->len = elem->len;
-            iter->next[iter->nest] = elem->u.f.next
+            iter->next[iter->nest] = elem->u.f.next;
             break;
         case SHORTSTRELEM:
             iter->cp = &(elem->u.s.str);
@@ -31,21 +31,7 @@ static void init(iter_t *iter, elem_t *elem)
     }
 }
 
-static char next(iter_t *iter)
-{
-    if (! iter->len) {
-        while (! iter->next[iter->nest]) {
-            if (! --(iter->nest)) return '\0';
-            return ' ';
-        }
-        iter->next[iter->nest++] = elem->u.l.next;
-        init(iter, iter->next[iter->nest]->u.l.first);
-    }
-    iter->len--;
-    return *(iter->cp)++;
-}
-
-char compare (elem_t *A, elem_t *B)
+int compare (elem_t *A, elem_t *B)
 {
     char a, b, rc;
     iter_t ai = { 0 };
@@ -53,10 +39,45 @@ char compare (elem_t *A, elem_t *B)
 
     init(&ai, A);
     init(&bi, B);
-    do { 
-        a = next(&ai);
-        b = next(&bi);
+    do {
+        do { 
+            a = *ai.cp++; ai.len--;
+            b = *bi.cp++; bi.len--;
+            rc = a - b;
+        } while (ai.len && bi.len && !rc);
+        if (! ai.len) {
+            if (ai.next[ai.nest]) { 
+                ai.cp = ai.next[ai.nest]->u.f.next;
+                ai.len = ai.next[ai.nest]->len;
+                ai.next[ai.nest] = ai.next[ai.nest]->u.f.next;
+                a = *ai.cp;
+            } else {
+                while (--a.nest && ! ai.next[ai.nest]) {}
+                if (ai.nest) {
+                    a = ' ';
+		    init(&ai, ai.next[ai.nest]->u.l.first);
+		} else {
+                    b = '\0';
+		}
+            }
+        }
+        if (! bi.len) {
+            if (bi.next[bi.nest]) { 
+                bi.cp = bi.next[bi.nest]->u.f.next;
+                bi.len = bi.next[bi.nest]->len;
+                bi.next[bi.nest] = bi.next[bi.nest]->u.f.next;
+                b = *bi.cp;
+            } else {
+                while (--b.nest && ! bi.next[bi.nest]) {}
+                if (bi.nest) {
+                    b = ' ';
+		    init(&bi, bi.next[bi.nest]->u.l.first);
+		} else {
+                    b = '\0';
+                }
+            }
+        }
         rc = a - b;
-    } while (a && b && !rc);
+    } while (ai.nest && bi.nest && !rc);
     return rc;
 }
