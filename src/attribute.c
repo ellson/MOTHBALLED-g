@@ -50,7 +50,7 @@
  * the ATTRID into the THREAD's ATTRID tree, adding a reference
  * to the *old* version of any matching ATTRID, and freeing any
  * the new one if it is a duplicate.
- * The current ATTRIBUTES are modified to use the string from the THREAD'ss
+ * The current ATTRIBUTES are modified to use the string from the THREAD's
  * ATTRID tree.
  *
  * After various transformations of the SUBJECT we get a list of individual

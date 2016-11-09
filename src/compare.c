@@ -7,6 +7,7 @@
 #include "thread.h"
 #include "compare.h"
 
+
 /**
  * compare string value of a and b - recursive function
  *
@@ -23,12 +24,15 @@ int compare(elem_t * a, elem_t * b)
     a_elem = a->u.l.first;
     b_elem = b->u.l.first;
     while (a_elem && b_elem) {
-        assert(a_elem->type == b_elem->type);  // list structure must match
         ta_elem = a_elem;
         tb_elem = b_elem;
-        if ((elemtype_t) (a_elem->type) == LISTELEM) {
+        if (a_elem->type == LISTELEM && b_elem->type == LISTELEM) {
+            // FIXME - comparison of LISTELEM break should be ' '
+            //  e.g.   icomparison <abc d> with <a bcd>
             return compare(a_elem, b_elem);
-        } else {    // FRAGELEM
+        } else {    // FRAGELEM or SHORTSTRELEM
+            assert(a_elem->type != LISTELEM && b_elem->type != LISTELEM)
+
             a_cp = ta_elem->u.f.frag;
             a_len = ta_elem->len;
             b_cp = tb_elem->u.f.frag;
