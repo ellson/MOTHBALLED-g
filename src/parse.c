@@ -137,9 +137,6 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
         break;
     case SUBJECT:
         break;
-    case MUM:
-        CONTAINER->mum = MUM;    // maintain a flag for any MUM involvement
-        break;
     default:
         break;
     }
@@ -203,6 +200,9 @@ done: // State exit processing
         // drop various bits of the tree that are no longer useful
         case VERB:  // VERB - after stashing away its value
             CONTAINER->verb = branch->u.l.first->state;  // QRY or TLD
+            break;
+        case MUM:
+            CONTAINER->mum = MUM;  // MUM is needed
             break;
         case VALASSIGN: // ignore VALASSIGN EQL, but keep VALUE
             append_addref(root, branch->u.l.first->u.l.next);
