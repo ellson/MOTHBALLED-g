@@ -137,10 +137,10 @@ success_t parse(PARSE_t * PARSE, elem_t *root, state_t si, unsigned char prop, i
         break;
     case SUBJECT:
         CONTAINER()->is_pattern = 0;  // maintain flag for '*' found anywhere in the subject
-        PARSE->need_mum = 0;    // maintain flag for any MUM involvement
+        CONTAINER()->need_mum = 0;    // maintain flag for any MUM involvement
         break;
     case MUM:
-        PARSE->need_mum = 1;    // maintain a flag for any MUM involvement
+        CONTAINER()->need_mum = 1;    // maintain a flag for any MUM involvement
         break;
     default:
         break;

@@ -98,7 +98,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb)
         }
         break;
     case EDGE:
-        if (PARSE->need_mum) {
+        if (CONTAINER->need_mum) {
             // FIXME - deal with edges that require help from ancestors
             fprintf(stdout,"EDGE has COUSIN\n");
         }

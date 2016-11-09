@@ -13,7 +13,6 @@ struct parse_s {               // PARSE context
 
     // FIXME  - do I need to take verb default from parent graph ?
     state_t verb;              // after parsing, 0 "add", TLD "del", QRY "query"
-    char need_mum;           // flag set if MUM is referenced
 };
 
 // functions
