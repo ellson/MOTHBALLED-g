@@ -27,7 +27,7 @@
  * @param act - the input ACT.
  * @return success/fail
  */
-success_t doact(CONTAINER_t *CONTAINER, elem_t *act, state_t verb, state_t mum)
+success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *subject, *attributes;
@@ -38,7 +38,19 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act, state_t verb, state_t mum)
 
     CONTAINER->stat_inactcount++;
 
-//P(act);
+// VERB has already been extracted and is available as an arg to this func. 
+if (CONTAINER->verb) {
+    S(CONTAINER->verb);
+}
+
+// The need for MUM's assistance with component(s) of the SUBJECT has been extracted
+if (CONTAINER->mum) {
+    S(CONTAINER->mum);
+}
+
+// The ACT as provided by parse()
+P(act);
+
 //---------------------- love this example
 // G:     (<a b> <c:1 ^^d:2/e:3 f:4/g:5/h:7 (i:8 j:9)>`baz)[foo=bar bar=foo]
 //
@@ -73,8 +85,6 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act, state_t verb, state_t mum)
 
 
     newact = new_list(LIST(), ACT);
-
-// VERB has been extracted and is available as an arg to this func. 
 
     subject = act->u.l.first;   // first item is SUBJECT
     assert(subject);
@@ -144,12 +154,12 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act, state_t verb, state_t mum)
 //                                 VALUE ABC xyz
 //----------------------- 
 
-P(newact);
+//P(newact);
 
 #if 0
 //======================= collect, remove, or apply patterns
 //
-    new = pattern(CONTAINER, newact, verb);
+    new = pattern(CONTAINER, newact, CONTAINER->verb);
     free_list(LIST(), newact);
     if (new) {
        newact = new;
@@ -164,7 +174,7 @@ P(newact);
 
 // FIXME so this is probably flawed - doesn't it need a loop?
     // dispatch events for the ACT just finished
-    new = dispatch(CONTAINER, newsubject, verb, mum);
+    new = dispatch(CONTAINER, newsubject, CONTAINER->verb, CONTAINER->mum);
     if (new) {
         free_list(LIST(), newsubject);
         newsubject = new;

@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 // functions
-success_t doact(CONTAINER_t *CONTAINER, elem_t *act, state_t verb, state_t mum);
+success_t doact(CONTAINER_t *CONTAINER, elem_t *act);
 
 #ifdef __cplusplus
 }

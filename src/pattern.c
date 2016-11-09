@@ -58,18 +58,18 @@ elem_t * pattern(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb)
 static void pattern_update(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb)
 {
     assert(CONTAINER->subject_type == NODE || CONTAINER->subject_type == EDGE);
-    if (verb == (char)QRY) {
+    if (verb == QRY) {
         assert(0);  // FIXME - report error
     }
     if (CONTAINER->subject_type == NODE) {
-        if (verb == (char)TLD) {
+        if (verb == TLD) {
  //           remove_item(LIST, CONTAINER->node_pattern_acts, obj);
         } else {
  //           insert_item(LIST, CONTAINER->node_pattern_acts, obj);
             append_transfer(CONTAINER->node_pattern_acts, subject);
         }
     } else {
-        if (verb == (char)TLD) {
+        if (verb == TLD) {
  //           remove_item(LIST, CONTAINER->edge_pattern_acts, obj);
         } else {
  //           insert_item(LIST, CONTAINER->edge_pattern_acts, obj);

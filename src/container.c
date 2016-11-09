@@ -14,34 +14,6 @@
 #define TOKEN() ((TOKEN_t*)THREAD)
 #define LIST() ((LIST_t*)THREAD)
 
-// FIXME - doxygen doesn't like this ASCII diagram
-//            -- special  mean of trailing | ???
-
-/**
- * parse G syntax input
- *
- * This parser recurses at two levels:
- *
- *  input
- *    |
- *    V
- * thread() --> container() --> parse() ------| -|
- *            ^               ^   |           |  |
- *            |               |   -> doact()  |  |
- *            |               |               |  |
- *            |               --------<-------|  |
- *            |                                  |
- *            ----------------<------------------|
- *
- * The outer recursions are through nested containment.
- *
- * The inner recursions are through the grammar state_machine
- * at a single level of containment.
- * 
- * The top-level THREAD context is available to both and
- * maintains the input state.
- */
-
 /**
  * @param THREAD context   
  * @return success/fail
@@ -68,7 +40,7 @@ success_t container(THREAD_t * THREAD)
 
     container.ikea_box = ikea_box_open(THREAD->ikea_store, NULL);
 
-    if ((rc = parse(&container, root, ACTIVITY, SREP, 0, 0, NLL)) == FAIL) {
+    if ((rc = parse(&container, root, 0, SREP, 0, 0, NLL)) == FAIL) {
         if (TOKEN()->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {

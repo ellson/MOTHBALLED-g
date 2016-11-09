@@ -11,7 +11,8 @@ struct container_s {            // CONTAINER context
     THREAD_t *THREAD;           // THREAD context
     elem_t *previous_subject;   // For use by sameas()
     char is_pattern;            // flag set if '*' occurred in SUBJECT
-    char need_mum;              // flag set if '^' occurred in SUBJECT
+    state_t mum;                // flag set if '^' occurred in SUBJECT
+    state_t verb;               // verb for the current ACT
     state_t subject_type;       // set by sameas() to record if the SUBJECT is NODE(s),
                                 //   or EDGE(s), and to check that it is not a mix
                                 //   of NODE(s) and EDGE(s).

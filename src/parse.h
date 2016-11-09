@@ -8,7 +8,9 @@ extern "C" {
 #endif
 
 // functions
-success_t parse(CONTAINER_t * CONTAINER, elem_t * root, state_t si, unsigned char prop, int nest, int repc, state_t bi);
+success_t
+parse(CONTAINER_t * CONTAINER, elem_t * root,
+        state_t si, unsigned char prop, int nest, int repc, state_t bi);
 
 #ifdef __cplusplus
 }
