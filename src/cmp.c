@@ -7,94 +7,71 @@
 #include "thread.h"
 #include "compare.h"
 
-#define MAXNEST 5
-
-typedef struct {
-    elem_t *next[MAXNEST];
-    int nest;
-    char *cp,
-    int len;
-} iter_t;
-
-
-static void init(iter_t *iter, elem_t *elem)
-{
-    assert(iter->nest < MAXNEST);
-    switch (elem->type) {
-        case FRAGELEM:
-            iter->cp = elem->u.f.frag;
-            iter->len = elem->len;
-            iter->next[iter->nest] = elem->u.f.next;
-            break;
-        case SHORTSTRELEM:
-            iter->cp = &(elem->u.s.str);
-            iter->len = elem->len;
-            iter->next[iter->nest] = NULL;
-            break;
-        case LISTELEM:
-            iter->next[iter->nest++] = elem->u.l.next;
-            init(iter, elem->u.l.first);
-            break;
-        default:
-            assert(0);
-            break;
-    }
-}
 
 /**
- * compare string value of elems: A and B
+ * compare string value of a and b - recursive function
  *
- * - root may be LISTELEM or SHORTSTRELEM
- * - leaves maybe SHORSTRELEM or FRAGELEM
- *
- * @param A 
- * @param B
- * @return result of ASCII comparison: <0, 0, >0
+ * @param a 
+ * @param b 
+ * @return <0, 0 >0
  */
-
-int compare (elem_t *A, elem_t *B)
+int compare(elem_t * a, elem_t * b)
 {
-    char a, b, rc;
-    iter_t ai = { 0 };
-    iter_t bi = { 0 };
+    elem_t *a_elem, *b_elem, *ta_elem, *tb_elem;
+    unsigned char *a_cp, *b_cp;
+    uint16_t a_len, b_len;
 
-    init(&ai, A);
-    init(&bi, B);
-    do {
-        do { 
-            a = *ai.cp++; ai.len--;
-            b = *bi.cp++; bi.len--;
-            rc = a - b;
-        } while (ai.len && bi.len && !rc);
-        if (! ai.len) {
-            if (ai.next[ai.nest]) { 
-                ai.cp = ai.next[ai.nest]->u.f.next;
-                ai.len = ai.next[ai.nest]->len;
-                ai.next[ai.nest] = ai.next[ai.nest]->u.f.next;
-                a = *ai.cp;
-            } else {
-                while (--a.nest && ! ai.next[ai.nest]) {}
-                if (ai.nest) {
-		    init(&ai, ai.next[ai.nest]->u.l.first);
-		}
-                a = '\0';
+    a_elem = a->u.l.first;
+    b_elem = b->u.l.first;
+    while (a_elem && b_elem) {
+        ta_elem = a_elem;
+        tb_elem = b_elem;
+        if (a_elem->type == LISTELEM && b_elem->type == LISTELEM) {
+            // FIXME - comparison of LISTELEM break should be ' '
+            //  e.g.   icomparison <abc d> with <a bcd>
+            return compare(a_elem, b_elem);
+        } else {    // FRAGELEM or SHORTSTRELEM
+            assert(a_elem->type != LISTELEM && b_elem->type != LISTELEM);
+
+            a_cp = ta_elem->u.f.frag;
+            a_len = ta_elem->len;
+            b_cp = tb_elem->u.f.frag;
+            b_len = tb_elem->len;
+            while (1) {
+                // the fragmentation is not necessarily
+                // the same so manage ta_elem and tb_elem
+                // separately
+                if (a_len == 0) {    // if we reached the end of "a" frag
+                    if ((ta_elem = ta_elem->u.f.next)) { // try the next frag
+                        a_cp = ta_elem->u.f.frag;
+                        a_len = ta_elem->len;
+                    }
+                }
+                if (b_len == 0) {    // if we reached the end of "b" frag
+                    if ((tb_elem = tb_elem->u.f.next)) { // try the next frag
+                        b_cp = tb_elem->u.f.frag;
+                        b_len = tb_elem->len;
+                    }
+                }
+                if (! (a_len && b_len)) { // at least one has reached the end
+                    break;
+                }
+                if (*a_cp != *b_cp) {    // test if chars match
+                    return *a_cp - *b_cp;
+                }
+                a_cp++;                           
+                b_cp++;                           
+                a_len--;
+                b_len--;
             }
-        }
-        if (! bi.len) {
-            if (bi.next[bi.nest]) { 
-                bi.cp = bi.next[bi.nest]->u.f.next;
-                bi.len = bi.next[bi.nest]->len;
-                bi.next[bi.nest] = bi.next[bi.nest]->u.f.next;
-                b = *bi.cp;
-            } else {
-                while (--b.nest && ! bi.next[bi.nest]) {}
-                if (bi.nest) {
-		    init(&bi, bi.next[bi.nest]->u.l.first);
-		}
-                b = '\0';
+            if (a_len || b_len) {  // if strings are same length then
+                                   // both should be 0, we know that one is 0
+                return a_len - b_len;   // longer strings sort later
             }
+            // all matched so far, move on to test the next STRING
         }
-        rc = a - b;
-    } while (ai.nest && bi.nest && !rc);
-    return rc;
+        a_elem = a_elem->u.l.next;
+        b_elem = b_elem->u.l.next;
+    }
+    return 0;   // if we get here, then the strings match
 }
