@@ -9,22 +9,11 @@ extern "C" {
 
 struct graph_s {               // GRAPH context
 
-// FIXME - move to CONTAINER
-    int containment;           // depth of containment
-    long stat_containercount;
-//
+//    FIXME - its starting to look like we don't need this struct
 
     // FIXME  - do I need to take verb default from parent graph ?
     state_t verb;              // after parsing, 0 "add", TLD "del", QRY "query"
     char need_mum;           // flag set if MUM is referenced
-
-    // ok as per-graph counts - may also need at THREAD level for total i/o stats
-    long stat_inactcount;
-    long stat_outactcount;
-    long stat_sameas;
-    long stat_patternactcount;
-    long stat_nonpatternactcount;
-    long stat_patternmatches;
 };
 
 // functions

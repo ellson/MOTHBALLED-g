@@ -52,8 +52,6 @@
 #define LIST() ((LIST_t*)THREAD)
 #define INBUF() ((INBUF_t*)THREAD)
 
-#define GRAPH() ((GRAPH_t*)CONTAINER)
-
 /**
  * The info is formatted into a buffer using minimal
  * spacing g format
@@ -165,7 +163,7 @@ char * info_stats(CONTAINER_t * CONTAINER)
     append_string  (THREAD, &pos, "stats_running");
     append_token   (THREAD, &pos, '[');
     Au("charpersecond",         TOKEN()->stat_incharcount+TEN9/runtime);
-    Au("containcount",          THREAD->stat_containcount);
+    Au("containercount",        CONTAINER->stat_containercount);
     Au("containdepth",          THREAD->stat_containdepth);
     Au("containdepthmax",       THREAD->stat_containdepthmax);
     Au("elemmalloccount",       LIST()->stat_elemmalloc);
@@ -178,10 +176,10 @@ char * info_stats(CONTAINER_t * CONTAINER)
     Au("inbufmalloctotal",      itot);
     Au("inbufmax",              INBUF()->stat_inbufmax);
     Au("inbufnow",              INBUF()->stat_inbufnow);
-    Au("inactcount",            GRAPH()->stat_inactcount);
-    Au("inactpatterns",         GRAPH()->stat_patternactcount);
-    Au("inactnonpatterns",      GRAPH()->stat_nonpatternactcount);
-    Au("inactspersecond",       GRAPH()->stat_inactcount*TEN9/runtime);
+    Au("inactcount",            CONTAINER->stat_inactcount);
+    Au("inactpatterns",         CONTAINER->stat_patternactcount);
+    Au("inactnonpatterns",      CONTAINER->stat_nonpatternactcount);
+    Au("inactspersecond",       CONTAINER->stat_inactcount*TEN9/runtime);
     Au("incharcount",           TOKEN()->stat_incharcount);
     Au("infragcount",           TOKEN()->stat_infragcount);
     Au("infilecount",           TOKEN()->stat_infilecount);
@@ -190,10 +188,10 @@ char * info_stats(CONTAINER_t * CONTAINER)
     As("instringshort",         percent);
     Au("malloctotal",           itot+etot);
     Au("nowtime",               nowtime.tv_sec);
-    Au("outactcount",           GRAPH()->stat_outactcount);
-    Au("patternmatches",        GRAPH()->stat_patternmatches);
+    Au("outactcount",           CONTAINER->stat_outactcount);
+    Au("patternmatches",        CONTAINER->stat_patternmatches);
     Ar("runtime",               runtime/TEN9, runtime%TEN9);
-    Au("sameas",                GRAPH()->stat_sameas);
+    Au("sameas",                CONTAINER->stat_sameas);
     append_token   (THREAD, &pos, ']');
 
     assert(pos < buf+BUF_SIZE);

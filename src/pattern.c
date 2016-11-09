@@ -41,17 +41,16 @@ static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject);
 
 elem_t * pattern(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb)
 {
-    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     elem_t *newsubjects;
 
-    // FIXME - this can't be right!
-    if ((CONTAINER->is_pattern = ((TOKEN_t*)GRAPH)->is_pattern)) {
-        GRAPH->stat_patternactcount++;
+    // FIXME - this is ugly!
+    if ((CONTAINER->is_pattern = (((TOKEN_t*)(CONTAINER->THREAD))->is_pattern))) {
+        CONTAINER->stat_patternactcount++;
         assert(CONTAINER->subject_type == NODE || CONTAINER->subject_type == EDGE);
         pattern_update(CONTAINER, subject, verb);
         return NULL;
     }
-    GRAPH->stat_nonpatternactcount++;
+    CONTAINER->stat_nonpatternactcount++;
     newsubjects = pattern_match(CONTAINER, subject);
     return newsubjects;
 }
@@ -132,7 +131,7 @@ static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject)
 
             // FIXME -- contents
 
-            GRAPH->stat_patternmatches++;
+            CONTAINER->stat_patternmatches++;
         }
     }
 

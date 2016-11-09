@@ -64,7 +64,7 @@ success_t container(THREAD_t * THREAD)
     if (THREAD->stat_containdepth > THREAD->stat_containdepthmax) {
         THREAD->stat_containdepthmax = THREAD->stat_containdepth;
     }
-    THREAD->stat_containcount++;    // number of containers
+    container.stat_containercount++;    // number of containers in this container
 
     container.ikea_box = ikea_box_open(THREAD->ikea_store, NULL);
 

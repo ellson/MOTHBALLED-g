@@ -125,7 +125,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
                 new = ref_list(LIST, *nextold);
                 append_transfer(newlist, new);
                 *nextold = (*nextold)->u.l.next;
-                ((GRAPH_t*)CONTAINER)->stat_sameas++;
+                CONTAINER->stat_sameas++;
             } else {
                 // e.g. :      a (b =)
                 token_error((TOKEN_t*)LIST,

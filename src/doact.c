@@ -16,9 +16,19 @@
 
 #define LIST() ((LIST_t*)THREAD)
 
+/**
+ * Invoked from the graph parser as soon as the parser
+ * completes an input ACT.
+ *
+ * Various ACT rewrites are performed in the function,
+ * culminating in updates to an internal representation
+ *
+ * @param GRAPH context
+ * @param act - the input ACT.
+ * @return success/fail
+ */
 success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 {
-    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *subject, *attributes;
     elem_t *newact, *newsubject, *newattributes;
@@ -26,7 +36,7 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     assert(act);
     assert(act->u.l.first);  // minimaly, an ACT must have a SUBJECT
 
-    GRAPH->stat_inactcount++;
+    CONTAINER->stat_inactcount++;
 
 //P(act);
 //---------------------- love this example
@@ -163,7 +173,7 @@ P(newact);
 
     elem = newsubject->u.l.first;
     while (elem) {
-        GRAPH->stat_outactcount++;
+        CONTAINER->stat_outactcount++;
 P(elem);
         reduce(CONTAINER, elem);  // eliminate redundancy by insertion sorting into trees.
 

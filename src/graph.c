@@ -15,9 +15,14 @@
 #include "container.h"
 #include "doact.h"
 
+#define CONTAINER() ((CONTAINER_t*)GRAPH)
+
 #define TOKEN() ((TOKEN_t*)THREAD)
 #define LIST() ((LIST_t*)THREAD)
 #define INBUF() ((INBUF_t*)THREAD)
+
+#define MORE_REP(prop, ei) \
+    ((prop & (REP | SREP)) && ei != RPN && ei != RAN && ei != RBR && ei != RBE)
 
 // FIXME - doxygen doesn't like this ASCII diagram
 //            -- special  mean of trailing | ???
@@ -47,9 +52,6 @@
  * maintains the input state.
  */
 
-#define MORE_REP(prop, ei) \
-    ((prop & (REP | SREP)) && ei != RPN && ei != RAN && ei != RBR && ei != RBE)
-
 /**
  * iterate and recurse through state-machine at a single level of containment
  *
@@ -64,7 +66,7 @@
  */
 success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, int nest, int repc, state_t bi)
 {
-    THREAD_t * THREAD = ((CONTAINER_t*)GRAPH)->THREAD;
+    THREAD_t * THREAD = CONTAINER()->THREAD;
     unsigned char nprop;
     char so;        // offset to next state, signed
     state_t ti, ni, ei;
@@ -134,7 +136,7 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
         GRAPH->verb = 0;          // default "add"
         break;
     case SUBJECT:
-        TOKEN()->is_pattern = 0;  // maintain flag for '*' found anywhere in the subject
+        CONTAINER()->is_pattern = 0;  // maintain flag for '*' found anywhere in the subject
         GRAPH->need_mum = 0;    // maintain flag for any MUM involvement
         break;
     case MUM:
@@ -194,7 +196,7 @@ done: // State exit processing
         switch (si) {
 
         case ACT:  // ACT is complete, process it
-            rc = doact((CONTAINER_t*)GRAPH, branch);
+            rc = doact(CONTAINER(), branch);
             // this is the top recursion
             // no more need for this branch
             // don't bother appending to root

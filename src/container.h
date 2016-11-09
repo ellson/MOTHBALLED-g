@@ -21,6 +21,15 @@ struct container_s {            // CONTAINER context
     elem_t *edges;              // tree of unique edges
 
     ikea_box_t *ikea_box;       // box for these contents
+
+    // stats
+    long stat_containercount;
+    long stat_inactcount;  
+    long stat_sameas;
+    long stat_patternactcount;
+    long stat_nonpatternactcount;
+    long stat_patternmatches;
+    long stat_outactcount;
 };
 
 // functions
