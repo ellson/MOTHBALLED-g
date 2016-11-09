@@ -18,7 +18,6 @@ typedef struct elem_s elem_t;
 typedef struct inbufelem_s inbufelem_t;
 
 typedef struct container_s CONTAINER_t;
-typedef struct parse_s PARSE_t;
 
 typedef struct ikea_store_s ikea_store_t;
 typedef struct ikea_box_s ikea_box_t;

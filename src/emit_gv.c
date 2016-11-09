@@ -9,25 +9,25 @@
 
 static void api_start_activity(CONTAINER_t * CONTAINER)
 {
-    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)CONTAINER;
 
-    PARSE->sep = 0;
-    fprintf(PARSE->out, "graph {\n");
+    CONTAINER->sep = 0;
+    fprintf(CONTAINER->out, "graph {\n");
 }
 
 static void api_end_activity(CONTAINER_t * CONTAINER)
 {
-    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)CONTAINER;
 
-    PARSE->sep = 0;
-    fprintf(PARSE->out, "\n}\n");
+    CONTAINER->sep = 0;
+    fprintf(CONTAINER->out, "\n}\n");
 }
 
 static void api_list(CONTAINER_t * CONTAINER, elem_t *list)
 {
-    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)CONTAINER;
 
-    je_emit_list(PARSE, PARSE->out, list);
+    je_emit_list(CONTAINER, CONTAINER->out, list);
 }
 
 emit_t gv_api = { "gv",

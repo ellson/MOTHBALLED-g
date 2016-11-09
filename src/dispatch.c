@@ -9,6 +9,8 @@
 #include "expand.h"
 #include "dispatch.h"
 
+#define LIST() ((LIST_t*)THREAD)
+
 static void
 dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *attributes,
         elem_t * nodes, elem_t * edges, state_t verb);
@@ -61,9 +63,7 @@ assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
 elem_t *
 dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
 {
-    PARSE_t *PARSE = (PARSE_t*)CONTAINER;
     THREAD_t *THREAD = CONTAINER->THREAD;
-    LIST_t * LIST = (LIST_t *)THREAD;
     state_t si;
     elem_t *new, *newacts, *elem, *nodes, *edges, *attributes;
     
@@ -74,11 +74,11 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
 //E();
 //P(act);
 
-    newacts = new_list(LIST, 0); // return list
+    newacts = new_list(LIST(), 0); // return list
 
-    nodes = new_list(LIST, 0);
-    edges = new_list(LIST, 0);
-    attributes = new_list(LIST, 0);
+    nodes = new_list(LIST(), 0);
+    edges = new_list(LIST(), 0);
+    attributes = new_list(LIST(), 0);
 
     // expand NOUNSET and ENDPOINTSETS
     dispatch_r(CONTAINER, act, attributes, nodes, edges, verb);
@@ -92,7 +92,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
     case NODE:
         elem = nodes->u.l.first;
         while (elem) {
-            new = assemble_act(LIST, elem, attributes, verb);
+            new = assemble_act(LIST(), elem, attributes, verb);
             append_transfer(newacts, new);
             elem = elem->u.l.next;
         }
@@ -106,14 +106,14 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
                 elem = nodes->u.l.first;
                 while (elem) {
                     // inducing nodes from NODEREFS - no attributes from these
-                    new = assemble_act(LIST, elem, NULL, verb);    //FIXME we dont want to delete induced nodes!!
+                    new = assemble_act(LIST(), elem, NULL, verb);    //FIXME we dont want to delete induced nodes!!
                     append_transfer(newacts, new);
                     elem = elem->u.l.next;
                 }
 
                 elem = edges->u.l.first;
                 while (elem) {
-                    new = assemble_act(LIST, elem, attributes, verb);
+                    new = assemble_act(LIST(), elem, attributes, verb);
                     append_transfer(newacts, new);
                     elem = elem->u.l.next;
                 }
@@ -125,9 +125,9 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
         break;
     }
 
-    free_list(LIST, nodes);
-    free_list(LIST, edges);
-    free_list(LIST, attributes);
+    free_list(LIST(), nodes);
+    free_list(LIST(), edges);
+    free_list(LIST(), attributes);
 
 //E();
 //P(newacts);
@@ -151,7 +151,6 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
         elem_t * nodes, elem_t * edges, state_t verb)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    LIST_t *LIST = (LIST_t*)THREAD;
     elem_t *elem, *new, *object;
     state_t si1, si2;
 
@@ -167,7 +166,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
             dispatch_r(CONTAINER, elem, attributes, nodes, edges, verb);
             break;
         case ATTRIBUTES:
-            new = ref_list(LIST, elem);
+            new = ref_list(LIST(), elem);
             append_transfer(attributes, new);
             break;
         case SUBJECT:
@@ -192,7 +191,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
             }
             break;
         case NODE:
-            new = ref_list(LIST, elem);
+            new = ref_list(LIST(), elem);
             append_transfer(nodes, new);
             break;
         case EDGE:

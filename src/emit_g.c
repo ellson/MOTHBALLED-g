@@ -9,39 +9,39 @@
 
 static void api_start_activity(CONTAINER_t * CONTAINER)
 {
-    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)CONTAINER;
 
-    PARSE->sep = 0;
-    if (PARSE->containment != 0) {
-        putc('{', PARSE->out);
+    CONTAINER->sep = 0;
+    if (CONTAINER->containment != 0) {
+        putc('{', CONTAINER->out);
     }
 }
 
 static void api_end_activity(CONTAINER_t * CONTAINER)
 {
-    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)CONTAINER;
 
-    PARSE->sep = 0;
-    if (PARSE->containment != 0) {
-        putc('}', PARSE->out);
+    CONTAINER->sep = 0;
+    if (CONTAINER->containment != 0) {
+        putc('}', CONTAINER->out);
     }
     else {
-        putc('\n', PARSE->out);
+        putc('\n', CONTAINER->out);
     }
 }
 
 static void api_subject(CONTAINER_t * CONTAINER, elem_t *list)
 {
-    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)CONTAINER;
 
-    je_emit_list(PARSE, PARSE->out, list);
+    je_emit_list(CONTAINER, CONTAINER->out, list);
 }
 
 static void api_attributes(CONTAINER_t * CONTAINER, elem_t *list)
 {
-    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)CONTAINER;
 
-    je_emit_list(PARSE, PARSE->out, list);
+    je_emit_list(CONTAINER, CONTAINER->out, list);
 }
 
 emit_t g_api = { "g",
@@ -76,29 +76,29 @@ emit_t g_api = { "g",
 
 static void api1_end_activity(CONTAINER_t * CONTAINER)
 {
-    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)CONTAINER;
 
-    if (PARSE->containment == 0) {
-        putc('\n', PARSE->out);
+    if (CONTAINER->containment == 0) {
+        putc('\n', CONTAINER->out);
     }
 }
 
-static void api1_sep(PARSE_t * PARSE)
+static void api1_sep(CONTAINER_t * CONTAINER)
 {
-    putc(' ', PARSE->out);
+    putc(' ', CONTAINER->out);
 }
 
-static void api1_string(PARSE_t * PARSE, elem_t * branch)
+static void api1_string(CONTAINER_t * CONTAINER, elem_t * branch)
 {
     char sep;
 
     sep = 0;
-    print_elem(PARSE->out, branch, -1, &sep);
+    print_elem(CONTAINER->out, branch, -1, &sep);
 }
 
-static void api1_token(PARSE_t * PARSE, char token)
+static void api1_token(CONTAINER_t * CONTAINER, char token)
 {
-    putc(token, PARSE->out);
+    putc(token, CONTAINER->out);
 }
 
 emit_t g1_api = { "g1",
@@ -133,16 +133,16 @@ emit_t g1_api = { "g1",
 
 static void api2_end_activity(CONTAINER_t * CONTAINER)
 {
-    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)CONTAINER;
 
-    putc('\n', PARSE->out);
+    putc('\n', CONTAINER->out);
 }
 
-static void api2_token(PARSE_t * PARSE, char token)
+static void api2_token(CONTAINER_t * CONTAINER, char token)
 {
-    putc('\n', PARSE->out);
-    putc(token, PARSE->out);
-    putc(' ', PARSE->out);
+    putc('\n', CONTAINER->out);
+    putc(token, CONTAINER->out);
+    putc(' ', CONTAINER->out);
 }
 
 emit_t g2_api = { "g2",

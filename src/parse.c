@@ -15,8 +15,6 @@
 #include "container.h"
 #include "doact.h"
 
-#define CONTAINER() ((CONTAINER_t*)PARSE)
-
 #define TOKEN() ((TOKEN_t*)THREAD)
 #define LIST() ((LIST_t*)THREAD)
 #define INBUF() ((INBUF_t*)THREAD)
@@ -55,7 +53,7 @@
 /**
  * iterate and recurse through state-machine at a single level of containment
  *
- *  @param PARSE context
+ *  @param CONTAINER context
  *  @param root - the parent's branch that we are adding to
  *  @param si input state
  *  @param prop grammar properties
@@ -64,9 +62,9 @@
  *  @param bi from state
  *  @return SUCCESS or FAIL
  */
-success_t parse(PARSE_t * PARSE, elem_t *root, state_t si, unsigned char prop, int nest, int repc, state_t bi)
+success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char prop, int nest, int repc, state_t bi)
 {
-    THREAD_t * THREAD = CONTAINER()->THREAD;
+    THREAD_t * THREAD = CONTAINER->THREAD;
     unsigned char nprop;
     char so;        // offset to next state, signed
     state_t ti, ni, ei;
@@ -137,7 +135,7 @@ success_t parse(PARSE_t * PARSE, elem_t *root, state_t si, unsigned char prop, i
         verb = 0;          // default "add"
         break;
     case SUBJECT:
-        CONTAINER()->is_pattern = 0;  // maintain flag for '*' found anywhere in the subject
+        CONTAINER->is_pattern = 0;  // maintain flag for '*' found anywhere in the subject
         mum = 0;    // maintain flag for any MUM involvement
         break;
     case MUM:
@@ -162,27 +160,27 @@ success_t parse(PARSE_t * PARSE, elem_t *root, state_t si, unsigned char prop, i
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            if ((rc = parse(PARSE, branch, ni, nprop, nest, 0, bi)) == SUCCESS) {
+            if ((rc = parse(CONTAINER, branch, ni, nprop, nest, 0, bi)) == SUCCESS) {
                 break;                  // ALT satisfied
             }
             // we failed an ALT so continue iteration to try next ALT
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                if ((rc = parse(PARSE, branch, ni, nprop, nest, repc++, bi)) == SUCCESS) {
+                if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) == SUCCESS) {
                     while (MORE_REP(nprop, ei)) {
-                        if ((rc = parse(PARSE, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
+                        if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                             break;
                         }
                     }
                 }
                 rc = SUCCESS;           // OPTs always successful
             } else {                    // else not OPTional, at least one is mandatory
-                if ((rc = parse(PARSE, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
+                if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                     break;
                 }
                 while (MORE_REP(nprop, ei)) {
-                    if ((rc = parse(PARSE, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
+                    if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                         break;
                     }
                 }
@@ -197,7 +195,7 @@ done: // State exit processing
         switch (si) {
 
         case ACT:  // ACT is complete, process it
-            rc = doact(CONTAINER(), branch, verb, mum);
+            rc = doact(CONTAINER, branch, verb, mum);
             // this is the top recursion
             // no more need for this branch
             // don't bother appending to root

@@ -8,8 +8,7 @@ extern "C" {
 #endif
 
 struct container_s {            // CONTAINER context
-    PARSE_t PARSE;              // PARSE contents context. Must be first to allow casting from CONTAINER
-    THREAD_t *THREAD;          // THREAD context
+    THREAD_t *THREAD;           // THREAD context
     elem_t *previous_subject;   // For use by sameas()
     char is_pattern;            // flag set if '*' occurred in SUBJECT
     char need_mum;              // flag set if '^' occurred in SUBJECT

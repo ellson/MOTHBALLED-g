@@ -7,16 +7,8 @@
 extern "C" {
 #endif
 
-struct parse_s {               // PARSE context
-
-//    FIXME - its starting to look like we don't need this struct
-
-    // FIXME  - do I need to take verb default from parent graph ?
-    state_t verb;              // after parsing, 0 "add", TLD "del", QRY "query"
-};
-
 // functions
-success_t parse(PARSE_t * PARSE, elem_t * root, state_t si, unsigned char prop, int nest, int repc, state_t bi);
+success_t parse(CONTAINER_t * CONTAINER, elem_t * root, state_t si, unsigned char prop, int nest, int repc, state_t bi);
 
 #ifdef __cplusplus
 }

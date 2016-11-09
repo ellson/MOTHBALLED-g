@@ -76,8 +76,8 @@ void je_emit_act(CONTAINER_t * CONTAINER, elem_t *list)
 #define DOTLANG 1
 static void emit_act_func(CONTAINER_t * CONTAINER, state_t verb, state_t subjtype, elem_t *subject, elem_t *disambig, elem_t *attributes)
 {
-    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
-    PARSE->sep = '\0';
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)CONTAINER;
+    CONTAINER->sep = '\0';
 
     switch (verb) {
     case ACTIVITY: break;               // add
@@ -111,7 +111,7 @@ static void emit_act_func(CONTAINER_t * CONTAINER, state_t verb, state_t subjtyp
         emit_act_list_r(CONTAINER, subject->u.l.first);
         putc('-', stdout);
         putc('-', stdout);
-        PARSE->sep = '\0';
+        CONTAINER->sep = '\0';
         emit_act_list_r(CONTAINER, subject->u.l.first->u.l.next);
 #endif
         break;
@@ -122,13 +122,13 @@ static void emit_act_func(CONTAINER_t * CONTAINER, state_t verb, state_t subjtyp
     if (disambig) {
 #ifndef DOTLANG
         putc('`', stdout);
-        PARSE->sep = '\0';
+        CONTAINER->sep = '\0';
         emit_act_list_r(CONTAINER, disambig->u.l.first); // skip DISAMBID
 #endif
     }
     if (attributes) {
         putc('[', stdout);
-        PARSE->sep = '\0';
+        CONTAINER->sep = '\0';
         emit_act_list_r(CONTAINER, attributes);
         putc(']', stdout);
     }
@@ -138,7 +138,7 @@ static void emit_act_func(CONTAINER_t * CONTAINER, state_t verb, state_t subjtyp
 // recursive function
 static void emit_act_list_r(CONTAINER_t * CONTAINER, elem_t * list)
 {
-    PARSE_t *PARSE = (PARSE_t*)CONTAINER;
+    CONTAINER_t *CONTAINER = (CONTAINER_t*)CONTAINER;
     elem_t *elem;
     elemtype_t type;
     state_t liststate = 0;
@@ -148,16 +148,16 @@ static void emit_act_list_r(CONTAINER_t * CONTAINER, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-        emit_act_print_frags(liststate, elem, &(PARSE->sep));
+        emit_act_print_frags(liststate, elem, &(CONTAINER->sep));
         break;
     case SHORTSTRELEM:
-        emit_act_print_shortstr(elem, &(PARSE->sep));
+        emit_act_print_shortstr(elem, &(CONTAINER->sep));
         break;
     case LISTELEM:
         while (elem) {
             if ((state_t)(elem->state) == EQL) {
                 putc('=', stdout);
-                PARSE->sep = '\0';
+                CONTAINER->sep = '\0';
             }
             else {
                 emit_act_list_r(CONTAINER, elem);    // recurse

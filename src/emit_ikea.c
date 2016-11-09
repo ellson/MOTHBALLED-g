@@ -17,8 +17,8 @@ static void ikea_print_frags(ikea_box_t * ikea_box, state_t liststate, elem_t * 
 
 void emit_ikea(CONTAINER_t * CONTAINER, elem_t *elem)
 {
-    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
-    PARSE->sep = 0; // suppress space before (because preceded by BOF or NL)
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)CONTAINER;
+    CONTAINER->sep = 0; // suppress space before (because preceded by BOF or NL)
     // emit in compact g format
     ikea_list_r(CONTAINER, elem);
     ikea_box_append(CONTAINER->ikea_box, "\n", 1); // NL after each act
@@ -26,15 +26,15 @@ void emit_ikea(CONTAINER_t * CONTAINER, elem_t *elem)
 
 static void ikea_token(CONTAINER_t * CONTAINER, char *tok)
 {
-    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)CONTAINER;
     ikea_box_append(CONTAINER->ikea_box, tok, 1);
-    PARSE->sep = 0;
+    CONTAINER->sep = 0;
 }
 
 // recursive function
 static void ikea_list_r(CONTAINER_t * CONTAINER, elem_t * list)
 {
-    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    CONTAINER_t * CONTAINER = (CONTAINER_t*)CONTAINER;
     elem_t *elem;
     elemtype_t type;
     int cnt;
@@ -58,7 +58,7 @@ static void ikea_list_r(CONTAINER_t * CONTAINER, elem_t * list)
     type = (elemtype_t) elem->type;
     switch (type) {
     case FRAGELEM:
-        ikea_print_frags(CONTAINER->ikea_box, liststate, elem, &(PARSE->sep));
+        ikea_print_frags(CONTAINER->ikea_box, liststate, elem, &(CONTAINER->sep));
         break;
     case LISTELEM:
         cnt = 0;
