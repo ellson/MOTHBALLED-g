@@ -1,3 +1,12 @@
+/* vim:set shiftwidth=4 ts=8 expandtab: */
+
+#include <stdio.h>
+#include <stdint.h>
+#include <assert.h>
+
+#include "thread.h"
+#include "compare.h"
+
 #define MAXNEST 5
 
 typedef struct {
@@ -6,6 +15,7 @@ typedef struct {
     char *cp,
     int len;
 } iter_t;
+
 
 static void init(iter_t *iter, elem_t *elem)
 {
@@ -31,6 +41,17 @@ static void init(iter_t *iter, elem_t *elem)
     }
 }
 
+/**
+ * compare string value of elems: A and B
+ *
+ * - root may be LISTELEM or SHORTSTRELEM
+ * - leaves maybe SHORSTRELEM or FRAGELEM
+ *
+ * @param A 
+ * @param B
+ * @return result of ASCII comparison: <0, 0, >0
+ */
+
 int compare (elem_t *A, elem_t *B)
 {
     char a, b, rc;
@@ -54,11 +75,9 @@ int compare (elem_t *A, elem_t *B)
             } else {
                 while (--a.nest && ! ai.next[ai.nest]) {}
                 if (ai.nest) {
-                    a = ' ';
 		    init(&ai, ai.next[ai.nest]->u.l.first);
-		} else {
-                    b = '\0';
 		}
+                a = '\0';
             }
         }
         if (! bi.len) {
@@ -70,11 +89,9 @@ int compare (elem_t *A, elem_t *B)
             } else {
                 while (--b.nest && ! bi.next[bi.nest]) {}
                 if (bi.nest) {
-                    b = ' ';
 		    init(&bi, bi.next[bi.nest]->u.l.first);
-		} else {
-                    b = '\0';
-                }
+		}
+                b = '\0';
             }
         }
         rc = a - b;
