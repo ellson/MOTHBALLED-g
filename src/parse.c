@@ -22,24 +22,19 @@
 #define MORE_REP(prop, ei) \
     ((prop & (REP | SREP)) && ei != RPN && ei != RAN && ei != RBR && ei != RBE)
 
-// FIXME - doxygen doesn't like this ASCII diagram
-//            -- special  mean of trailing | ???
-
 /**
- * parse G syntax input
- *
  * This parser recurses at two levels:
  *
- *  input
- *    |
- *    V
- * thread() --> container() --> parse() ------| -|
- *            ^               ^   |           |  |
- *            |               |   -> doact()  |  |
- *            |               |               |  |
- *            |               --------<-------|  |
- *            |                                  |
- *            ----------------<------------------|
+ *      input
+ *        |
+ *        V
+ *     thread() --> container() --> parse() ------| -|
+ *                ^               ^   |           |  |
+ *                |               |   -> doact()  |  |
+ *                |               |               |  |
+ *                |               --------<-------|  |
+ *                |                                  |
+ *                ----------------<------------------|
  *
  * The outer recursions are through nested containment.
  *

@@ -23,7 +23,7 @@
  * Various ACT rewrites are performed in the function,
  * culminating in updates to an internal representation
  *
- * @param PARSE context
+ * @param CONTAINER context
  * @param act - the input ACT.
  * @return success/fail
  */

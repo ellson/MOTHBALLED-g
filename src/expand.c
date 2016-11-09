@@ -14,8 +14,8 @@ static void expand_hub(LIST_t * LIST, elem_t *tail, elem_t *head, elem_t *disamb
 
 /**
  * this function expands EDGEs into:
- *    a list of nodes reference by the edge
- *    a list of simple edges, each with the same disambiguation as the compound edge
+ *  - a list of nodes reference by the edge
+ *  - a list of simple edges, each with the same disambiguation as the compound edge
  * 
  * @param CONTAINER context
  * @param list - a simple or compound edge
@@ -120,9 +120,15 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
 }
 
 /**
- * this function expands ENDPOINTSETs
- * expands edges like:    <(a b c) d>`x
- * into:                  <a d>`x <b d>`x <c d>`x
+ * This function expands ENDPOINTSETs, expanding edges like:
+ *
+ *     <(a b c) d>`x
+ *
+ * into:
+ *
+ *     <a d>`x
+ *     <b d>`x
+ *     <c d>`x
  *
  * @param LIST context
  * @param newepset
@@ -131,7 +137,9 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
  * @param nodes - list of nodes
  * @param edges - list of edges
  */
-static void expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges)
+static void
+expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset,
+        elem_t *disambig, elem_t *nodes, elem_t *edges)
 {
     elem_t *ep, *eplast, *new;
     elem_t * nendpoint = NULL;

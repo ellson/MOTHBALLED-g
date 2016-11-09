@@ -56,8 +56,9 @@ assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
 
 /**
  * @param CONTAINER container context
- * @param an ACT
+ * @param act - input act, after whatever rewrites have happenned so far
  * @param verb - add, del, qry 
+ * @param mum - will be needed
  * @return new list of ACTS
  */
 elem_t *
@@ -139,12 +140,12 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
  *     then expands ENPOINTSETS in EDGES,
  *     and returns the expansion as list of simple nodes and edges
  *
- * @param LIST context
+ * @param CONTAINER context
  * @param list of object -- not modified
  * @param attributes -- appended
  * @param nodes -- appended
  * @param edges -- appended
- * @param verb
+ * @param verb -- add, QRY, TLD
  */
 static void
 dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
@@ -216,6 +217,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
  * @param LIST context
  * @param elem   -- node or edge object -- not modified
  * @param attributes -- not modified
+ * @param verb --  add, delete, query
  * @return a node act
  */
 static elem_t *
