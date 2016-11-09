@@ -1,27 +1,33 @@
+#define MAXNEST 5
+
 typedef struct {
-    elem_t next;
+    elem_t *next[MAXNEST];
+    int nest;
     char *cp,
     int len;
 } iter_t;
 
 static void init(iter_t *iter, elem_t *elem)
 {
+    assert(iter->nest < MAXNEST);
     switch (elem->type) {
         case FRAGELEM:
             iter->cp = elem->u.f.frag;
             iter->len = elem->len;
-            iter->next = elem->u.f.next
+            iter->next[iter->nest] = elem->u.f.next
             break;
         case SHORTSTRELEM:
             iter->cp = &(elem->u.s.str);
             iter->len = elem->len;
-            iter->next = NULL;
+            iter->next[iter->nest] = NULL;
             break;
         case LISTELEM:
-            // ???
+            iter->next[iter->nest++] = elem->u.l.next;
+            init(iter, elem->u.l.first);
             break;
         default:
             assert(0);
+            break;
     }
 }
 
@@ -29,14 +35,18 @@ static char next(iter_t *iter)
 {
 
     if (! iter->len) {
-        if (! iter->next) {
+        while (! iter->next[iter->nest]) {
+            if (--(iter->nest)) {
+// ?????                
+// and don't forget extra ' '
+            }
             return '\0';
         }
         iter->cp = next->u.f.frag;
         iter->len = next->len;
-        iter->next = next->u.f.next
+        iter->next[iter->nest] = next->u.f.next
     }
-    assert(len);
+    assert(iter->len);
     iter->len--;
     return *(iter->cp)++;
 }
@@ -44,7 +54,8 @@ static char next(iter_t *iter)
 char compare (elem_t *A, elem_t *B)
 {
     char a, b, rc;
-    iter_t ai, bi;
+    iter_t ai = { 0 };
+    iter_t bi = { 0 };
 
     init(&ai, A);
     init(&bi, B);
