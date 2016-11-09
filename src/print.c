@@ -122,15 +122,30 @@ static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
  */
 static void print_tree(FILE * chan, elem_t * p, char *sep)
 {
+    elem_t *key;
+
     assert(p);
-    assert(p->u.t.key);
-    assert(p->u.t.key->u.l.first);
-    assert(p->u.t.key->u.l.first->u.l.first);
+
+    key = p->u.t.key;
+    assert(key);
 
     if (p->u.t.left) {
         print_tree(chan, p->u.t.left, sep);
     }
-    print_frags(chan, 0, p->u.t.key->u.l.first->u.l.first, sep);
+
+    switch (key->type) {
+    case FRAGELEM:
+        assert(p->u.t.key->u.l.first);
+        assert(p->u.t.key->u.l.first->u.l.first);
+        print_frags(chan, 0, key->u.l.first->u.l.first, sep);
+        break;
+    case SHORTSTRELEM:
+        print_shortstr(chan, key, sep);
+        break;
+    default:
+        assert(0);
+    }
+
     if (p->u.t.right) {
         print_tree(chan, p->u.t.right, sep);
     }

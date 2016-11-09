@@ -11,6 +11,8 @@
 #include "match.h"
 #include "attribute.h"
 
+#define LIST() ((LIST_t*)THREAD)
+
 /**
  * ATTRID and VALUE are stored in separate trees:
  * Both trees are sorted by ATTRID
@@ -75,7 +77,7 @@ elem_t * attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
     assert(attributes);
     assert((state_t)attributes->state == ATTRIBUTES);
 
-    newattributes = new_list((LIST_t*)THREAD, ATTRIBUTES);
+    newattributes = new_list(LIST(), ATTRIBUTES);
 
     attr = attributes->u.l.first;
     while (attr) {
@@ -88,9 +90,14 @@ elem_t * attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
         assert((state_t)attrid->state == ATTRID);
 
         attrid_str = attrid->u.l.first;
-P(attrid_str);
+// P(attrid_str);
 
-        new = ref_list((LIST_t*)THREAD, attr);
+        THREAD->attrid = insert_item(LIST(), THREAD->attrid, attrid_str);
+P(THREAD->attrid);
+
+// FIXME - if it previously existed, we need an updated key pointer.
+
+        new = ref_list(LIST(), attr);
         append_transfer(newattributes, new);    // FIXME not right yet ...
 
         attr = attr->u.l.next;

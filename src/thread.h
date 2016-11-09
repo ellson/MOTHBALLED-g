@@ -32,6 +32,9 @@ struct thread_s {
                                // requires a separator,  but may be ignored if
                                // the next character is a token which
                                // implicitly separates.)
+ 
+    elem_t *attrid;            // tree of attrid strings;
+
     // stats
     long stat_containdepth;      
     long stat_containdepthmax;      

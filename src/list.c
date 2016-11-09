@@ -168,7 +168,7 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
     elem_t *elem;
 
     assert(key);
-    assert(key->type == (char)LISTELEM);
+
     key->refs++;
     assert(key->refs > 0);
 

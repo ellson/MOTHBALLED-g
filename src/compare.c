@@ -27,7 +27,7 @@ static void init(iter_t *iter, elem_t *elem)
             iter->next[iter->nest] = elem->u.f.next;
             break;
         case SHORTSTRELEM:
-            iter->cp = &(elem->u.s.str);
+            iter->cp = elem->u.s.str;
             iter->len = elem->len;
             iter->next[iter->nest] = NULL;
             break;
@@ -69,13 +69,13 @@ int compare (elem_t *A, elem_t *B)
         } while (ai.len && bi.len && !rc);
         if (! ai.len) {
             if (ai.next[ai.nest]) { 
-                ai.cp = ai.next[ai.nest]->u.f.next;
+                ai.cp = ai.next[ai.nest]->u.f.frag;
                 ai.len = ai.next[ai.nest]->len;
                 ai.next[ai.nest] = ai.next[ai.nest]->u.f.next;
                 a = *ai.cp;
             } else {
-                while (--ai.nest && ! ai.next[ai.nest]) {}
                 if (ai.nest) {
+                    while (--ai.nest && ! ai.next[ai.nest]) {}
 		    init(&ai, ai.next[ai.nest]->u.l.first);
 		}
                 a = '\0';
@@ -83,19 +83,21 @@ int compare (elem_t *A, elem_t *B)
         }
         if (! bi.len) {
             if (bi.next[bi.nest]) { 
-                bi.cp = bi.next[bi.nest]->u.f.next;
+                bi.cp = bi.next[bi.nest]->u.f.frag;
                 bi.len = bi.next[bi.nest]->len;
                 bi.next[bi.nest] = bi.next[bi.nest]->u.f.next;
                 b = *bi.cp;
             } else {
-                while (--bi.nest && ! bi.next[bi.nest]) {}
                 if (bi.nest) {
+                    while (--bi.nest && ! bi.next[bi.nest]) {}
 		    init(&bi, bi.next[bi.nest]->u.l.first);
 		}
                 b = '\0';
             }
         }
-        rc = a - b;
+        if (!rc) {
+            rc = a - b;
+        }
     } while (ai.nest && bi.nest && !rc);
     return rc;
 }

@@ -147,9 +147,6 @@ elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t * key)
     int comp;
 
     assert(key);
-    assert(key->type == (char)LISTELEM);
-    assert(key->u.l.first);
-    assert(key->u.l.first->u.l.first);
 
     if (!p) {
         return new_tree(LIST, key);
