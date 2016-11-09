@@ -17,22 +17,22 @@ typedef enum {
 struct elem_s { 
     union {
         struct {
-            elem_t *next;          // next elem in parent's list
-            elem_t *first;         // first elem in this list (or NULL)
-            elem_t *last;          // last elem in this list (or NULL)
+            elem_t *next;        // next elem in parent's list
+            elem_t *first;       // first elem in this list (or NULL)
+            elem_t *last;        // last elem in this list (or NULL)
         } l;
         struct {
-            elem_t *next;          // next frag in fraglist list
-            inbufelem_t *inbuf;    // inbuf containing frag - for memory management
-            unsigned char *frag;   // pointer to beginning of frag
+            elem_t *next;        // next frag in fraglist list
+            inbufelem_t *inbuf;  // inbuf containing frag - for memory management
+            unsigned char *frag; // pointer to beginning of frag
         } f;
         struct {
             unsigned char str[sizeof(void*)*3]; // short string (12char on 32bit machines)
         } s;
         struct {
-            elem_t *key;           // a list containg the key for this node in the tree
-            elem_t *left;          // left elem of tree
-            elem_t *right;         // left elem of tree
+            elem_t *key;         // a list providing key and value
+            elem_t *left;        // left elem of tree
+            elem_t *right;       // left elem of tree
         } t;
     } u;
     // N.B. 1) Just type *has* to be outside of union

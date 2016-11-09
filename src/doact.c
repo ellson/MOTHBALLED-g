@@ -135,9 +135,9 @@ P(act);
     attributes = subject->u.l.next;   // second item, if any, is attributes
     if (attributes) {
         assert(attributes->state == (char)ATTRIBUTES);
-//P(attributes);
+P(attributes);
         newattributes = attrid_merge(CONTAINER, attributes);
-//P(newattributes);
+P(newattributes);
         append_transfer(newact, newattributes);
     }
 //----------------------- example

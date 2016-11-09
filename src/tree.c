@@ -174,7 +174,7 @@ elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t * key)
  *  or maybe p is the min
  *
  * @param p the root of the tree
- * @return the minimum elem (the first elem in ASCI sort order)
+ * @return the minimum elem (the first elem in ASCII sort order)
  */
 static elem_t * find_min(elem_t * p)
 {
@@ -188,7 +188,7 @@ static elem_t * find_min(elem_t * p)
  * remove the min element, and rebalance the tree
  *
  * @param p the root of the tree
- * @return the minimum elem (the first elem in ASCI sort order)
+ * @return the minimum elem (the first elem in ASCII sort order)
  */
 static elem_t * remove_min(elem_t * p)
 {

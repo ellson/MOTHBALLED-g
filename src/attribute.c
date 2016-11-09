@@ -16,36 +16,47 @@
  * Both trees are sorted by ATTRID
  *
  * The ATTRID tree is common to all the CONTAINERs in a THREAD
- * ( FIXME - what about the meta graph, which includes all the stats ...)
  * This is to permit the FRAGLIST representing the ATTRID to
  * be inserted just once, on first use, and then shared by
  * reference from all NODEs or EDGEs that set a VALUE for that ATTRID.
  *
- * Every NOUN (NODE or EDGE) has its own VALUE tree
+ * Every NODE or EDGE has its own ATTRID + VALUE tree, but sharing the
+ * ATTRID from the single ATTRID tree in THREAD.
  *
- *         an NOUN's
+ *     a NODE or EDGE's
  *         VALUE tree
  *          /      \
- *       /    \  /    \   key           first
- *                     .--------> ABC -------- > FRAGLIST of string VALUE
+ *       /    \  /    \   key           first         first
+ *                     .--------> ATTR--------> ABC -------- > FRAGLIST of VALUE
+ *                                 |    (valu)
  *                                 |
- *                                 |
- *         THREAD's               | next
- *         ATTRID tree             |
+ *         THREAD's                | next
+ *         ATTRID tree             | (attrid)
  *          /      \               |
  *       /    \  /    \   key      v    first
- *                    .---------> ABC ---------> FRAGLIST of string ATTRID
+ *                    .---------> ABC ---------> FRAGLIST of ATTRID
  *
+ * ( The "ABC---->FRAGLIST", which is a minimum of two elem_t
+ * is optimized to a single SHORTSTRELEM elem_t whenever possible.
  *
- * At parse, we have an ATTRIBUTES list which applies to all the NOUNs from the SUBJECT,
- * (which are all of the same type, NODE or EDGE).  At this point we merge
- * the ATTRID into the THREAD's ATTRID tree, adding a reference to the *new* version of
- * any matching ATTRID, and freeing any older duplicate strings.
- * The current ATTRIBUTES are not modified. 
+ * So, typical cost is:  2 elem_t per unique ATTRID in a THREAD,
+ * plus 3 elem_t per ATTRRID + VALUE pair NODE or EDGE
+ *
+ * elem_t are 32bytes on 64bit hosts, and 20bytes on 32bit. )
+ *
+ * In the single inact from the parser, we have an ATTRIBUTES list which
+ * applies to all the NODES. or EDGES, from the SUBJECT
+ * (which are all of the same type).  At this point we merge
+ * the ATTRID into the THREAD's ATTRID tree, adding a reference
+ * to the *old* version of any matching ATTRID, and freeing any
+ * the new one if it is a duplicate.
+ * The current ATTRIBUTES are modified to use the string from the THREAD'ss
+ * ATTRID tree.
  *
  * After various transformations of the SUBJECT we get a list of individual
- * NOUNS.  Then, the VALUES from the rewritten ATTRIBUTES get merged with any existing 
- * VALUES used by the object.  The latest VALUE list is saved in the NOUN's VALUE trees,
+ * NODES or EDGES.  Then, the VALUES from the rewritten ATTRIBUTES
+ * get merged with any existing VALUES used by the object.  The latest
+ * VALUE list is saved in the NODE or EDGE's VALUE tree,
  * but referring to the ATTRID from the THREAD's ATTRID tree.
  */
  
