@@ -33,20 +33,14 @@ static void init(iter_t *iter, elem_t *elem)
 
 static char next(iter_t *iter)
 {
-
     if (! iter->len) {
         while (! iter->next[iter->nest]) {
-            if (--(iter->nest)) {
-// ?????                
-// and don't forget extra ' '
-            }
-            return '\0';
+            if (! --(iter->nest)) return '\0';
+            return ' ';
         }
-        iter->cp = next->u.f.frag;
-        iter->len = next->len;
-        iter->next[iter->nest] = next->u.f.next
+        iter->next[iter->nest++] = elem->u.l.next;
+        init(iter, iter->next[iter->nest]->u.l.first);
     }
-    assert(iter->len);
     iter->len--;
     return *(iter->cp)++;
 }
