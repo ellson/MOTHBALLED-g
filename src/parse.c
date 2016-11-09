@@ -73,6 +73,7 @@ success_t parse(PARSE_t * PARSE, elem_t *root, state_t si, unsigned char prop, i
     success_t rc;
     elem_t *branch;
     static unsigned char nullstring[] = { '\0' };
+    state_t verb, mum;
 
 //E();
 
@@ -133,14 +134,14 @@ success_t parse(PARSE_t * PARSE, elem_t *root, state_t si, unsigned char prop, i
 
     // the remainder of the switch() is just state initialization
     case ACT:
-        PARSE->verb = 0;          // default "add"
+        verb = 0;          // default "add"
         break;
     case SUBJECT:
         CONTAINER()->is_pattern = 0;  // maintain flag for '*' found anywhere in the subject
-        CONTAINER()->need_mum = 0;    // maintain flag for any MUM involvement
+        mum = 0;    // maintain flag for any MUM involvement
         break;
     case MUM:
-        CONTAINER()->need_mum = 1;    // maintain a flag for any MUM involvement
+        mum = 1;    // maintain a flag for any MUM involvement
         break;
     default:
         break;
@@ -196,7 +197,7 @@ done: // State exit processing
         switch (si) {
 
         case ACT:  // ACT is complete, process it
-            rc = doact(CONTAINER(), branch);
+            rc = doact(CONTAINER(), branch, verb, mum);
             // this is the top recursion
             // no more need for this branch
             // don't bother appending to root
@@ -204,7 +205,7 @@ done: // State exit processing
 
         // drop various bits of the tree that are no longer useful
         case VERB:  // VERB - after stashing away its value
-            PARSE->verb = branch->u.l.first->state;  // QRY or TLD
+            verb = branch->u.l.first->state;  // QRY or TLD
             break;
         case VALASSIGN: // ignore VALASSIGN EQL, but keep VALUE
             append_addref(root, branch->u.l.first->u.l.next);

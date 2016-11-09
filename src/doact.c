@@ -27,7 +27,7 @@
  * @param act - the input ACT.
  * @return success/fail
  */
-success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
+success_t doact(CONTAINER_t *CONTAINER, elem_t *act, state_t verb, state_t mum)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *subject, *attributes;
@@ -74,8 +74,7 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 
     newact = new_list(LIST(), ACT);
 
-// VERB has been recorded in PARSE->verb during VERB exit processing 
-//S(PARSE->verb);
+// VERB has been extracted and is available as an arg to this func. 
 
     subject = act->u.l.first;   // first item is SUBJECT
     assert(subject);
@@ -165,7 +164,7 @@ P(newact);
 
 // FIXME so this is probably flawed - doesn't it need a loop?
     // dispatch events for the ACT just finished
-    new = dispatch(CONTAINER, newsubject, verb);
+    new = dispatch(CONTAINER, newsubject, verb, mum);
     if (new) {
         free_list(LIST(), newsubject);
         newsubject = new;

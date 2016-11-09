@@ -59,7 +59,7 @@ assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
  * @return new list of ACTS
  */
 elem_t *
-dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb)
+dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
 {
     PARSE_t *PARSE = (PARSE_t*)CONTAINER;
     THREAD_t *THREAD = CONTAINER->THREAD;
@@ -98,9 +98,9 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb)
         }
         break;
     case EDGE:
-        if (CONTAINER->need_mum) {
+        if (mum) {
             // FIXME - deal with edges that require help from ancestors
-            fprintf(stdout,"EDGE has COUSIN\n");
+            fprintf(stdout,"Need Mum's help\n");
         }
         else {
                 elem = nodes->u.l.first;
