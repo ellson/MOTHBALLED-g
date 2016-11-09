@@ -203,6 +203,7 @@ done: // State exit processing
             break;
         case MUM:
             CONTAINER->mum = MUM;  // MUM is needed
+            append_addref(root, branch);
             break;
         case VALASSIGN: // ignore VALASSIGN EQL, but keep VALUE
             append_addref(root, branch->u.l.first->u.l.next);

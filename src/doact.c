@@ -38,18 +38,18 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 
     CONTAINER->stat_inactcount++;
 
+#if 0 
+// for debugging only
+
 // VERB has already been extracted and is available as an arg to this func. 
-if (CONTAINER->verb) {
-    S(CONTAINER->verb);
-}
+if (CONTAINER->verb) { S(CONTAINER->verb); }
 
 // The need for MUM's assistance with component(s) of the SUBJECT has been extracted
-if (CONTAINER->mum) {
-    S(CONTAINER->mum);
-}
+if (CONTAINER->mum) { S(CONTAINER->mum); }
 
 // The ACT as provided by parse()
 P(act);
+#endif
 
 //---------------------- love this example
 // G:     (<a b> <c:1 ^^d:2/e:3 f:4/g:5/h:7 (i:8 j:9)>`baz)[foo=bar bar=foo]
@@ -154,7 +154,7 @@ P(act);
 //                                 VALUE ABC xyz
 //----------------------- 
 
-//P(newact);
+P(newact);
 
 #if 0
 //======================= collect, remove, or apply patterns
