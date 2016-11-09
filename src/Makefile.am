@@ -17,7 +17,6 @@ noinst_HEADERS = \
     expand.h \
     fatal.h \
     grammar.h \
-    graph.h \
     hash.h \
     ikea.h \
     inbuf.h \
@@ -25,6 +24,7 @@ noinst_HEADERS = \
     list.h \
     match.h \
     merge.h \
+    parse.h \
     pattern.h \
     print.h \
     reduce.h \
@@ -53,7 +53,6 @@ libg_session_C_la_SOURCES = \
     expand.c \
     fatal.c \
     grammar.c \
-    graph.c \
     hash.c \
     ikea.c \
     inbuf.c \
@@ -61,6 +60,7 @@ libg_session_C_la_SOURCES = \
     list.c \
     match.c \
     merge.c \
+    parse.c \
     pattern.c \
     print.c \
     reduce.c \

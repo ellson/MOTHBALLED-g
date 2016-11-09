@@ -11,11 +11,11 @@
 #include "list.h"
 #include "grammar.h"
 #include "token.h"
-#include "graph.h"
+#include "parse.h"
 #include "container.h"
 #include "doact.h"
 
-#define CONTAINER() ((CONTAINER_t*)GRAPH)
+#define CONTAINER() ((CONTAINER_t*)PARSE)
 
 #define TOKEN() ((TOKEN_t*)THREAD)
 #define LIST() ((LIST_t*)THREAD)
@@ -35,7 +35,7 @@
  *  input
  *    |
  *    V
- * thread() --> container() --> graph() ------| -|
+ * thread() --> container() --> parse() ------| -|
  *            ^               ^   |           |  |
  *            |               |   -> doact()  |  |
  *            |               |               |  |
@@ -55,7 +55,7 @@
 /**
  * iterate and recurse through state-machine at a single level of containment
  *
- *  @param GRAPH context
+ *  @param PARSE context
  *  @param root - the parent's branch that we are adding to
  *  @param si input state
  *  @param prop grammar properties
@@ -64,7 +64,7 @@
  *  @param bi from state
  *  @return SUCCESS or FAIL
  */
-success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, int nest, int repc, state_t bi)
+success_t parse(PARSE_t * PARSE, elem_t *root, state_t si, unsigned char prop, int nest, int repc, state_t bi)
 {
     THREAD_t * THREAD = CONTAINER()->THREAD;
     unsigned char nprop;
@@ -133,14 +133,14 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
 
     // the remainder of the switch() is just state initialization
     case ACT:
-        GRAPH->verb = 0;          // default "add"
+        PARSE->verb = 0;          // default "add"
         break;
     case SUBJECT:
         CONTAINER()->is_pattern = 0;  // maintain flag for '*' found anywhere in the subject
-        GRAPH->need_mum = 0;    // maintain flag for any MUM involvement
+        PARSE->need_mum = 0;    // maintain flag for any MUM involvement
         break;
     case MUM:
-        GRAPH->need_mum = 1;    // maintain a flag for any MUM involvement
+        PARSE->need_mum = 1;    // maintain a flag for any MUM involvement
         break;
     default:
         break;
@@ -161,27 +161,27 @@ success_t graph(GRAPH_t * GRAPH, elem_t *root, state_t si, unsigned char prop, i
                                         // offset from the current state.
 
         if (nprop & ALT) {              // look for ALT
-            if ((rc = graph(GRAPH, branch, ni, nprop, nest, 0, bi)) == SUCCESS) {
+            if ((rc = parse(PARSE, branch, ni, nprop, nest, 0, bi)) == SUCCESS) {
                 break;                  // ALT satisfied
             }
             // we failed an ALT so continue iteration to try next ALT
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
             if (nprop & OPT) {          // OPTional
-                if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++, bi)) == SUCCESS) {
+                if ((rc = parse(PARSE, branch, ni, nprop, nest, repc++, bi)) == SUCCESS) {
                     while (MORE_REP(nprop, ei)) {
-                        if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
+                        if ((rc = parse(PARSE, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                             break;
                         }
                     }
                 }
                 rc = SUCCESS;           // OPTs always successful
             } else {                    // else not OPTional, at least one is mandatory
-                if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
+                if ((rc = parse(PARSE, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                     break;
                 }
                 while (MORE_REP(nprop, ei)) {
-                    if ((rc = graph(GRAPH, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
+                    if ((rc = parse(PARSE, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                         break;
                     }
                 }
@@ -204,7 +204,7 @@ done: // State exit processing
 
         // drop various bits of the tree that are no longer useful
         case VERB:  // VERB - after stashing away its value
-            GRAPH->verb = branch->u.l.first->state;  // QRY or TLD
+            PARSE->verb = branch->u.l.first->state;  // QRY or TLD
             break;
         case VALASSIGN: // ignore VALASSIGN EQL, but keep VALUE
             append_addref(root, branch->u.l.first->u.l.next);

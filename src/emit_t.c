@@ -9,11 +9,11 @@
 
 static void api_start_activity(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
-    FILE *chan = GRAPH->out;
+    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    FILE *chan = PARSE->out;
 
-    GRAPH->sep = 0;
-    if (GRAPH->containment == 0) {
+    PARSE->sep = 0;
+    if (PARSE->containment == 0) {
         fprintf(chan, "// |-- on entry, '|' alt, '.' one, '?' zero or one, '*' zero or more, '+' one or more\n");
         fprintf(chan, "// |-- on exit, '0' success, '1' fail\n");
         fprintf(chan, "//     |-- state number\n");
@@ -27,8 +27,8 @@ static void api_start_activity(CONTAINER_t * CONTAINER)
 static void
 api_start_state(CONTAINER_t * CONTAINER, char class, unsigned char prop, int nest, int repc)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
-    FILE *chan = GRAPH->out;
+    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    FILE *chan = PARSE->out;
 
     fprintf(chan, "\n   ");
     putc(char_prop(prop, '.'), chan);
@@ -36,9 +36,9 @@ api_start_state(CONTAINER_t * CONTAINER, char class, unsigned char prop, int nes
     print_len_frag(chan, NAMEP(class));
 }
 
-static void api_string(GRAPH_t * GRAPH, elem_t * branch)
+static void api_string(PARSE_t * PARSE, elem_t * branch)
 {
-    FILE *chan = GRAPH->out;
+    FILE *chan = PARSE->out;
     char sep;
 
     sep = 0;
@@ -46,9 +46,9 @@ static void api_string(GRAPH_t * GRAPH, elem_t * branch)
     print_elem(chan, branch, -1, &sep);
 }
 
-static void api_token(GRAPH_t * GRAPH, char token)
+static void api_token(PARSE_t * PARSE, char token)
 {
-    FILE *chan = GRAPH->out;
+    FILE *chan = PARSE->out;
 
     fprintf(chan, "\t\t%c", token);
 }
@@ -56,8 +56,8 @@ static void api_token(GRAPH_t * GRAPH, char token)
 static void
 api_end_state(CONTAINER_t * CONTAINER, char class, success_t rc, int nest, int repc)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
-    FILE *chan = GRAPH->out;
+    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    FILE *chan = PARSE->out;
 
     fprintf(chan, "\n   %d%4d%4d%4d   ", rc, class, nest, repc);
     print_len_frag(chan, NAMEP(class));
@@ -65,10 +65,10 @@ api_end_state(CONTAINER_t * CONTAINER, char class, success_t rc, int nest, int r
 
 static void api_end_activity(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
-    FILE *chan = GRAPH->out;
+    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    FILE *chan = PARSE->out;
 
-    GRAPH->sep = 0;
+    PARSE->sep = 0;
     putc('\n', chan);
 }
 
@@ -104,12 +104,12 @@ emit_t t_api = { "t",
 
 static void api1_act(CONTAINER_t * CONTAINER, elem_t * tree)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
-    FILE *chan = GRAPH->out;
+    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    FILE *chan = PARSE->out;
     char sep;
 
     sep = ' ';
-    fprintf(chan, "%3d ACT", GRAPH->containment);
+    fprintf(chan, "%3d ACT", PARSE->containment);
     print_elem(chan, tree, 7, &sep);
 }
 

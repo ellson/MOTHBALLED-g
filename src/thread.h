@@ -15,7 +15,7 @@ extern "C" {
 #include "token.h"
 #include "ikea.h"
 #include "tree.h"
-#include "graph.h"
+#include "parse.h"
 #include "container.h"
 #include "session.h"
 #include "print.h"

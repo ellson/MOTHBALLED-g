@@ -61,7 +61,7 @@ assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
 elem_t *
 dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb)
 {
-    GRAPH_t *GRAPH = (GRAPH_t*)CONTAINER;
+    PARSE_t *PARSE = (PARSE_t*)CONTAINER;
     THREAD_t *THREAD = CONTAINER->THREAD;
     LIST_t * LIST = (LIST_t *)THREAD;
     state_t si;
@@ -98,7 +98,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb)
         }
         break;
     case EDGE:
-        if (GRAPH->need_mum) {
+        if (PARSE->need_mum) {
             // FIXME - deal with edges that require help from ancestors
             fprintf(stdout,"EDGE has COUSIN\n");
         }

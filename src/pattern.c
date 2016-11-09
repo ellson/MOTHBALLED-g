@@ -93,8 +93,8 @@ static void pattern_update(CONTAINER_t * CONTAINER, elem_t * subject, state_t ve
 
 static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
-    LIST_t * LIST = (LIST_t *)GRAPH;
+    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
+    LIST_t * LIST = (LIST_t *)PARSE;
     elem_t *newacts = NULL, *pattern_acts, *subj, *attr;
 
     assert(subject);

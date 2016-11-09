@@ -25,7 +25,7 @@
  *  input
  *    |
  *    V
- * thread() --> container() --> graph() ------| -|
+ * thread() --> container() --> parse() ------| -|
  *            ^               ^   |           |  |
  *            |               |   -> doact()  |  |
  *            |               |               |  |
@@ -68,7 +68,7 @@ success_t container(THREAD_t * THREAD)
 
     container.ikea_box = ikea_box_open(THREAD->ikea_store, NULL);
 
-    if ((rc = graph((GRAPH_t*)&container, root, ACTIVITY, SREP, 0, 0, NLL)) == FAIL) {
+    if ((rc = parse((PARSE_t*)&container, root, ACTIVITY, SREP, 0, 0, NLL)) == FAIL) {
         if (TOKEN()->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {

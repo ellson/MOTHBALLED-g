@@ -23,7 +23,7 @@
  * Various ACT rewrites are performed in the function,
  * culminating in updates to an internal representation
  *
- * @param GRAPH context
+ * @param PARSE context
  * @param act - the input ACT.
  * @return success/fail
  */
@@ -74,8 +74,8 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 
     newact = new_list(LIST(), ACT);
 
-// VERB has been recorded in GRAPH->verb during VERB exit processing 
-//S(GRAPH->verb);
+// VERB has been recorded in PARSE->verb during VERB exit processing 
+//S(PARSE->verb);
 
     subject = act->u.l.first;   // first item is SUBJECT
     assert(subject);

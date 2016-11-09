@@ -1,13 +1,13 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#ifndef GRAPH_H
-#define GRAPH_H
+#ifndef PARSE_H
+#define PARSE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct graph_s {               // GRAPH context
+struct parse_s {               // PARSE context
 
 //    FIXME - its starting to look like we don't need this struct
 
@@ -17,7 +17,7 @@ struct graph_s {               // GRAPH context
 };
 
 // functions
-success_t graph(GRAPH_t * GRAPH, elem_t * root, state_t si, unsigned char prop, int nest, int repc, state_t bi);
+success_t parse(PARSE_t * PARSE, elem_t * root, state_t si, unsigned char prop, int nest, int repc, state_t bi);
 
 #ifdef __cplusplus
 }

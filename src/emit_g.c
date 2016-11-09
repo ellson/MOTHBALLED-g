@@ -9,39 +9,39 @@
 
 static void api_start_activity(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
+    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
 
-    GRAPH->sep = 0;
-    if (GRAPH->containment != 0) {
-        putc('{', GRAPH->out);
+    PARSE->sep = 0;
+    if (PARSE->containment != 0) {
+        putc('{', PARSE->out);
     }
 }
 
 static void api_end_activity(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
+    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
 
-    GRAPH->sep = 0;
-    if (GRAPH->containment != 0) {
-        putc('}', GRAPH->out);
+    PARSE->sep = 0;
+    if (PARSE->containment != 0) {
+        putc('}', PARSE->out);
     }
     else {
-        putc('\n', GRAPH->out);
+        putc('\n', PARSE->out);
     }
 }
 
 static void api_subject(CONTAINER_t * CONTAINER, elem_t *list)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
+    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
 
-    je_emit_list(GRAPH, GRAPH->out, list);
+    je_emit_list(PARSE, PARSE->out, list);
 }
 
 static void api_attributes(CONTAINER_t * CONTAINER, elem_t *list)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
+    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
 
-    je_emit_list(GRAPH, GRAPH->out, list);
+    je_emit_list(PARSE, PARSE->out, list);
 }
 
 emit_t g_api = { "g",
@@ -76,29 +76,29 @@ emit_t g_api = { "g",
 
 static void api1_end_activity(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
+    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
 
-    if (GRAPH->containment == 0) {
-        putc('\n', GRAPH->out);
+    if (PARSE->containment == 0) {
+        putc('\n', PARSE->out);
     }
 }
 
-static void api1_sep(GRAPH_t * GRAPH)
+static void api1_sep(PARSE_t * PARSE)
 {
-    putc(' ', GRAPH->out);
+    putc(' ', PARSE->out);
 }
 
-static void api1_string(GRAPH_t * GRAPH, elem_t * branch)
+static void api1_string(PARSE_t * PARSE, elem_t * branch)
 {
     char sep;
 
     sep = 0;
-    print_elem(GRAPH->out, branch, -1, &sep);
+    print_elem(PARSE->out, branch, -1, &sep);
 }
 
-static void api1_token(GRAPH_t * GRAPH, char token)
+static void api1_token(PARSE_t * PARSE, char token)
 {
-    putc(token, GRAPH->out);
+    putc(token, PARSE->out);
 }
 
 emit_t g1_api = { "g1",
@@ -133,16 +133,16 @@ emit_t g1_api = { "g1",
 
 static void api2_end_activity(CONTAINER_t * CONTAINER)
 {
-    GRAPH_t * GRAPH = (GRAPH_t*)CONTAINER;
+    PARSE_t * PARSE = (PARSE_t*)CONTAINER;
 
-    putc('\n', GRAPH->out);
+    putc('\n', PARSE->out);
 }
 
-static void api2_token(GRAPH_t * GRAPH, char token)
+static void api2_token(PARSE_t * PARSE, char token)
 {
-    putc('\n', GRAPH->out);
-    putc(token, GRAPH->out);
-    putc(' ', GRAPH->out);
+    putc('\n', PARSE->out);
+    putc(token, PARSE->out);
+    putc(' ', PARSE->out);
 }
 
 emit_t g2_api = { "g2",

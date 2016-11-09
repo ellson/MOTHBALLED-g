@@ -15,11 +15,11 @@ typedef enum {
 
 typedef struct {
     char *name;
-    void (*initialize) (GRAPH_t * GRAPH);
-    void (*finalize) (GRAPH_t * GRAPH);
+    void (*initialize) (PARSE_t * PARSE);
+    void (*finalize) (PARSE_t * PARSE);
 
-    void (*start_file) (GRAPH_t * GRAPH);
-    void (*end_file) (GRAPH_t * GRAPH);
+    void (*start_file) (PARSE_t * PARSE);
+    void (*end_file) (PARSE_t * PARSE);
 
     void (*start_activity) (CONTAINER_t * CONTAINER);
     void (*end_activity) (CONTAINER_t * CONTAINER);
@@ -37,21 +37,21 @@ typedef struct {
     void (*subject) (CONTAINER_t * CONTAINER, elem_t * root);
     void (*attributes) (CONTAINER_t * CONTAINER, elem_t * root);
 
-    void (*sep) (GRAPH_t * GRAPH);
-    void (*token) (GRAPH_t * GRAPH, char token);
-    void (*string) (GRAPH_t * GRAPH, elem_t * branch);
-    void (*frag) (GRAPH_t * GRAPH, unsigned char len, unsigned char *frag);
+    void (*sep) (PARSE_t * PARSE);
+    void (*token) (PARSE_t * PARSE, char token);
+    void (*string) (PARSE_t * PARSE, elem_t * branch);
+    void (*frag) (PARSE_t * PARSE, unsigned char len, unsigned char *frag);
 } emit_t;
 
-#define emit_initialize(GRAPH) \
-    if (emit->initialize) {emit->initialize(GRAPH);}
-#define emit_finalize(GRAPH) \
-    if (emit->finalize) {emit->finalize(GRAPH);}
+#define emit_initialize(PARSE) \
+    if (emit->initialize) {emit->initialize(PARSE);}
+#define emit_finalize(PARSE) \
+    if (emit->finalize) {emit->finalize(PARSE);}
 
-#define emit_start_file(GRAPH) \
-    if (emit->start_file) {emit->start_file(GRAPH);}
-#define emit_end_file(GRAPH) \
-    if (emit->end_file) {emit->end_file(GRAPH);}
+#define emit_start_file(PARSE) \
+    if (emit->start_file) {emit->start_file(PARSE);}
+#define emit_end_file(PARSE) \
+    if (emit->end_file) {emit->end_file(PARSE);}
 
 #define emit_start_activity(CONTAINER) \
     if (emit->start_activity) {emit->start_activity(CONTAINER);}
@@ -68,10 +68,10 @@ typedef struct {
 #define emit_end_subject(CONTAINER) \
     if (emit->end_subject) {emit->end_subject(CONTAINER);}
 
-#define emit_start_state(GRAPH, class, prop, nest, repc) \
-    if (emit->start_state) {emit->start_state(GRAPH, class, prop, nest, repc);}
-#define emit_end_state(GRAPH, class, rc, nest, repc) \
-    if (emit->end_state) {emit->end_state(GRAPH, class, rc, nest, repc);}
+#define emit_start_state(PARSE, class, prop, nest, repc) \
+    if (emit->start_state) {emit->start_state(PARSE, class, prop, nest, repc);}
+#define emit_end_state(PARSE, class, rc, nest, repc) \
+    if (emit->end_state) {emit->end_state(PARSE, class, rc, nest, repc);}
 #define emit_act(CONTAINER, root) \
     if (emit->act) {emit->act(CONTAINER, root);}
 #define emit_subject(CONTAINER, root) \
@@ -79,14 +79,14 @@ typedef struct {
 #define emit_attributes(CONTAINER, root) \
     if (emit->attributes) {emit->attributes(CONTAINER, root);}
 
-#define emit_sep(GRAPH) \
-    if (emit->sep) {emit->sep(GRAPH);}
-#define emit_token(GRAPH, token) \
-    if (emit->token) {emit->token(GRAPH, token);}
-#define emit_string(GRAPH, branch) \
-    if (emit->string) {emit->string(GRAPH, branch);}
-#define emit_frag(GRAPH, len, frag) \
-    if (emit->frag) {emit->frag(GRAPH, len, frag);}
+#define emit_sep(PARSE) \
+    if (emit->sep) {emit->sep(PARSE);}
+#define emit_token(PARSE, token) \
+    if (emit->token) {emit->token(PARSE, token);}
+#define emit_string(PARSE, branch) \
+    if (emit->string) {emit->string(PARSE, branch);}
+#define emit_frag(PARSE, len, frag) \
+    if (emit->frag) {emit->frag(PARSE, len, frag);}
 
 // if we're not providing the function in any api,
 //    then we can avoid the runtime cost of testing for it
@@ -103,17 +103,17 @@ typedef struct {
 #define emit_end_subject(CONTAINER, len, frag)
 
 #undef emit_frag
-#define emit_frag(GRAPH, len, frag)
+#define emit_frag(PARSE, len, frag)
 
 // emit.c
 extern emit_t *emit;
 extern emit_t g_api, g1_api, g2_api, g3_api, t_api, t1_api, gv_api;
 char char_prop(unsigned char prop, char noprop);
-void append_token(GRAPH_t * GRAPH, char **pos, char tok);
-void append_string(GRAPH_t * GRAPH, char **pos, char *string);
-void append_ulong(GRAPH_t * GRAPH, char **pos, uint64_t integer);
-void append_runtime(GRAPH_t * GRAPH, char **pos, uint64_t run_sec, uint64_t run_ns);
-void je_emit_list(GRAPH_t * GRAPH, FILE * chan, elem_t * subject);
+void append_token(PARSE_t * PARSE, char **pos, char tok);
+void append_string(PARSE_t * PARSE, char **pos, char *string);
+void append_ulong(PARSE_t * PARSE, char **pos, uint64_t integer);
+void append_runtime(PARSE_t * PARSE, char **pos, uint64_t run_sec, uint64_t run_ns);
+void je_emit_list(PARSE_t * PARSE, FILE * chan, elem_t * subject);
 void je_emit_ikea(CONTAINER_t * CONTAINER, elem_t *list);
 
 #ifdef __cplusplus
