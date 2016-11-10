@@ -44,7 +44,7 @@ success_t container(THREAD_t * THREAD)
         if (TOKEN()->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
         } else {
-            token_error(TOKEN(), "Parse error near token:", TOKEN()->state);
+            token_error(TOKEN(), "Parse error near token:", TOKEN()->insi);
         }
     }
 
