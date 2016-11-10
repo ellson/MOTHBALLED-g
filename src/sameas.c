@@ -13,7 +13,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
 
 /**
  * Replace subject with a newsubject in which all EQL have
- * beeb substitued from the previous_subject, and save the newsubject
+ * been substitued from the previous_subject, and save the newsubject
  * as the previous_subject for next time.
  *
  * @param CONTAINER container context

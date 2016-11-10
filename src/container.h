@@ -9,13 +9,18 @@ extern "C" {
 
 struct container_s {            // CONTAINER context
     THREAD_t *THREAD;           // THREAD context
-    elem_t *previous_subject;   // For use by sameas()
-    char is_pattern;            // flag set if '*' occurred in SUBJECT
+
+    state_t is_pattern;         // flag set if '*' occurred in SUBJECT
+    state_t has_sameas;         // flag set if '=' occurred in SUBJECT
     state_t mum;                // flag set if '^' occurred in SUBJECT
     state_t verb;               // verb for the current ACT
-    state_t subject_type;       // set by sameas() to record if the SUBJECT is NODE(s),
+
+    elem_t *previous_subject;   // Set and used by sameas()
+
+    // FIXME - grammar now checks for same type  -- shouldn't need this
+    state_t subject_type;       // Set by sameas() to record if the SUBJECT is NODE(s),
                                 //   or EDGE(s), and to check that it is not a mix
-                                //   of NODE(s) and EDGE(s).
+                                //
     elem_t *node_pattern_acts;  // complete ACTs where the NODE subject contains an "*"
     elem_t *edge_pattern_acts;  // complete ACTs where the EDGE subject contains an "*"
     elem_t *nodes;              // tree of unique nodes

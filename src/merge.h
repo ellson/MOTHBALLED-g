@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-elem_t * merge(elem_t * new, elem_t * old);
+void merge_key(LIST_t *LIST, elem_t **key, elem_t *oldkey);
 
 #ifdef __cplusplus
 }

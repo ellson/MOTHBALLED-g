@@ -135,10 +135,9 @@ P(act);
     attributes = subject->u.l.next;   // second item, if any, is attributes
     if (attributes) {
         assert(attributes->state == (char)ATTRIBUTES);
-P(attributes);
-        newattributes = attrid_merge(CONTAINER, attributes);
-P(newattributes);
-        append_transfer(newact, newattributes);
+        attrid_merge(CONTAINER, attributes);
+        append_addref(newact, attributes);
+P(THREAD->attrid);
     }
 //----------------------- example
 // G:              a[foo=bar abc=xyz]
@@ -148,10 +147,7 @@ P(newattributes);
 //                            ATTR ATTRID ABC abc
 //                                 VALUE ABC xyz
 //            
-// newattribute:   ATTRIBUTES ATTR ATTRID ABC foo
-//                                 VALUE ABC bar
-//                            ATTR ATTRID ABC abc
-//                                 VALUE ABC xyz
+// newattributes: (unchanged)
 //----------------------- 
 
 P(newact);

@@ -8,18 +8,18 @@
 #include "merge.h"
 
 /**
- * merge old and new attributes
+ * merge old and new key lists
  *
- * @param new 
- * @param old 
- * @return merge
+ * @param LIST 
+ * @param key - the key (and value) to be merged
+ * @param oldkey - the key (and value) currently in the tree
  */
-elem_t * merge(elem_t * new, elem_t * old)
+void merge_key(LIST_t *LIST, elem_t **key, elem_t *oldkey)
 {
 
 // FIXME
 
-    old->refs--;
-    new->refs++;
-    return new;
+    oldkey->refs++;
+    free_list(LIST, *key);
+    *key = oldkey;
 }
