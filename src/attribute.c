@@ -7,7 +7,7 @@
 #include <assert.h>
 
 #include "thread.h"
-#include "compare.h"
+#include "merge.h"
 #include "match.h"
 #include "attribute.h"
 
@@ -89,10 +89,7 @@ elem_t * attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
         assert(attrid);
         assert((state_t)attrid->state == ATTRID);
 
-        attrid_str = attrid->u.l.first;
-// P(attrid_str);
-
-        THREAD->attrid = insert_item(LIST(), THREAD->attrid, attrid_str);
+        THREAD->attrid = insert_item(LIST(), THREAD->attrid, &(attrid->u.l.first), merge_key);
 P(THREAD->attrid);
 
 // FIXME - if it previously existed, we need an updated key pointer.

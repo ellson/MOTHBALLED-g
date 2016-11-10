@@ -11,14 +11,15 @@
  * merge old and new key lists
  *
  * @param LIST 
- * @param oldkey 
- * @param newkey 
+ * @param key - the key (and value) to be merged
+ * @param oldkey - the key (and value) currently in the tree
  */
-void merge(LIST_t *LIST, elem_t * oldkey, elem_t * newkey)
+void merge_key(LIST_t *LIST, elem_t **key, elem_t *oldkey)
 {
 
 // FIXME
 
-    oldkey->refs--;
-    newkey->refs++;
+    oldkey->refs++;
+    free_list(LIST, *key);
+    *key = oldkey;
 }

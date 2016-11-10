@@ -10,7 +10,6 @@
 #include "list.h"
 #include "tree.h"
 #include "compare.h"
-#include "merge.h"
 
 /**
  * return the larger of two ints
@@ -134,34 +133,39 @@ elem_t * search_item(elem_t * p, elem_t * key)
 }
 
 /**
- * insert an elem into the tree in its sorted position, as determined by compare()
- * if the elem matches an existing elem in the tree, then is value is merged
+ * Insert an elem into the tree in its sorted position, as determined by compare().
+ * If the elem matches an existing elem in the tree, then:
+ *      - is value is merged,
+ *      - any duplicate bits dereferrenced,
+ *      - *key updated to point to the key now in the tree.
  *
  * @param LIST the context of the tree
  * @param p the root of the tree
- * @param key the elem to be inserted
+ * @param key - **key elem being inserted. *key maybe modified by the insertion.
+ * @param merge function
  * @return the new root of the tree after inserting and rebalancing
  */
-elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t * key)
+elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t **key,
+        void (*merge)(LIST_t* LIST, elem_t **key, elem_t *oldkey) )
 {
     int comp;
 
-    assert(key);
+    assert(key && *key);
 
     if (!p) {
-        return new_tree(LIST, key);
+        return new_tree(LIST, *key);
     }
-    comp = compare(key, p->u.t.key);
+    comp = compare(*key, p->u.t.key);
     if (comp) {
         if (comp < 0) {
-            p->u.t.left = insert_item(LIST, p->u.t.left, key);
+            p->u.t.left = insert_item(LIST, p->u.t.left, key, merge);
         }
         else {
-            p->u.t.right = insert_item(LIST, p->u.t.right, key);
+            p->u.t.right = insert_item(LIST, p->u.t.right, key, merge);
         }
     }
     else {
-        merge(LIST, p->u.t.key, key);
+        (*merge)(LIST, key, p->u.t.key);
     }
     return balance(p);
 }

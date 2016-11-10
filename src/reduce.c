@@ -5,6 +5,7 @@
 #include <assert.h>
 
 #include "thread.h"
+#include "merge.h"
 #include "reduce.h"
 
 void reduce(CONTAINER_t * CONTAINER, elem_t *list)
@@ -56,17 +57,20 @@ P(list);
     case NODE:
         CONTAINER->nodes = insert_item((LIST_t*)CONTAINER,
                 CONTAINER->nodes,
-                subject->u.l.first); // skip NODEID
+                &(subject->u.l.first), // skip NODEID
+                merge_key); 
         break;
     case SIS:
         CONTAINER->nodes = insert_item((LIST_t*)CONTAINER,
                 CONTAINER->nodes,
-                subject->u.l.first->u.l.first); // skip NODEREF NODEID
+                &(subject->u.l.first->u.l.first), // skip NODEREF NODEID
+                merge_key); 
         break;
     case EDGE:
         CONTAINER->edges = insert_item((LIST_t*)CONTAINER,
                 CONTAINER->edges,
-                subject); 
+                &(subject),
+                merge_key); 
         break;
     default:
         S(subjtype);
