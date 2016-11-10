@@ -16,6 +16,8 @@ struct container_s {            // CONTAINER context
     state_t verb;               // verb for the current ACT
 
     elem_t *previous_subject;   // Set and used by sameas()
+
+    // FIXME - grammar now checks for same type  -- shouldn't need this
     state_t subject_type;       // Set by sameas() to record if the SUBJECT is NODE(s),
                                 //   or EDGE(s), and to check that it is not a mix
                                 //

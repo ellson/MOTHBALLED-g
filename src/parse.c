@@ -210,9 +210,9 @@ done: // State exit processing
         case NODEREF:
         case NOUN:
         case NOUNSET:
-        case NOUNLIST:
-        case NODELIST:
-        case EDGELIST:
+        case NOUNS:
+        case NODES:
+        case EDGES:
         case ENDPOINTSET:
             append_addref(root, branch->u.l.first);
             break;
