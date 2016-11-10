@@ -345,7 +345,7 @@ Extra grammar:
 
     Examples of valid unquoted VALUEs:
 
-        word
+        abcABC123
         user@host.domain
         /unix/file/path
         C:\dos\file\path
