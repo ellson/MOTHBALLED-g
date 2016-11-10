@@ -471,10 +471,13 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
         // In the unquoted portions of VSTRING we allow '/' '\' ':' '?'
         // in addition to the ABC class
         // this allows URIs as values without quoting
+ // FIXME - find a cleaner way to test for membership in this extra charater set
+ //    extend set with #;^`~       basically everything except []
         } else if (TOKEN->insi == ABC ||
                    TOKEN->insi == FSL ||
                    TOKEN->insi == BSL ||
                    TOKEN->insi == CLN ||
+                   TOKEN->insi == EQL ||
                    TOKEN->insi == QRY) {
             frag = TOKEN->in;
             len = 1;
@@ -482,6 +485,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
                     insi == FSL ||
                     insi == BSL ||
                     insi == CLN ||
+                    insi == EQL ||
                     insi == QRY) {
                 len++;
             }

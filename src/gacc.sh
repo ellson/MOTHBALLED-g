@@ -1,5 +1,5 @@
 #!/bin/bash
-
+        
 if test $# -lt 1; then
     echo "Usage: $0 <grammar spec in g>" >&2
     exit 1
@@ -101,13 +101,13 @@ sm_term() {
         if test "$prop" != ""; then
             cnt=0
             for p in $prop; do
-	        PROPS[$p]=""
-	        if test $cnt -ne 0;then
-	            nprop+=" $p"
-	        else
-	            nprop+="$p"
-	        fi
-	        ((cnt++))
+                PROPS[$p]=""
+                if test $cnt -ne 0;then
+                    nprop+=" $p"
+                else
+                    nprop+="$p"
+                fi
+                ((cnt++))
             done
         fi
         proplist=("${proplist[@]}" "$nprop")
@@ -184,11 +184,11 @@ cat >${ifn}.ebnf <<EOF
 
 Meta grammar:
 
-        '|' separates alternates, otherwise the tokens are sequential
-		'_' indicates that a non-ABC character must separate elements (e.g. WS)
-		'?' indicates that the token is optional
-		'+' indicates that the token is to be repeated 1 or more times
-		'*' indicates that the token is to be repeated 0 or more times
+    '|' separates alternates, otherwise the tokens are sequential
+    '_' indicates that a non-ABC character must separate elements (e.g. WS)
+    '?' indicates that the token is optional
+    '+' indicates that the token is to be repeated 1 or more times
+    '*' indicates that the token is to be repeated 0 or more times
 
 Grammar:
 
@@ -240,10 +240,10 @@ for s in ${statelist[@]}; do
             esac
             pcnt=0
             for q in ${!PROPS[@]}; do
-	        if test "$p" = "$q"; then
-	            ((nprops += (1 << pcnt) ))
-	        fi
-	        ((pcnt++))
+                if test "$p" = "$q"; then
+                    ((nprops += (1 << pcnt) ))
+                fi
+                ((pcnt++))
             done
         done
         case $ord in
@@ -265,9 +265,9 @@ for s in ${statelist[@]}; do
     tokchar=""
     for tokchar in $class; do break; done
     if test "$tokchar" = ""; then
-	tokchar=0
+        tokchar=0
     else
-	tokchar=0x$tokchar
+        tokchar=0x$tokchar
     fi
     if test "$s" = "BIN" -o "$s" = "NLL" -o "$s" = "WS"; then
         printable=0
@@ -279,7 +279,7 @@ for s in ${statelist[@]}; do
         altc=0
         ( printf " "                             ) >>${ifn}.ebnf
         for c in $class; do
-	    cc=$(( 0x$c ))
+            cc=$(( 0x$c ))
             if test $altc -gt 0; then
                 if test $(( altc % 10 )) -eq 0; then
                     ( printf "\n%18s" "| "       ) >>${ifn}.ebnf
@@ -315,41 +315,53 @@ cat >>${ifn}.ebnf <<EOF
 
 Extra grammar:
 
-        Comments in the form of "# ... EOL" are skipped over by the parser.
+    Comments in the form of "# ... EOL" are skipped over by the parser.
 
-        MEMBERSETS must be all NODEs, or all EDGEs.  This constraint is enforced
-        by the parser, but not codified by this grammar.
+    Whitespace (WS) has no significance in the grammar except in quoted
+    strings and as a separator of last resort between string tokens.
 
-		Whitespace (WS) has no significance in the grammar except in quoted
-		strings and as a separator of last resort between string tokens.
+    STRINGs and VSTRINGs can be concatenations of quoted and unquoted
+    character sequences.
 
-	    Strings can be concatenations of quoted and unquoted character sequences.
-		for example:       abc"d e f"ghi"j\\\\k"
-		is equivalent to:  "abcd e fghij\\\\k"
+        for example:       abc"d e f"ghi"j\\\\k"
+        is equivalent to:  "abcd e fghij\\\\k"
 
-		-  Unquoted characters are any listed in the ABC terminal above, and also
-		   AST (see "Patterns" below).
+    Characters that may be unquoted are listed in the ABC terminal above, 
+    and also '*' (see "Patterns" below).
 
-		-  Quoted character sequences are bounded by DQT characters (i.e. '"')
-		   and may include any characters, except that NLL, DQT, and BSL need
-		   to be escaped with a BSL (i.e. '\\')
+    Quoted character sequences are bounded by DQT characters (i.e. '"')
+    and may include any characters, except that NLL, DQT, and BSL need
+    to be escaped with a BSL (i.e. '\\')
 
-        Unquoted strings in NODEs and EDGEs can use only characters in the
-        ABC class.
+    VSTRINGs are for use in VALUEs.  Unquoted strings in VSTRINGs are slightly
+    relaxed, additionally allowing:
 
-        Unquoted strings in VALUEs are slightly relaxed, additionally allowing:
-            '/' '\\' ':' '?'
-        This is to permit simple file paths and URLs to be unquoted VALUEs
+        '/' '\\' ':' '?' '='
 
-        NB. The single-quote character ''' is not special, and has no quoting
-        behavior in this grammar.
+    This is to permit file paths and URLs to be unquoted VALUEs
+
+    NB. The single-quote character ''' is not special, and has no quoting
+    behavior in this grammar.
+
+    Examples of valid unquoted VALUEs:
+
+        word
+        user@host.domain
+        /unix/file/path
+        C:\dos\file\path
+        http://some.host:80/some/path?foo=bar
+        1
+        +1
+        -1
+        -0.5
+        95.5%
 
 Patterns:
 
-        If there is an unquoted '*' in any string in a SUBJECT, then the entir
-        SUBJECT is considered a pattern, and its ACT a pattern_act.  Patterns
-        are used to add ATTRIBUTES and CONTAINER to any future ACT whose SUBJECT
-        matches the pattern. The AST matches any character sequence.
+    If there is an unquoted '*' in any string in a SUBJECT, then the entir
+    SUBJECT is considered a pattern, and its ACT a pattern_act.  Patterns
+    are used to add ATTRIBUTES and CONTAINER to any future ACT whose SUBJECT
+    matches the pattern. The AST matches any character sequence.
 
 EOF
 ##############################################
@@ -485,4 +497,3 @@ cat ${ifn}.gv     >$ofgv
 # clean up temporary files
 
 rm -f ${ifn}.ebnf ${ifn}.gv ${ifn}.enum ${ifn}.states ${ifn}.props ${ifn}.token ${ifn}.agaws
-
