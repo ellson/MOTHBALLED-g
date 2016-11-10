@@ -44,7 +44,7 @@ elem_t * pattern(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb)
     elem_t *newsubjects;
 
     // FIXME - this is ugly!
-    if ((CONTAINER->is_pattern = (((TOKEN_t*)(CONTAINER->THREAD))->is_pattern))) {
+    if ((CONTAINER->pattern = (((TOKEN_t*)(CONTAINER->THREAD))->pattern))) {
         CONTAINER->stat_patternactcount++;
         assert(CONTAINER->subject_type == NODE || CONTAINER->subject_type == EDGE);
         pattern_update(CONTAINER, subject, verb);

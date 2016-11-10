@@ -19,7 +19,7 @@ struct token_s {
     state_t state;             // last state entered
     state_t quote_state;       // ABC or DQT, DQT if STRING contains DQT fragments
     char in_quote;             // flag set if between "..."
-    char is_pattern;           // flag set if an '*' is found in any STRING in SUBJECT
+    char pattern;              // flag set if an '*' is found in any STRING in SUBJECT
     char has_ast;              // flag set if an '*' is found in a STRING
     char has_bsl;              // flag set if an '\' is found in a STRING
     long linecount_at_start;   // activity line count when this file was opened.

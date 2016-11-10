@@ -10,10 +10,10 @@ extern "C" {
 struct container_s {            // CONTAINER context
     THREAD_t *THREAD;           // THREAD context
 
-    state_t is_pattern;         // flag set if '*' occurred in SUBJECT
-    state_t has_sameas;         // flag set if '=' occurred in SUBJECT
-    state_t mum;                // flag set if '^' occurred in SUBJECT
     state_t verb;               // verb for the current ACT
+    state_t pattern;            // flag set if '*' occurred in SUBJECT
+    state_t sameas;             // flag set if '=' occurred in SUBJECT
+    state_t mum;                // flag set if '^' occurred in SUBJECT
 
     elem_t *previous_subject;   // Set and used by sameas()
 

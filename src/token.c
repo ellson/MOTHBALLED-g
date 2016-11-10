@@ -311,7 +311,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * string)
             elem = new_frag(LIST(), ABC, len, frag);
             slen += len;
         } else if (TOKEN->insi == AST) {
-            TOKEN->has_ast = TOKEN->is_pattern = 1;
+            TOKEN->has_ast = TOKEN->pattern = 1;
             frag = TOKEN->in;
             while ((TOKEN->insi = char2state[*++(TOKEN->in)]) == AST) {
             }    // extra '*' ignored
@@ -495,7 +495,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
 
         // but '*' are still special  (maybe used as wild card in queries)
         } else if (TOKEN->insi == AST) {
-            TOKEN->has_ast = TOKEN->is_pattern = 1;
+            TOKEN->has_ast = TOKEN->pattern = 1;
             frag = TOKEN->in;
             while ((TOKEN->insi = char2state[*++(TOKEN->in)]) == AST) {
             }    // extra '*' ignored

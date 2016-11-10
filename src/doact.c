@@ -38,6 +38,13 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 
     CONTAINER->stat_inactcount++;
 
+
+printf("doact(): sameas=%d pattern=%d mum=%d verb=%d\n", 
+        CONTAINER->sameas,
+        CONTAINER->pattern,
+        CONTAINER->mum,
+        CONTAINER->verb);
+
 #if 0 
 // for debugging only
 

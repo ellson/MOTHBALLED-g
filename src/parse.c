@@ -128,8 +128,8 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     case ACT:
         CONTAINER->verb = 0;        // default "add"
         CONTAINER->mum = 0;         // maintain flag for any MUM involvement
-        CONTAINER->is_pattern = 0;  // maintain flag for '*' found anywhere in the subject
-        CONTAINER->has_sameas = 0;  // maintain flag for '=' found anywhere in the subject
+        CONTAINER->pattern = 0;     // maintain flag for '*' found anywhere in the subject
+        CONTAINER->sameas = 0;      // maintain flag for '=' found anywhere in the subject
         break;
     case SUBJECT:
         break;
