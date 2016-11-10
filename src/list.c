@@ -173,7 +173,6 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
     assert(key->refs > 0);
 
     elem = new_elem_sub(LIST);
-    assert(elem);
 
     // complete elem initialization
     elem->type = TREEELEM;

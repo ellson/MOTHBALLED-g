@@ -65,41 +65,30 @@
 
 
 /**
+ * Stash away all the attrid in the THREAD->attrid tree, removing any duplicates.
+ *
  * @param CONTAINER - the current container context
- * @param attributes - the ATTRIBUTES branch before merging ATTRID 
- * @return replacement attributes list
+ * @param attributes - the ATTRIBUTES branch
  */
-elem_t * attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
+void attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *attr, *attrid, *attrid_str, *newattributes, *new;
+    elem_t *attr, *attrid; 
 
     assert(attributes);
     assert((state_t)attributes->state == ATTRIBUTES);
-
-    newattributes = new_list(LIST(), ATTRIBUTES);
-
     attr = attributes->u.l.first;
     while (attr) {
         assert((state_t)attr->state == ATTR);
-
-        // get pointer to the fraglist for the ATTRID
         attrid = attr->u.l.first;
-
         assert(attrid);
         assert((state_t)attrid->state == ATTRID);
-
-        THREAD->attrid = insert_item(LIST(), THREAD->attrid, &(attrid->u.l.first), merge_key);
-P(THREAD->attrid);
-
-// FIXME - if it previously existed, we need an updated key pointer.
-
-        new = ref_list(LIST(), attr);
-        append_transfer(newattributes, new);    // FIXME not right yet ...
-
+        // FIXME - attrid tree should be stored in SESSION,  but need some mutex to 
+        //     make that safe when we have multiple threads
+        THREAD->attrid =
+            insert_item(LIST(), THREAD->attrid, &(attrid->u.l.first), merge_key);
         attr = attr->u.l.next;
     }
-    return newattributes;
 }
 
 

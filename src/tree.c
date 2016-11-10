@@ -152,9 +152,10 @@ elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t **key,
 
     assert(key && *key);
 
-    if (!p) {
+    if (!p) {    // FIXME - write mutex (exclusive) around modifications ( new_tree(), merge(), balance() )
         return new_tree(LIST, *key);
     }
+    // FIXME - read mutex (sharable) around traversals
     comp = compare(*key, p->u.t.key);
     if (comp) {
         if (comp < 0) {
@@ -164,7 +165,7 @@ elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t **key,
             p->u.t.right = insert_item(LIST, p->u.t.right, key, merge);
         }
     }
-    else {
+    else {    // FIXME - write mutex (exclusive) around modifications ( new_tree(),  merge(), balance())
         (*merge)(LIST, key, p->u.t.key);
     }
     return balance(p);
