@@ -218,6 +218,7 @@ done: // State exit processing
         case NOUNS:
         case NODES:
         case EDGES:
+        case ENDPOINT:
         case ENDPOINTSET:
             append_addref(root, branch->u.l.first);
             break;

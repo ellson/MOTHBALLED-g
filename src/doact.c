@@ -61,26 +61,26 @@ P(act);
 //---------------------- love this example
 // G:     (<a b> <c:1 ^^d:2/e:3 f:4/g:5/h:7 (i:8 j:9)>`baz)[foo=bar bar=foo]
 //
-// act:   ACT SUBJECT EDGE LEG ENDPOINT SIS NODEID ABC a
-//                         LEG ENDPOINT SIS NODEID ABC b
-//                    EDGE LEG ENDPOINT SIS NODEID ABC c
-//                                          PORTID ABC 1
-//                         LEG ENDPOINT MUM
-//                                      MUM
-//                                      SIS NODEID ABC d
-//                                          PORTID ABC 2
-//                                      KID NODEID ABC e
-//                                          PORTID ABC 3
-//                         LEG ENDPOINT SIS NODEID ABC f
-//                                          PORTID ABC 4
-//                                      KID NODEID ABC g
-//                                          PORTID ABC 5
-//                                      KID NODEID ABC h
-//                                          PORTID ABC 7
-//                         LEG ENDPOINT SIS NODEID ABC i
-//                                          PORTID ABC 8
-//                             ENDPOINT SIS NODEID ABC j
-//                                          PORTID ABC 9
+// act:   ACT SUBJECT EDGE LEG SIS NODEID ABC a
+//                         LEG SIS NODEID ABC b
+//                    EDGE LEG SIS NODEID ABC c
+//                                 PORTID ABC 1
+//                         LEG MUM
+//                             MUM
+//                             SIS NODEID ABC d
+//                                 PORTID ABC 2
+//                             KID NODEID ABC e
+//                                 PORTID ABC 3
+//                         LEG SIS NODEID ABC f
+//                                 PORTID ABC 4
+//                             KID NODEID ABC g
+//                                 PORTID ABC 5
+//                             KID NODEID ABC h
+//                                 PORTID ABC 7
+//                         LEG SIS NODEID ABC i
+//                                 PORTID ABC 8
+//                             SIS NODEID ABC j
+//                                 PORTID ABC 9
 //                         DISAMBIG DISAMBID ABC baz
 //            ATTRIBUTES ATTR ATTRID ABC foo
 //                            VALUE ABC bar
@@ -101,30 +101,30 @@ P(act);
 
 
 //====================== substitute sameas LEGs, or NODEs from previous SUBJECT
-//P(subject)
+P(subject)
     newsubject = sameas(CONTAINER, subject);
 //P(newsubject);
     append_transfer(newact, newsubject);
 //----------------------- example of consecutive EDGE ACTs
 // G:          <a b> <= c>
 //
-// subject:    SUBJECT EDGE LEG ENDPOINT SIS NODEID ABC a
-//                          LEG ENDPOINT SIS NODEID ABC b
-//             SUBJECT EDGE LEG EQL
-//                          LEG ENDPOINT SIS NODEID ABC c
+// subject:    SUBJECT EDGE LEG SIS NODEID ABC a
+//                          LEG SIS NODEID ABC b
+//             SUBJECT EDGE LEG SAMEAS EQL
+//                          LEG SIS NODEID ABC c
 //
 //
-// newsubject: SUBJECT EDGE LEG ENDPOINT SIS NODEID ABC a
-//                          LEG ENDPOINT SIS NODEID ABC b
-//             SUBJECT EDGE LEG ENDPOINT SIS NODEID ABC a
-//                          LEG ENDPOINT SIS NODEID ABC c
+// newsubject: SUBJECT EDGE LEG SIS NODEID ABC a
+//                          LEG SIS NODEID ABC b
+//             SUBJECT EDGE LEG SIS NODEID ABC a
+//                          LEG SIS NODEID ABC c
 //----------------------- 
 //----------------------- example of consecutive NODE ACTs
 // G:          (a b) (= c)
 //
 // subject:    SUBJECT NODE NODEID ABC a
 //                     NODE NODEID ABC b
-//             SUBJECT NODE EQL
+//             SUBJECT NODE SAMEAS EQL
 //                     NODE NODEID ABC c
 //
 // newsubject: SUBJECT NODE NODEID ABC a
