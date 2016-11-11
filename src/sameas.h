@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-elem_t * sameas(CONTAINER_t * CONTAINER, elem_t * subject);
+void sameas(CONTAINER_t * CONTAINER, elem_t * act);
 
 #ifdef __cplusplus
 }

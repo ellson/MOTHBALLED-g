@@ -30,23 +30,21 @@
 success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *subject, *attributes;
-    elem_t *newact, *newsubject, *newattributes;
+    elem_t *attributes;
 
     assert(act);
     assert(act->u.l.first);  // minimaly, an ACT must have a SUBJECT
 
     CONTAINER->stat_inactcount++;
 
+#if 0 
+// for debugging only
 
 printf("doact(): sameas=%d pattern=%d mum=%d verb=%d\n", 
         CONTAINER->sameas,
         CONTAINER->pattern,
         CONTAINER->mum,
         CONTAINER->verb);
-
-#if 0 
-// for debugging only
 
 // VERB has already been extracted and is available as an arg to this func. 
 if (CONTAINER->verb) { S(CONTAINER->verb); }
@@ -57,6 +55,8 @@ if (CONTAINER->mum) { S(CONTAINER->mum); }
 // The ACT as provided by parse()
 P(act);
 #endif
+
+
 
 //---------------------- love this example
 // G:     (<a b> <c:1 ^^d:2/e:3 f:4/g:5/h:7 (i:8 j:9)>`baz)[foo=bar bar=foo]
@@ -91,46 +91,37 @@ P(act);
 
 
 
-    newact = new_list(LIST(), ACT);
-
-    subject = act->u.l.first;   // first item is SUBJECT
-    assert(subject);
-    assert(subject->state == (char)SUBJECT);
-
-
-
-
-//====================== substitute sameas LEGs, or NODEs from previous SUBJECT
-P(subject)
-    newsubject = sameas(CONTAINER, subject);
-P(newsubject);
-    append_transfer(newact, newsubject);
+//====================== substitute SAMEAS
+// FIXME
+//  if (CONTAINER->sameas) {
+        sameas(CONTAINER, act);
+//  }
+//P(act);
 //----------------------- example of consecutive EDGE ACTs
 // G:          <a b> <= c>
 //
-// subject:    SUBJECT EDGE LEG SIS NODEID ABC a
-//                          LEG SIS NODEID ABC b
-//             SUBJECT EDGE LEG SAMEAS EQL
-//                          LEG SIS NODEID ABC c
+// before:  ACT SUBJECT EDGE LEG SIS NODEID ABC a
+//                           LEG SIS NODEID ABC b
+//          ACT SUBJECT EDGE LEG SAMEAS EQL
+//                           LEG SIS NODEID ABC c
 //
-//
-// newsubject: SUBJECT EDGE LEG SIS NODEID ABC a
-//                          LEG SIS NODEID ABC b
-//             SUBJECT EDGE LEG SIS NODEID ABC a
-//                          LEG SIS NODEID ABC c
+// after:   ACT SUBJECT EDGE LEG SIS NODEID ABC a
+//                           LEG SIS NODEID ABC b
+//          ACT SUBJECT EDGE LEG SIS NODEID ABC a
+//                           LEG SIS NODEID ABC c
 //----------------------- 
 //----------------------- example of consecutive NODE ACTs
 // G:          (a b) (= c)
 //
-// subject:    SUBJECT NODE NODEID ABC a
-//                     NODE NODEID ABC b
-//             SUBJECT NODE SAMEAS EQL
-//                     NODE NODEID ABC c
+// before:  ACT SUBJECT NODE NODEID ABC a
+//                      NODE NODEID ABC b
+//          ACT SUBJECT NODE SAMEAS EQL
+//                      NODE NODEID ABC c
 //
-// newsubject: SUBJECT NODE NODEID ABC a
-//                     NODE NODEID ABC b
-//             SUBJECT NODE NODEID ABC a
-//                     NODE NODEID ABC c
+// after:   ACT SUBJECT NODE NODEID ABC a
+//                      NODE NODEID ABC b
+//          ACT SUBJECT NODE NODEID ABC a
+//                      NODE NODEID ABC c
 //----------------------- 
 
 
@@ -139,11 +130,11 @@ P(newsubject);
 //                                      to ATTRIBUTES,  just the STRING
 //                                      represent the ATTRID stored only once
 
-    attributes = subject->u.l.next;   // second item, if any, is attributes
+    attributes = act->u.l.first->u.l.next;   // second item, if any, is attributes
     if (attributes) {
         assert(attributes->state == (char)ATTRIBUTES);
         attrid_merge(CONTAINER, attributes);
-        append_addref(newact, attributes);
+//        append_addref(newact, attributes);
 P(THREAD->attrid);
     }
 //----------------------- example
@@ -193,7 +184,7 @@ P(elem);
     }
 #endif
     
-    free_list(LIST(), newact);
+//    free_list(LIST(), newact);
 
     return SUCCESS;
 }

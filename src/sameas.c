@@ -9,127 +9,99 @@
 #include "sameas.h"
 
 static void
-sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * newlist);
+sameas_r(CONTAINER_t * CONTAINER, elem_t **current, elem_t *replacement);
 
 /**
- * Replace subject with a newsubject in which all SAMEAS have
- * been substitued from the previous_subject, and save the newsubject
- * as the previous_subject for next time.
+ * Rewrite SAMEAS elems in ACT's subject with corresponding elems from the subject
+ * of the immediately preceeninf ACT.
  *
  * @param CONTAINER container context
- * @param subject a subject tree from the parser (may be multiple object with same attributes)
- * @return rewritten with samas ('=') substituted
+ * @param act from the parser
  */
-elem_t *
-sameas(CONTAINER_t * CONTAINER, elem_t * subject)
+void sameas(CONTAINER_t * CONTAINER, elem_t *act)
 {
-    LIST_t * LIST = (LIST_t *)(CONTAINER->THREAD);
-    elem_t *nextold, *newsubject;
+    THREAD_t *THREAD = CONTAINER->THREAD;
+    elem_t **subject;
+
+    assert(act);
+    subject = &(act->u.l.first);
 
 //E();
-//P(subject);
+P(*subject);
 
-    assert(subject);
-    assert((state_t)subject->state == SUBJECT);
+    assert(*subject);
+    assert((state_t)(*subject)->state == SUBJECT);
     assert (CONTAINER->previous_subject);
+    assert((state_t)CONTAINER->previous_subject->state == SUBJECT);
 
-    newsubject = new_list(LIST, SUBJECT);
+    CONTAINER->subject_type = 0;  // will be set by sameas_r()   // FIXME - remove once pattern() is fixed
 
-    nextold = CONTAINER->previous_subject->u.l.first;
-    CONTAINER->subject_type = 0;  // will be set by sameas_r()
+    // traverse SUBJECT tree, replacing SAMEAS with corresponding elem from previous_subject
+    sameas_r(CONTAINER, subject, CONTAINER->previous_subject);
 
-    // rewrite subject into newsubject with any SAMEAS elements
-    // substituted from oldsubject
-    sameas_r(CONTAINER, subject, &nextold, newsubject);
-    assert(newsubject->u.l.first);
-
-    free_list(LIST, CONTAINER->previous_subject);   // free the previous oldsubject
-    CONTAINER->previous_subject = newsubject; // save the newsubject as oldsubject
-    newsubject->refs++;            // and increase its reference count
+    free_list((LIST_t*)THREAD, CONTAINER->previous_subject);   // Free the previous_subject
+    CONTAINER->previous_subject = *subject;         // The current subject (after SAMEAS replacement) becomes
+                                                    //    the previous_subject for next time
+    (*subject)->refs++;                             // Increase subject's reference count to account
+                                                    //    for it's use from previous_subject
 
 //E();
-//P(newsubject);
-
-    return newsubject;        //    to also save as the rewritten current subject
+P(*subject);
 }
 
 /**
- * rewrite subject into newlist with any SAMEAS elements substituted from oldlist
+ * rewrite target list with any SAMEAS elements substituted from replacement list
  *
  * @param CONTAINER container context
- * @param subject
- * @param nextold
- * @param newlist
+ * @param target - the list being rewritten
+ * @param replacement - the source of replacements
  */
 static void
-sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * newlist)
+sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
 {
-    LIST_t * LIST = (LIST_t *)(CONTAINER->THREAD);
-    elem_t *elem, *new, *nextoldelem = NULL;
-    elem_t *object;
+    THREAD_t *THREAD = CONTAINER->THREAD;
     state_t si;
 
-//P(subject);
-    assert (subject->type == (char)LISTELEM);
-
-    elem = subject->u.l.first;
-    while (elem) {
-        si = (state_t) elem->state;
-        object = new_list(LIST, si);
+    while (*target) {
+        si = (state_t) (*target)->state;
         switch (si) {
-        case NODE:
-        case EDGE:
-            CONTAINER->subject_type = si;    // record if the ACT has a NODE or EDGE SUBJECT
-                                             //  ( The grammar ensures consistency. )
-            if (*nextold) {
-                if (si == (state_t) (*nextold)->state) {  // old subject matches NODE or EDGE type
-                    // doesn't matter if old is shorter
-                    // ... as long as no further substitutions are needed
-                    nextoldelem = (*nextold)->u.l.first;    // in the recursion, iterate over
-                    // the parts of the NODE or EDGE 
-                    *nextold = (*nextold)->u.l.next;    // at this level, continue over the NODES or EDGES
-                } else {  // else we have no old, just ignore it
-                    nextoldelem = NULL;
-                    *nextold = NULL;
+            case NODE:
+            case EDGE:
+                CONTAINER->subject_type = si;    // record if the ACT has a NODE or EDGE SUBJECT
+                                                 //  ( The grammar ensures consistency. )
+                // no need to recurse deeper
+                break;
+            case PORT:
+                // no need to recurse deeper
+                break;
+            case SAMEAS:
+                if (replacement) {
+                    *target = replacement;
+                    replacement->refs++;
+                    CONTAINER->stat_sameas++;
+                } else {
+                    // e.g. :      a (b =)
+                    token_error((TOKEN_t*)THREAD,
+                            "No corresponding object found for sameas substitution", si);
                 }
-            }
-            sameas_r(CONTAINER, elem, &nextoldelem, object);    // recurse, adding result to a sublist
-            append_addref(newlist, object);
-            break;
-        case PORTID:
-        case NODEID:
-        case DISAMBIG:
-        case ENDPOINT:
-            new = ref_list(LIST, elem);
-            append_transfer(newlist, new);
-            if (*nextold) {    // doesn't matter if old is shorter
+                break;
+            case SUBJECT:
+            case SET:
+            case ENDPOINTSET:
+            case LEG:
+                // need to recurse further for potential SAMEAS
+                // doesn't matter if old is shorter
                 // ... as long as no further substitutions are needed
-                *nextold = (*nextold)->u.l.next;
-            }
-            break;
-        case SAMEAS:
-            if (*nextold) {
-                new = ref_list(LIST, *nextold);
-                append_transfer(newlist, new);
-                *nextold = (*nextold)->u.l.next;
-                CONTAINER->stat_sameas++;
-            } else {
-                // e.g. :      a (b =)
-                token_error((TOKEN_t*)LIST,
-                        "No corresponding object found for sameas substitution", si);
-            }
-            break;
-        default:
-            if (*nextold) {    // doesn't matter if old is shorter
-                // ... as long as no further substitutions are needed
-                nextoldelem = (*nextold)->u.l.first;    // for the recursion
-                *nextold = (*nextold)->u.l.next;    // at this level, continue over the elems
-            }
-            sameas_r(CONTAINER, elem, &nextoldelem, object);    // recurse, adding result to a sublist
-            append_addref(newlist, object);
-            break;
+                sameas_r(CONTAINER, &((*target)->u.l.first), replacement?replacement->u.l.first:NULL);    // recurse
+                break;
+            default:
+                S(si);
+                assert(0);
+                break;
         }
-        free_list(LIST,object);
-        elem = elem->u.l.next;
+        target = &((*target)->u.l.next);
+        if (replacement) {
+            replacement = replacement->u.l.next;
+        }
     }
 }
