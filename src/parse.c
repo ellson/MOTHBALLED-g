@@ -201,6 +201,11 @@ done: // State exit processing
             CONTAINER->mum = MUM;  // MUM is needed
             append_addref(root, branch);
             break;
+        case SAMEAS:
+            CONTAINER->sameas = SAMEAS; // SUBJECT contains SAMEAS tokens
+            append_addref(root, branch);
+            break;
+            break;
         case VALASSIGN: // ignore VALASSIGN EQL, but keep VALUE
             append_addref(root, branch->u.l.first->u.l.next);
             break;

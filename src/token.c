@@ -478,6 +478,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
                    TOKEN->insi == BSL ||
                    TOKEN->insi == CLN ||
                    TOKEN->insi == EQL ||
+                   TOKEN->insi == HAT ||
                    TOKEN->insi == QRY) {
             frag = TOKEN->in;
             len = 1;
@@ -486,6 +487,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
                     insi == BSL ||
                     insi == CLN ||
                     insi == EQL ||
+                    insi == HAT ||
                     insi == QRY) {
                 len++;
             }
