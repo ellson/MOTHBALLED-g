@@ -6,18 +6,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "types.h"
-#include "inbuf.h"
-#include "list.h"
-#include "grammar.h"
-#include "token.h"
-#include "parse.h"
-#include "container.h"
-#include "doact.h"
 
-#define TOKEN() ((TOKEN_t*)THREAD)
-#define LIST() ((LIST_t*)THREAD)
-#define INBUF() ((INBUF_t*)THREAD)
+#include "thread.h"
+#include "doact.h"
 
 #define MORE_REP(prop, ei) \
     ((prop & (REP | SREP)) && ei != RPN && ei != RAN && ei != RBR && ei != RBE)

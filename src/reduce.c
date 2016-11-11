@@ -55,19 +55,19 @@ P(list);
 
     switch (subjtype) {
     case NODE:
-        CONTAINER->nodes = insert_item((LIST_t*)CONTAINER,
+        CONTAINER->nodes = insert_item(LIST(),
                 CONTAINER->nodes,
                 &(subject->u.l.first), // skip NODEID
                 merge_key); 
         break;
     case SIS:
-        CONTAINER->nodes = insert_item((LIST_t*)CONTAINER,
+        CONTAINER->nodes = insert_item(LIST(),
                 CONTAINER->nodes,
                 &(subject->u.l.first->u.l.first), // skip NODEREF NODEID
                 merge_key); 
         break;
     case EDGE:
-        CONTAINER->edges = insert_item((LIST_t*)CONTAINER,
+        CONTAINER->edges = insert_item(LIST(),
                 CONTAINER->edges,
                 &(subject),
                 merge_key); 

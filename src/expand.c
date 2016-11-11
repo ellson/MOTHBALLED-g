@@ -25,7 +25,6 @@ static void expand_hub(LIST_t * LIST, elem_t *tail, elem_t *head, elem_t *disamb
 void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    LIST_t *LIST = (LIST_t*)THREAD; 
     elem_t *elem, *epset, *ep, *np, *new, *disambig = NULL;
     elem_t *newepset, *newleglist, *singletonepset = NULL;
     state_t si1, si2, si3;
@@ -33,8 +32,8 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
 //E();
 
     assert(list);
-    newepset = new_list(LIST, ENDPOINTSET);
-    newleglist = new_list(LIST, ENDPOINTSET);
+    newepset = new_list(LIST(), ENDPOINTSET);
+    newleglist = new_list(LIST(), ENDPOINTSET);
     elem = list->u.l.first;
     while (elem) {
         si1 = (state_t)elem->state;
@@ -45,28 +44,28 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
         case LEG:
             // build a leg list with endpointsets for each leg
             epset = elem->u.l.first;
-            new = ref_list(LIST, epset);
+            new = ref_list(LIST(), epset);
             if ((state_t)epset->state == ENDPOINT) { // put singletons into lists too
-                singletonepset = new_list(LIST, ENDPOINTSET);
+                singletonepset = new_list(LIST(), ENDPOINTSET);
                 append_addref(singletonepset, new);
-                new = ref_list(LIST, singletonepset);
+                new = ref_list(LIST(), singletonepset);
             }
     
             // induce all sibling nodes, and gather a cleaned up epset for each leg
             assert((state_t)new->state == ENDPOINTSET);
-            epset = new_list(LIST, ENDPOINTSET);
+            epset = new_list(LIST(), ENDPOINTSET);
             ep = new->u.l.first;
             while(ep) {
                 si2 = (state_t)ep->state;
                 switch (si2) {
                 case ENDPOINT:
-                    new = ref_list(LIST, ep);
+                    new = ref_list(LIST(), ep);
                     append_addref(epset, new);
                     np = ep->u.l.first;
                     si3 = np->state;
                     switch (si3) {
                     case SIS:
-                        new = ref_list(LIST, np);
+                        new = ref_list(LIST(), np);
                         append_addref(nodes, new);
                         // FIXME - induce KIDs in this node's container
                         break;
@@ -89,9 +88,9 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                 }
                 ep = ep->u.l.next;
             }
-            new = ref_list(LIST, epset);
+            new = ref_list(LIST(), epset);
             append_addref(newleglist, new);
-            free_list(LIST, epset);
+            free_list(LIST(), epset);
             break;
         case LAN:  // ignore
         case RAN:  // ignore
@@ -105,16 +104,16 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
     }
 
     // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
-    expand_r(LIST, newepset, newleglist->u.l.first, disambig, nodes, edges);
+    expand_r(LIST(), newepset, newleglist->u.l.first, disambig, nodes, edges);
 
     if (disambig) {
-        free_list(LIST, disambig);
+        free_list(LIST(), disambig);
     }
     if (singletonepset) {
-        free_list(LIST, singletonepset);
+        free_list(LIST(), singletonepset);
     }
-    free_list(LIST, newepset);
-    free_list(LIST, newleglist);
+    free_list(LIST(), newepset);
+    free_list(LIST(), newleglist);
 
 //E();
 }

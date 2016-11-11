@@ -26,27 +26,24 @@ void sameas(CONTAINER_t * CONTAINER, elem_t *act)
     assert(act);
     subject = &(act->u.l.first);
 
-//E();
-P(*subject);
-
     assert(*subject);
     assert((state_t)(*subject)->state == SUBJECT);
     assert (CONTAINER->previous_subject);
     assert((state_t)CONTAINER->previous_subject->state == SUBJECT);
 
-    CONTAINER->subject_type = 0;  // will be set by sameas_r()   // FIXME - remove once pattern() is fixed
-
-    // traverse SUBJECT tree, replacing SAMEAS with corresponding elem from previous_subject
-    sameas_r(CONTAINER, subject, CONTAINER->previous_subject);
+//E();
+//P(*subject);
+    if (CONTAINER->sameas) {
+        // traverse SUBJECT tree, replacing SAMEAS with corresponding elem from previous_subject
+        sameas_r(CONTAINER, subject, CONTAINER->previous_subject);
+    }
 
     free_list((LIST_t*)THREAD, CONTAINER->previous_subject);   // Free the previous_subject
     CONTAINER->previous_subject = *subject;         // The current subject (after SAMEAS replacement) becomes
                                                     //    the previous_subject for next time
     (*subject)->refs++;                             // Increase subject's reference count to account
-                                                    //    for it's use from previous_subject
-
 //E();
-P(*subject);
+//P(*subject);
 }
 
 /**
@@ -67,16 +64,6 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
         si = (state_t) (*target)->state;
         switch (si) {
             case NODE:
-                CONTAINER->subject_type = si;    // record if the ACT has a NODE or EDGE SUBJECT
-                // no need to recurse deeper
-                break;
-            case EDGE:
-                CONTAINER->subject_type = si;    // record if the ACT has a NODE or EDGE SUBJECT
-                                                 //  ( The grammar ensures consistency. )
-                // need to recurse further for potential SAMEAS in LEGs
-                sameas_r(CONTAINER, &((*target)->u.l.first), replacement?replacement->u.l.first:NULL);    // recurse
-                break;
-//          case NODE:
             case SIS:
             case MUM:
             case KID:
@@ -99,7 +86,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
                 break;
             case SUBJECT:
             case SET:
-//          case EDGE:
+            case EDGE:
             case LEG:
             case ENDPOINTSET:
                 // need to recurse further for potential SAMEAS

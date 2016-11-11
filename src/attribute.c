@@ -11,8 +11,6 @@
 #include "match.h"
 #include "attribute.h"
 
-#define LIST() ((LIST_t*)THREAD)
-
 /**
  * ATTRID and VALUE are stored in separate trees:
  * Both trees are sorted by ATTRID
@@ -67,6 +65,11 @@
 /**
  * Stash away all the attrid in the THREAD->attrid tree, removing any duplicates.
  *
+ * FIXME - attrid tree should be stored in SESSION,  but need some mutex to 
+ *               make that safe when we have multiple threads
+ *
+ * FIXME - need something to keep track of how many elems are in attrid tree  .....  tough!
+ *
  * @param CONTAINER - the current container context
  * @param attributes - the ATTRIBUTES branch
  */
@@ -83,8 +86,8 @@ void attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
         attrid = attr->u.l.first;
         assert(attrid);
         assert((state_t)attrid->state == ATTRID);
-        // FIXME - attrid tree should be stored in SESSION,  but need some mutex to 
-        //     make that safe when we have multiple threads
+
+
         THREAD->attrid =
             insert_item(LIST(), THREAD->attrid, &(attrid->u.l.first), merge_key);
         attr = attr->u.l.next;

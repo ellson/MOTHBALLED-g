@@ -21,6 +21,11 @@ extern "C" {
 #include "print.h"
 #include "info.h"
 
+#define TOKEN() ((TOKEN_t*)THREAD)
+#define LIST() ((LIST_t*)THREAD)
+#define INBUF() ((INBUF_t*)THREAD)
+
+
 struct thread_s {
     TOKEN_t TOKEN;             // TOKEN context. May be cast from THREAD
     CONTAINER_t *CONTAINER;    // The top level CONTAINER in this THREAD

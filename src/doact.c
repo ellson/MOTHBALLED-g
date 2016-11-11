@@ -14,8 +14,6 @@
 #include "sameas.h"
 #include "doact.h"
 
-#define LIST() ((LIST_t*)THREAD)
-
 /**
  * Invoked from the graph parser as soon as the parser
  * completes an input ACT.
@@ -92,10 +90,9 @@ P(act);
 
 
 //====================== substitute SAMEAS
-// FIXME
-//  if (CONTAINER->sameas) {
-        sameas(CONTAINER, act);
-//  }
+
+    sameas(CONTAINER, act);
+
 //P(act);
 //----------------------- example of consecutive EDGE ACTs
 // G:          <a b> <= c>
@@ -132,10 +129,9 @@ P(act);
 
     attributes = act->u.l.first->u.l.next;   // second item, if any, is attributes
     if (attributes) {
-        assert(attributes->state == (char)ATTRIBUTES);
+        assert((state_t)attributes->state == ATTRIBUTES);
         attrid_merge(CONTAINER, attributes);
-//        append_addref(newact, attributes);
-P(THREAD->attrid);
+//P(THREAD->attrid);
     }
 //----------------------- example
 // G:              a[foo=bar abc=xyz]
@@ -148,7 +144,7 @@ P(THREAD->attrid);
 // newattributes: (unchanged)
 //----------------------- 
 
-//P(newact);
+P(act);
 
 #if 0
 //======================= collect, remove, or apply patterns

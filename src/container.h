@@ -17,12 +17,7 @@ struct container_s {            // CONTAINER context
 
     elem_t *previous_subject;   // Set and used by sameas()
 
-    // FIXME - grammar now checks for same type  -- shouldn't need this
-    state_t subject_type;       // Set by sameas() to record if the SUBJECT is NODE(s),
-                                //   or EDGE(s), and to check that it is not a mix
-                                //
-    elem_t *node_pattern_acts;  // complete ACTs where the NODE subject contains an "*"
-    elem_t *edge_pattern_acts;  // complete ACTs where the EDGE subject contains an "*"
+    elem_t *patterns;           // complete ACTs where the SUBJECT contains an "*"
     elem_t *nodes;              // tree of unique nodes
     elem_t *edges;              // tree of unique edges
 

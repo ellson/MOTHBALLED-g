@@ -9,8 +9,6 @@
 #include "expand.h"
 #include "dispatch.h"
 
-#define LIST() ((LIST_t*)THREAD)
-
 static void
 dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *attributes,
         elem_t * nodes, elem_t * edges, state_t verb);
@@ -20,7 +18,6 @@ assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
 
 /*
  * Processes an ACT after sameas and pattern substitutions.
- *
  *
  * FIXME - description needs updating
  *
@@ -88,7 +85,9 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
     //                      for each EDGE, generate new ACT: verb edge attributes
 
-    si = CONTAINER->subject_type;
+// FIXME ....
+si = NODE;
+//    si = CONTAINER->subject_type;
     switch (si) {
     case NODE:
         elem = nodes->u.l.first;

@@ -11,9 +11,6 @@
 #include "info.h"
 #include "session.h"
 
-#define TOKEN() ((TOKEN_t*)THREAD)
-#define LIST() ((LIST_t*)THREAD)
-
 /**
  * @param THREAD context   
  * @return success/fail
@@ -28,9 +25,7 @@ success_t container(THREAD_t * THREAD)
 
     container.THREAD = THREAD;
     container.previous_subject = new_list(LIST(), SUBJECT);  // for sameas
-
-    container.node_pattern_acts = new_list(LIST(), 0);  // FIXME use tree
-    container.edge_pattern_acts = new_list(LIST(), 0);  // FIXME use tree
+    container.patterns = new_list(LIST(), 0);  // for patterns
 
     THREAD->stat_containdepth++;      // containment nesting level
     if (THREAD->stat_containdepth > THREAD->stat_containdepthmax) {
@@ -78,8 +73,7 @@ success_t container(THREAD_t * THREAD)
     free_tree(LIST(), container.nodes);
     free_tree(LIST(), container.edges);
     free_list(LIST(), container.previous_subject);
-    free_list(LIST(), container.node_pattern_acts);
-    free_list(LIST(), container.edge_pattern_acts);
+    free_list(LIST(), container.patterns);
 
     if (LIST()->stat_elemnow) {
         E();

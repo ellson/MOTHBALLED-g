@@ -41,12 +41,13 @@ static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject);
 
 elem_t * pattern(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb)
 {
+    THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *newsubjects;
 
     // FIXME - this is ugly!
-    if ((CONTAINER->pattern = (((TOKEN_t*)(CONTAINER->THREAD))->pattern))) {
+    CONTAINER->pattern = TOKEN()->pattern;
+    if (CONTAINER->pattern) {
         CONTAINER->stat_patternactcount++;
-        assert(CONTAINER->subject_type == NODE || CONTAINER->subject_type == EDGE);
         pattern_update(CONTAINER, subject, verb);
         return NULL;
     }
@@ -57,30 +58,19 @@ elem_t * pattern(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb)
 
 static void pattern_update(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb)
 {
-    assert(CONTAINER->subject_type == NODE || CONTAINER->subject_type == EDGE);
     if (verb == QRY) {
         assert(0);  // FIXME - report error
     }
-    if (CONTAINER->subject_type == NODE) {
-        if (verb == TLD) {
- //           remove_item(LIST, CONTAINER->node_pattern_acts, obj);
-        } else {
- //           insert_item(LIST, CONTAINER->node_pattern_acts, obj);
-            append_transfer(CONTAINER->node_pattern_acts, subject);
-        }
+    if (verb == TLD) {
+//      remove_item(LIST, CONTAINER->patterns, obj);
     } else {
-        if (verb == TLD) {
- //           remove_item(LIST, CONTAINER->edge_pattern_acts, obj);
-        } else {
- //           insert_item(LIST, CONTAINER->edge_pattern_acts, obj);
-            append_transfer(CONTAINER->edge_pattern_acts, subject);
-        }
+//      insert_item(LIST, CONTAINER->patterns, obj);
+        append_transfer(CONTAINER->patterns, subject);
     }
 }
 
 /**
- * Look for pattern match(es) to the current subject (segregated
- * into NODE and EDGE patterns).
+ * Look for pattern match(es) to the current SUBJECT 
  * For each match, append a (refcounted copy) of the current
  * subject, followed by (refcounted) copies of the ATTRIBUTES
  * and CONTAINER from the pattern.  Finally return for the current
@@ -93,7 +83,7 @@ static void pattern_update(CONTAINER_t * CONTAINER, elem_t * subject, state_t ve
 
 static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject)
 {
-    LIST_t * LIST = (LIST_t *)(CONTAINER->THREAD);
+    THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *newacts = NULL, *pattern_acts, *subj, *attr;
 
     assert(subject);
@@ -102,15 +92,8 @@ static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject)
 //E();
 //P(subject);
 
-    assert(CONTAINER->subject_type == NODE || CONTAINER->subject_type == EDGE);
-    if (CONTAINER->subject_type == NODE) {
-        pattern_acts = CONTAINER->node_pattern_acts;
-    } else {
-        pattern_acts = CONTAINER->edge_pattern_acts;
-    }
-
     // iterate over available patterns
-    for ( subj = pattern_acts->u.l.first; subj; subj = subj->u.l.next) {
+    for ( subj = CONTAINER->patterns->u.l.first; subj; subj = subj->u.l.next) {
         assert(subj);
         assert((state_t) subj->state == SUBJECT);
         attr = subj->u.l.next;
@@ -121,11 +104,11 @@ static elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * subject)
             // and then the subject again
             
             if (! newacts) {
-                newacts = new_list(LIST, ACT);
+                newacts = new_list(LIST(), ACT);
             }
-            append_addref(newacts, ref_list(LIST, subject));
+            append_addref(newacts, ref_list(LIST(), subject));
             if (attr && (state_t)attr->state == ATTRIBUTES) {
-                append_addref(newacts, ref_list(LIST, attr));
+                append_addref(newacts, ref_list(LIST(), attr));
             }
 
             // FIXME -- contents

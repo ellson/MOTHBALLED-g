@@ -10,6 +10,8 @@
 #include "inbuf.h"
 #include "list.h"
 
+#define INBUF() ((INBUF_t*)LIST)
+
 /**
  * Private function to manage the allocation an elem_t
  *
@@ -95,8 +97,8 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
 {
     elem_t *elem;
 
-    assert(((INBUF_t*)LIST)->inbuf);
-    assert(((INBUF_t*)LIST)->inbuf->refs >= 0);
+    assert(INBUF()->inbuf);
+    assert(INBUF()->inbuf->refs >= 0);
     assert(frag);
     assert(len > 0);
 
@@ -106,13 +108,13 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
     elem->type = FRAGELEM;  // type
     elem->state = state;    // state_machine state that created this frag
     elem->u.f.next = NULL;  // clear next
-    elem->u.f.inbuf = ((INBUF_t*)LIST)->inbuf; // record inbuf for ref counting
+    elem->u.f.inbuf = INBUF()->inbuf; // record inbuf for ref counting
     elem->u.f.frag = frag;  // pointer to start of frag in inbuf
     elem->len = len;        // length of frag
     elem->refs = 1;         // initial ref count
     elem->height = 0;       // notused
 
-    ((INBUF_t*)LIST)->inbuf->refs++;   // increment reference count in inbuf.
+    INBUF()->inbuf->refs++;   // increment reference count in inbuf.
     
     LIST->stat_fragnow++;        // stats
     if (LIST->stat_fragnow > LIST->stat_fragmax) {
@@ -247,7 +249,7 @@ void free_list(LIST_t * LIST, elem_t * elem)
             }
             assert(elem->u.f.inbuf->refs > 0);
             if (--(elem->u.f.inbuf->refs) == 0) {
-                free_inbuf((INBUF_t*)LIST, elem->u.f.inbuf);
+                free_inbuf(INBUF(), elem->u.f.inbuf);
             }
             LIST->stat_fragnow--;    // maintain stats
             break;

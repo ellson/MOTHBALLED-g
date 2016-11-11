@@ -48,10 +48,6 @@
      append_ulong   (THREAD, &pos, valu); \
 }
 
-#define TOKEN() ((TOKEN_t*)THREAD)
-#define LIST() ((LIST_t*)THREAD)
-#define INBUF() ((INBUF_t*)THREAD)
-
 /**
  * The info is formatted into a buffer using minimal
  * spacing g format
