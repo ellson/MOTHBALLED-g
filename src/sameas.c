@@ -79,21 +79,8 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
         switch (si) {
         case NODE:
         case EDGE:
-            if (CONTAINER->subject_type == 0) {
-                CONTAINER->subject_type = si;    // record if the ACT has a NODE or EDGE SUBJECT
-            } else {
-                if (si != CONTAINER->subject_type) {
-                    // all members of the SUBJECT must be of the same type: NODE or EDGE
-                    // (this is really a shortcut to avoid extra productions in the grammar)
-                    if (si == NODE) {
-                        token_error((TOKEN_t*)LIST,
-                                "EDGE subject includes", si);
-                    } else {
-                        token_error((TOKEN_t*)LIST,
-                                "NODE subject includes", si);
-                    }
-                }
-            }
+            CONTAINER->subject_type = si;    // record if the ACT has a NODE or EDGE SUBJECT
+                                             //  ( The grammar ensures consistency. )
             if (*nextold) {
                 if (si == (state_t) (*nextold)->state) {  // old subject matches NODE or EDGE type
                     // doesn't matter if old is shorter
@@ -129,7 +116,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t ** nextold, elem_t * 
             } else {
                 // e.g. :      a (b =)
                 token_error((TOKEN_t*)LIST,
-                        "No corresponding object found for same-as substitution", si);
+                        "No corresponding object found for sameas substitution", si);
             }
             break;
         default:
