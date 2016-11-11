@@ -66,11 +66,16 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
         si = (state_t) (*target)->state;
         switch (si) {
             case NODE:
+                CONTAINER->subject_type = si;    // record if the ACT has a NODE or EDGE SUBJECT
+                // no need to recurse deeper
+                break;
             case EDGE:
                 CONTAINER->subject_type = si;    // record if the ACT has a NODE or EDGE SUBJECT
                                                  //  ( The grammar ensures consistency. )
-                // no need to recurse deeper
+                // need to recurse further for potential SAMEAS in LEGs
+                sameas_r(CONTAINER, &((*target)->u.l.first), replacement?replacement->u.l.first:NULL);    // recurse
                 break;
+//          case NODE:
             case PORT:
                 // no need to recurse deeper
                 break;
@@ -87,8 +92,9 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
                 break;
             case SUBJECT:
             case SET:
-            case ENDPOINTSET:
+//          case EDGE:
             case LEG:
+            case ENDPOINTSET:
                 // need to recurse further for potential SAMEAS
                 // doesn't matter if old is shorter
                 // ... as long as no further substitutions are needed
