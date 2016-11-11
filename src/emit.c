@@ -261,7 +261,7 @@ static void gvrender_list(CONTAINER_t * CONTAINER, FILE *chan, elem_t * list)
                    fprintf(chan, "addedge: \n");
 //                    je_emit_token(CONTAINER, chan, '<');
                     break;
-                case NOUNSET:
+                case SET:
                 case ENDPOINTSET:
 //                    je_emit_token(CONTAINER, chan, '(');
                     break;
@@ -288,7 +288,7 @@ static void gvrender_list(CONTAINER_t * CONTAINER, FILE *chan, elem_t * list)
         case EDGE:
 //            je_emit_close_token(CONTAINER, chan, '>');
             break;
-        case NOUNSET:
+        case SET:
         case ENDPOINTSET:
 //            je_emit_close_token(CONTAINER, chan, ')');
             break;
@@ -344,7 +344,7 @@ void je_emit_list(CONTAINER_t * CONTAINER, FILE *chan, elem_t * list)
                 case EDGE:
                     je_emit_token(CONTAINER, chan, '<');
                     break;
-                case NOUNSET:
+                case SET:
                 case ENDPOINTSET:
                     je_emit_token(CONTAINER, chan, '(');
                     break;
@@ -371,7 +371,7 @@ void je_emit_list(CONTAINER_t * CONTAINER, FILE *chan, elem_t * list)
         case EDGE:
             je_emit_close_token(CONTAINER, chan, '>');
             break;
-        case NOUNSET:
+        case SET:
         case ENDPOINTSET:
             je_emit_close_token(CONTAINER, chan, ')');
             break;

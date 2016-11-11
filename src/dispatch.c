@@ -24,8 +24,8 @@ assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
  *
  * FIXME - description needs updating
  *
- * - expand NOUNSET
- *    - expand ENDPOINT_SETs
+ * - expand SETs of NODES or EDGES
+ *    - expand ENDPOINTSETs
  *       - promote ENDPOINTS to common ancestor
  *           - extract NODES from EDGES for node induction
  *               - dispatch NODES (VERB NODE ATTRIBUTES CONTAINER)
@@ -81,7 +81,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
     edges = new_list(LIST(), 0);
     attributes = new_list(LIST(), 0);
 
-    // expand NOUNSET and ENDPOINTSETS
+    // expand SET and ENDPOINTSET
     dispatch_r(CONTAINER, act, attributes, nodes, edges, verb);
 
     // if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
@@ -136,9 +136,9 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
 }
 
 /**
- * This function expands NOUNSET of NODES or EDGES,
+ * This function expands SETs of NODES or EDGES,
  *     then expands ENPOINTSETS in EDGES,
- *     and returns the expansion as list of simple nodes and edges
+ *     and returns the expansion as list of simple NODEs and EDGEs
  *
  * @param CONTAINER context
  * @param list of object -- not modified
@@ -174,13 +174,13 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
             object = elem->u.l.first;
             si2 = (state_t)object->state;
             switch (si2) {
-            case NOUN:
+            case SET:
                 dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
                 break;
-            case NOUNSET:
+            case NODES:
+            case EDGES:
                 object = object->u.l.first;
                 while(object) {
-                    assert((state_t)object->state == NOUN);
                     dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
                     object = object->u.l.next;
                 }

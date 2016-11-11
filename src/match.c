@@ -40,7 +40,7 @@ success_t match(CONTAINER_t * CONTAINER, elem_t * subject, elem_t * pattern)
         p_len = 0;
         if ((elemtype_t) (s_elem->type) == LISTELEM) {
             if (ts_elem->state != tp_elem->state) {
-                return FAIL;    // no match if the state structure is different,  e.g. MEMBER vs. MEMBERSET
+                return FAIL;    // no match if the state structure is different
             }
             while (ts_elem || tp_elem) {    // quick test before recursing...
                 if (!(ts_elem && tp_elem)) {
@@ -117,7 +117,7 @@ pattern_r(CONTAINER_t * CONTAINER, elem_t * subject, elem_t * pattern)
         tp_elem = p_elem;
         if ((elemtype_t) (s_elem->type) == LISTELEM) {
             if (ts_elem->state != tp_elem->state) {
-                return FAIL;    // no match if the state structure is different,  e.g. MEMBER vs. MEMBERSET
+                return FAIL;    // no match if the state structure is different
             }
             while (ts_elem || tp_elem) {    // quick test before recursing...
                 if (!(ts_elem && tp_elem)) {

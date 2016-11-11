@@ -213,9 +213,8 @@ done: // State exit processing
         case RELATIVE:
         case PORT:
         case NODEREF:
-        case NOUN:
-        case NOUNSET:
-        case NOUNS:
+        case SET:
+        case MEMBERSHIP:
         case NODES:
         case EDGES:
         case ENDPOINT:
@@ -226,7 +225,7 @@ done: // State exit processing
         case RBR:
         case LAN:  // bracketing LEGs
         case RAN:
-        case LPN:  // bracketing NOUNs or ENDPOINTs
+        case LPN:  // for SETs or ENDPOINTSETs
         case RPN:
         case TIC:  // prefixing DISAMBID
         case HAT:  // indicating MUM
