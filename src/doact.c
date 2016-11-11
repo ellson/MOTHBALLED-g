@@ -103,7 +103,7 @@ P(act);
 //====================== substitute sameas LEGs, or NODEs from previous SUBJECT
 P(subject)
     newsubject = sameas(CONTAINER, subject);
-//P(newsubject);
+P(newsubject);
     append_transfer(newact, newsubject);
 //----------------------- example of consecutive EDGE ACTs
 // G:          <a b> <= c>
@@ -157,7 +157,7 @@ P(THREAD->attrid);
 // newattributes: (unchanged)
 //----------------------- 
 
-P(newact);
+//P(newact);
 
 #if 0
 //======================= collect, remove, or apply patterns

@@ -131,8 +131,7 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
         CONTAINER->pattern = 0;     // maintain flag for '*' found anywhere in the subject
         CONTAINER->sameas = 0;      // maintain flag for '=' found anywhere in the subject
         break;
-    case SUBJECT:
-        break;
+
     default:
         break;
     }
@@ -193,6 +192,15 @@ done: // State exit processing
             // don't bother appending to root
             break;
 
+        //  FIXME - can we automate this eliding based on the grammar?
+        //    e.g. elide all single character terminals, that are not a class of characters ??
+        //              LBR,RBR,LBE,RBE,LPN,RPN,LAN,RAN,EQL,DQT,OCT,AST,FSL
+        //              CLN,SCP,QRY.BSL.HAT,TIC,TLD,NLL
+        //         elide all ALT tokens,
+        //              SUBJECT,NOUNS,NODES,EDGES,NODENOUN,EDGENOUN,
+        //         but retain the tokens that are member of an ALT rule
+        //              SAMEAS, NODENOUN, ....  it just broke.. maybe some transitive rule
+        
         // drop various bits of the tree that are no longer useful
         case VERB:  // VERB - after stashing away its value
             CONTAINER->verb = branch->u.l.first->state;  // QRY or TLD
@@ -214,9 +222,11 @@ done: // State exit processing
         case PORT:
         case NODEREF:
         case SET:
-        case MEMBERSHIP:
+        case NOUNS:
         case NODES:
+        case NODENOUN:
         case EDGES:
+        case EDGENOUN:
         case ENDPOINT:
             append_addref(root, branch->u.l.first);
             break;
@@ -230,6 +240,7 @@ done: // State exit processing
         case HAT:  // indicating MUM
         case FSL:  // prefixing KID
         case CLN:  // prefixing PORT
+        case SCN:  // terminal
             break;
         default:
             // everything else is appended to parent's branch
