@@ -61,6 +61,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
     state_t si;
+    elem_t *next;
 
     while (*target) {
         si = (state_t) (*target)->state;
@@ -76,12 +77,18 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
                 sameas_r(CONTAINER, &((*target)->u.l.first), replacement?replacement->u.l.first:NULL);    // recurse
                 break;
 //          case NODE:
+            case SIS:
+            case MUM:
+            case KID:
             case PORT:
+            case DISAMBIG:
                 // no need to recurse deeper
                 break;
             case SAMEAS:
                 if (replacement) {
+                    next = (*target)->u.l.next;  // just replace the SAMEAS element in the chain
                     *target = replacement;
+                    (*target)->u.l.next = next;
                     replacement->refs++;
                     CONTAINER->stat_sameas++;
                 } else {
