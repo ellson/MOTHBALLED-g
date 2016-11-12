@@ -24,7 +24,7 @@ success_t container(THREAD_t * THREAD)
     root = new_list(LIST(), ACTIVITY);
 
     container.THREAD = THREAD;
-    container.previous_subject = new_list(LIST(), SUBJECT);  // for sameas
+    container.previous = new_list(LIST(), SUBJECT);  // for sameas
     container.patterns = new_list(LIST(), 0);  // for patterns
 
     THREAD->stat_containdepth++;      // containment nesting level
@@ -72,13 +72,10 @@ success_t container(THREAD_t * THREAD)
     free_list(LIST(), root);
     free_tree(LIST(), container.nodes);
     free_tree(LIST(), container.edges);
-    free_list(LIST(), container.previous_subject);
+    free_list(LIST(), container.previous);
     free_list(LIST(), container.patterns);
 
-    if (LIST()->stat_elemnow) {
-        E();
-        assert(LIST()->stat_elemnow == 0);   // check for elem leaks
-    }
-
+// Some elem's are reatained by the attrid tree
+//E();
     return rc;
 }

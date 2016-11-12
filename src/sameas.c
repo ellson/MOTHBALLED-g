@@ -12,8 +12,8 @@ static void
 sameas_r(CONTAINER_t * CONTAINER, elem_t **current, elem_t *replacement);
 
 /**
- * Rewrite SAMEAS elems in ACT's subject with corresponding elems from the subject
- * of the immediately preceeninf ACT.
+ * Rewrite SAMEAS elems in ACT's SUBJECT from the
+ * corresponding elems from the previous SUBJECT.
  *
  * @param CONTAINER container context
  * @param act from the parser
@@ -28,20 +28,21 @@ void sameas(CONTAINER_t * CONTAINER, elem_t *act)
 
     assert(*subject);
     assert((state_t)(*subject)->state == SUBJECT);
-    assert (CONTAINER->previous_subject);
-    assert((state_t)CONTAINER->previous_subject->state == SUBJECT);
+    assert (CONTAINER->previous);
+    assert((state_t)CONTAINER->previous->state == SUBJECT);
 
 //E();
 //P(*subject);
     if (CONTAINER->sameas) {
-        // traverse SUBJECT tree, replacing SAMEAS with corresponding elem from previous_subject
-        sameas_r(CONTAINER, subject, CONTAINER->previous_subject);
+        // traverse SUBJECT tree, replacing SAMEAS
+        //   with corresponding elem from previous
+        sameas_r(CONTAINER, subject, CONTAINER->previous);
     }
 
-    free_list((LIST_t*)THREAD, CONTAINER->previous_subject);   // Free the previous_subject
-    CONTAINER->previous_subject = *subject;         // The current subject (after SAMEAS replacement) becomes
-                                                    //    the previous_subject for next time
-    (*subject)->refs++;                             // Increase subject's reference count to account
+    free_list((LIST_t*)THREAD, CONTAINER->previous);
+    CONTAINER->previous = *subject; 
+    (*subject)->refs++;  
+
 //E();
 //P(*subject);
 }
