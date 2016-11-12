@@ -66,7 +66,7 @@ void pattern_update(CONTAINER_t * CONTAINER, elem_t * act)
 elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *newacts = NULL, *pattern_acts, *subj, *attr;
+    elem_t *newacts = NULL, *subj, *attr;
 
     assert(act);
     assert((state_t) act->state == ACT);

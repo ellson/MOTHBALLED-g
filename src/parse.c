@@ -118,9 +118,16 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     // the remainder of the switch() is just state initialization
     case ACT:
         CONTAINER->verb = 0;        // default "add"
-        CONTAINER->mum = 0;         // maintain flag for any MUM involvement
-        CONTAINER->sameas = 0;      // maintain flag for '=' found anywhere in the subject
-        TOKEN()->pattern = 0;       // maintain flag for '*' found anywhere in the subject
+        break;
+    case SUBJECT:
+        CONTAINER->mum = 0;         // reset flag for any MUM involvement in SUBJECT
+        CONTAINER->sameas = 0;      // reset flag for '=' found anywhere in SUBJECT
+        TOKEN()->elem_has_ast = 0;  // reset flag for '*' found anywhere in elem
+        CONTAINER->subj_has_ast = 0;// reset flag for '*' found anywhere in SUBJECT
+        break;
+    case ATTRIBUTES:
+        TOKEN()->elem_has_ast = 0;  // reset flag for '*' found anywhere in elem
+        CONTAINER->attr_has_ast = 0;// reset flag for '*' found anywhere in ATTRIBUTES
         break;
 
     default:
@@ -177,37 +184,42 @@ done: // State exit processing
         switch (si) {
 
         case ACT:  // ACT is complete, process it
-
-            // flag if AST in SUBJECT ot ATTRIBUTES
-            CONTAINER->pattern = TOKEN()->pattern;
-            
             rc = doact(CONTAINER, branch);
             // this is the top recursion
             // no more need for this branch
             // don't bother appending to root
             break;
 
-        case VERB:  // VERB - drop after stashing away its value
+        // collect flag and drop token
+        case VERB: 
             CONTAINER->verb = branch->u.l.first->state;  // QRY or TLD
             break;
-        case MUM:
-            // flag if MUM is needed
-            CONTAINER->mum = MUM;
-            // retain
-            append_addref(root, branch);
+
+        // collect flag and retain token (and any chain)
+        case SUBJECT:
+            CONTAINER->subj_has_ast = TOKEN()->elem_has_ast;
+            TOKEN()->elem_has_ast = 0;
+            append_addref(root, branch); // retain
+            break;
+        case ATTRIBUTES:
+            CONTAINER->attr_has_ast = TOKEN()->elem_has_ast;
+            append_addref(root, branch); // retain
             break;
         case SAMEAS:
-            // flag if SUBJECT contains SAMEAS token(s)
-            CONTAINER->sameas = SAMEAS;
-            // retain
-            append_addref(root, branch);
+            CONTAINER->sameas = SAMEAS; // flag if SUBJECT contains SAMEAS token(s)
+            append_addref(root, branch); // retain
             break;
+        case MUM:
+            CONTAINER->mum = MUM; // flag if MUM is needed
+            append_addref(root, branch); // retain
+            break;
+
+        // drop two tokens, but retain any chain
         case VALASSIGN: // ignore VALASSIGN EQL, but keep VALUE
             append_addref(root, branch->u.l.first->u.l.next);
             break;
 
-        // drop various bits of the tree that are no longer useful
-        //   but retain their subtrees
+        // drop tokens with no chain, but retain subtree
         case FAMILY:
         case RELATIVE:
         case PORT:
@@ -222,7 +234,7 @@ done: // State exit processing
             append_addref(root, branch->u.l.first);
             break;
 
-        // drop single character terminals
+        // drop single character tokens
         case LBR:  // bracketing ATTRs
         case RBR:
         case LAN:  // bracketing LEGs

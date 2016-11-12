@@ -20,8 +20,8 @@ struct token_s {
     state_t state;             // last state entered
     state_t quote_state;       // ABC or
                                // DQT if STRING contains any DQT fragments
-    state_t pattern;           // flag set if an '*' is found in any STRING
-                               //   -- reset by parse()
+    state_t elem_has_ast;      // flag set if an '*' is found in any elem
+                               //   -- reset by parse(), so parse defines "elem"
     state_t has_ast;           // flag set if an '*' is found in a STRING
     state_t has_bsl;           // flag set if an '\' is found in a STRING
     int in_quote;              // 0 not in quotes

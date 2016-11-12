@@ -38,9 +38,14 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 
     CONTAINER->stat_inactcount++;
 
-// for debugging only
-//printf("doact(): sameas=%d pattern=%d mum=%d verb=%d\n", 
-//  CONTAINER->sameas, CONTAINER->pattern, CONTAINER->mum, CONTAINER->verb);
+#if 0
+    printf("doact(): sameas=%d subj_has_ast=%d attr_has_ast=%d mum=%d verb=%d\n", 
+            CONTAINER->sameas,
+            CONTAINER->subj_has_ast,
+            CONTAINER->attr_has_ast,
+            CONTAINER->mum,
+            CONTAINER->verb);
+#endif
 //P(act);
 
     sameas(CONTAINER, act);
@@ -51,9 +56,8 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
         attrid_merge(CONTAINER, attributes);
     }
 
-    if (CONTAINER->pattern) {
+    if (CONTAINER->subj_has_ast) {
         pattern_update(CONTAINER, act);
-P(CONTAINER->patterns);
         return SUCCESS;
     }
 

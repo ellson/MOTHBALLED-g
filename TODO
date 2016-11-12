@@ -130,3 +130,7 @@ DONE - see state exit code in graph.c
 
             
 21. may need EDGE trees per NODE to support navigational queries
+
+22. additional VSTRING quoting modes:
+    - html-like    <...>        <> must be balanced
+    - length       [length].... length chars immediately following ']'

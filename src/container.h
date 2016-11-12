@@ -11,7 +11,8 @@ struct container_s {      // CONTAINER context
     THREAD_t *THREAD;     // parent THREAD
 
     state_t verb;         // verb for the current ACT
-    state_t pattern;      // flag set if '*' occurred in SUBJECT
+    state_t subj_has_ast; // flag set if '*' occurred in SUBJECT
+    state_t attr_has_ast; // flag set if '*' occurred in ATTRIBUTES
     state_t sameas;       // flag set if '=' occurred in SUBJECT
     state_t mum;          // flag set if '^' occurred in SUBJECT
 
