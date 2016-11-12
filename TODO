@@ -55,9 +55,13 @@ DUPLICATE with 16.
   5. updating contentx hash in containing object
   6. removing old contents iff no nonger referenced
 
-12. ?? separate threads/processes for:
+12. Multi-threading, multi-process forking. Separate threads/processes for:
 	- layout computation
 	- container reloading for update
+    - Need Locking strategt - (Mutex code?)
+    -- Need lock for access to session
+    -- Does it need lock to round-robin reads from multiple input streams?
+    -- Does it need lock to read container content from ikea before continuong?
 
 13. distributed graphs
   - net is a graph of authorized ssh access,  
@@ -98,10 +102,11 @@ PARTIALLY DONE - double frees elems
 
       - graph - maybe no name
            -- nodes + attributes + edges?
-           -- edges + attribtes
+           -- edges + attributes
            -- patterns
 
 17. THREAD stats  (maybe add to SESSION stats?)
+DONE. THREAD and SESSION have been broken out and stats divided accoringly.
 
 18. Extend grammar to enforce NOUNSET members to be all NODEs or all EDGEs
 TRIED but FAILED ...
