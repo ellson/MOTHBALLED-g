@@ -28,19 +28,25 @@ void sameas(CONTAINER_t * CONTAINER, elem_t *act)
 
     assert(*subject);
     assert((state_t)(*subject)->state == SUBJECT);
-    assert (CONTAINER->previous);
-    assert((state_t)CONTAINER->previous->state == SUBJECT);
+
+    // NB.  In case we do input multiplexing of parallel streams,
+    // then previous needs to be associated with a particular stream
+    // So we keep it in TOKEN->previous, close to TOKEN->in, so they
+    // can be switched together.  The stream will also need to retain 
+    // of the current inbuf, since some read-ahead might occur.
+    assert (TOKEN()->previous);
+    assert((state_t)TOKEN()->previous->state == SUBJECT);
 
 //E();
 //P(*subject);
     if (CONTAINER->has_sameas) {
         // traverse SUBJECT tree, replacing SAMEAS
         //   with corresponding elem from previous
-        sameas_r(CONTAINER, subject, CONTAINER->previous);
+        sameas_r(CONTAINER, subject, TOKEN()->previous);
     }
 
-    free_list((LIST_t*)THREAD, CONTAINER->previous);
-    CONTAINER->previous = *subject; 
+    free_list((LIST_t*)THREAD, TOKEN()->previous);
+    TOKEN()->previous = *subject; 
     (*subject)->refs++;  
 
 //E();

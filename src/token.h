@@ -15,7 +15,16 @@ struct token_s {
                                //   or "-" for stdin
     FILE *file;                // file handle of file being processed
     FILE *out, *err;           // output files
-    unsigned char *in;         // next character to be processed
+
+    // NB.  In case we do input multiplexing of parallel streams,
+    // then previous needs to be associated with a particular stream
+    // So we keep it in TOKEN->previous, close to TOKEN->in, so they
+    // can be switched together.
+    // FIXME  The stream will also need to retain 
+    // of the current inbuf, since some read-ahead might occur.
+        unsigned char *in;     // next character to be processed
+        elem_t *previous;      // the previous SUBJECT for sameas
+
     state_t insi;              // state represented by last character read
     state_t state;             // last state entered
     state_t quote_state;       // ABC or

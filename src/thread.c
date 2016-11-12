@@ -3,12 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <assert.h>
 
 #include "thread.h"
 
 THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind)
 {
     THREAD_t thread = { 0 };      // FIXME - may need to calloced
+    THREAD_t *THREAD = &thread;    // needed for LIST() and E() macros.
 
     argv = &argv[optind];
     *pargc -= optind;
@@ -31,6 +33,13 @@ THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind)
 
     ikea_store_snapshot(thread.ikea_store);
     ikea_store_close(thread.ikea_store);
+
+    free_tree(LIST(), thread.attrid);
+    
+    if (LIST()->stat_elemnow != 0) {
+        E();
+        assert(0); 
+    }
 
     return NULL;   // FIXME - presumably some kind of thread handle...
 }

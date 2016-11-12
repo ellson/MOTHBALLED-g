@@ -71,7 +71,7 @@ success_t container(THREAD_t * THREAD)
     }
 
     free_list(LIST(), root);
-    free_list(LIST(), container.previous);
+    free_list(LIST(), TOKEN()->previous);
     free_tree(LIST(), container.nodes);
     free_tree(LIST(), container.edges);
     free_list(LIST(), container.node_patterns);
