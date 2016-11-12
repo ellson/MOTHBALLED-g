@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-elem_t * pattern(CONTAINER_t * CONTAINER, elem_t * subject, state_t verb);
-
+void pattern_update(CONTAINER_t * CONTAINER, elem_t * act);
+elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * act);
 
 #ifdef __cplusplus
 }

@@ -39,8 +39,8 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     CONTAINER->stat_inactcount++;
 
 // for debugging only
-printf("doact(): sameas=%d pattern=%d mum=%d verb=%d\n", 
-    CONTAINER->sameas, CONTAINER->pattern, CONTAINER->mum, CONTAINER->verb);
+//printf("doact(): sameas=%d pattern=%d mum=%d verb=%d\n", 
+//  CONTAINER->sameas, CONTAINER->pattern, CONTAINER->mum, CONTAINER->verb);
 //P(act);
 
     sameas(CONTAINER, act);
@@ -51,11 +51,13 @@ printf("doact(): sameas=%d pattern=%d mum=%d verb=%d\n",
         attrid_merge(CONTAINER, attributes);
     }
 
-P(act);
+    if (CONTAINER->pattern) {
+        pattern_update(CONTAINER, act);
+P(CONTAINER->patterns);
+        return SUCCESS;
+    }
 
 #if 0
-//======================= collect, remove, or apply patterns
-//
     new = pattern(CONTAINER, newact, CONTAINER->verb);
     free_list(LIST(), newact);
     if (new) {
@@ -66,9 +68,10 @@ P(act);
 
     //  N.B. (there can be multiple subjects after pattern subst.  Each matched
     //  pattern generates an additional subject.
+#endif
+P(act);
 
-P(newact);
-
+#if 0
 // FIXME so this is probably flawed - doesn't it need a loop?
     // dispatch events for the ACT just finished
     new = dispatch(CONTAINER, newsubject, CONTAINER->verb, CONTAINER->mum);
