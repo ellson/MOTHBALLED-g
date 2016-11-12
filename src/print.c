@@ -259,3 +259,140 @@ void append_runtime(THREAD_t * THREAD, char **pos, uint64_t run_sec, uint64_t ru
     THREAD->sep = ' ';   // sep required after strings
     *pos += len;
 }
+
+#if 0
+static void printg_token(CONTAINER_t *CONTAINER, char c)
+{
+    puts(c, chan);
+}
+
+// recursive function
+static void printg_elem(CONTAINER_t * CONTAINER_t, elem_t * list)
+{
+    THREAD_t *THREAD = CONTAINER->THREAD;
+    FILE *chan = TOKEN()->out;
+    elem_t *elem;
+    elemtype_t type;
+    int cnt;
+    state_t liststate;
+
+    assert(list);
+    liststate = (state_t) list->state;
+    if (! (elem = list->u.l.first)) {
+        switch (liststate) {
+        case QRY:
+            printg_token(CONTAINER, "?");
+            break;
+        case TLD:
+            printg_token(CONTAINER, "~");
+            break;
+        default:
+            break;
+        }
+        return;
+    }
+    type = (elemtype_t) elem->type;
+    switch (type) {
+    case FRAGELEM:
+        ikea_print_frags(CONTAINER->ikea_box, liststate, elem, &(CONTAINER->sep));
+        break;
+    case LISTELEM:
+        cnt = 0;
+        while (elem) {
+            if (cnt++ == 0) {
+                switch (liststate) {
+                case EDGE:
+                    ikea_token(CONTAINER, "<");
+                    break;
+                case SET:
+                case ENDPOINTSET:
+                    ikea_token(CONTAINER, "(");
+                    break;
+                case ATTRIBUTES:
+                    ikea_token(CONTAINER, "[");
+                    break;
+                case CONTENTS:
+                    ikea_token(CONTAINER, "{");
+                    break;
+                case VALASSIGN:
+                    ikea_token(CONTAINER, "=");
+                    break;
+                case CHILD:
+                    ikea_token(CONTAINER, "/");
+                    break;
+                default:
+                    break;
+                }
+            }
+            ikea_list_r(CONTAINER, elem);    // recurse
+            elem = elem->u.l.next;
+        }
+        switch (liststate) {
+        case EDGE:
+            ikea_token(CONTAINER, ">");
+            break;
+        case SET:
+        case ENDPOINTSET:
+            ikea_token(CONTAINER, ")");
+            break;
+        case ATTRIBUTES:
+            ikea_token(CONTAINER, "]");
+            break;
+        case CONTENTS:
+            ikea_token(CONTAINER, "}");
+            break;
+        default:
+            break;
+        }
+        break;
+    default:
+        assert(0);  // should not be here
+        break;
+    }
+}
+
+/**
+ * Conditionaly print a separator followed by the concatenation of
+ * fragments in the list.
+ * The composite string is quoted as necessary to comply with g syntax
+ * (although not necessarily in the same way as in the original input).
+ *
+ * @param ikea_box 
+ * @param liststate an indicator if the string is to be quoted
+ * @param elem the first frag of the fragllist
+ * @param sep if not NULL then a character to be printed first
+ */
+static void ikea_print_frags(ikea_box_t *ikea_box, state_t liststate, elem_t * elem, char *sep)
+{
+    assert(sep);
+    if (*sep) {
+	ikea_box_append(ikea_box, sep, 1);
+    }
+    if (liststate == DQT) {
+	ikea_box_append(ikea_box, "\"", 1);
+    }
+    while (elem) {
+
+        assert(elem->type == FRAGELEM);
+
+        if ((state_t) elem->state == BSL) {
+	    ikea_box_append(ikea_box, "\\", 1);
+        }
+        if ((state_t) elem->state == AST) {
+            if (liststate == DQT) {
+	        ikea_box_append(ikea_box, "\"*\"", 3);
+            } else {
+	        ikea_box_append(ikea_box, "*", 1);
+            }
+        }
+        else {
+	    ikea_box_append(ikea_box, (char*)(elem->u.f.frag), elem->len);
+        }
+        elem = elem->u.f.next;
+    }
+    if (liststate == DQT) {
+	ikea_box_append(ikea_box, "\"", 1);
+    }
+    *sep = ' ';
+}
+#endif
