@@ -83,3 +83,64 @@ int main(int argc, char *argv[])
 
     exit(EXIT_SUCCESS);
 }
+
+
+
+
+/*
+ * Usage:  g ARGS?
+ *
+ *    ARGS       ::= HELP | VERSION | THREADSPEC*
+ *         default ARGS is:  -Qg -
+ *    HELP       ::= '-?'
+ *    VERSION    ::= '-V'
+ *    THREADSPEC ::= OUTPUTSPEC* INPUTSPEC+
+ *    OUTPUTSPEC ::= QUERYOUT | PARSEROUT | CONTENTOUT
+ *    QUERYOUT   ::= '-Qg' | '-Qgv'
+ *    PARSEROUT  ::= '-Pg' | '-Pgv'
+ *    CONTENTOUT ::= TRANSLATOR LAYOUT?
+ *    FORMAT     ::= '-Tgv' | '-Tsvg' | .... any supported by dot
+ *    LAYOUT     ::= '-Kdot' | '-Kfdp' | .... any supported by dot
+ *    INPUTSPEC  ::= INPARALLEL? FILE
+ *    INPARALLEL ::= '+'
+ *    FILE       ::= '-' | filename
+ *
+ *
+ *    The default, if no ARGS provided, is equivalent to:
+ *        g -Qg -
+ *    which runs until stdin is closd, accumulating contents, ands
+ *    outputting query results to stdout
+ *
+ *    Examples:
+ *        g -?                -- this help text
+ *        g -V                -- version info
+ *        g -Pg               -- syntax checker, pretty printer
+ *        g -Pgv              -- converter to DOT format
+ *        g -Qg               -- accumulate content and output query results in g format to stdout
+ *        g -Qgv              -- accumulate content and output query results in DOT format to stdout
+ *        g -Qg +:8080 +-     -- accumulate content in parallel from port 8080 and stdin
+ *                               and output query results in g format to stdout
+ *
+ *        g                   -- equivalent to:  g -Qg - -
+ */
+
+/* Usage:   g <args>
+ *
+ * Where <args> is a list of options as NODES in g syntax:
+ *
+ * args ::= '-?;
+ *          '-V'
+ *          '-P' [fmt= out=]
+ *          '-Q' [fmt= out=]
+ *          '-C' [fmt= out= lay=]
+ *          '-i' {in in in ...}
+ *          '+i' {in in in ...}
+ *          '-F' {args}
+ *
+ * defaults:
+ *         args:  -Q[fmt=g out=-]
+ *         fmt:   g
+ *         lay:   fdp
+ *         out:   -    
+ *         in:    -
+ */

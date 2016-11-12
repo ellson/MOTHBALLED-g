@@ -81,7 +81,6 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
 
                     // we may not be able to tell if an ACT with SAMEAS is a NODE or
                     //   EDGE subject,  until we substitute from previous
-printf("replacement->state = %d\n", replacement->state);
                     if (replacement->state == NODE) {
                         CONTAINER->has_node = NODE;
                     }
