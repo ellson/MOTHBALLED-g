@@ -11,25 +11,33 @@ struct token_s {
     LIST_t LIST;               // LIST context. Maybe cast from TOKEN 
     int *pargc;                // remaining filenames from command line
     char **argv;
-    char *filename;            // name of file currently being processed, or "-" for stdin
-    FILE *file;                // open file handle for file currently being processed
+    char *filename;            // name of file currently being processed,
+                               //   or "-" for stdin
+    FILE *file;                // file handle of file being processed
     FILE *out, *err;           // output files
     unsigned char *in;         // next character to be processed
     state_t insi;              // state represented by last character read
     state_t state;             // last state entered
-    state_t quote_state;       // ABC or DQT, DQT if STRING contains DQT fragments
-    char in_quote;             // flag set if between "..."
-    char pattern;              // flag set if an '*' is found in any STRING in SUBJECT
-    char has_ast;              // flag set if an '*' is found in a STRING
-    char has_bsl;              // flag set if an '\' is found in a STRING
-    long linecount_at_start;   // activity line count when this file was opened.
-    long stat_lfcount;
+    state_t quote_state;       // ABC or
+                               // DQT if STRING contains any DQT fragments
+    state_t pattern;           // flag set if an '*' is found in any STRING
+                               //   -- reset by parse()
+    state_t has_ast;           // flag set if an '*' is found in a STRING
+    state_t has_bsl;           // flag set if an '\' is found in a STRING
+    int in_quote;              // 0 not in quotes
+                               // 1 between DQT
+                               // 2 char following BSL between DQT
+
+    long linecount_at_start;   // line count when this file was opened.
+                               //   -- used to calulate line # within file
+
+    long stat_lfcount;         // various stats
     long stat_crcount;
     long stat_incharcount;
     long stat_infragcount;
     long stat_instringshort;
     long stat_instringlong;
-    long stat_infilecount;       // various stats
+    long stat_infilecount; 
 };
 
 void token_error(TOKEN_t * TOKEN, char *message, state_t si);

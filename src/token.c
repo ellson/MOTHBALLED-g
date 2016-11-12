@@ -283,7 +283,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * string)
             } else if (TOKEN->insi == BSL) {
                 TOKEN->in_quote = 2;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
-                TOKEN->has_bsl = 1;
+                TOKEN->has_bsl = BSL;
                 continue;
             } else if (TOKEN->insi == NLL) {
                 break;
@@ -311,7 +311,8 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * string)
             elem = new_frag(LIST(), ABC, len, frag);
             slen += len;
         } else if (TOKEN->insi == AST) {
-            TOKEN->has_ast = TOKEN->pattern = 1;
+            TOKEN->has_ast = AST;
+            TOKEN->pattern = AST;
             frag = TOKEN->in;
             while ((TOKEN->insi = char2state[*++(TOKEN->in)]) == AST) {
             }    // extra '*' ignored
@@ -350,10 +351,9 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
 
     // string must be short and not with special AST or BSL fragments
     if (slen <= sizeof(((elem_t*)0)->u.s.str)
-                && !TOKEN->has_ast && !TOKEN->has_bsl) {
-#if 1
+                && !TOKEN->has_ast
+                && !TOKEN->has_bsl) {
         TOKEN->stat_instringshort++;
-
         frag = string->u.l.first;
         dst = string->u.s.str;
         while (frag) {
@@ -374,9 +374,6 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
         }
         string->type = SHORTSTRELEM; // frag is now shortstr
         string->len = slen; // save length of string
-#else
-        TOKEN->stat_instringlong++;
-#endif
     } else {
         TOKEN->stat_instringlong++;
     }
@@ -399,7 +396,8 @@ success_t token_string(TOKEN_t * TOKEN, elem_t *string)
     assert(string->type == (char)LISTELEM);
     assert(string->refs > 0);
 
-    TOKEN->has_ast = TOKEN->has_bsl = 0;
+    TOKEN->has_ast = 0;
+    TOKEN->has_bsl = 0;
     TOKEN->quote_state = ABC;
     slen = token_string_fragment(TOKEN, string);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
@@ -450,7 +448,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
             } else if (TOKEN->insi == BSL) {
                 TOKEN->in_quote = 2;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
-                TOKEN->has_bsl = 1;
+                TOKEN->has_bsl = BSL;
                 continue;
             } else if (TOKEN->insi == NLL) {
                 break;
@@ -497,7 +495,8 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
 
         // but '*' are still special  (maybe used as wild card in queries)
         } else if (TOKEN->insi == AST) {
-            TOKEN->has_ast = TOKEN->pattern = 1;
+            TOKEN->has_ast = AST;
+            TOKEN->pattern = AST;
             frag = TOKEN->in;
             while ((TOKEN->insi = char2state[*++(TOKEN->in)]) == AST) {
             }    // extra '*' ignored
@@ -531,7 +530,8 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *string)
     assert(string);
     assert(string->type == (char)LISTELEM);
     assert(string->refs > 0);
-    TOKEN->has_ast = TOKEN->has_bsl = 0;
+    TOKEN->has_ast = 0;
+    TOKEN->has_bsl = 0;
 
     TOKEN->quote_state = ABC;
     slen = token_vstring_fragment(TOKEN, string);    // leading string

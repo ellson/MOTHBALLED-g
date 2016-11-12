@@ -18,8 +18,11 @@
  * Invoked from the graph parser as soon as the parser
  * completes an input ACT.
  *
- * Various ACT rewrites are performed in the function,
- * culminating in updates to an internal representation
+ * Various ACT rewrites are performed, followed by
+ * updates to an internal representaion of the graph
+ * in which the latest state of NODES and EDGES is maintained
+ * along with a merge of all the ATTRIBUES for those 
+ * NODEs and EDGEs.
  *
  * @param CONTAINER context
  * @param act - the input ACT.
@@ -35,114 +38,18 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 
     CONTAINER->stat_inactcount++;
 
-#if 0 
 // for debugging only
-
 printf("doact(): sameas=%d pattern=%d mum=%d verb=%d\n", 
-        CONTAINER->sameas,
-        CONTAINER->pattern,
-        CONTAINER->mum,
-        CONTAINER->verb);
-
-// VERB has already been extracted and is available as an arg to this func. 
-if (CONTAINER->verb) { S(CONTAINER->verb); }
-
-// The need for MUM's assistance with component(s) of the SUBJECT has been extracted
-if (CONTAINER->mum) { S(CONTAINER->mum); }
-
-// The ACT as provided by parse()
-P(act);
-#endif
-
-
-
-//---------------------- love this example
-// G:     (<a b> <c:1 ^^d:2/e:3 f:4/g:5/h:7 (i:8 j:9)>`baz)[foo=bar bar=foo]
-//
-// act:   ACT SUBJECT EDGE LEG SIS NODEID ABC a
-//                         LEG SIS NODEID ABC b
-//                    EDGE LEG SIS NODEID ABC c
-//                                 PORTID ABC 1
-//                         LEG MUM
-//                             MUM
-//                             SIS NODEID ABC d
-//                                 PORTID ABC 2
-//                             KID NODEID ABC e
-//                                 PORTID ABC 3
-//                         LEG SIS NODEID ABC f
-//                                 PORTID ABC 4
-//                             KID NODEID ABC g
-//                                 PORTID ABC 5
-//                             KID NODEID ABC h
-//                                 PORTID ABC 7
-//                         LEG SIS NODEID ABC i
-//                                 PORTID ABC 8
-//                             SIS NODEID ABC j
-//                                 PORTID ABC 9
-//                         DISAMBIG DISAMBID ABC baz
-//            ATTRIBUTES ATTR ATTRID ABC foo
-//                            VALUE ABC bar
-//                       ATTR ATTRID ABC bar
-//                            VALUE ABC foo
-//----------------------- 
-    
-
-
-
-//====================== substitute SAMEAS
+    CONTAINER->sameas, CONTAINER->pattern, CONTAINER->mum, CONTAINER->verb);
+//P(act);
 
     sameas(CONTAINER, act);
 
-//P(act);
-//----------------------- example of consecutive EDGE ACTs
-// G:          <a b> <= c>
-//
-// before:  ACT SUBJECT EDGE LEG SIS NODEID ABC a
-//                           LEG SIS NODEID ABC b
-//          ACT SUBJECT EDGE LEG SAMEAS EQL
-//                           LEG SIS NODEID ABC c
-//
-// after:   ACT SUBJECT EDGE LEG SIS NODEID ABC a
-//                           LEG SIS NODEID ABC b
-//          ACT SUBJECT EDGE LEG SIS NODEID ABC a
-//                           LEG SIS NODEID ABC c
-//----------------------- 
-//----------------------- example of consecutive NODE ACTs
-// G:          (a b) (= c)
-//
-// before:  ACT SUBJECT NODE NODEID ABC a
-//                      NODE NODEID ABC b
-//          ACT SUBJECT NODE SAMEAS EQL
-//                      NODE NODEID ABC c
-//
-// after:   ACT SUBJECT NODE NODEID ABC a
-//                      NODE NODEID ABC b
-//          ACT SUBJECT NODE NODEID ABC a
-//                      NODE NODEID ABC c
-//----------------------- 
-
-
-
-//====================== stash ATTRID - there should be no structural change
-//                                      to ATTRIBUTES,  just the STRING
-//                                      represent the ATTRID stored only once
-
-    attributes = act->u.l.first->u.l.next;   // second item, if any, is attributes
+    attributes = act->u.l.first->u.l.next; 
     if (attributes) {
         assert((state_t)attributes->state == ATTRIBUTES);
         attrid_merge(CONTAINER, attributes);
-//P(THREAD->attrid);
     }
-//----------------------- example
-// G:              a[foo=bar abc=xyz]
-//
-// attributes:     ATTRIBUTES ATTR ATTRID ABC foo
-//                                 VALUE ABC bar
-//                            ATTR ATTRID ABC abc
-//                                 VALUE ABC xyz
-//            
-// newattributes: (unchanged)
-//----------------------- 
 
 P(act);
 
