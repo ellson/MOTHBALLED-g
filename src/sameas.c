@@ -33,7 +33,7 @@ void sameas(CONTAINER_t * CONTAINER, elem_t *act)
 
 //E();
 //P(*subject);
-    if (CONTAINER->sameas) {
+    if (CONTAINER->has_sameas) {
         // traverse SUBJECT tree, replacing SAMEAS
         //   with corresponding elem from previous
         sameas_r(CONTAINER, subject, CONTAINER->previous);
@@ -78,6 +78,16 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
                     *target = replacement;
                     (*target)->u.l.next = next;
                     replacement->refs++;
+
+                    // we may not be able to tell if an ACT with SAMEAS is a NODE or
+                    //   EDGE subject,  until we substitute from previous
+printf("replacement->state = %d\n", replacement->state);
+                    if (replacement->state == NODE) {
+                        CONTAINER->has_node = NODE;
+                    }
+                    if (replacement->state == EDGE) {
+                        CONTAINER->has_edge = EDGE;
+                    }
                     CONTAINER->stat_sameas++;
                 } else {
                     // e.g. :      a (b =)

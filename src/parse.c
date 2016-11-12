@@ -120,10 +120,12 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
         CONTAINER->verb = 0;        // default "add"
         break;
     case SUBJECT:
-        CONTAINER->mum = 0;         // reset flag for any MUM involvement in SUBJECT
-        CONTAINER->sameas = 0;      // reset flag for '=' found anywhere in SUBJECT
         TOKEN()->elem_has_ast = 0;  // reset flag for '*' found anywhere in elem
         CONTAINER->subj_has_ast = 0;// reset flag for '*' found anywhere in SUBJECT
+        CONTAINER->has_sameas = 0;  // reset flag for '=' found anywhere in SUBJECT
+        CONTAINER->has_mum = 0;     // reset flag for MUM found anywhere in SUBJECT
+        CONTAINER->has_node = 0;    // reset flag for NODE found anywhere in SUBJECT
+        CONTAINER->has_edge = 0;    // reset flag for EDGE found anywhere in SUBJECT
         break;
     case ATTRIBUTES:
         TOKEN()->elem_has_ast = 0;  // reset flag for '*' found anywhere in elem
@@ -198,20 +200,28 @@ done: // State exit processing
         // collect flag and retain token (and any chain)
         case SUBJECT:
             CONTAINER->subj_has_ast = TOKEN()->elem_has_ast;
-            TOKEN()->elem_has_ast = 0;
-            append_addref(root, branch); // retain
+            TOKEN()->elem_has_ast = 0;      // reset at token level for attr_has_ast
+            append_addref(root, branch);    // retain
             break;
         case ATTRIBUTES:
             CONTAINER->attr_has_ast = TOKEN()->elem_has_ast;
-            append_addref(root, branch); // retain
+            append_addref(root, branch);    // retain
             break;
         case SAMEAS:
-            CONTAINER->sameas = SAMEAS; // flag if SUBJECT contains SAMEAS token(s)
-            append_addref(root, branch); // retain
+            CONTAINER->has_sameas = SAMEAS; // flag if SUBJECT contains SAMEAS token(s)
+            append_addref(root, branch);    // retain
             break;
         case MUM:
-            CONTAINER->mum = MUM; // flag if MUM is needed
-            append_addref(root, branch); // retain
+            CONTAINER->has_mum = MUM;       // flag if SUBJECT contains MUM token{s)
+            append_addref(root, branch);    // retain
+            break;
+        case NODE:
+            CONTAINER->has_node = NODE;     // flag if SUBJECT contains NODE(s)
+            append_addref(root, branch);    // retain
+            break;
+        case EDGE:
+            CONTAINER->has_edge = EDGE;     // flag if SUBJECT contains EDGE(s)
+            append_addref(root, branch);    // retain
             break;
 
         // drop two tokens, but retain any chain

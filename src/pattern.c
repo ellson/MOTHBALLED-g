@@ -37,7 +37,11 @@ void pattern_update(CONTAINER_t * CONTAINER, elem_t * act)
     switch(CONTAINER->verb) {
         case 0:
             CONTAINER->stat_patternactcount++;
-            append_addref(CONTAINER->patterns, act);
+            if (CONTAINER->has_node) {
+                append_addref(CONTAINER->node_patterns, act);
+            } else {
+                append_addref(CONTAINER->edge_patterns, act);
+            }
             break;
         case QRY:
             assert(0);  // FIXME - report error
@@ -66,7 +70,7 @@ void pattern_update(CONTAINER_t * CONTAINER, elem_t * act)
 elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *newacts = NULL, *subj, *attr;
+    elem_t *newacts = NULL, *subj, *attr, *patterns;
 
     assert(act);
     assert((state_t) act->state == ACT);
@@ -75,7 +79,12 @@ elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * act)
 //P(act);
 
     // iterate over available patterns
-    for ( subj = CONTAINER->patterns->u.l.first; subj; subj = subj->u.l.next) {
+    if (CONTAINER->has_node) {
+        patterns = CONTAINER->node_patterns;
+    } else {
+        patterns = CONTAINER->edge_patterns;
+    }
+    for ( subj = patterns->u.l.first; subj; subj = subj->u.l.next) {
         assert(subj);
         assert((state_t) subj->state == SUBJECT);
         attr = subj->u.l.next;

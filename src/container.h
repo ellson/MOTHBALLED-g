@@ -13,14 +13,17 @@ struct container_s {      // CONTAINER context
     state_t verb;         // verb for the current ACT
     state_t subj_has_ast; // flag set if '*' occurred in SUBJECT
     state_t attr_has_ast; // flag set if '*' occurred in ATTRIBUTES
-    state_t sameas;       // flag set if '=' occurred in SUBJECT
-    state_t mum;          // flag set if '^' occurred in SUBJECT
+    state_t has_sameas;   // flag set if '=' occurred in SUBJECT
+    state_t has_mum;      // flag set if '^' occurred in SUBJECT
+    state_t has_node;     // flag set if NODE occurred in SUBJECT
+    state_t has_edge;     // flag set if EDHE occurred in SUBJECT
 
     elem_t *previous;     // Set and used by sameas()
 
-    elem_t *patterns;     // complete ACTs where the SUBJECT contains an "*"
-    elem_t *nodes;        // tree of unique nodes
-    elem_t *edges;        // tree of unique edges
+    elem_t *node_patterns;// complete ACTs where the NODE SUBJECT contains an "*"
+    elem_t *edge_patterns;// complete ACTs where the EDGE SUBJECT contains an "*"
+    elem_t *nodes;        // tree of unique NODEs
+    elem_t *edges;        // tree of unique EDGEs
 
     ikea_box_t *ikea_box; // box for these contents
 

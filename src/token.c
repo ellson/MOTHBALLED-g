@@ -419,7 +419,11 @@ success_t token_string(TOKEN_t * TOKEN, elem_t *string)
 /**
  * load VSTRING fragments
  *
- * FIXME - add support for additonal quoting formats  (HTML-like, ...)
+ * FIXME - add support for additonal quoting formats:
+ *     HTML-like.  < and > must be properly nested
+ *            <....>  
+ *     Binary. "length" bytes are completely transparent after the ']'
+ *            [length]...   
  *
  * @param TOKEN context
  * @param string
@@ -466,17 +470,19 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
                 elem = new_frag(LIST(), DQT, len, frag);
                 slen += len;
             }
-        // In the unquoted portions of VSTRING we allow '/' '\' ':' '?'
+        // In the unquoted portions of VSTRING we allow '/' '\' ':' '=' '^' '(' ')' '?'
         // in addition to the ABC class
         // this allows URIs as values without quoting
  // FIXME - find a cleaner way to test for membership in this extra charater set
- //    extend set with #;^`~       basically everything except []
+ //    extend set with #;^`~       basically everything except [] <> *
         } else if (TOKEN->insi == ABC ||
                    TOKEN->insi == FSL ||
                    TOKEN->insi == BSL ||
                    TOKEN->insi == CLN ||
                    TOKEN->insi == EQL ||
                    TOKEN->insi == HAT ||
+                   TOKEN->insi == LPN ||
+                   TOKEN->insi == RPN ||
                    TOKEN->insi == QRY) {
             frag = TOKEN->in;
             len = 1;
@@ -486,6 +492,8 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
                     insi == CLN ||
                     insi == EQL ||
                     insi == HAT ||
+                    insi == LPN ||
+                    insi == RPN ||
                     insi == QRY) {
                 len++;
             }
