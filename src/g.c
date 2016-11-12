@@ -75,19 +75,17 @@ int main(int argc, char *argv[])
  *
  * Where <args> is a list of option "nodes" in g syntax:
  *
- * args ::= '-?;
- *          '-V'
- *          '-P' [fmt= out=]
- *          '-Q' [fmt= out=]
- *          '-C' [fmt= out= lay=]
- *          '-i' [fmt=] {in in in ...}
- *          '+i' [fmt=] {in in in ...}
- *          '-F' {args}
+ * args ::= '-?;                    -- help
+ *          '-V'                    -- version
+ *          '-P' [is= os= ot=]      -- parser only stream
+ *          '-I' [is= os=]          -- input and query stream
+ *          '-C' [ly= os= ot=]      -- content stream (on close or interupt)
+ *          '-F' {args}             -- fork
  *
  * defaults:
- *         args:  -Q[fmt=g out=-]
- *         fmt:   g
- *         lay:   fdp
- *         out:   -    
- *         in:    -
+ *         args:  -IQ[is=- os=-]
+ *         ly:    fdp             (or: dot, neato, ...)
+ *         is:    -               (or: file, socket) 
+ *         os:    -               (or: file, socket)
+ *         ot:    g               (or: gv, svg, png, ...)
  */

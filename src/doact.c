@@ -53,8 +53,14 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     // perform SAMEAS substitutions
     sameas(CONTAINER, act);
 
-    // grammar should ensure SUBJECT is purely NODE or EDGE, but we may not
-    // know which until after sameas.    e.g.   <a b> = 
+    // FIXME - do rotate inputstream here
+    //           we have a complete act
+    //           associate sameas' previous, and the open inbuf inbuf, with each stream
+    //           parse errors are associated with a particular stream.
+    //              other streams should be able to continue  
+ 
+    // grammar ensures SUBJECT is purely NODE or EDGE, but we may not
+    // know which until after sameas.   e.g.   <a b> = 
     // just asserting that at this point we do know
     assert((CONTAINER->has_node && !CONTAINER->has_edge)
             || (!CONTAINER->has_node && CONTAINER->has_edge));
