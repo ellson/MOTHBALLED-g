@@ -47,7 +47,7 @@ static void init(iter_t *iter, elem_t *elem)
  * - root may be LISTELEM or SHORTSTRELEM
  * - leaves maybe SHORSTRELEM or FRAGELEM
  *
- * @param A 
+ * @param A
  * @param B
  * @return result of ASCII comparison: <0, 0, >0
  */

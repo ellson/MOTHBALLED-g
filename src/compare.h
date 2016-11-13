@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-int compare(elem_t * a, elem_t * b);
+int compare(elem_t * A, elem_t * B);
 
 #ifdef __cplusplus
 }
