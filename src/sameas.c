@@ -37,20 +37,15 @@ void sameas(CONTAINER_t * CONTAINER, elem_t *act)
     assert (TOKEN()->previous);
     assert((state_t)TOKEN()->previous->state == SUBJECT);
 
-//E();
-//P(*subject);
     if (CONTAINER->has_sameas) {
         // traverse SUBJECT tree, replacing SAMEAS
         //   with corresponding elem from previous
         sameas_r(CONTAINER, subject, TOKEN()->previous);
     }
 
-    free_list((LIST_t*)THREAD, TOKEN()->previous);
+    free_list(LIST(), TOKEN()->previous);
     TOKEN()->previous = *subject;
     (*subject)->refs++;
-
-//E();
-//P(*subject);
 }
 
 /**
@@ -80,7 +75,11 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
                 break;
             case SAMEAS:
                 if (replacement) {
-                    next = (*target)->u.l.next;  // just replace the SAMEAS element in the chain
+                    // just replace the SAMEAS element in the chain
+                    // FIXME  - Ha! Look how ugly this is - and difficult to get right!
+                    next = (*target)->u.l.next;
+                    (*target)->u.l.next = NULL;
+                    free_list(LIST(), *target);
                     *target = replacement;
                     (*target)->u.l.next = next;
                     replacement->refs++;
