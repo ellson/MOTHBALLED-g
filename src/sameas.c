@@ -79,6 +79,9 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t *target, elem_t * replacement)
  
                     // FIXME  - Ha! Look how ugly this is - and difficult to get right!
                     
+                    if (target->u.l.first) { // in case we still have EQL
+                        free_list(LIST(), target->u.l.first);
+                    }
                     if ( (target->u.l.first = replacement->u.l.first) ) {
                         replacement->u.l.first->refs++;   // increment refs
                     }

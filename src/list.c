@@ -283,11 +283,26 @@ void free_list(LIST_t * LIST, elem_t * elem)
  */
 void free_tree_item(LIST_t *LIST, elem_t * p)
 {
-    assert(p->u.t.key);
-    assert(p->u.t.key->type == (char)LISTELEM);
-    p->u.t.key->refs--;
-    free_list(LIST, p->u.t.key);
+    elem_t *k = p->u.t.key;
 
+    assert(k);
+    switch ((elemtype_t)(k->type)) {
+        case LISTELEM:
+           k->refs--;
+           free_list(LIST, k);
+           break;
+        case SHORTSTRELEM:
+           k->refs--; 
+           assert(k->refs == 0);
+           // return k to the freelist
+           k->u.l.next = LIST->free_elem_list;
+           LIST->free_elem_list = k;
+           LIST->stat_elemnow--;    // maintain stats
+           break;
+        default:
+           assert(0);
+           break;
+    }
     // return p to the freelist
     p->u.l.next = LIST->free_elem_list;
     LIST->free_elem_list = p;

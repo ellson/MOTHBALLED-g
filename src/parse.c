@@ -254,7 +254,7 @@ done: // State exit processing
         case HAT:  // indicating MUM
         case FSL:  // prefixing KID
         case CLN:  // prefixing PORT
-        case EQL:  // prefixing PORT
+//        case EQL:  // in VALASSIGN and SAMEAS
         case SCN:  // terminal
             break;
 
