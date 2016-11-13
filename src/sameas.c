@@ -97,7 +97,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
                 } else {
                     // e.g. :      a (b =)
                     token_error((TOKEN_t*)THREAD,
-                            "No corresponding object found for sameas substitution", si);
+                        "No corresponding object found for sameas substitution", si);
                 }
                 break;
             case SUBJECT:

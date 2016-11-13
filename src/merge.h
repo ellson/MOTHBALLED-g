@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 void merge_key(LIST_t *LIST, elem_t **key, elem_t *oldkey);
+void merge_act(LIST_t *LIST, elem_t **key, elem_t *oldkey);
 
 #ifdef __cplusplus
 }

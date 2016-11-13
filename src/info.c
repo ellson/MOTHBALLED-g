@@ -173,8 +173,10 @@ char * info_stats(CONTAINER_t * CONTAINER)
     Au("inbufmax",              INBUF()->stat_inbufmax);
     Au("inbufnow",              INBUF()->stat_inbufnow);
     Au("inactcount",            CONTAINER->stat_inactcount);
-    Au("inactpatterns",         CONTAINER->stat_patternactcount);
+    Au("inactedgepatterns",     CONTAINER->stat_patternedgecount);
+    Au("inactnodepatterns",     CONTAINER->stat_patternnodecount);
     Au("inactnonpatterns",      CONTAINER->stat_nonpatternactcount);
+    Au("inactpatternmatches",   CONTAINER->stat_patternmatches);
     Au("inactspersecond",       CONTAINER->stat_inactcount*TEN9/runtime);
     Au("incharcount",           TOKEN()->stat_incharcount);
     Au("infragcount",           TOKEN()->stat_infragcount);
@@ -185,7 +187,6 @@ char * info_stats(CONTAINER_t * CONTAINER)
     Au("malloctotal",           itot+etot);
     Au("nowtime",               nowtime.tv_sec);
     Au("outactcount",           CONTAINER->stat_outactcount);
-    Au("patternmatches",        CONTAINER->stat_patternmatches);
     Ar("runtime",               runtime/TEN9, runtime%TEN9);
     Au("sameas",                CONTAINER->stat_sameas);
     append_token   (THREAD, &pos, ']');

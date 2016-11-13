@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include "thread.h"
+#include "merge.h"
 #include "match.h"
 #include "compare.h"
 #include "pattern.h"
@@ -32,15 +33,21 @@
  * match, after pattern substitution.
  */ 
  
-void pattern_update(CONTAINER_t * CONTAINER, elem_t * act)
+void pattern_update(CONTAINER_t * CONTAINER, elem_t *act)
 {
+    THREAD_t *THREAD = CONTAINER->THREAD;
+    elem_t *act_tmp = act;;
+
     switch(CONTAINER->verb) {
         case 0:
-            CONTAINER->stat_patternactcount++;
             if (CONTAINER->has_node) {
-                append_addref(CONTAINER->node_patterns, act);
+                CONTAINER->stat_patternnodecount++;
+                CONTAINER->node_patterns =
+                    insert_item(LIST(), CONTAINER->node_patterns, &act_tmp, merge_act);
             } else {
-                append_addref(CONTAINER->edge_patterns, act);
+                CONTAINER->stat_patternedgecount++;
+                CONTAINER->edge_patterns =
+                    insert_item(LIST(), CONTAINER->edge_patterns, &act_tmp, merge_act);
             }
             break;
         case QRY:
