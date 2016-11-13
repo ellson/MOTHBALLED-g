@@ -36,7 +36,7 @@ void token_error(TOKEN_t * TOKEN, char *message, state_t si)
 //
 // Also return act# in query responses to that call can maintain sync
 //
-// Don't exit prog on input errors.  flush stdin, or file input ???   cycle until 
+// Don't exit prog on input errors.  flush stdin, or file input ???   cycle until
 // first successful sync (QRY of some kind)
 //
 // answer [ prog=g user=je2641 host=work file=stdin line=123 act=456  ] { any g }
@@ -387,7 +387,7 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
  * @param string
  * @return success/fail
  */
- 
+
 success_t token_string(TOKEN_t * TOKEN, elem_t *string)
 {
     int len, slen;
@@ -421,9 +421,9 @@ success_t token_string(TOKEN_t * TOKEN, elem_t *string)
  *
  * FIXME - add support for additonal quoting formats:
  *     HTML-like.  < and > must be properly nested
- *            <....>  
+ *            <....>
  *     Binary. "length" bytes are completely transparent after the ']'
- *            [length]...   
+ *            [length]...
  *
  * @param TOKEN context
  * @param string
@@ -555,7 +555,7 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *string)
     if (slen > 0) {
         token_pack_string(TOKEN, slen, string); // may replace string with a shortstr elem
         return SUCCESS;
-    } 
+    }
     return FAIL;
 }
 

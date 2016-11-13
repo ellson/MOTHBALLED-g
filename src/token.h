@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 struct token_s {
-    LIST_t LIST;               // LIST context. Maybe cast from TOKEN 
+    LIST_t LIST;               // LIST context. Maybe cast from TOKEN
     int *pargc;                // remaining filenames from command line
     char **argv;
     char *filename;            // name of file currently being processed,
@@ -20,7 +20,7 @@ struct token_s {
     // then previous needs to be associated with a particular stream
     // So we keep it in TOKEN->previous, close to TOKEN->in, so they
     // can be switched together.
-    // FIXME  The stream will also need to retain 
+    // FIXME  The stream will also need to retain
     // of the current inbuf, since some read-ahead might occur.
         unsigned char *in;     // next character to be processed
         elem_t *previous;      // the previous SUBJECT for sameas
@@ -46,7 +46,7 @@ struct token_s {
     long stat_infragcount;
     long stat_instringshort;
     long stat_instringlong;
-    long stat_infilecount; 
+    long stat_infilecount;
 };
 
 void token_error(TOKEN_t * TOKEN, char *message, state_t si);

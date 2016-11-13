@@ -35,10 +35,10 @@ THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind)
     ikea_store_close(thread.ikea_store);
 
     free_tree(LIST(), thread.attrid);
-    
+
     if (LIST()->stat_elemnow != 0) {
         E();
-        assert(0); 
+        assert(0);
     }
 
     return NULL;   // FIXME - presumably some kind of thread handle...

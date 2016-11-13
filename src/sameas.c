@@ -32,7 +32,7 @@ void sameas(CONTAINER_t * CONTAINER, elem_t *act)
     // NB.  In case we do input multiplexing of parallel streams,
     // then previous needs to be associated with a particular stream
     // So we keep it in TOKEN->previous, close to TOKEN->in, so they
-    // can be switched together.  The stream will also need to retain 
+    // can be switched together.  The stream will also need to retain
     // of the current inbuf, since some read-ahead might occur.
     assert (TOKEN()->previous);
     assert((state_t)TOKEN()->previous->state == SUBJECT);
@@ -46,8 +46,8 @@ void sameas(CONTAINER_t * CONTAINER, elem_t *act)
     }
 
     free_list((LIST_t*)THREAD, TOKEN()->previous);
-    TOKEN()->previous = *subject; 
-    (*subject)->refs++;  
+    TOKEN()->previous = *subject;
+    (*subject)->refs++;
 
 //E();
 //P(*subject);

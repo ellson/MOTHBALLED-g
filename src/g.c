@@ -75,17 +75,24 @@ int main(int argc, char *argv[])
  *
  * Where <args> is a list of option "nodes" in g syntax:
  *
- * args ::= '-?;                    -- help
- *          '-V'                    -- version
- *          '-P' [is= os= ot=]      -- parser only stream
- *          '-I' [is= os=]          -- input and query stream
- *          '-C' [ly= os= ot=]      -- content stream (on close or interupt)
- *          '-F' {args}             -- fork
- *
+ * args ::= '-?'                       -- help
+ *          '-V'                       -- version
+ *          '-S' [is= es= ly= os= ot=] -- io stream
+ *          '-G' {args}                -- fork off a separate graph
+ 
  * defaults:
- *         args:  -IQ[is=- os=-]
- *         ly:    fdp             (or: dot, neato, ...)
- *         is:    -               (or: file, socket) 
- *         os:    -               (or: file, socket)
- *         ot:    g               (or: gv, svg, png, ...)
+ *         args:  -S[is=- es=- ly=- os=- ot=-]
+ *
+ *         ly:    none      (or: '-', dot, fdp, neato, ...)
+ *         is:    stdin     (or: '-', file, :socket, namedpipe| ) 
+ *         os:    stdout    (or: '-', file, :socket, namedpipe| )
+ *         es:    stderr    (or: '-', file, :socket, namedpipe| )
+ *         ot:    g         (or: gv, svg, png, ...)
+ *
+ *         file       ::= file | /unix/path/file | C:\dos\path\file
+ *         socket     ::= :num
+ *         namedpipe  ::= name|
+ *
+ * example:
+ *         filter:   -S[is=- es=- os=- ot=g]
  */
