@@ -93,6 +93,7 @@ elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * act)
     } else {
         patterns = CONTAINER->edge_patterns;
     }
+//FIXME - BUG - needs a tree iterator
     for ( subj = patterns->u.l.first; subj; subj = subj->u.l.next) {
         assert(subj);
         assert((state_t) subj->state == SUBJECT);

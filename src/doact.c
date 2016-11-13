@@ -31,7 +31,7 @@
 success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *subject, *attributes;
+    elem_t *subject, *attributes, *newacts = NULL;
 
     assert(act);
 
@@ -76,36 +76,31 @@ P(act);
     }
 
     // pattern acts
-    if ( !CONTAINER->verb && CONTAINER->subj_has_ast) {
-        if (attributes) {
-            // if the pattern act has attributes, then it is a
-            // new or replacement pattern
-            pattern_update(CONTAINER, act);
+    if ( !CONTAINER->verb) { // if verb is default (add)
+        if (CONTAINER->subj_has_ast) {
+            if (attributes) {
+                // if the pattern act has attributes, then it is a
+                // new or replacement pattern
+                pattern_update(CONTAINER, act);
+            } else {
+                // pattern has no attributes
+                // N.B. This is how patterns are deleted
+                pattern_remove(CONTAINER, act);
+            }
+//P(CONTAINER->node_patterns);
+//P(CONTAINER->edge_patterns);
+            return SUCCESS;  // new pattern stored,  no more procesing for this ACT
         } else {
-            // pattern has no attributes
-            // N.B. This is how patterns are deleted
-            pattern_remove(CONTAINER, act);
+            newacts = pattern_match(CONTAINER, act);
         }
-P(CONTAINER->node_patterns);
-P(CONTAINER->edge_patterns);
-        return SUCCESS;
     }
+
+    // patterns now applied for "add"  verb - may now have multiple ACTs
     // may still have subj_has_ast in QRY or TLD
 
 
-#if 0
-    new = pattern(CONTAINER, newact, CONTAINER->verb);
-    free_list(LIST(), newact);
-    if (new) {
-       newact = new;
-    } else {
-        return SUCCESS;  // new pattern stored,  no more procesing for this ACT
-    }
-
-    //  N.B. (there can be multiple subjects after pattern subst.  Each matched
-    //  pattern generates an additional subject.
-#endif
 P(act);
+if (newacts) P(newacts);
 
 #if 0
 // FIXME so this is probably flawed - doesn't it need a loop?

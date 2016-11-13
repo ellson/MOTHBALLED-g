@@ -24,6 +24,7 @@
  */
 success_t match(CONTAINER_t * CONTAINER, elem_t * subject, elem_t * pattern)
 {
+    THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *s_elem, *p_elem, *ts_elem, *tp_elem;
     unsigned char *s_cp, *p_cp;
     int s_len, p_len;
@@ -38,21 +39,19 @@ success_t match(CONTAINER_t * CONTAINER, elem_t * subject, elem_t * pattern)
         tp_elem = p_elem;
         s_len = 0;
         p_len = 0;
-        if ((elemtype_t) (s_elem->type) == LISTELEM) {
-            if (ts_elem->state != tp_elem->state) {
-                return FAIL;    // no match if the state structure is different
-            }
-            while (ts_elem || tp_elem) {    // quick test before recursing...
-                if (!(ts_elem && tp_elem)) {
-                    return FAIL;    // no match if the number of elems ism't the same
-                }
-                ts_elem = ts_elem->u.l.next;
-                tp_elem = tp_elem->u.l.next;
+        if (ts_elem->state != tp_elem->state) {
+            return FAIL;    // no match if the state structure is different
+        }
+        switch ((elemtype_t)s_elem->type) {
+        case LISTELEM:
+            if (ts_elem->len != tp_elem->len) {
+                return FAIL;    // no match if the number of elems ism't the same
             }
             if ((match(CONTAINER, s_elem, p_elem)) == FAIL) {  // recurse
                 return FAIL;
             }
-        } else {    // FRAGELEM
+            break;
+        case FRAGELEM:
             while (ts_elem && tp_elem) {
                 // the fragmentation is not necessarily
                 // the same so manage ts_elem and tp_elem
@@ -81,6 +80,10 @@ success_t match(CONTAINER_t * CONTAINER, elem_t * subject, elem_t * pattern)
                 }
             }
             // all matched so far, move on to test the next STRING
+            break;
+        default:
+            assert(0);
+            break;
         }
         if (p_len) {  //must match the entire pattern
                 return FAIL;
