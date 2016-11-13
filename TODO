@@ -41,7 +41,7 @@ DUPLICATE with 16.
                      -- maybe treat as if stdin -- return results to stdout
 - return multiple results from applying a match
 - edge queries
-- meta queries (crazy aunts):  ?^G ?^S ?^N ?^D    (grammar, stats, net, sync)
+- meta queries (crazy aunts):  ?^G ?^S ?^N ?^C    (grammar, stats, net, cron)
 
 10. persistence - ikea() idea seems ok
 - deal with container updates (11.)
@@ -51,14 +51,14 @@ DUPLICATE with 16.
   1. reading in previous contents
   2. verify that content matches contenthash (optional, maybe)
   3. updating,
-  4. saving and  computing new contentx hash
+  4. saving and computing new content hash
   5. updating contentx hash in containing object
   6. removing old contents iff no nonger referenced
 
 12. Multi-threading, multi-process forking. Separate threads/processes for:
 	- layout computation
 	- container reloading for update
-    - Need Locking strategt - (Mutex code?)
+    - Need Locking strategy - (Mutex code? or maybe just thread switching at act boundaries??)
     -- Need lock for access to session
     -- Does it need lock to round-robin reads from multiple input streams?
     -- Does it need lock to read container content from ikea before continuong?
@@ -85,31 +85,46 @@ DUPLICATE with 16.
     (symmetric or asymetric) then both sides see the same distributed graph
 
 
-14. g_pretty with opt for degrees of ecpansion and indentation
+14. g_pretty with opt for degrees of expansion and indentation
+    -  see notes in g.c for a command syntax that includes this..
+    -  need gprint(LIST, elem)   to support printing of lists with
+       degrees of spacing friendliness:
+        -- 0 maximally compact
+        -- 1 one act per line
+        -- 2 split sensibily, as needed, to fit 80 char lines.
+        -- 3 shell friendly (all backeting chars on their own lines)
+
+14a. Command line option graph:  see notes in g.c
 
 15. Use SHORTSTR to replace FRAGLISTs whenever string length is short enough
     (Optimization of shorage and key matching in trees)
-PARTIALLY DONE - double frees elems
+DONE
 
 16. Meta graphs:
       - grammar - Aunt Gudrun - devine knowledge
       - sync - Aunt Maude (the crazy one, believes anything, remembers nothing)
                 ( or Aunt Dottie)
-      - net - Aunt Nettie
-      - cron - Aunt Cadence
+      - net - Aunt Nettie - graphs can register communities and aliases with nettie
+      - cron - Aunt Cadence (with help from system cron?)
       - stats  - Aunt Sally (with tribute to my Sister ;-)
                 - also include version info.
 
-      - graph - maybe no name
+      - graph - no name (can register alias(es) with Nettie)
            -- nodes + attributes + edges?
            -- edges + attributes
            -- patterns
 
 17. THREAD stats  (maybe add to SESSION stats?)
-DONE. THREAD and SESSION have been broken out and stats divided accoringly.
+DONE. THREAD and SESSION have been broken out and stats divided accordingly.
 
-18. Extend grammar to enforce NOUNSET members to be all NODEs or all EDGEs
-TRIED but FAILED ...
+17a. Persistent graph stats (IKEA?) -- e.g.
+   -- cumulative multi-session stats
+   -- liveness flags from Nettie.
+
+17b. Distinct stats nodes for stats from:  INBUF, LIST, TOKEN, THREAD, CONTAINER, SESSION, IKEA
+
+18. Extend grammar to enforce SET members to be all NODEs or all EDGEs
+DONE
 
 19. Try to eliminate elements like VALASSIGN
         ATTR ATTRID ABC abc
@@ -120,17 +135,25 @@ TRIED but FAILED ...
              VALUE ABC xyz 
 DONE - see state exit code in graph.c
 
-20. Error recovery ( something less that FATAL on input errors )
+20. Error recovery ( something less thasnt FATAL on input errors )
 
-    - return last good ACT in warning message ...
-    - sender does what?
-   or
-    - QRY  (ask dottie) - gets ACT number of QRY, and id to match QRY itself
-    - report last good ACT by ACT number
+    - needs independent error recovery per input stream.
+      -- QRY  (ask Dottie) - gets ACT number of QRY, and id to match QRY itself
+      --- report last good ACT by ACT number
 
             
-21. may need EDGE trees per NODE to support navigational queries
+21. need EDGE trees per NODE to support navigational queries
 
 22. additional VSTRING quoting modes:
-    - html-like    <...>        <> must be balanced
-    - length       [length].... length chars immediately following ']'
+    - xml          <...>        <> must be balanced
+    - json         {...}        {} must be balanced
+    - length       [length].... length bytes immediately following ']'
+
+23. alternate DOM mode - GOM or DOM
+    - GOM - merges dupes and does not preserver order, provides a
+            cananical representation of a graph
+    - DOM - retains dupes and preserves arrival order,
+            but does not provide a canoncal representation of the doc
+    In DOM mode, maybe we can use the same NODE, EDGE, ATTRIBUTE trees for
+    indexing,  but the tree nodes should have a list of all the original objects 
+    in arrival order. (Separated NODE and EDGE lists might be a problem.)
