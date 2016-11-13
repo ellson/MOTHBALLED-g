@@ -77,15 +77,20 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
                 if (replacement) {
                     // just replace the SAMEAS element in the chain
                     // FIXME  - Ha! Look how ugly this is - and difficult to get right!
-                    next = (*target)->u.l.next;
-                    (*target)->u.l.next = NULL;
-                    free_list(LIST(), *target);
-                    *target = replacement;
-                    (*target)->u.l.next = next;
-                    replacement->refs++;
+                    
+                    next = (*target)->u.l.next;  // save chain following '=' in list
+                    (*target)->u.l.next = NULL;  // and NULL out so doesn't get freed
+
+                    free_list(LIST(), *target);  // free SAMEAS -> EQL
+
+                    *target = replacement;       // copy in replacement
+
+                    (*target)->u.l.next = next;  // restore next to the chain in the current SUBJECT
+                    replacement->refs++;         // add a reference
 
                     // we may not be able to tell if an ACT with SAMEAS is a NODE or
                     //   EDGE subject,  until we substitute from previous
+                    //   e.g.     <a b> =
                     if (replacement->state == NODE) {
                         CONTAINER->has_node = NODE;
                     }

@@ -11,19 +11,20 @@ struct token_s {
     LIST_t LIST;               // LIST context. Maybe cast from TOKEN
     int *pargc;                // remaining filenames from command line
     char **argv;
-    char *filename;            // name of file currently being processed,
-                               //   or "-" for stdin
-    FILE *file;                // file handle of file being processed
     FILE *out, *err;           // output files
 
     // NB.  In case we do input multiplexing of parallel streams,
     // then previous needs to be associated with a particular stream
     // So we keep it in TOKEN->previous, close to TOKEN->in, so they
     // can be switched together.
-    // FIXME  The stream will also need to retain
-    // of the current inbuf, since some read-ahead might occur.
+    // FIXME  The stream will also need to retain the current inbuf,
+    // since some read-ahead might have occurred.
         unsigned char *in;     // next character to be processed
         elem_t *previous;      // the previous SUBJECT for sameas
+        char *filename;        // name of file currently being processed,
+                               //   or "-" for stdin
+        FILE *file;            // file handle of file being processed
+        // FIXME - prob needs to be in a common struct with INBUF->inbuf
 
     state_t insi;              // state represented by last character read
     state_t state;             // last state entered
