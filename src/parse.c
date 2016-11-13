@@ -234,11 +234,10 @@ done: // State exit processing
         case RELATIVE:
         case PORT:
         case NODEREF:
-        case SET:
         case NOUNS:
         case NODES:
-        case NODENOUN:
         case EDGES:
+        case NODENOUN:
         case EDGENOUN:
         case ENDPOINT:
             append_addref(root, branch->u.l.first);
@@ -255,9 +254,12 @@ done: // State exit processing
         case HAT:  // indicating MUM
         case FSL:  // prefixing KID
         case CLN:  // prefixing PORT
+        case EQL:  // prefixing PORT
         case SCN:  // terminal
             break;
 
+        case SET:
+        case ENDPOINTSET:
         default:
             // everything else is appended to parent's branch
             append_addref(root, branch);

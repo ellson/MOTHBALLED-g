@@ -9,7 +9,7 @@
 #include "sameas.h"
 
 static void
-sameas_r(CONTAINER_t * CONTAINER, elem_t **current, elem_t *replacement);
+sameas_r(CONTAINER_t * CONTAINER, elem_t *current, elem_t *replacement);
 
 /**
  * Rewrite SAMEAS elems in ACT's SUBJECT from the
@@ -21,13 +21,13 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **current, elem_t *replacement);
 void sameas(CONTAINER_t * CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t **subject;
+    elem_t *subject;
 
     assert(act);
-    subject = &(act->u.l.first);
+    subject = act->u.l.first;
 
-    assert(*subject);
-    assert((state_t)(*subject)->state == SUBJECT);
+    assert(subject);
+    assert((state_t)subject->state == SUBJECT);
 
     // NB.  In case we do input multiplexing of parallel streams,
     // then previous needs to be associated with a particular stream
@@ -44,8 +44,8 @@ void sameas(CONTAINER_t * CONTAINER, elem_t *act)
     }
 
     free_list(LIST(), TOKEN()->previous);
-    TOKEN()->previous = *subject;
-    (*subject)->refs++;
+    TOKEN()->previous = subject;
+    subject->refs++;
 }
 
 /**
@@ -56,14 +56,14 @@ void sameas(CONTAINER_t * CONTAINER, elem_t *act)
  * @param replacement - the source of replacements
  */
 static void
-sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
+sameas_r(CONTAINER_t * CONTAINER, elem_t *target, elem_t * replacement)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
     state_t si;
     elem_t *next;
 
-    while (*target) {
-        si = (state_t) (*target)->state;
+    while (target) {
+        si = (state_t) target->state;
         switch (si) {
             case NODE:
             case SIS:
@@ -75,26 +75,26 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
                 break;
             case SAMEAS:
                 if (replacement) {
-                    // just replace the SAMEAS element in the chain
+                    // just overwrite SAMEAS element
+ 
                     // FIXME  - Ha! Look how ugly this is - and difficult to get right!
                     
-                    next = (*target)->u.l.next;  // save chain following '=' in list
-                    (*target)->u.l.next = NULL;  // and NULL out so doesn't get freed
-
-                    free_list(LIST(), *target);  // free SAMEAS -> EQL
-
-                    *target = replacement;       // copy in replacement
-
-                    (*target)->u.l.next = next;  // restore next to the chain in the current SUBJECT
-                    replacement->refs++;         // add a reference
+                    if ( (target->u.l.first = replacement->u.l.first) ) {
+                        replacement->u.l.first->refs++;   // increment refs
+                    }
+                    target->u.l.last = replacement->u.l.last;
+                    target->len = replacement->len;
+                    // keep u.l.next from SAMEAS
+                    // type should be LISTELEM, don't bother to copy
+                    target->state = replacement->state;
 
                     // we may not be able to tell if an ACT with SAMEAS is a NODE or
                     //   EDGE subject,  until we substitute from previous
-                    //   e.g.     <a b> =
-                    if (replacement->state == NODE) {
+                    //   e.g.     (a b) =
+                    if (target->state == NODE || target->u.l.first->state == NODE) {
                         CONTAINER->has_node = NODE;
                     }
-                    if (replacement->state == EDGE) {
+                    if (target->state == EDGE || target->u.l.first->state == EDGE) {
                         CONTAINER->has_edge = EDGE;
                     }
                     CONTAINER->stat_sameas++;
@@ -112,14 +112,14 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t **target, elem_t * replacement)
                 // need to recurse further for potential SAMEAS
                 // doesn't matter if old is shorter
                 // ... as long as no further substitutions are needed
-                sameas_r(CONTAINER, &((*target)->u.l.first), replacement?replacement->u.l.first:NULL);    // recurse
+                sameas_r(CONTAINER, target->u.l.first, replacement?replacement->u.l.first:NULL);    // recurse
                 break;
             default:
                 S(si);
                 assert(0);
                 break;
         }
-        target = &((*target)->u.l.next);
+        target = target->u.l.next;
         if (replacement) {
             replacement = replacement->u.l.next;
         }
