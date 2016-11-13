@@ -115,7 +115,7 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
     elem->height = 0;       // notused
 
     INBUF()->inbuf->refs++;   // increment reference count in inbuf.
-    
+
     LIST->stat_fragnow++;        // stats
     if (LIST->stat_fragnow > LIST->stat_fragmax) {
         LIST->stat_fragmax = LIST->stat_fragnow;
@@ -178,7 +178,7 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
 
     // complete elem initialization
     elem->type = TREEELEM;
-    elem->u.t.key = key; 
+    elem->u.t.key = key;
     elem->u.t.left = NULL; // new tree is empty so far
     elem->u.t.right = NULL;
     elem->height = 1;
@@ -190,8 +190,22 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
 }
 
 /**
+ *   "free" means insert elem at beginning of freelist
+ *
+ * @param LIST the top-level context in which all lists are managed
+ * @param elem the elem being "freed"
+ */
+static void free_elem(LIST_t *LIST, elem_t *elem)
+{
+    elem->u.l.next = LIST->free_elem_list;
+    LIST->free_elem_list = elem;
+    LIST->stat_elemnow--;    // maintain stats
+    assert(LIST->stat_elemnow >= 0);
+}
+
+/**
  * Free the contents of a list, but not the list itself
- *  
+ *
  * @param LIST the top-level context in which all lists are managed
  * @param list elem whose contents are to be freed
  */
@@ -199,7 +213,7 @@ static void free_list_r(LIST_t * LIST, elem_t * list)
 {
     assert(list);
     assert(list->type == (char)LISTELEM);
-    assert(list->refs >= 0);  
+    assert(list->refs >= 0);
 
     // free list of elem, but really just put them back
     // on the elem_freelist (declared at the top of this file)`
@@ -217,7 +231,7 @@ static void free_list_r(LIST_t * LIST, elem_t * list)
  * Free list - for each elem in an elem, elem->u.l.next chain:
  * decrement its ref count, and if zero, free its contents,
  * free the rest of the chain, and free the elem itself.
- *  
+ *
  * If it is a list of lists, then the refence count in the first elem_t is
  * decremented and the elements are freed only if the references are  zero.
  *
@@ -265,10 +279,7 @@ void free_list(LIST_t * LIST, elem_t * elem)
             free_tree(LIST, elem);
             return;
         }
-        // insert elem at beginning of freelist
-        elem->u.l.next = LIST->free_elem_list;
-        LIST->free_elem_list = elem;
-        LIST->stat_elemnow--;    // maintain stats
+        free_elem(LIST, elem);
 
         elem = next;
     }
@@ -288,25 +299,18 @@ void free_tree_item(LIST_t *LIST, elem_t * p)
     assert(k);
     switch ((elemtype_t)(k->type)) {
         case LISTELEM:
-           k->refs--;
            free_list(LIST, k);
            break;
         case SHORTSTRELEM:
-           k->refs--; 
+           k->refs--;
            assert(k->refs == 0);
-           // return k to the freelist
-           k->u.l.next = LIST->free_elem_list;
-           LIST->free_elem_list = k;
-           LIST->stat_elemnow--;    // maintain stats
+           free_elem(LIST, k);
            break;
         default:
            assert(0);
            break;
     }
-    // return p to the freelist
-    p->u.l.next = LIST->free_elem_list;
-    LIST->free_elem_list = p;
-    LIST->stat_elemnow--;    // maintain stats
+    free_elem(LIST, p);
 }
 
 /**
@@ -393,7 +397,7 @@ void append_transfer(elem_t * list, elem_t * elem)
 void append_addref(elem_t * list, elem_t * elem)
 {
     append_transfer(list, elem);
-    elem->refs++; 
+    elem->refs++;
     assert(elem->refs > 0);
 }
 
@@ -429,4 +433,41 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
     assert(old->refs > 0);
     list->len--;                             // list has one less elem
     free_list_r(LIST, old);                  // free the removed elem
+}
+
+/**
+ * Convert a string LISTELEM to a SHORTSTR
+ *  - assumes the caller has prechecked slen and any other inhibitors
+ *
+ * @param LIST the top-level context in which all lists are managed
+ * @param slen the length of the string
+ * @param string
+ */
+void fraglist2shortstr(LIST_t * LIST, int slen, elem_t * string)
+{
+    elem_t *frag, *next;
+    unsigned char *src, *dst;
+    int i;
+
+    assert(string);
+    assert(string->type == (char)LISTELEM);
+    assert(slen <= sizeof(((elem_t*)0)->u.s.str));
+
+    frag = string->u.l.first;
+    dst = string->u.s.str;
+    while (frag) {
+        assert(frag->type == (char)FRAGELEM);
+        assert(frag->refs == 1);
+        next = frag->u.f.next;
+        (frag->u.f.inbuf->refs)--;
+        for (i = frag->len, src = frag->u.f.frag; i; --i) {
+            *dst++ = *src++;
+        }
+        free_elem(LIST, frag);
+        LIST->stat_fragnow--;    // maintain stats
+        assert(LIST->stat_fragnow >= 0);
+        frag = next;
+    }
+    string->type = SHORTSTRELEM; // frag is now shortstr
+    string->len = slen; // save length of string
 }

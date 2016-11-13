@@ -341,39 +341,12 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * string)
  */
 static void
 token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
-    elem_t *frag, *next;
-    unsigned char *src, *dst;
-    int i;
-
-    assert(string);
-    assert(string->type == (char)LISTELEM);
-    assert(string->refs > 0);
-
     // string must be short and not with special AST or BSL fragments
     if (slen <= sizeof(((elem_t*)0)->u.s.str)
                 && !TOKEN->has_ast
                 && !TOKEN->has_bsl) {
+        fraglist2shortstr(LIST(), slen, string);
         TOKEN->stat_instringshort++;
-        frag = string->u.l.first;
-        dst = string->u.s.str;
-        while (frag) {
-            assert(frag->type == (char)FRAGELEM);
-            assert(frag->refs == 1);
-            next = frag->u.f.next;
-            (frag->u.f.inbuf->refs)--;
-            for (i = frag->len, src = frag->u.f.frag; i; --i) {
-                *dst++ = *src++;
-            }
-            frag->u.l.next = LIST()->free_elem_list;
-            LIST()->free_elem_list = frag;
-            assert(LIST()->stat_fragnow >0);
-            assert(LIST()->stat_elemnow >0);
-            LIST()->stat_fragnow--;    // maintain stats
-            LIST()->stat_elemnow--;
-            frag = next;
-        }
-        string->type = SHORTSTRELEM; // frag is now shortstr
-        string->len = slen; // save length of string
     } else {
         TOKEN->stat_instringlong++;
     }

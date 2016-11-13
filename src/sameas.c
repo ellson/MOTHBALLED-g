@@ -60,7 +60,6 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t *target, elem_t * replacement)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
     state_t si;
-    elem_t *next;
 
     while (target) {
         si = (state_t) target->state;

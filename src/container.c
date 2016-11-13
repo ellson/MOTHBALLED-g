@@ -64,17 +64,17 @@ success_t container(THREAD_t * THREAD)
 
     THREAD->stat_containdepth--;
 
-    if (THREAD->SESSION->needstats) {
-        fprintf(TOKEN()->out, "\n%s\n", info_session(&container));
-        fprintf(TOKEN()->out, "%s\n", info_stats(&container));
-    }
-
     free_list(LIST(), root);
     free_list(LIST(), TOKEN()->previous);
     free_tree(LIST(), container.nodes);
     free_tree(LIST(), container.edges);
     free_tree(LIST(), container.node_patterns);
     free_tree(LIST(), container.edge_patterns);
+
+    if (THREAD->SESSION->needstats) {
+        fprintf(TOKEN()->out, "\n%s\n", info_session(&container));
+        fprintf(TOKEN()->out, "%s\n", info_stats(&container));
+    }
 
 // Some elem's are reatained by the attrid tree
 //E();

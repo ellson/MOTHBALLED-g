@@ -77,6 +77,7 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem);
 void free_list(LIST_t * LIST, elem_t * elem);
 void free_tree(LIST_t *LIST, elem_t * p);
 void free_tree_item(LIST_t *LIST, elem_t * p);
+void fraglist2shortstr(LIST_t * LIST, int slen, elem_t * string);
 
 #ifdef __cplusplus
 }
