@@ -7,7 +7,7 @@
 #include "thread.h"
 #include "compare.h"
 
-#define MAXNEST 5
+#define MAXNEST 20
 
 typedef struct {
     elem_t *next[MAXNEST];
@@ -32,7 +32,7 @@ static void init(iter_t *iter, elem_t *elem)
             iter->next[iter->nest] = NULL;
             break;
         case LISTELEM:
-            iter->next[iter->nest++] = elem->u.l.next;
+            iter->next[iter->nest++] = NULL;  // next is the value, dont compare
             init(iter, elem->u.l.first);
             break;
         default:
@@ -76,6 +76,9 @@ int compare (elem_t *A, elem_t *B)
             } else {
                 if (ai.nest) {
                     while (--ai.nest && ! ai.next[ai.nest]) {}
+                    if (! ai.nest) {
+                        break;
+                    }
 		    init(&ai, ai.next[ai.nest]->u.l.first);
 		}
                 a = '\0';
@@ -90,6 +93,9 @@ int compare (elem_t *A, elem_t *B)
             } else {
                 if (bi.nest) {
                     while (--bi.nest && ! bi.next[bi.nest]) {}
+                    if (!bi.nest) {
+                        break;
+                    }
 		    init(&bi, bi.next[bi.nest]->u.l.first);
 		}
                 b = '\0';

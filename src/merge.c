@@ -46,5 +46,5 @@ void merge_pattern(LIST_t *LIST, elem_t **act, elem_t *key)
 {
     // free old ATTRIBUTES and append new ATTRIBUTES
     free_list(LIST, key->u.l.first->u.l.next);
-    append_addref( key->u.l.first, (*act)->u.l.first->u.l.next);
+    key->u.l.first->u.l.next = ref_list(LIST, (*act)->u.l.first->u.l.next);
 }
