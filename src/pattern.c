@@ -35,30 +35,32 @@
  
 void pattern_update(CONTAINER_t * CONTAINER, elem_t *act)
 {
-    THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *act_tmp = act;;
+    THREAD_t *THREAD = CONTAINER->THREAD;   // needed for LIST() macro
+    elem_t *act_tmp = act;
 
-    switch(CONTAINER->verb) {
-        case 0:
-            if (CONTAINER->has_node) {
-                CONTAINER->stat_patternnodecount++;
-                CONTAINER->node_patterns =
-                    insert_item(LIST(), CONTAINER->node_patterns, &act_tmp, merge_act);
-            } else {
-                CONTAINER->stat_patternedgecount++;
-                CONTAINER->edge_patterns =
-                    insert_item(LIST(), CONTAINER->edge_patterns, &act_tmp, merge_act);
-            }
-            break;
-        case QRY:
-            assert(0);  // FIXME - report error
-            break;
-        case TLD:
-            assert(0);  // FIXME - report error
-            break;
-        default:
-            assert(0);
-            break;
+    if (CONTAINER->has_node) {
+        CONTAINER->stat_patternnodecount++;
+        CONTAINER->node_patterns =
+            insert_item(LIST(), CONTAINER->node_patterns, &act_tmp, merge_pattern);
+    } else {
+        CONTAINER->stat_patternedgecount++;
+        CONTAINER->edge_patterns =
+            insert_item(LIST(), CONTAINER->edge_patterns, &act_tmp, merge_pattern);
+    }
+}
+
+void pattern_remove(CONTAINER_t * CONTAINER, elem_t *act)
+{
+    THREAD_t *THREAD = CONTAINER->THREAD;   // needed for LIST() macro
+
+    if (CONTAINER->has_node) {
+        CONTAINER->stat_patternnodecount--;
+        CONTAINER->node_patterns =
+            remove_item(LIST(), CONTAINER->node_patterns, act);
+    } else {
+        CONTAINER->stat_patternedgecount--;
+        CONTAINER->edge_patterns =
+            remove_item(LIST(), CONTAINER->edge_patterns, act);
     }
 }
 

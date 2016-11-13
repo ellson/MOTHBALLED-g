@@ -57,20 +57,14 @@ P(list);
     case NODE:
         CONTAINER->nodes = insert_item(LIST(),
                 CONTAINER->nodes,
-                &(subject->u.l.first), // skip NODEID
-                merge_key); 
-        break;
-    case SIS:
-        CONTAINER->nodes = insert_item(LIST(),
-                CONTAINER->nodes,
-                &(subject->u.l.first->u.l.first), // skip NODEREF NODEID
-                merge_key); 
+                &(subject->u.l.next), // skip NODEID
+                merge_attributes); 
         break;
     case EDGE:
         CONTAINER->edges = insert_item(LIST(),
                 CONTAINER->edges,
-                &(subject),
-                merge_key); 
+                &(subject), // EDGES can have complex structure in SUBJECT
+                merge_attributes); 
         break;
     default:
         S(subjtype);

@@ -31,15 +31,19 @@
 success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *attributes;
+    elem_t *subject, *attributes;
 
     assert(act);
-    assert(act->u.l.first);  // minimaly, an ACT must have a SUBJECT
+
+    subject = act->u.l.first;
+    assert(subject);                // minimaly, an ACT must have a SUBJECT
+
+    attributes = subject->u.l.next; // may be NULL
 
     CONTAINER->stat_inactcount++;
 
 #if 0
-    printf("doact(): sameas=%d subj_has_ast=%d attr_has_ast=%d has_mum=%d has_node=%d has_edge=%d verb=%d\n",
+printf("doact(): sameas=%d subj_has_ast=%d attr_has_ast=%d has_mum=%d has_node=%d has_edge=%d verb=%d\n",
             CONTAINER->has_sameas,
             CONTAINER->subj_has_ast,
             CONTAINER->attr_has_ast,
@@ -47,8 +51,8 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
             CONTAINER->has_node,
             CONTAINER->has_edge,
             CONTAINER->verb);
+P(act);
 #endif
-//P(act);
 
     // perform SAMEAS substitutions
     sameas(CONTAINER, act);
@@ -61,22 +65,33 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 
     // grammar ensures SUBJECT is purely NODE or EDGE, but we may not
     // know which until after sameas.   e.g.   <a b> =
-    // just asserting that at this point we do know
+    // assert that at this point we do know
     assert((CONTAINER->has_node && !CONTAINER->has_edge)
             || (!CONTAINER->has_node && CONTAINER->has_edge));
 
     // merge attrid in this ACT with tree of all attrid, keeping srings just once
-    attributes = act->u.l.first->u.l.next;
     if (attributes) {
         assert((state_t)attributes->state == ATTRIBUTES);
         attrid_merge(CONTAINER, attributes);
     }
 
-    // if ACT is a pattern the stash away for matching against later ACTs
-    if (CONTAINER->subj_has_ast) {
-        pattern_update(CONTAINER, act);
+    // pattern acts
+    if ( !CONTAINER->verb && CONTAINER->subj_has_ast) {
+        if (attributes) {
+            // if the pattern act has attributes, then it is a
+            // new or replacement pattern
+            pattern_update(CONTAINER, act);
+        } else {
+            // pattern has no attributes
+            // N.B. This is how patterns are deleted
+            pattern_remove(CONTAINER, act);
+        }
+P(CONTAINER->node_patterns);
+P(CONTAINER->edge_patterns);
         return SUCCESS;
     }
+    // may still have subj_has_ast in QRY or TLD
+
 
 #if 0
     new = pattern(CONTAINER, newact, CONTAINER->verb);

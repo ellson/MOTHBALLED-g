@@ -6,8 +6,6 @@
 
 #include "thread.h"
 
-#define TOKEN() ((TOKEN_t*)THREAD)
-
 /**
  * Print a single fragment of len contiguous characters.
  *
@@ -120,20 +118,27 @@ static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
  * @param p the root of the tree (should be in the middle of the resulting list)
  * @param sep the separator beween items
  */
-static void print_tree(FILE * chan, elem_t * p, char *sep)
+static void print_tree(THREAD_t * THREAD, elem_t * p, char *sep)
 {
+    FILE *chan = TOKEN()->out;
     elem_t *key;
+    elemtype_t type;
 
     assert(p);
 
     key = p->u.t.key;
     assert(key);
+    type = key->type;
 
     if (p->u.t.left) {
-        print_tree(chan, p->u.t.left, sep);
+        print_tree(THREAD, p->u.t.left, sep);
     }
 
-    switch (key->type) {
+    switch (type) {
+    case LISTELEM:
+//        print_elem(LIST(), p->u.t.key, 2);   // FIXME - needs a print of just strings
+P(p->u.t.key);
+        break;
     case FRAGELEM:
         assert(p->u.t.key->u.l.first);
         assert(p->u.t.key->u.l.first->u.l.first);
@@ -147,7 +152,7 @@ static void print_tree(FILE * chan, elem_t * p, char *sep)
     }
 
     if (p->u.t.right) {
-        print_tree(chan, p->u.t.right, sep);
+        print_tree(THREAD, p->u.t.right, sep);
     }
 }
 
@@ -201,7 +206,7 @@ void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
             print_shortstr(chan, elem, sep);
             break;
         case TREEELEM:
-            print_tree(chan, elem, sep);
+            print_tree(THREAD, elem, sep);
             break;
         }
     }

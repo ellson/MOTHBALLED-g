@@ -8,33 +8,43 @@
 #include "merge.h"
 
 /**
- * merge old and new key lists
+ * merge a new attrid which matches an existing attrib
+ * by updating new to use the identical existing, and then freeing the duplicate
  *
  * @param LIST 
- * @param key - the key (and value) to be merged
- * @param oldkey - the key (and value) currently in the tree
+ * @param attrid - the new (duplicate) attrid
+ * @param key    - the key with the original attrid
  */
-void merge_key(LIST_t *LIST, elem_t **key, elem_t *oldkey)
+void merge_attrid(LIST_t *LIST, elem_t **attrid, elem_t *key)
 {
-
-// FIXME
-
-    oldkey->refs++;
-    free_list(LIST, *key);
-    *key = oldkey;
+    key->refs++;
+    free_list(LIST, *attrid);
+    *attrid = key;
 }
 
 /**
- * merge old and new key lists
+ * merge ATTRIBUTEs for a NODE or EDGE which may have existing ATTRIBUTES
  *
  * @param LIST 
- * @param key - the key (and value) to be merged
- * @param oldkey - the key (and value) currently in the tree
+ * @param attributes - the new attributes
+ * @param key        - the key with previous attributes
  */
-void merge_act(LIST_t *LIST, elem_t **act, elem_t *oldkey)
+void merge_attributes(LIST_t *LIST, elem_t **attributes, elem_t *key)
 {
+    //FIXME
+}
 
-// FIXME
-    // I think we can just ignore ....
-    //      maybe we need to merge the attributes of patterns with matching subjects
+/**
+ * merge a new pattern act
+ * by replacing old ATTRIBUTES with ATTRIBUTES from the new pattern act.
+ *
+ * @param LIST 
+ * @param act - the new (replacement) pattern act
+ * @param key - the key with the old pattern act
+ */
+void merge_pattern(LIST_t *LIST, elem_t **act, elem_t *key)
+{
+    // free old ATTRIBUTES and append new ATTRIBUTES
+    free_list(LIST, key->u.l.first->u.l.next);
+    append_addref( key->u.l.first, (*act)->u.l.first->u.l.next);
 }

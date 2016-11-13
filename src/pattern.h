@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 void pattern_update(CONTAINER_t * CONTAINER, elem_t * act);
+void pattern_remove(CONTAINER_t * CONTAINER, elem_t * act);
 elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * act);
 
 #ifdef __cplusplus

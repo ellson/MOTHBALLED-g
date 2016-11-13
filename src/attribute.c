@@ -89,7 +89,7 @@ void attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 
 
         THREAD->attrid =
-            insert_item(LIST(), THREAD->attrid, &(attrid->u.l.first), merge_key);
+            insert_item(LIST(), THREAD->attrid, &(attrid->u.l.first), merge_attrid);
         attr = attr->u.l.next;
     }
 }

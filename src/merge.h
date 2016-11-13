@@ -7,8 +7,9 @@
 extern "C" {
 #endif
 
-void merge_key(LIST_t *LIST, elem_t **key, elem_t *oldkey);
-void merge_act(LIST_t *LIST, elem_t **key, elem_t *oldkey);
+void merge_attrid(LIST_t *LIST, elem_t **attrid, elem_t *key);
+void merge_attributes(LIST_t *LIST, elem_t **attributes, elem_t *key);
+void merge_pattern(LIST_t *LIST, elem_t **act, elem_t *key);
 
 #ifdef __cplusplus
 }
