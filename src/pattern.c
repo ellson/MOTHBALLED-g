@@ -35,16 +35,15 @@
 void pattern_update(CONTAINER_t * CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;   // needed for LIST() macro
-    elem_t *act_tmp = act;
 
     if (CONTAINER->has_node) {
         CONTAINER->stat_patternnodecount++;
         CONTAINER->node_patterns =
-            insert_item(LIST(), CONTAINER->node_patterns, &act_tmp, merge_pattern);
+            insert_item(LIST(), CONTAINER->node_patterns, act, merge_pattern, NULL);
     } else {
         CONTAINER->stat_patternedgecount++;
         CONTAINER->edge_patterns =
-            insert_item(LIST(), CONTAINER->edge_patterns, &act_tmp, merge_pattern);
+            insert_item(LIST(), CONTAINER->edge_patterns, act, merge_pattern, NULL);
     }
 }
 

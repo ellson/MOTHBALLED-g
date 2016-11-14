@@ -137,36 +137,47 @@ elem_t * search_item(elem_t * p, elem_t * key)
  * If the elem matches an existing elem in the tree, then:
  *      - is value is merged,
  *      - any duplicate bits dereferrenced,
- *      - *key updated to point to the key now in the tree.
+ *      - *newkey updated to point to the key now in the tree.
  *
  * @param LIST the context of the tree
  * @param p the root of the tree
- * @param key - **key elem being inserted. *key maybe modified by the insertion.
+ * @param key - elem being inserted.
  * @param merge function
+ * @param newkey - if not NULL, provides a location to store a pointer to the key
+ *                 just stored in the tree;  (note the return from insert it
+ *                 to the root of the tree, which is not necesarily the node
+ *                 of the tree holding the newly inserted key.)
  * @return the new root of the tree after inserting and rebalancing
  */
-elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t **key,
-        void (*merge)(LIST_t* LIST, elem_t **key, elem_t *oldkey) )
+elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t *key,
+       elem_t * (*merge)(LIST_t* LIST, elem_t *key, elem_t *oldkey),
+       elem_t ** newkey)
 {
     int comp;
+    elem_t *new;
 
-    assert(key && *key);
+    assert(key);
 
-    if (!p) {    // FIXME - write mutex (exclusive) around modifications ( new_tree(), merge(), balance() )
-        return new_tree(LIST, *key);
+    if (!p) {
+        if (newkey) {
+            *newkey = key;
+        }
+        return new_tree(LIST, key);
     }
-    // FIXME - read mutex (sharable) around traversals
-    comp = compare(*key, p->u.t.key);
+    comp = compare(key, p->u.t.key);
     if (comp) {
         if (comp < 0) {
-            p->u.t.left = insert_item(LIST, p->u.t.left, key, merge);
+            p->u.t.left = insert_item(LIST, p->u.t.left, key, merge, newkey);
         }
         else {
-            p->u.t.right = insert_item(LIST, p->u.t.right, key, merge);
+            p->u.t.right = insert_item(LIST, p->u.t.right, key, merge, newkey);
         }
     }
-    else {    // FIXME - write mutex (exclusive) around modifications ( new_tree(),  merge(), balance())
-        (*merge)(LIST, key, p->u.t.key);
+    else {
+        new = (*merge)(LIST, key, p->u.t.key);
+        if (newkey) {
+            *newkey = new;
+        }
     }
     return balance(p);
 }

@@ -55,16 +55,18 @@ P(list);
 
     switch (subjtype) {
     case NODE:
-        CONTAINER->nodes = insert_item(LIST(),
+        CONTAINER->nodes =
+            insert_item(LIST(),
                 CONTAINER->nodes,
                 &(subject->u.l.next), // skip NODEID
-                merge_attributes); 
+                merge_attributes, NULL); 
         break;
     case EDGE:
-        CONTAINER->edges = insert_item(LIST(),
+        CONTAINER->edges =
+            insert_item(LIST(),
                 CONTAINER->edges,
                 &(subject), // EDGES can have complex structure in SUBJECT
-                merge_attributes); 
+                merge_attributes, NULL); 
         break;
     default:
         S(subjtype);

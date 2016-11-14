@@ -8,8 +8,9 @@ extern "C" {
 #endif
 
 elem_t * search_item(elem_t * p, elem_t * key);
-elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t **key,
-                 void (*merge)(LIST_t* LIST, elem_t **key, elem_t *oldkey) );
+elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t *key,
+             elem_t * (*merge)(LIST_t* LIST, elem_t *key, elem_t *oldkey),
+             elem_t ** newkey );
 elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key);
 
 #ifdef __cplusplus

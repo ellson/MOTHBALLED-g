@@ -14,12 +14,13 @@
  * @param LIST 
  * @param attrid - the new (duplicate) attrid
  * @param key    - the key with the original attrid
+ * @return       - the key with the original attrid
  */
-void merge_attrid(LIST_t *LIST, elem_t **attrid, elem_t *key)
+elem_t * merge_attrid(LIST_t *LIST, elem_t *attrid, elem_t *key)
 {
     key->refs++;
-    free_list(LIST, *attrid);
-    *attrid = key;
+    free_list(LIST, attrid);
+    return key;
 }
 
 /**
@@ -28,10 +29,12 @@ void merge_attrid(LIST_t *LIST, elem_t **attrid, elem_t *key)
  * @param LIST 
  * @param attributes - the new attributes
  * @param key        - the key with previous attributes
+ * @return           - the key with previous attributes
  */
-void merge_attributes(LIST_t *LIST, elem_t **attributes, elem_t *key)
+elem_t * merge_attributes(LIST_t *LIST, elem_t *attributes, elem_t *key)
 {
     //FIXME
+    return key;
 }
 
 /**
@@ -41,10 +44,12 @@ void merge_attributes(LIST_t *LIST, elem_t **attributes, elem_t *key)
  * @param LIST 
  * @param act - the new (replacement) pattern act
  * @param key - the key with the old pattern act
+ * @return    - the key with the old pattern act
  */
-void merge_pattern(LIST_t *LIST, elem_t **act, elem_t *key)
+elem_t * merge_pattern(LIST_t *LIST, elem_t *act, elem_t *key)
 {
     // free old ATTRIBUTES and append new ATTRIBUTES
     free_list(LIST, key->u.l.first->u.l.next);
-    key->u.l.first->u.l.next = ref_list(LIST, (*act)->u.l.first->u.l.next);
+    key->u.l.first->u.l.next = ref_list(LIST, act->u.l.first->u.l.next);
+    return key;
 }
