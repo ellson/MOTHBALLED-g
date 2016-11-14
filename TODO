@@ -100,6 +100,7 @@ DUPLICATE with 16.
         -- 4 shell friendly (all backeting chars on their own lines)
 
 14a. Command line option graph:  see notes in g.c
+     -- use .g/default.g or /etc/g/deafult.g  for a default command line
 
 15. Use SHORTSTR to replace FRAGLISTs whenever string length is short enough
     (Optimization of shorage and key matching in trees)
@@ -162,3 +163,19 @@ DONE - see state exit code in graph.c
     In DOM mode, maybe we can use the same NODE, EDGE, ATTRIBUTE trees for
     indexing,  but the tree nodes should have a list of all the original objects 
     in arrival order. (Separated NODE and EDGE lists might be a problem.)
+
+24. Container catalog:
+   - In the ikea store, keep a catalog (dir) containing user-friendly
+     named softlinks to content_hash containers.   Permit container reference
+     in an attribute, e,g:
+	_ikea_catalog=TTL7400    or _ikea_container=2jmj7l5rSw0yVb_vlWAYkK_YBwk
+   - If using catalog entry, then prevent modification of contents. (or use git and controll pushes)
+   - Consider keeping ikea_catalog contents in git for distribution
+
+25. Foreign renderings:
+   - can we use foreign svg renderings ? - e.g.
+	https://commons.wikimedia.org/wiki/File:Ttl_inside_7400.svg
+   - an in turn:
+        http://www.tutorsglobe.com/homework-help/electrical-engneering/ttl-logic-gate-series-74148.aspx
+   - would need to edit to make individual components clickable
+   
