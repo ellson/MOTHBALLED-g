@@ -42,37 +42,37 @@ static void init(iter_t *iter, elem_t *elem)
 }
 
 /**
- * compare string value of elems: A and B
+ * compare string value of elems: a and b
  *
  * - root may be LISTELEM or SHORTSTRELEM
  * - leaves maybe SHORSTRELEM or FRAGELEM
  *
- * @param A
- * @param B
+ * @param a
+ * @param b
  * @return result of ASCII comparison: <0, 0, >0
  */
 
-int compare (elem_t *A, elem_t *B)
+int compare (elem_t *a, elem_t *b)
 {
-    unsigned char a, b;
+    unsigned char ac, bc;
     int rc;
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    init(&ai, A);
-    init(&bi, B);
+    init(&ai, a);
+    init(&bi, b);
     do {
         do { 
-            a = *ai.cp++; ai.len--;
-            b = *bi.cp++; bi.len--;
-            rc = a - b;
+            ac = *ai.cp++; ai.len--;
+            bc = *bi.cp++; bi.len--;
+            rc = ac - bc;
         } while (ai.len && bi.len && rc == 0);
         if (! ai.len) {
             if (ai.next[ai.nest]) { 
                 ai.cp = ai.next[ai.nest]->u.f.frag;
                 ai.len = ai.next[ai.nest]->len;
                 ai.next[ai.nest] = ai.next[ai.nest]->u.f.next;
-                a = *ai.cp;
+                ac = *ai.cp;
             } else {
                 if (ai.nest) {
                     while (--ai.nest && ! ai.next[ai.nest]) {}
@@ -81,7 +81,7 @@ int compare (elem_t *A, elem_t *B)
                     }
 		    init(&ai, ai.next[ai.nest]->u.l.first);
 		}
-                a = '\0';
+                ac = '\0';
             }
         }
         if (! bi.len) {
@@ -89,7 +89,7 @@ int compare (elem_t *A, elem_t *B)
                 bi.cp = bi.next[bi.nest]->u.f.frag;
                 bi.len = bi.next[bi.nest]->len;
                 bi.next[bi.nest] = bi.next[bi.nest]->u.f.next;
-                b = *bi.cp;
+                bc = *bi.cp;
             } else {
                 if (bi.nest) {
                     while (--bi.nest && ! bi.next[bi.nest]) {}
@@ -98,46 +98,46 @@ int compare (elem_t *A, elem_t *B)
                     }
 		    init(&bi, bi.next[bi.nest]->u.l.first);
 		}
-                b = '\0';
+                bc = '\0';
             }
         }
         if (rc == 0) {
-            rc = a - b;
+            rc = ac - bc;
         }
     } while (ai.nest && bi.nest && rc == 0);
     return rc;
 }
 
 /**
- * match string value of elems: A and B
- * B may contain strings with trailing '*' which will
- * match any tail of the corresponding string in A
+ * match string value of elems: a and b_wild
+ * b_wild may contain strings with trailing '*' which will
+ * match any tail of the corresponding string in a
  *
  * - root may be LISTELEM or SHORTSTRELEM
  * - leaves maybe SHORSTRELEM or FRAGELEM
  *
- * @param A
- * @param B
+ * @param a
+ * @param b_wild
  * @return result of ASCII comparison: <0, 0, >0
  */
 
-int match (elem_t *A, elem_t *B)
+int match (elem_t *a, elem_t *b_wild)
 {
-    unsigned char a, b;
+    unsigned char ac, bc;
     int rc;
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    init(&ai, A);
-    init(&bi, B);
+    init(&ai, a);
+    init(&bi, b_wild);
     do {
         do { 
             if (*bi.cp == '*') {
                 break;
             } 
-            a = *ai.cp++; ai.len--;
-            b = *bi.cp++; bi.len--;
-            rc = a - b;
+            ac = *ai.cp++; ai.len--;
+            bc = *bi.cp++; bi.len--;
+            rc = ac - bc;
         } while (ai.len && bi.len && rc == 0);
         if (bi.len >= 0 && *bi.cp == '*') {
             bi.len=0;
@@ -147,7 +147,7 @@ int match (elem_t *A, elem_t *B)
                 ai.cp = ai.next[ai.nest]->u.f.frag;
                 ai.len = ai.next[ai.nest]->len;
                 ai.next[ai.nest] = ai.next[ai.nest]->u.f.next;
-                a = *ai.cp;
+                ac = *ai.cp;
             } else {
                 if (ai.nest) {
                     while (--ai.nest && ! ai.next[ai.nest]) {}
@@ -156,7 +156,7 @@ int match (elem_t *A, elem_t *B)
                     }
 		    init(&ai, ai.next[ai.nest]->u.l.first);
 		}
-                a = '\0';
+                ac = '\0';
             }
         }
         if (! bi.len) {
@@ -164,7 +164,7 @@ int match (elem_t *A, elem_t *B)
                 bi.cp = bi.next[bi.nest]->u.f.frag;
                 bi.len = bi.next[bi.nest]->len;
                 bi.next[bi.nest] = bi.next[bi.nest]->u.f.next;
-                b = *bi.cp;
+                bc = *bi.cp;
             } else {
                 if (bi.nest) {
                     while (--bi.nest && ! bi.next[bi.nest]) {}
@@ -173,11 +173,11 @@ int match (elem_t *A, elem_t *B)
                     }
 		    init(&bi, bi.next[bi.nest]->u.l.first);
 		}
-                b = '\0';
+                bc = '\0';
             }
         }
         if (rc == 0) {
-            rc = a - b;
+            rc = ac - bc;
         }
     } while (ai.nest && bi.nest && rc == 0);
     return rc;

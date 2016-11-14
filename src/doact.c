@@ -25,7 +25,7 @@
  * NODEs and EDGEs.
  *
  * @param CONTAINER context
- * @param act - the input ACT.
+ * @param branch - the ACT branch from parse()
  * @return success/fail
  */
 success_t doact(CONTAINER_t *CONTAINER, elem_t *branch)

@@ -114,7 +114,7 @@ static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
 /**
  * print a tree from left to right.  i.e in insertion sort order
  *
- * @param chan FILE for output
+ * @param THREAD context
  * @param p the root of the tree (should be in the middle of the resulting list)
  * @param sep the separator beween items
  */
