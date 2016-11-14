@@ -87,6 +87,8 @@ P(act);
                 // N.B. This is how patterns are deleted
                 pattern_remove(CONTAINER, act);
             }
+//P(CONTAINER->node_patterns);
+//P(CONTAINER->edge_patterns);
             return SUCCESS;  // new pattern stored,  no more procesing for this ACT
         } else {
             pattern_match(CONTAINER, act);

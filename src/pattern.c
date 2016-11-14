@@ -88,8 +88,8 @@ static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act)
         append_addref(act, ref_list(LIST(), key->u.l.first->u.l.next));
     }
 
-    if (p->u.t.left) {
-        pattern_match_r(THREAD, p->u.t.left, act);
+    if (p->u.t.right) {
+        pattern_match_r(THREAD, p->u.t.right, act);
     }
 }
 
