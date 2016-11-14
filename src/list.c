@@ -303,7 +303,6 @@ void free_tree_item(LIST_t *LIST, elem_t * p)
            break;
         case SHORTSTRELEM:
            k->refs--;
-           assert(k->refs == 0);
            free_elem(LIST, k);
            break;
         default:

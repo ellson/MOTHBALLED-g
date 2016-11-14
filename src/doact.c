@@ -31,7 +31,7 @@
 success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *subject, *attributes, *newacts = NULL;
+    elem_t *subject, *attributes;
 
     assert(act);
 
@@ -87,11 +87,9 @@ P(act);
                 // N.B. This is how patterns are deleted
                 pattern_remove(CONTAINER, act);
             }
-//P(CONTAINER->node_patterns);
-//P(CONTAINER->edge_patterns);
             return SUCCESS;  // new pattern stored,  no more procesing for this ACT
         } else {
-            newacts = pattern_match(CONTAINER, act);
+            pattern_match(CONTAINER, act);
         }
     }
 
@@ -100,7 +98,6 @@ P(act);
 
 
 P(act);
-if (newacts) P(newacts);
 
 #if 0
 // FIXME so this is probably flawed - doesn't it need a loop?

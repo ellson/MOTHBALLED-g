@@ -22,7 +22,6 @@ noinst_HEADERS = \
     inbuf.h \
     info.h \
     list.h \
-    match.h \
     merge.h \
     parse.h \
     pattern.h \
@@ -58,7 +57,6 @@ libg_session_C_la_SOURCES = \
     inbuf.c \
     info.c \
     list.c \
-    match.c \
     merge.c \
     parse.c \
     pattern.c \

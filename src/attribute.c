@@ -8,7 +8,7 @@
 
 #include "thread.h"
 #include "merge.h"
-#include "match.h"
+#include "compare.h"
 #include "attribute.h"
 
 /**

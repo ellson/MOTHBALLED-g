@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 int compare(elem_t * A, elem_t * B);
+int match(elem_t * A, elem_t * B);
 
 #ifdef __cplusplus
 }

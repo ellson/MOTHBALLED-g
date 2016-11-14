@@ -90,9 +90,14 @@ DUPLICATE with 16.
     -  need gprint(LIST, elem)   to support printing of lists with
        degrees of spacing friendliness:
         -- 0 maximally compact
-        -- 1 one act per line
-        -- 2 split sensibily, as needed, to fit 80 char lines.
-        -- 3 shell friendly (all backeting chars on their own lines)
+                      - maybe don't provide this. if we want to diff graphs then
+                      one act/line provides a much more useful output
+                      - it is allowed for input
+        -- 1 one act per line -- this should be the canonical form
+        -- 2 split verb+subject, attributes, container-braces, onto their own lines.
+        -- 3 split sensibily, as needed, to fit 80 char lines.
+                      - fancy and complicated -- maybe drop
+        -- 4 shell friendly (all backeting chars on their own lines)
 
 14a. Command line option graph:  see notes in g.c
 

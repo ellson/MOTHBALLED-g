@@ -8,7 +8,6 @@
 
 #include "thread.h"
 #include "merge.h"
-#include "match.h"
 #include "compare.h"
 #include "pattern.h"
 
@@ -64,6 +63,36 @@ void pattern_remove(CONTAINER_t * CONTAINER, elem_t *act)
     }
 }
 
+/** 
+ * Traverse the pattern tree in sort order, appending all
+ * matching acts
+ *
+ * @param THREAD context
+ * @param p the current tree elem
+ * @param act to be appended with additional acts for matches
+ */
+static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act)
+{
+    elem_t *key;
+
+    assert(p);
+
+    key = p->u.t.key;
+    assert(key);
+
+    if (p->u.t.left) {
+        pattern_match_r(THREAD, p->u.t.left, act);
+    }
+
+    if (match(act->u.l.first->u.l.first, key->u.l.first->u.l.first) == 0) {
+        append_addref(act, ref_list(LIST(), key->u.l.first->u.l.next));
+    }
+
+    if (p->u.t.left) {
+        pattern_match_r(THREAD, p->u.t.left, act);
+    }
+}
+
 /**
  * Look for pattern match(es) to the current ACT 
  * For each match, append a (refcounted copy) of the current
@@ -76,49 +105,16 @@ void pattern_remove(CONTAINER_t * CONTAINER, elem_t *act)
  * @return newacts - with list of matched acts, or NULL
  */
 
-elem_t * pattern_match(CONTAINER_t * CONTAINER, elem_t * act)
+void pattern_match(CONTAINER_t * CONTAINER, elem_t * act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *newacts = NULL, *subj, *attr, *patterns;
 
     assert(act);
     assert((state_t) act->state == ACT);
 
-//E();
-//P(act);
-
-    // iterate over available patterns
     if (CONTAINER->has_node) {
-        patterns = CONTAINER->node_patterns;
+        pattern_match_r(THREAD, CONTAINER->node_patterns, act);
     } else {
-        patterns = CONTAINER->edge_patterns;
+        pattern_match_r(THREAD, CONTAINER->edge_patterns, act);
     }
-//FIXME - BUG - needs a tree iterator
-    for ( subj = patterns->u.l.first; subj; subj = subj->u.l.next) {
-        assert(subj);
-        assert((state_t) subj->state == SUBJECT);
-        attr = subj->u.l.next;
-
-        // FIXME - contents from pattern ??
-        if ((match(CONTAINER, act->u.l.first, subj->u.l.first)) == SUCCESS) {
-            // insert matched attrubutes, contents,
-            // and then the subject again
-            
-            if (! newacts) {
-                newacts = new_list(LIST(), ACT);
-            }
-            append_addref(newacts, ref_list(LIST(), act));
-            if (attr && (state_t)attr->state == ATTRIBUTES) {
-                append_addref(newacts, ref_list(LIST(), attr));
-            }
-
-            // FIXME -- contents
-
-            CONTAINER->stat_patternmatches++;
-        }
-    }
-
-//E();
-    return newacts;
 }
-
