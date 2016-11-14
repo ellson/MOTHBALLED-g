@@ -28,12 +28,13 @@
  * @param act - the input ACT.
  * @return success/fail
  */
-success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
+success_t doact(CONTAINER_t *CONTAINER, elem_t *branch)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *subject, *attributes;
+    elem_t *act, *subject, *attributes;
 
-    assert(act);
+    assert(branch);
+    act = ref_list(LIST(), branch);
 
     subject = act->u.l.first;
     assert(subject);                // minimaly, an ACT must have a SUBJECT
@@ -120,7 +121,7 @@ P(elem);
     }
 #endif
 
-//    free_list(LIST(), newact);
+    free_list(LIST(), act);
 
     return SUCCESS;
 }

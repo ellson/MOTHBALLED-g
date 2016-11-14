@@ -73,23 +73,27 @@ void pattern_remove(CONTAINER_t * CONTAINER, elem_t *act)
  */
 static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act)
 {
-    elem_t *key;
+    if (p) {
+ 
+// FIXME - it should be possible to optimize this to first search for the
+// beginning on the range of matches, and then only the members of the range,
+// instead of visiting all elements of the tree.
 
-    assert(p);
+        if (p->u.t.left) {
+            pattern_match_r(THREAD, p->u.t.left, act);
+        }
 
-    key = p->u.t.key;
-    assert(key);
+P(act->u.l.first->u.l.first);
+P(p->u.t.key->u.l.first->u.l.first);
+        if (match(act->u.l.first->u.l.first, p->u.t.key->u.l.first->u.l.first) == 0) {
+printf("MATCH\n");
+P(p->u.t.key->u.l.first->u.l.next);
+            append_addref(act, p->u.t.key->u.l.first->u.l.next);
+        }
 
-    if (p->u.t.left) {
-        pattern_match_r(THREAD, p->u.t.left, act);
-    }
-
-    if (match(act->u.l.first->u.l.first, key->u.l.first->u.l.first) == 0) {
-        append_addref(act, ref_list(LIST(), key->u.l.first->u.l.next));
-    }
-
-    if (p->u.t.right) {
-        pattern_match_r(THREAD, p->u.t.right, act);
+        if (p->u.t.right) {
+            pattern_match_r(THREAD, p->u.t.right, act);
+        }
     }
 }
 
