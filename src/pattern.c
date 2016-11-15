@@ -74,7 +74,7 @@ void pattern_remove(CONTAINER_t * CONTAINER, elem_t *act)
  */
 static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *subject, elem_t *attributes)
 {
-    elem_t *attr;
+    elem_t *attr, *new;
 
     if (p) {
  
@@ -91,7 +91,9 @@ static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *subject, elem_t
         if (match(subject->u.l.first, p->u.t.key->u.l.first) == 0) {
             attr = p->u.t.key->u.l.next->u.l.first;
             while (attr) {
-                append_addref(attributes, attr);
+                new = new_list(LIST(), ATTR);
+                append_addref(new, attr->u.l.first);
+                append_transfer(attributes, new);
                 attr = attr->u.l.next;
             }
         }
