@@ -179,3 +179,7 @@ DONE - see state exit code in graph.c
         http://www.tutorsglobe.com/homework-help/electrical-engneering/ttl-logic-gate-series-74148.aspx
    - would need to edit to make individual components clickable
    
+26. BUG:  echo 'a*[x=y] a[b=c] a' | g
+    OK:   echo 'a[b=c] a' | g
+    In the bug case,  the last a gets attributes [x=y], OK, but also [b=c], BUG
+

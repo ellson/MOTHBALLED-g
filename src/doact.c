@@ -99,12 +99,13 @@ P(branch);
                 // N.B. This is how patterns are deleted
                 pattern_remove(CONTAINER, branch);
             }
-//P(CONTAINER->node_patterns);
-//P(CONTAINER->edge_patterns);
+P(CONTAINER->node_patterns);
+P(CONTAINER->edge_patterns);
             return SUCCESS;  // new pattern stored,  no more procesing for this ACT
         }
     }
 
+P(branch);
 // Now we are going to build a rewritten ACT tree, with references
 // to various bits from the parser's tree,  but no changes to it.
 //
