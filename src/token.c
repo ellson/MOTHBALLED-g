@@ -253,6 +253,13 @@ success_t token_whitespace(TOKEN_t * TOKEN)
     return rc;
 }
 
+// I wanted to turn this off, to make it more C likes, and to enforce a 
+// cleaner coding stle, IMHO.   Pragmatically though, if we want to allow
+// translations from other languages, like DOT or JSON, thane we
+// will need to support quoting in identifiers.
+
+#define QUOTING_IN_IDENTIFIERS 1
+
 /**
  * load IDENTIFIER fragments
  *
@@ -269,6 +276,46 @@ static int token_identifier_fragment(TOKEN_t * TOKEN, elem_t * identifier)
 
     slen = 0;
     while (1) {
+#ifdef QUOTING_IN_IDENTIFIERS
+        if (TOKEN->in_quote) {
+            if (TOKEN->in_quote == 2) {    // character after BSL
+                TOKEN->in_quote = 1;
+                frag = TOKEN->in;
+                TOKEN->insi = char2state[*++(TOKEN->in)];
+                elem = new_frag(LIST(), BSL, 1, frag);
+                slen++;
+            } else if (TOKEN->insi == DQT) {
+                TOKEN->in_quote = 0;
+                TOKEN->insi = char2state[*++(TOKEN->in)];
+                continue;
+            } else if (TOKEN->insi == BSL) {
+                TOKEN->in_quote = 2;
+                TOKEN->insi = char2state[*++(TOKEN->in)];
+                TOKEN->has_bsl = BSL;
+                continue;
+            } else if (TOKEN->insi == NLL) {
+                break;
+            } else {
+                frag = TOKEN->in;
+                len = 1;
+                while (1) {
+                    insi = char2state[*++(TOKEN->in)];
+                    if (insi == DQT || insi == BSL || insi == NLL) {
+                        break;
+                    }
+                    len++;
+                }
+                TOKEN->insi = insi;
+                elem = new_frag(LIST(), DQT, len, frag);
+                slen += len;
+            }
+        } else if (TOKEN->insi == DQT) {
+            TOKEN->in_quote = 1;
+            TOKEN->quote_state = DQT;
+            TOKEN->insi = char2state[*++(TOKEN->in)];
+            continue;
+        } else
+#endif
         if (TOKEN->insi == ABC) {
             frag = TOKEN->in;
             len = 1;
