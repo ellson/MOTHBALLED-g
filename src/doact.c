@@ -68,8 +68,8 @@ printf("doact(): sameas=%d subj_has_ast=%d attr_has_ast=%d has_mum=%d has_node=%
             CONTAINER->has_node,
             CONTAINER->has_edge,
             CONTAINER->verb);
-P(branch);
 #endif
+P(branch);
 
     // perform SAMEAS substitutions
     sameas(CONTAINER, branch);
@@ -99,7 +99,7 @@ P(branch);
                 // N.B. This is how patterns are deleted
                 pattern_remove(CONTAINER, branch);
             }
-//P(CONTAINER->node_patterns);
+P(CONTAINER->node_patterns);
 //P(CONTAINER->edge_patterns);
             return SUCCESS;  // new pattern stored,  no more procesing for this ACT
         }
