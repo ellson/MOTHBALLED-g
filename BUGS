@@ -1,45 +1,9 @@
-#1) sameas produces wrong result when "=" matches an ENPOINTSET
-#
-#e.g.: 
-#	<(a b) c>
-#	<= d>
-#
-#produces:
-#	
-#	a
-#	b
-#	c
-#	<a c>
-#	<b c>
-#	a
-#	d
-#	<a d>
-
-#4) quoted string around pattern not getting through
-#	"abc"*"xyz"
-#
-#   patterns not working at all!
-
-#8) some kind of pattern / comment interaction issue causing non-matching act to be repeated
-#
-#	"ab"*
-#	"a"
-#produces:
-#	"a" "a"
-#
-#also
-#	ab*
-#	a
-#produces
-#	a a
-
-################################################################
-
 2) ENHANCEMENT nodes introduced with "=" don't require further node induction
 
 3) ENHANCEMENT Some grammar elements are purely for syntax construction and have no representation by themselves:
 	OBJECT, LEG, ENDPOINT, .... (particularly elements of lists)
 these are consuming elem_t storage, and presumably extra processing.   Can they be eliminated?
+MOSTLY DONE
 
 5) ENHANCEMENT command line rework ...
 	-a [<file>]         ... read archive at init.  <file> defaults to g_archive.tgz
@@ -49,36 +13,9 @@ these are consuming elem_t storage, and presumably extra processing.   Can they 
         -i [<file>]         ... print index of hashname to full name. <file> defaults to "-"  (i.e. stdout)
         -d [level]          ... print debugging info to stdout
 	-s                  ... print stats to stdout
-
-6) ENHANCEMENT only three characters require BSL escapes ..  BSL, DQT and NLL, and only inside DQT strings
-BSL in front of any other character in DQT strings should be ignored and elided in output.
-BSL outside DQT strings are literal BSLs
-
-7) MINOR quoted strings that don't really need quoting should be emitted unquoted.
-Without this canonicalization,  a pattern like a* will fail to match "a"
-
-9) ENHANCEMENT pattern substitution should merge act in output (first subject, merged attributes and container)
+NO - see notes in TODO for a configuration graph
 
 10) FIXME processing and storage of pattern contents (can these contain further patterns?)
 11) FIXME merging of pattern contents when matching
 
-12) when to introduce and object DB ?
-
-
-13) the error message for when an input file is not found should be less obscure
-    g (master)$ src/g comments.g
-Error: fopen fail ACTIVITY
-      in "comments.g" line: 1 just before: ""
-** partially fixed - could use filename in error message
-
-14) BUG - edge disambiguators not parsed correctly
-    $ echo '<a b>`c' | g
-    g: sameas.c:68: je_sameas_r: Assertion `subject->type == (char)LISTELEM' failed.
-    Aborted (core dumped)
-
-    status:  disambiguators get lost in expand_edge.c
-	     some question about disambig code in sameas.h
-
-
-
-	
+12) when to introduce an object DB ?

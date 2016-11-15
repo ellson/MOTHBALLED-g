@@ -1,25 +1,14 @@
-1. fix elem leaks 
-DONE currenly fixed, + added assert to immediately detect new leaks
-
-2. attribute trees,  attribute merging
+2. attribute merging
 
 3. need some kind of print_edge_name
 - for compare and for ikea ...
 - needs logical space between str elems, and between legs and disambig
 -- maybe insert real: < > `
 
-4. breakout PARSE_t from CONTEXT_t
-DONE - renamed PARSE_t to THREAD_t and split out SESSION_t
-
-5. common match code for patterns and queries
-
 6. extend match patterns
 - currently ABC* matching only
 - would be nice to have support for: *ABC   and ABC*XYZ
 - can we find a syntax for REs that fits?
-
-7. parent{graph patterns stats cron net...}
-DUPLICATE with 16.
 
 8. thread and event model
 - parser per thread
@@ -102,10 +91,6 @@ DUPLICATE with 16.
 14a. Command line option graph:  see notes in g.c
      -- use .g/default.g or /etc/g/deafult.g  for a default command line
 
-15. Use SHORTSTR to replace FRAGLISTs whenever string length is short enough
-    (Optimization of shorage and key matching in trees)
-DONE
-
 16. Meta graphs:
       - grammar - Aunt Gudrun - devine knowledge
       - sync - Aunt Maude (the crazy one, believes anything, remembers nothing)
@@ -120,28 +105,13 @@ DONE
            -- edges + attributes
            -- patterns
 
-17. THREAD stats  (maybe add to SESSION stats?)
-DONE. THREAD and SESSION have been broken out and stats divided accordingly.
-
-17a. Persistent graph stats (IKEA?) -- e.g.
+17. Persistent graph stats (IKEA?) -- e.g.
    -- cumulative multi-session stats
    -- liveness flags from Nettie.
 
-17b. Distinct stats nodes for stats from:  INBUF, LIST, TOKEN, THREAD, CONTAINER, SESSION, IKEA
+18. Distinct stats nodes for stats from:  INBUF, LIST, TOKEN, THREAD, CONTAINER, SESSION, IKEA
 
-18. Extend grammar to enforce SET members to be all NODEs or all EDGEs
-DONE
-
-19. Try to eliminate elements like VALASSIGN
-        ATTR ATTRID ABC abc
-             VALASSIGN EQL
-                       VALUE ABC xyz
-    during state exit processing in grammar.c, to:
-        ATTR ATTRID ABC abc
-             VALUE ABC xyz 
-DONE - see state exit code in graph.c
-
-20. Error recovery ( something less thasnt FATAL on input errors )
+20. Error recovery ( something less than FATAL on input errors )
 
     - needs independent error recovery per input stream.
       -- QRY  (ask Dottie) - gets ACT number of QRY, and id to match QRY itself
@@ -164,6 +134,8 @@ DONE - see state exit code in graph.c
     indexing,  but the tree nodes should have a list of all the original objects 
     in arrival order. (Separated NODE and EDGE lists might be a problem.)
 
+    See also #26
+
 24. Container catalog:
    - In the ikea store, keep a catalog (dir) containing user-friendly
      named softlinks to content_hash containers.   Permit container reference
@@ -179,7 +151,4 @@ DONE - see state exit code in graph.c
         http://www.tutorsglobe.com/homework-help/electrical-engneering/ttl-logic-gate-series-74148.aspx
    - would need to edit to make individual components clickable
    
-26. BUG:  echo 'a*[x=y] a[b=c] a' | g
-    OK:   echo 'a[b=c] a' | g
-    In the bug case,  the last a gets attributes [x=y], OK, but also [b=c], BUG
-
+26. configure options to enable/disable rewriters:  sameas, patterns, expand, reduce, dom/gom
