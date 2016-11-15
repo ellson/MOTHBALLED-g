@@ -383,10 +383,6 @@ success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
     TOKEN->has_bsl = 0;
     TOKEN->quote_state = ABC;
     slen = token_identifier_fragment(TOKEN, identifier);    // leading fragment
-// FIXME
-//  if (!slen) {
-//       token_error(TOKEN, "Malformed IDENTIFIER", TOKEN->insi);
-//  }
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
@@ -508,11 +504,10 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *string)
 
     TOKEN->quote_state = ABC;
     TOKEN->insi = char2vstate[*(TOKEN->in)]; // recheck the first char against expanded set
+    if ( ! (TOKEN->insi == ABC || TOKEN->insi == DQT || TOKEN->insi == AST || TOKEN->insi == BSL)) {
+         token_error(TOKEN, "Malformed VSTRING", TOKEN->insi);
+    }
     slen = token_vstring_fragment(TOKEN, string);    // leading string
-// FIXME  e.g.    a[a=<b>]
-//  if (!slen) {
-//       token_error(TOKEN, "Malformed VSTRING", TOKEN->insi);
-//  }
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
