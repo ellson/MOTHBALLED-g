@@ -67,6 +67,9 @@ int compare (elem_t *a, elem_t *b)
             bc = *bi.cp++; bi.len--;
             rc = ac - bc;
         } while (ai.len && bi.len && rc == 0);
+        if (rc == 0) {
+            rc = ai.len - bi.len;
+        }
         if (! ai.len) {
             if (ai.next[ai.nest]) { 
                 ai.cp = ai.next[ai.nest]->u.f.frag;
@@ -133,17 +136,22 @@ int match (elem_t *a, elem_t *b_wild)
     do {
         do { 
             if (*bi.cp == '*') {
+                rc = 0;
                 break;
             } 
             ac = *ai.cp++; ai.len--;
             bc = *bi.cp++; bi.len--;
             rc = ac - bc;
         } while (ai.len && bi.len && rc == 0);
-        if (bi.len >= 0 && *bi.cp == '*') {
+        if (rc == 0 && *bi.cp == '*') {
+            ai.len=0;
             bi.len=0;
         }
+        if (rc == 0) {
+            rc = ai.len - bi.len;
+        }
         if (! ai.len) {
-            if (ai.next[ai.nest]) { 
+            if (ai.next[ai.nest] && *bi.cp != '*') { 
                 ai.cp = ai.next[ai.nest]->u.f.frag;
                 ai.len = ai.next[ai.nest]->len;
                 ai.next[ai.nest] = ai.next[ai.nest]->u.f.next;
