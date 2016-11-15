@@ -130,6 +130,7 @@ P(branch);
     }
     if (! attributes->u.l.first) {
         remove_next_from_list(LIST(), act, subject);  // remove empty attributes
+        attributes->refs--;  // FIXME - why is this needed
     }
     
     // patterns now applied for "add"  verb - may now have multiple ACTs
