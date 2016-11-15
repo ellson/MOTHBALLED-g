@@ -383,6 +383,10 @@ success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
     TOKEN->has_bsl = 0;
     TOKEN->quote_state = ABC;
     slen = token_identifier_fragment(TOKEN, identifier);    // leading fragment
+// FIXME
+//  if (!slen) {
+//       token_error(TOKEN, "Malformed IDENTIFIER", TOKEN->insi);
+//  }
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
@@ -458,37 +462,15 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
             TOKEN->quote_state = DQT;
             TOKEN->insi = char2vstate[*++(TOKEN->in)];
             continue;
-        } else if (TOKEN->insi == ABC ||
-                   TOKEN->insi == FSL ||
-                   TOKEN->insi == BSL ||
-                   TOKEN->insi == CLN ||
-                   TOKEN->insi == EQL ||
-                   TOKEN->insi == HAT ||
-                   TOKEN->insi == LPN ||
-                   TOKEN->insi == RPN ||
-                   TOKEN->insi == QRY) {
-        // In the unquoted portions of VSTRING we allow '/' '\' ':' '=' '^' '(' ')' '?'
-        // in addition to the ABC class
-        // this allows URIs as values without quoting
- // FIXME - find a cleaner way to test for membership in this extra charater set
- //    extend set with #;^`~       basically everything except [] <> *
+        } else if (TOKEN->insi == ABC) {
             frag = TOKEN->in;
             len = 1;
-            while ((insi = char2vstate[*++(TOKEN->in)]) == ABC ||
-                    insi == FSL ||
-                    insi == BSL ||
-                    insi == CLN ||
-                    insi == EQL ||
-                    insi == HAT ||
-                    insi == LPN ||
-                    insi == RPN ||
-                    insi == QRY) {
+            while ((insi = char2vstate[*++(TOKEN->in)]) == ABC) {
                 len++;
             }
             TOKEN->insi = insi;
             elem = new_frag(LIST(), ABC, len, frag);
             slen += len;
-
         // but '*' are still special  (maybe used as wild card in queries)
         } else if (TOKEN->insi == AST) {
             TOKEN->has_ast = AST;
@@ -525,7 +507,12 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *string)
     TOKEN->has_bsl = 0;
 
     TOKEN->quote_state = ABC;
+    TOKEN->insi = char2vstate[*(TOKEN->in)]; // recheck the first char against expanded set
     slen = token_vstring_fragment(TOKEN, string);    // leading string
+// FIXME  e.g.    a[a=<b>]
+//  if (!slen) {
+//       token_error(TOKEN, "Malformed VSTRING", TOKEN->insi);
+//  }
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
