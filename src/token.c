@@ -422,16 +422,16 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
             if (TOKEN->in_quote == 2) {    // character after BSL
                 TOKEN->in_quote = 1;
                 frag = TOKEN->in;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
+                TOKEN->insi = char2vstate[*++(TOKEN->in)];
                 elem = new_frag(LIST(), BSL, 1, frag);
                 slen++;
             } else if (TOKEN->insi == DQT) {
                 TOKEN->in_quote = 0;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
+                TOKEN->insi = char2vstate[*++(TOKEN->in)];
                 continue;
             } else if (TOKEN->insi == BSL) {
                 TOKEN->in_quote = 2;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
+                TOKEN->insi = char2vstate[*++(TOKEN->in)];
                 TOKEN->has_bsl = BSL;
                 continue;
             } else if (TOKEN->insi == NLL) {
@@ -440,7 +440,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
                 frag = TOKEN->in;
                 len = 1;
                 while (1) {
-                    insi = char2state[*++(TOKEN->in)];
+                    insi = char2vstate[*++(TOKEN->in)];
                     if (insi == DQT || insi == BSL || insi == NLL) {
                         break;
                     }
@@ -453,7 +453,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
         } else if (TOKEN->insi == DQT) {
             TOKEN->in_quote = 1;
             TOKEN->quote_state = DQT;
-            TOKEN->insi = char2state[*++(TOKEN->in)];
+            TOKEN->insi = char2vstate[*++(TOKEN->in)];
             continue;
         } else if (TOKEN->insi == ABC ||
                    TOKEN->insi == FSL ||
@@ -471,7 +471,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
  //    extend set with #;^`~       basically everything except [] <> *
             frag = TOKEN->in;
             len = 1;
-            while ((insi = char2state[*++(TOKEN->in)]) == ABC ||
+            while ((insi = char2vstate[*++(TOKEN->in)]) == ABC ||
                     insi == FSL ||
                     insi == BSL ||
                     insi == CLN ||
@@ -491,7 +491,7 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
             TOKEN->has_ast = AST;
             TOKEN->elem_has_ast = AST;
             frag = TOKEN->in;
-            while ((TOKEN->insi = char2state[*++(TOKEN->in)]) == AST) {
+            while ((TOKEN->insi = char2vstate[*++(TOKEN->in)]) == AST) {
             }    // extra '*' ignored
             elem = new_frag(LIST(), AST, 1, frag);
             slen++;

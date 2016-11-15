@@ -17,7 +17,7 @@ ofc=${of}.c
 ofgv=${of}.gv
 ofebnf=${of}.ebnf
 
-typeset -A POS NAME SPOS PROPS CHARMAP CONTENT
+typeset -A POS NAME SPOS PROPS CHARMAP CONTENT IDABC VALABC
 
 namelist=()
 state=""
@@ -262,12 +262,23 @@ for s in ${statelist[@]}; do
     done
 
     case $s in
-    STRING | VSTRING)
+    STRING)
+        class="${CONTENT[$s]}"
+        if test "$class" != "ABC"; then
+            echo "The IDENTIFIER class must contain only ABC" >&2
+            exit 1
+        fi
+        IDABC[$class]=ABC
+        ( printf " "                             ) >>${ifn}.ebnf
+        ( printf "ABC"                           ) >>${ifn}.ebnf
+	;;
+    VSTRING)
         class="${CONTENT[$s]}"
 #        ( printf "prop=$prop"                    ) >>${ifn}.agaws
         ( printf " "                             ) >>${ifn}.ebnf
         altc=0
 	for c in $class; do
+            VALABC[$c]=ABC
 	    if test $altc -gt 0; then
 		if test $(( altc % 16 )) -eq 0; then
                     ( printf "\n%18s" "| "       ) >>${ifn}.ebnf
@@ -379,7 +390,7 @@ Extra grammar:
 
 Patterns:
 
-    If there is an unquoted '*' in any string in a SUBJECT, then the entir
+    If there is an unquoted '*' in any string in a SUBJECT, then the entire
     SUBJECT is considered a pattern, and its ACT a pattern_act.  Patterns
     are used to add ATTRIBUTES and CONTAINER to any future ACT whose SUBJECT
     matches the pattern. The AST matches any character sequence.
@@ -423,8 +434,7 @@ cat >>$ofh  <<EOF
 
 extern unsigned char state_names[];
 extern unsigned char char2state[];
-extern unsigned char char2string[];
-extern unsigned char char2vstring[];
+extern unsigned char char2vstate[];
 extern char state_machine[];
 extern unsigned char state_props[];
 extern char state_token[];
@@ -485,24 +495,26 @@ EOF
 ) >>$ofc
 
 (
-    printf "unsigned char state2string[] = {\n"
-    printf "    // not generated or used since it contains only ABC"
-    printf "\n};\n\n"
-) >>$ofc
-
-(
-    printf "unsigned char state2vstring[] = {"
-    ccnt=0;
-    for n in ${namelist[@]}; do
-	if test $(( ccnt % 16 )) -eq 0; then
-            printf "\n    ";
-        fi
-        ((ccnt++))
-        if test "${CHARMAP[$n]}" = "VSTRING"; then
-            printf "%s," "  1"
-	else
-            printf "%s," "  0"
-	fi
+    printf "unsigned char char2vstate[] = {"
+    for msb in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
+        printf "\n    /* ${msb}0 */   "
+        for lsb in 0 1 2 3 4 5 6 7; do
+            valabc=${VALABC[${CHARMAP[${msb}${lsb}]}]}
+            if test "$valabc" != ""; then
+	        printf "%3s," "$valabc"
+	    else
+                printf "%3s," "${CHARMAP[${msb}${lsb}]}"
+	    fi
+        done
+        printf "\n    /* ${msb}8 */   "
+        for lsb in 8 9 a b c d e f; do
+            valabc=${VALABC[${CHARMAP[${msb}${lsb}]}]}
+            if test "$valabc" != ""; then
+	        printf "%3s," "$valabc"
+	    else
+                printf "%3s," "${CHARMAP[${msb}${lsb}]}"
+	    fi
+        done
     done
     printf "\n};\n\n"
 ) >>$ofc
