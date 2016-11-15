@@ -48,7 +48,7 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *branch)
 // pattern_update(), a pattern_remove() manage only references to the branch tree
 // without modification.
 //
-// The branch tree will be freed by the parser after we retrn
+// The branch tree will be freed by the parser after we return
 
     assert(branch);
 
@@ -68,8 +68,8 @@ printf("doact(): sameas=%d subj_has_ast=%d attr_has_ast=%d has_mum=%d has_node=%
             CONTAINER->has_node,
             CONTAINER->has_edge,
             CONTAINER->verb);
-#endif
 P(branch);
+#endif
 
     // perform SAMEAS substitutions
     sameas(CONTAINER, branch);
@@ -99,13 +99,12 @@ P(branch);
                 // N.B. This is how patterns are deleted
                 pattern_remove(CONTAINER, branch);
             }
-P(CONTAINER->node_patterns);
+//P(CONTAINER->node_patterns);
 //P(CONTAINER->edge_patterns);
             return SUCCESS;  // new pattern stored,  no more procesing for this ACT
         }
     }
 
-P(branch);
 // Now we are going to build a rewritten ACT tree, with references
 // to various bits from the parser's tree,  but no changes to it.
 //
@@ -114,31 +113,26 @@ P(branch);
     act = new_list(LIST(), ACT);
     subject = new_list(LIST(), SUBJECT);
     append_addref(subject, branch_subject->u.l.first);
-    append_addref(act, subject);
-
-    // append a new empty attributes lis
-    attributes = new_list(LIST(), ATTRIBUTES);
-    append_addref(act, attributes);
+    append_transfer(act, subject);
 
     // append pattern attrs, if any
     if ( !CONTAINER->verb) { // if verb is default (add)
+          attributes = new_list(LIST(), ATTRIBUTES);
           pattern_match(CONTAINER, branch, &attr);
           append_addref(attributes, attr);  // append ref to attr in branch act
+          append_transfer(act, attributes);
     }
     // append current attr, if any, after pattern_match so that
     // attr from patterns can be over-ridden
     if (branch_attributes) {
+        attributes = new_list(LIST(), ATTRIBUTES);
         append_addref(attributes, branch_attributes->u.l.first);
-    }
-    if (! attributes->u.l.first) {
-        remove_next_from_list(LIST(), act, subject);  // remove empty attributes
-        attributes->refs--;  // FIXME - why is this needed
+        append_transfer(act, attributes);
     }
     
     // patterns now applied for "add"  verb - may now have multiple ACTs
     // may still have subj_has_ast in QRY or TLD
 
-P(CONTAINER->node_patterns);
 P(act);
 
 #if 0
@@ -161,8 +155,6 @@ P(elem);
 #endif
 
     free_list(LIST(), act);
-    free_list(LIST(), subject);
-    free_list(LIST(), attributes);
 
     return SUCCESS;
 }

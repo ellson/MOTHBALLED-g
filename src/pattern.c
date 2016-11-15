@@ -79,6 +79,8 @@ static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act, elem_t **a
 // FIXME - it should be possible to optimize this to first search for the
 // beginning on the range of matches, and then only the members of the range,
 // instead of visiting all elements of the tree.
+// Except that matching is expensive, so don't match more than once.
+// Perhaps stack matches on the way to the beginning, then play them back...
 
         if (p->u.t.left) {
             pattern_match_r(THREAD, p->u.t.left, act, attr);
