@@ -352,7 +352,7 @@ Extra grammar:
     Whitespace (WS) has no significance in the grammar except in quoted
     VSTRINGs and as a separator of last resort between IDENTIFIERs or VSTRINGs.
 
-    IDENTIFIER is a name used for a NODEID, ATTTRID, or DISAMBID. An IDENTIFIER may not contain
+    IDENTIFIER is a name used for nodes, ports, attributes, disambiguators. An IDENTIFIER may not contain
     quotes, or spaces.
 
     VSTRINGs can be concatenations of quoted and unquoted character sequences.
