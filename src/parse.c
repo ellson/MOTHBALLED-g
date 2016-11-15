@@ -103,9 +103,9 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
         }
         break;
 
-    case STRING:                  // Strings
-        rc = token_string(TOKEN(), branch);
-        bi = TOKEN()->insi;  // the char class that terminates the STRING
+    case IDENTIFIER:
+        rc = token_identifier(TOKEN(), branch);
+        bi = TOKEN()->insi;  // the char class that terminates the IDENTIFIER
         goto done;
         break;
 

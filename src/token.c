@@ -253,16 +253,14 @@ success_t token_whitespace(TOKEN_t * TOKEN)
     return rc;
 }
 
-// #define QUOTING_IN_NODENAMES 1
-
 /**
- * load STRING fragments
+ * load IDENTIFIER fragments
  *
  * @param TOKEN context
- * @param string - list of frags constituting a string
- * @return length of string
+ * @param identifier - list of frags constituting a identifier
+ * @return length of identifier
  */
-static int token_string_fragment(TOKEN_t * TOKEN, elem_t * string)
+static int token_identifier_fragment(TOKEN_t * TOKEN, elem_t * identifier)
 {
     unsigned char *frag;
     state_t insi;
@@ -271,49 +269,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * string)
 
     slen = 0;
     while (1) {
-#ifdef QUOTING_IN_NODENAMES
-        if (TOKEN->in_quote) {
-            if (TOKEN->in_quote == 2) {    // character after BSL
-                TOKEN->in_quote = 1;
-                frag = TOKEN->in;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
-                elem = new_frag(LIST(), BSL, 1, frag);
-                slen++;
-            } else if (TOKEN->insi == DQT) {
-                TOKEN->in_quote = 0;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
-                continue;
-            } else if (TOKEN->insi == BSL) {
-                TOKEN->in_quote = 2;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
-                TOKEN->has_bsl = BSL;
-                continue;
-            } else if (TOKEN->insi == NLL) {
-                break;
-            } else {
-                frag = TOKEN->in;
-                len = 1;
-                while (1) {
-                    insi = char2state[*++(TOKEN->in)];
-                    if (insi == DQT || insi == BSL || insi == NLL) {
-                        break;
-                    }
-                    len++;
-                }
-                TOKEN->insi = insi;
-                elem = new_frag(LIST(), DQT, len, frag);
-                slen += len;
-            }
-        } else if (TOKEN->insi == DQT) {
-            TOKEN->in_quote = 1;
-            TOKEN->quote_state = DQT;
-            TOKEN->insi = char2state[*++(TOKEN->in)];
-            continue;
-#else
-        if (TOKEN->insi == DQT) {
-            token_error(TOKEN, "Attempted use of DQT in a name string", DQT);
-#endif
-        } else if (TOKEN->insi == ABC) {
+        if (TOKEN->insi == ABC) {
             frag = TOKEN->in;
             len = 1;
             while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
@@ -333,7 +289,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * string)
         } else {
             break;
         }
-        append_transfer(string, elem);
+        append_transfer(identifier, elem);
         TOKEN->stat_infragcount++;
     }
     return slen;
@@ -361,36 +317,36 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
 }
 
 /**
- * collect fragments to form a STRING token
+ * collect fragments to form an IDENTIFIER token
  *
  * @param TOKEN context
- * @param string
+ * @param identifier
  * @return success/fail
  */
 
-success_t token_string(TOKEN_t * TOKEN, elem_t *string)
+success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
 {
     int len, slen;
 
-    assert(string);
-    assert(string->type == (char)LISTELEM);
-    assert(string->refs > 0);
+    assert(identifier);
+    assert(identifier->type == (char)LISTELEM);
+    assert(identifier->refs > 0);
 
     TOKEN->has_ast = 0;
     TOKEN->has_bsl = 0;
     TOKEN->quote_state = ABC;
-    slen = token_string_fragment(TOKEN, string);    // leading string
+    slen = token_identifier_fragment(TOKEN, identifier);    // leading fragment
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        if ((len = token_string_fragment(TOKEN, string)) == 0) {
+        if ((len = token_identifier_fragment(TOKEN, identifier)) == 0) {
             break;
         }
         slen += len;
     }
     if (slen > 0) {
-        token_pack_string(TOKEN, slen, string); // may replace string with a shortstr elem
+        token_pack_string(TOKEN, slen, identifier); // may replace identifier with a shortstr elem
         return SUCCESS;
     }
     return FAIL;

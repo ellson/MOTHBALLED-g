@@ -33,7 +33,7 @@ struct thread_s {
     ikea_store_t *ikea_store;  // persistency
     int style;                 // degree of friendliness in print outputs
     char sep;                  // the next separator
-                               // (either 0, or ' ' if following a STRING that
+                               // (either 0, or ' ' if following a IDENTIFIER or VSTRING that
                                // requires a separator,  but may be ignored if
                                // the next character is a token which
                                // implicitly separates.)

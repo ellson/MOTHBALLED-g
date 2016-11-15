@@ -12,14 +12,14 @@
 #include "pattern.h"
 
 /*
- * A pattern is an ACT in which one or more STRINGs contain an AST ('*')
+ * A pattern is an ACT in which one or more IDENTIFIERs contain an AST ('*')
  * The AST is a wild-card that matches any substring of zero or more 
  * characters at that position.
  *
- * An indivual STRING may have no more that one AST, but multiple
- * STRING in the ACT may have AST
+ * An indivual IDENTIFIER may have no more that one AST, but multiple
+ * IDENTIFIER in the ACT may have AST
  *
- * The following are valid pattern STRING:
+ * The following are valid pattern IDENTIFIER:
  *      *       // This and the next require only prefix matching
  *      abcd*   
  *      abcdef  // Exact matches are ok
@@ -28,7 +28,7 @@
  *      *def
  *      ab*ef
  * 
- * An ACT is matched if all its pattern and non-pattern STRINGS
+ * An ACT is matched if all its pattern and non-pattern IDENTIFIERs
  * match, after pattern substitution.
  */ 
  

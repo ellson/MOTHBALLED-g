@@ -262,7 +262,7 @@ for s in ${statelist[@]}; do
     done
 
     case $s in
-    STRING)
+    IDENTIFIER)
         class="${CONTENT[$s]}"
         if test "$class" != "ABC"; then
             echo "The IDENTIFIER class must contain only ABC" >&2
@@ -294,7 +294,7 @@ for s in ${statelist[@]}; do
         class="${CONTENT[$s]}"
         tokchar=""
         for tokchar in $class; do break; done
-        if test "$tokchar" = ""; then
+	if test "$tokchar" = "" -o "$s" = "IDENTIFIER" -o "$s" = "VSTRING"; then
             tokchar=0
         else
             tokchar=0x$tokchar
@@ -350,10 +350,12 @@ Extra grammar:
     Comments in the form of "# ... EOL" are skipped over by the parser.
 
     Whitespace (WS) has no significance in the grammar except in quoted
-    strings and as a separator of last resort between string tokens.
+    VSTRINGs and as a separator of last resort between IDENTIFIERs or VSTRINGs.
 
-    STRINGs and VSTRINGs can be concatenations of quoted and unquoted
-    character sequences.
+    IDENTIFIER is a name used for a NODEID, ATTTRID, or DISAMBID. An IDENTIFIER may not contain
+    quotes, or spaces.
+
+    VSTRINGs can be concatenations of quoted and unquoted character sequences.
 
         for example:       abc"d e f"ghi"j\\\\k"
         is equivalent to:  "abcd e fghij\\\\k"
@@ -365,12 +367,11 @@ Extra grammar:
     and may include any characters, except that NLL, DQT, and BSL need
     to be escaped with a BSL (i.e. '\\')
 
-    VSTRINGs are for use in VALUEs.  Unquoted strings in VSTRINGs are slightly
-    relaxed, additionally allowing:
+    VSTRINGs are for use in VALUEs.  The unquoted character set allowed in VSTRINGs is more relaxed than
+    in IDENTIFIERs.
 
-        '/' '\\' ':' '?' '='
-
-    This is to permit file paths and URLs to be unquoted VALUEs
+    This permit file paths (DOS and Unix), URLS,  email addresses, signed or unsigned number
+    all to be used as values without quoting.
 
     NB. The single-quote character ''' is not special, and has no quoting
     behavior in this grammar.
