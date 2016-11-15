@@ -39,11 +39,11 @@ void pattern_update(CONTAINER_t * CONTAINER, elem_t *act)
     if (CONTAINER->has_node) {
         CONTAINER->stat_patternnodecount++;
         CONTAINER->node_patterns =
-            insert_item(LIST(), CONTAINER->node_patterns, act, merge_pattern, NULL);
+            insert_item(LIST(), CONTAINER->node_patterns, act->u.l.first, merge_pattern, NULL);
     } else {
         CONTAINER->stat_patternedgecount++;
         CONTAINER->edge_patterns =
-            insert_item(LIST(), CONTAINER->edge_patterns, act, merge_pattern, NULL);
+            insert_item(LIST(), CONTAINER->edge_patterns, act->u.l.first, merge_pattern, NULL);
     }
 }
 
@@ -54,11 +54,11 @@ void pattern_remove(CONTAINER_t * CONTAINER, elem_t *act)
     if (CONTAINER->has_node) {
         CONTAINER->stat_patternnodecount--;
         CONTAINER->node_patterns =
-            remove_item(LIST(), CONTAINER->node_patterns, act);
+            remove_item(LIST(), CONTAINER->node_patterns, act->u.l.first);
     } else {
         CONTAINER->stat_patternedgecount--;
         CONTAINER->edge_patterns =
-            remove_item(LIST(), CONTAINER->edge_patterns, act);
+            remove_item(LIST(), CONTAINER->edge_patterns, act->u.l.first);
     }
 }
 
@@ -72,7 +72,7 @@ void pattern_remove(CONTAINER_t * CONTAINER, elem_t *act)
  * @param attributes found in the matched act
  *
  */
-static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act, elem_t *attributes)
+static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *subject, elem_t *attributes)
 {
     elem_t *attr;
 
@@ -85,12 +85,11 @@ static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act, elem_t *at
 // Perhaps stack matches on the way to the beginning, then play them back...
 
         if (p->u.t.left) {
-            pattern_match_r(THREAD, p->u.t.left, act, attributes);
+            pattern_match_r(THREAD, p->u.t.left, subject, attributes);
         }
 
-        if (match(act->u.l.first->u.l.first,
-            p->u.t.key->u.l.first->u.l.first) == 0) {
-            attr = p->u.t.key->u.l.first->u.l.next->u.l.first;
+        if (match(subject->u.l.first, p->u.t.key->u.l.first) == 0) {
+            attr = p->u.t.key->u.l.next->u.l.first;
             while (attr) {
                 append_addref(attributes, attr);
                 attr = attr->u.l.next;
@@ -98,7 +97,7 @@ static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act, elem_t *at
         }
 
         if (p->u.t.right) {
-            pattern_match_r(THREAD, p->u.t.right, act, attributes);
+            pattern_match_r(THREAD, p->u.t.right, subject, attributes);
         }
     }
 }
@@ -119,12 +118,9 @@ void pattern_match(CONTAINER_t * CONTAINER, elem_t * act, elem_t *attributes)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
 
-    assert(act);
-    assert((state_t) act->state == ACT);
-
     if (CONTAINER->has_node) {
-        pattern_match_r(THREAD, CONTAINER->node_patterns, act, attributes);
+        pattern_match_r(THREAD, CONTAINER->node_patterns, act->u.l.first, attributes);
     } else {
-        pattern_match_r(THREAD, CONTAINER->edge_patterns, act, attributes);
+        pattern_match_r(THREAD, CONTAINER->edge_patterns, act->u.l.first, attributes);
     }
 }
