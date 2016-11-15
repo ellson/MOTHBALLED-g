@@ -32,7 +32,7 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *branch)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *branch_subject, *branch_attributes;
-    elem_t *act, *subject, *attributes;
+    elem_t *act, *subject, *attributes, *attr;
 
 
 // branch points to the ACT tree from the parser.  We do a lot of referrencing
@@ -99,8 +99,8 @@ P(branch);
                 // N.B. This is how patterns are deleted
                 pattern_remove(CONTAINER, branch);
             }
-P(CONTAINER->node_patterns);
-P(CONTAINER->edge_patterns);
+//P(CONTAINER->node_patterns);
+//P(CONTAINER->edge_patterns);
             return SUCCESS;  // new pattern stored,  no more procesing for this ACT
         }
     }
@@ -122,7 +122,8 @@ P(branch);
 
     // append pattern attrs, if any
     if ( !CONTAINER->verb) { // if verb is default (add)
-          pattern_match(CONTAINER, act);
+          pattern_match(CONTAINER, branch, &attr);
+          append_addref(attributes, attr);  // append ref to attr in branch act
     }
     // append current attr, if any, after pattern_match so that
     // attr from patterns can be over-ridden
@@ -137,6 +138,7 @@ P(branch);
     // patterns now applied for "add"  verb - may now have multiple ACTs
     // may still have subj_has_ast in QRY or TLD
 
+P(CONTAINER->node_patterns);
 P(act);
 
 #if 0
