@@ -74,6 +74,8 @@ void pattern_remove(CONTAINER_t * CONTAINER, elem_t *act)
  */
 static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act, elem_t *attributes)
 {
+    elem_t *attr;
+
     if (p) {
  
 // FIXME - it should be possible to optimize this to first search for the
