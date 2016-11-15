@@ -69,10 +69,10 @@ void pattern_remove(CONTAINER_t * CONTAINER, elem_t *act)
  * @param THREAD context
  * @param p the current tree elem
  * @param act to be matched
- * @param attr found in the matched act
+ * @param attributes found in the matched act
  *
  */
-static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act, elem_t **attr)
+static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act, elem_t *attributes)
 {
     if (p) {
  
@@ -83,23 +83,16 @@ static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act, elem_t **a
 // Perhaps stack matches on the way to the beginning, then play them back...
 
         if (p->u.t.left) {
-            pattern_match_r(THREAD, p->u.t.left, act, attr);
+            pattern_match_r(THREAD, p->u.t.left, act, attributes);
         }
-
-//P(act->u.l.first->u.l.first);
-//P(p->u.t.key->u.l.first->u.l.first);
 
         if (match(act->u.l.first->u.l.first,
            p->u.t.key->u.l.first->u.l.first) == 0) {
-
-//printf("MATCH\n");
-//P(p->u.t.key->u.l.first->u.l.next);
-
-           *attr = p->u.t.key->u.l.first->u.l.next->u.l.first;
+           append_addref(attributes, p->u.t.key->u.l.first->u.l.next->u.l.first);
         }
 
         if (p->u.t.right) {
-            pattern_match_r(THREAD, p->u.t.right, act, attr);
+            pattern_match_r(THREAD, p->u.t.right, act, attributes);
         }
     }
 }
@@ -116,7 +109,7 @@ static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act, elem_t **a
  * @return newacts - with list of matched acts, or NULL
  */
 
-void pattern_match(CONTAINER_t * CONTAINER, elem_t * act, elem_t **attr)
+void pattern_match(CONTAINER_t * CONTAINER, elem_t * act, elem_t *attributes)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
 
@@ -124,8 +117,8 @@ void pattern_match(CONTAINER_t * CONTAINER, elem_t * act, elem_t **attr)
     assert((state_t) act->state == ACT);
 
     if (CONTAINER->has_node) {
-        pattern_match_r(THREAD, CONTAINER->node_patterns, act, attr);
+        pattern_match_r(THREAD, CONTAINER->node_patterns, act, attributes);
     } else {
-        pattern_match_r(THREAD, CONTAINER->edge_patterns, act, attr);
+        pattern_match_r(THREAD, CONTAINER->edge_patterns, act, attributes);
     }
 }

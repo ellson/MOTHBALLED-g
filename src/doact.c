@@ -32,7 +32,7 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *branch)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *branch_subject, *branch_attributes;
-    elem_t *act, *subject, *attributes, *attr;
+    elem_t *act, *subject, *attributes;
 
 
 // branch points to the ACT tree from the parser.  We do a lot of referrencing
@@ -114,19 +114,22 @@ P(branch);
     subject = new_list(LIST(), SUBJECT);
     append_addref(subject, branch_subject->u.l.first);
     append_transfer(act, subject);
+    attributes = NULL;
 
     // append pattern attrs, if any
     if ( !CONTAINER->verb) { // if verb is default (add)
-          attributes = new_list(LIST(), ATTRIBUTES);
-          pattern_match(CONTAINER, branch, &attr);
-          append_addref(attributes, attr);  // append ref to attr in branch act
-          append_transfer(act, attributes);
+        attributes = new_list(LIST(), ATTRIBUTES);
+        pattern_match(CONTAINER, branch, attributes);
     }
     // append current attr, if any, after pattern_match so that
     // attr from patterns can be over-ridden
     if (branch_attributes) {
-        attributes = new_list(LIST(), ATTRIBUTES);
+        if (!attributes) {
+            attributes = new_list(LIST(), ATTRIBUTES);
+        }
         append_addref(attributes, branch_attributes->u.l.first);
+    }
+    if (attributes) {
         append_transfer(act, attributes);
     }
     
