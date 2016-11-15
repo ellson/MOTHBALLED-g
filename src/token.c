@@ -253,6 +253,8 @@ success_t token_whitespace(TOKEN_t * TOKEN)
     return rc;
 }
 
+// #define QUOTING_IN_NODENAMES 1
+
 /**
  * load STRING fragments
  *
@@ -269,6 +271,7 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * string)
 
     slen = 0;
     while (1) {
+#ifdef QUOTING_IN_NODENAMES
         if (TOKEN->in_quote) {
             if (TOKEN->in_quote == 2) {    // character after BSL
                 TOKEN->in_quote = 1;
@@ -301,6 +304,15 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * string)
                 elem = new_frag(LIST(), DQT, len, frag);
                 slen += len;
             }
+        } else if (TOKEN->insi == DQT) {
+            TOKEN->in_quote = 1;
+            TOKEN->quote_state = DQT;
+            TOKEN->insi = char2state[*++(TOKEN->in)];
+            continue;
+#else
+        if (TOKEN->insi == DQT) {
+            token_error(TOKEN, "Attempted use of DQT in a name string", DQT);
+#endif
         } else if (TOKEN->insi == ABC) {
             frag = TOKEN->in;
             len = 1;
@@ -318,11 +330,6 @@ static int token_string_fragment(TOKEN_t * TOKEN, elem_t * string)
             }    // extra '*' ignored
             elem = new_frag(LIST(), AST, 1, frag);
             slen++;
-        } else if (TOKEN->insi == DQT) {
-            TOKEN->in_quote = 1;
-            TOKEN->quote_state = DQT;
-            TOKEN->insi = char2state[*++(TOKEN->in)];
-            continue;
         } else {
             break;
         }
@@ -443,11 +450,11 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
                 elem = new_frag(LIST(), DQT, len, frag);
                 slen += len;
             }
-        // In the unquoted portions of VSTRING we allow '/' '\' ':' '=' '^' '(' ')' '?'
-        // in addition to the ABC class
-        // this allows URIs as values without quoting
- // FIXME - find a cleaner way to test for membership in this extra charater set
- //    extend set with #;^`~       basically everything except [] <> *
+        } else if (TOKEN->insi == DQT) {
+            TOKEN->in_quote = 1;
+            TOKEN->quote_state = DQT;
+            TOKEN->insi = char2state[*++(TOKEN->in)];
+            continue;
         } else if (TOKEN->insi == ABC ||
                    TOKEN->insi == FSL ||
                    TOKEN->insi == BSL ||
@@ -457,6 +464,11 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
                    TOKEN->insi == LPN ||
                    TOKEN->insi == RPN ||
                    TOKEN->insi == QRY) {
+        // In the unquoted portions of VSTRING we allow '/' '\' ':' '=' '^' '(' ')' '?'
+        // in addition to the ABC class
+        // this allows URIs as values without quoting
+ // FIXME - find a cleaner way to test for membership in this extra charater set
+ //    extend set with #;^`~       basically everything except [] <> *
             frag = TOKEN->in;
             len = 1;
             while ((insi = char2state[*++(TOKEN->in)]) == ABC ||
@@ -483,11 +495,6 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
             }    // extra '*' ignored
             elem = new_frag(LIST(), AST, 1, frag);
             slen++;
-        } else if (TOKEN->insi == DQT) {
-            TOKEN->in_quote = 1;
-            TOKEN->quote_state = DQT;
-            TOKEN->insi = char2state[*++(TOKEN->in)];
-            continue;
         } else {
             break;
         }
