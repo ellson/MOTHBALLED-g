@@ -429,8 +429,9 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
     if (list->u.l.last == old) {             // if removing the last element
         list->u.l.last = elem;               // then elem is the new last (or NULL)
     }
-    assert(old->refs > 0);
     list->len--;                             // list has one less elem
+
+    assert(old->refs > 0);
     free_list_r(LIST, old);                  // free the removed elem
 }
 

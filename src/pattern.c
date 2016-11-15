@@ -82,12 +82,18 @@ static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act)
             pattern_match_r(THREAD, p->u.t.left, act);
         }
 
-P(act->u.l.first->u.l.first);
-P(p->u.t.key->u.l.first->u.l.first);
-        if (match(act->u.l.first->u.l.first, p->u.t.key->u.l.first->u.l.first) == 0) {
-printf("MATCH\n");
-P(p->u.t.key->u.l.first->u.l.next);
-            append_addref(act, p->u.t.key->u.l.first->u.l.next);
+//P(act->u.l.first->u.l.first);
+//P(p->u.t.key->u.l.first->u.l.first);
+
+        if (match(act->u.l.first->u.l.first,
+           p->u.t.key->u.l.first->u.l.first) == 0) {
+
+//printf("MATCH\n");
+//P(p->u.t.key->u.l.first->u.l.next);
+
+            // append attrs to attributes
+            append_addref(act->u.l.first->u.l.next,
+                   p->u.t.key->u.l.first->u.l.next->u.l.first);
         }
 
         if (p->u.t.right) {
