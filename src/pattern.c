@@ -87,8 +87,12 @@ static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *act, elem_t *at
         }
 
         if (match(act->u.l.first->u.l.first,
-           p->u.t.key->u.l.first->u.l.first) == 0) {
-           append_addref(attributes, p->u.t.key->u.l.first->u.l.next->u.l.first);
+            p->u.t.key->u.l.first->u.l.first) == 0) {
+            attr = p->u.t.key->u.l.first->u.l.next->u.l.first;
+            while (attr) {
+                append_addref(attributes, attr);
+                attr = attr->u.l.next;
+            }
         }
 
         if (p->u.t.right) {
