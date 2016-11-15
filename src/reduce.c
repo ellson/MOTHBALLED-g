@@ -58,14 +58,14 @@ P(list);
         CONTAINER->nodes =
             insert_item(LIST(),
                 CONTAINER->nodes,
-                &(subject->u.l.next), // skip NODEID
+                subject->u.l.next, // skip NODEID
                 merge_attributes, NULL); 
         break;
     case EDGE:
         CONTAINER->edges =
             insert_item(LIST(),
                 CONTAINER->edges,
-                &(subject), // EDGES can have complex structure in SUBJECT
+                subject, // EDGES can have complex structure in SUBJECT
                 merge_attributes, NULL); 
         break;
     default:

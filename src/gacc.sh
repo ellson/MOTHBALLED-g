@@ -158,7 +158,7 @@ g_term() {
     sm_term
 }
 
-# add newline befor all interesting tokens, and a space after
+# add newline before all interesting tokens, and a space after
 sed '{s/</\n< /g;s/>/\n>/g;s/\[/\n \[ /g;s/\]/\n \]/g;s/{/\n { /g;s/}/\n }/g}' $ifn >${ifn}.s
 
 while read op rest; do
@@ -261,40 +261,61 @@ for s in ${statelist[@]}; do
         ((indx++))
     done
 
-    class="${CONTENT[$s]}"
-    tokchar=""
-    for tokchar in $class; do break; done
-    if test "$tokchar" = ""; then
-        tokchar=0
-    else
-        tokchar=0x$tokchar
-    fi
-    if test "$s" = "BIN" -o "$s" = "NLL" -o "$s" = "WS"; then
-        printable=0
-    else
-        printable=1
-    fi
-#    ( printf "prop=$prop"                        ) >>${ifn}.agaws
-    if test "$class" != ""; then
-        altc=0
+    case $s in
+    STRING | VSTRING)
+        class="${CONTENT[$s]}"
+#        ( printf "prop=$prop"                    ) >>${ifn}.agaws
         ( printf " "                             ) >>${ifn}.ebnf
-        for c in $class; do
-            cc=$(( 0x$c ))
-            if test $altc -gt 0; then
-                if test $(( altc % 10 )) -eq 0; then
+        altc=0
+	for c in $class; do
+	    if test $altc -gt 0; then
+		if test $(( altc % 16 )) -eq 0; then
                     ( printf "\n%18s" "| "       ) >>${ifn}.ebnf
-                else
-                    ( printf "|"                 ) >>${ifn}.ebnf
+	        else
+		    ( printf "|"                 ) >>${ifn}.ebnf
+		fi
+            fi
+	    ((altc++))
+	    ( printf "$c"                        ) >>${ifn}.ebnf
+	done
+        ;;
+    *)
+        class="${CONTENT[$s]}"
+        tokchar=""
+        for tokchar in $class; do break; done
+        if test "$tokchar" = ""; then
+            tokchar=0
+        else
+            tokchar=0x$tokchar
+        fi
+        if test "$s" = "BIN" -o "$s" = "NLL" -o "$s" = "WS"; then
+            printable=0
+        else
+            printable=1
+        fi
+#        ( printf "prop=$prop"                    ) >>${ifn}.agaws
+        if test "$class" != ""; then
+            altc=0
+            ( printf " "                         ) >>${ifn}.ebnf
+            for c in $class; do
+                cc=$(( 0x$c ))
+                if test $altc -gt 0; then
+                    if test $(( altc % 10 )) -eq 0; then
+                        ( printf "\n%18s" "| "   ) >>${ifn}.ebnf
+                    else
+                        ( printf "|"             ) >>${ifn}.ebnf
+                    fi
                 fi
-            fi
-            ((altc++))
-            if test $printable -eq 1 -a $cc -lt 128 ; then
-                ( printf "'\x$c'"                ) >>${ifn}.ebnf
-            else
-                ( printf "'0x$c'"                ) >>${ifn}.ebnf
-            fi
-        done
-    fi
+                ((altc++))
+                if test $printable -eq 1 -a $cc -lt 128 ; then
+                    ( printf "'\x$c'"            ) >>${ifn}.ebnf
+                else
+                    ( printf "'0x$c'"            ) >>${ifn}.ebnf
+                fi
+            done
+        fi
+	;;
+    esac
     spos=${SPOS[$s]}
     ( printf "\n"                                ) >>${ifn}.ebnf
     ( printf "\n"                                ) >>${ifn}.enum
@@ -402,6 +423,8 @@ cat >>$ofh  <<EOF
 
 extern unsigned char state_names[];
 extern unsigned char char2state[];
+extern unsigned char char2string[];
+extern unsigned char char2vstring[];
 extern char state_machine[];
 extern unsigned char state_props[];
 extern char state_token[];
@@ -457,6 +480,29 @@ EOF
         for lsb in 8 9 a b c d e f; do
             printf "%3s," "${CHARMAP[${msb}${lsb}]}"
         done
+    done
+    printf "\n};\n\n"
+) >>$ofc
+
+(
+    printf "unsigned char state2string[] = {\n"
+    printf "    // not generated or used since it contains only ABC"
+    printf "\n};\n\n"
+) >>$ofc
+
+(
+    printf "unsigned char state2vstring[] = {"
+    ccnt=0;
+    for n in ${namelist[@]}; do
+	if test $(( ccnt % 16 )) -eq 0; then
+            printf "\n    ";
+        fi
+        ((ccnt++))
+        if test "${CHARMAP[$n]}" = "VSTRING"; then
+            printf "%s," "  1"
+	else
+            printf "%s," "  0"
+	fi
     done
     printf "\n};\n\n"
 ) >>$ofc
