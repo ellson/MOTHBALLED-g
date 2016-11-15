@@ -120,6 +120,10 @@ P(branch);
     if ( !CONTAINER->verb) { // if verb is default (add)
         attributes = new_list(LIST(), ATTRIBUTES);
         pattern_match(CONTAINER, branch, attributes);
+        if (!attributes->u.l.first) {
+            free_list(LIST(), attributes);
+            attributes = NULL;
+        }
     }
     // append current attr, if any, after pattern_match so that
     // attr from patterns can be over-ridden
