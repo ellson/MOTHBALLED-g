@@ -32,7 +32,7 @@
  * match, after pattern substitution.
  */ 
  
-void pattern_update(CONTAINER_t * CONTAINER, elem_t *act)
+static void pattern_update(CONTAINER_t * CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;   // needed for LIST() macro
 
@@ -47,7 +47,7 @@ void pattern_update(CONTAINER_t * CONTAINER, elem_t *act)
     }
 }
 
-void pattern_remove(CONTAINER_t * CONTAINER, elem_t *act)
+static void pattern_remove(CONTAINER_t * CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;   // needed for LIST() macro
 
@@ -116,7 +116,7 @@ static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *subject, elem_t
  * @return newacts - with list of matched acts, or NULL
  */
 
-void pattern_match(CONTAINER_t * CONTAINER, elem_t * act, elem_t *attributes)
+static void pattern_match(CONTAINER_t * CONTAINER, elem_t * act, elem_t *attributes)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
 
@@ -125,4 +125,81 @@ void pattern_match(CONTAINER_t * CONTAINER, elem_t * act, elem_t *attributes)
     } else {
         pattern_match_r(THREAD, CONTAINER->edge_patterns, act->u.l.first, attributes);
     }
+}
+
+
+
+/** 
+ * If the act is a pattern with attributes, then store it in the pattern tree and return NULL.
+ * If the act is a pattern with no attributes, then remove it from the pattern tree and return NULL.
+ * If the act is a non-pattern act, the search the store for matching patterns, apply them,
+ *    and return a rewritten act.
+ *
+ * @param CONTAINER context
+ * @param act to be processed for patterns
+ * @return a replacement act, or NULL
+ */
+elem_t * patterns(CONTAINER_t *CONTAINER, elem_t *act)
+{
+    THREAD_t *THREAD = CONTAINER->THREAD;
+    elem_t *subject, *attributes;
+    elem_t *newact, *newsubject, *newattributes;
+ 
+    assert(act);
+    subject = act->u.l.first;
+    assert(subject);                // minimaly, an ACT must have a SUBJECT
+    attributes = subject->u.l.next; // may be NULL
+
+    if ( !CONTAINER->verb) { // if verb is default (add)
+        if (CONTAINER->subj_has_ast) {
+            if (attributes) {
+                // if the pattern act has attributes, then it is added to saved patterns
+                // (if if the pattern subject is already saved, then it is replaced
+                // by this new one)
+                pattern_update(CONTAINER, act);
+            } else {
+                // if the pattern has no attributes then it is removed from saved patterns
+                // N.B. This is how patterns are deleted
+                pattern_remove(CONTAINER, act);
+            }
+            return NULL;  // new pattern stored,  no more processing for this ACT
+        }
+    }
+
+    // Now we are going to build a rewritten ACT tree, with references
+    // to various bits from the parser's tree,  but no changes to it.
+    //
+    // In particular,  we must use fresh ACT, SUBJECT, ATTRIBUTE lists.
+
+    newact = new_list(LIST(), ACT);
+    newsubject = new_list(LIST(), SUBJECT);
+    append_addref(newsubject, subject->u.l.first);
+    append_transfer(newact, newsubject);
+    newattributes = NULL;
+
+    // append pattern attrs, if any
+    if ( !CONTAINER->verb) { // if verb is default (add)
+        newattributes = new_list(LIST(), ATTRIBUTES);
+        pattern_match(CONTAINER, act, newattributes);
+        if (!newattributes->u.l.first) {
+            free_list(LIST(), newattributes);
+            newattributes = NULL;
+        }
+    }
+    // append current attr, if any, after pattern_match so that
+    // attr from patterns can be over-ridden
+    if (attributes) {
+        if (!newattributes) {
+            newattributes = new_list(LIST(), ATTRIBUTES);
+        }
+        append_addref(newattributes, attributes->u.l.first);
+    }
+    if (newattributes) {
+        append_transfer(newact, newattributes);
+    }
+
+    // patterns now applied for "add"  verb - may now have multiple ACTs
+    // may still have subj_has_ast in QRY or TLD
+
+    return newact;
 }

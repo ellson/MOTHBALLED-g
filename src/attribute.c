@@ -78,20 +78,20 @@ void attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *attr, *attrid, *newkey; 
 
-    assert(attributes);
-    assert((state_t)attributes->state == ATTRIBUTES);
-    attr = attributes->u.l.first;
-    while (attr) {
-        assert((state_t)attr->state == ATTR);
-        attrid = attr->u.l.first;
-        assert(attrid);
-        assert((state_t)attrid->state == ATTRID);
-
-
-        THREAD->attrid =
-            insert_item(LIST(), THREAD->attrid, attrid->u.l.first, merge_attrid, &newkey);
-        attrid->u.l.first = newkey;
-        attr = attr->u.l.next;
+    if (attributes) {
+        assert((state_t)attributes->state == ATTRIBUTES);
+        attr = attributes->u.l.first;
+        while (attr) {
+            assert((state_t)attr->state == ATTR);
+            attrid = attr->u.l.first;
+            assert(attrid);
+            assert((state_t)attrid->state == ATTRID);
+    
+            THREAD->attrid =
+                insert_item(LIST(), THREAD->attrid, attrid->u.l.first, merge_attrid, &newkey);
+            attrid->u.l.first = newkey;
+            attr = attr->u.l.next;
+        }
     }
 }
 

@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-success_t doact(CONTAINER_t *CONTAINER, elem_t *branch);
+success_t doact(CONTAINER_t *CONTAINER, elem_t *act);
 
 #ifdef __cplusplus
 }

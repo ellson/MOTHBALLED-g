@@ -8,3 +8,4 @@ a =
 (<(a b) c><d e>) (<(= x) y><= z>)
 <(a b) c> <(= d) e> <= f>
 <(a b) c> <(= d) e>`f
+<(l m n) (o p q)> <= (= r s)>

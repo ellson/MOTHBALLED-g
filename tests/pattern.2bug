@@ -1,0 +1,3 @@
+# pattern should not match as the form isn't the same
+(* b *) [mumble=grumble]
+b
