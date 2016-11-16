@@ -71,13 +71,14 @@
  * FIXME - need something to keep track of how many elems are in attrid tree  .....  tough!
  *
  * @param CONTAINER - the current container context
- * @param attributes - the ATTRIBUTES branch
+ * @param act - the ACT whose ATTRID are to be processed to share strings
  */
-void attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
+void attrid_merge(CONTAINER_t * CONTAINER, elem_t * act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *attr, *attrid, *newkey; 
+    elem_t *attributes, *attr, *attrid, *newkey; 
 
+    attributes = act->u.l.first->u.l.next;
     if (attributes) {
         assert((state_t)attributes->state == ATTRIBUTES);
         attr = attributes->u.l.first;
@@ -97,11 +98,12 @@ void attrid_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
 
 
 
-void value_merge(CONTAINER_t * CONTAINER, elem_t * attributes)
+void value_merge(CONTAINER_t * CONTAINER, elem_t * act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *attr, *attrid, *attrid_str, *value, *value_str;
+    elem_t *attributes, *attr, *attrid, *attrid_str, *value, *value_str;
 
+    attributes = act->u.l.first->u.l.next;
     assert(attributes);
     assert((state_t)attributes->state == ATTRIBUTES);
 

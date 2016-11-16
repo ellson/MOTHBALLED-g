@@ -68,7 +68,7 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     //     Alternative,  make '*' mean all nodes, and '<**>' mean all edges.
 
     // merge attrid in this ACT with tree of all attrid, keeping strings just once
-    attrid_merge(CONTAINER, act->u.l.first->u.l.next);
+    attrid_merge(CONTAINER, act);
 
     // store pattern acts, or apply patterns to non-pattern acts
     if (! (act = patterns(CONTAINER, act)) ) {

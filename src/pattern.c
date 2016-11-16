@@ -68,9 +68,8 @@ static void pattern_remove(CONTAINER_t * CONTAINER, elem_t *act)
  *
  * @param THREAD context
  * @param p the current tree elem
- * @param act to be matched
- * @param attributes found in the matched act
- *
+ * @param subject to be matched
+ * @param attributes  to be appended with matches
  */
 static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *subject, elem_t *attributes)
 {
@@ -111,8 +110,9 @@ static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *subject, elem_t
  * and CONTAINER from the pattern.  Finally return for the current
  * subject to be appended with its own ATTRIBUTES and ACTIVITY.
  *
- * @param CONTAINER container_context
+ * @param CONTAINER context
  * @param act to be checked for pattern matches
+ * @param attributes to be appended if the pattern is matched
  * @return newacts - with list of matched acts, or NULL
  */
 
