@@ -1,5 +1,4 @@
 ACLOCAL_AMFLAGS = -I m4
-CFLAGS = -O0 -Wall -g
 
 SUBDIRS = src
 
@@ -10,6 +9,10 @@ rpm: dist
 .PHONY: doxygen
 doxygen:
 	doxygen
+
+.PHONY: check
+check:
+	cppcheck --enable=all -I. src/*.[ch] >/dev/null
 
 .PHONY: test
 test:

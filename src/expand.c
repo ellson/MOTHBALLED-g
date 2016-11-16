@@ -140,16 +140,13 @@ static void
 expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset,
         elem_t *disambig, elem_t *nodes, elem_t *edges)
 {
-    elem_t *ep, *eplast, *new;
-    elem_t * nendpoint = NULL;
-    elem_t *newedge;
-    elem_t *newlegs;
+    elem_t *ep, *new;
 
     if (epset) {
         ep = epset->u.l.first;
         while(ep) {
 
-            eplast = newepset->u.l.last;
+            elem_t * eplast = newepset->u.l.last;
 
             // append the next ep for this epset
             new = ref_list(LIST, ep); 
@@ -165,6 +162,7 @@ expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset,
         }
     }
     else {
+        elem_t * nendpoint = NULL;
 
 //#define BINODE_EDGES 1
 
@@ -175,39 +173,33 @@ expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset,
 //    the edge, like disambig. so that the renderers can
 //    choose to use or not use.
 
-        elem_t * nnode;
-        elem_t * nnoderef;
-        elem_t * nnodeid;
-        elem_t * nnodestr;
-        elem_t * nshortstr;
         uint64_t hubhash;
-        char hubhash_b64[12];
 
         // if edge has 1 leg, or has >2 legs
         if ((! newepset->u.l.first->u.l.next)
                 || (newepset->u.l.first->u.l.next->u.l.next)) {
             // create a special node to represent the hub
-    
+            char hubhash_b64[12];
             hash_list(&hubhash, newepset);
             long_to_base64(hubhash_b64, &hubhash);
     
 // FIXME - this is ugly!
 
             // create a string fragment with the hash string
-            nshortstr = new_shortstr(LIST, EDGE, hubhash_b64);
-            nnodestr = new_list(LIST, ABC);
+            elem_t * nshortstr = new_shortstr(LIST, EDGE, hubhash_b64);
+            elem_t * nnodestr = new_list(LIST, ABC);
             append_addref(nnodestr, nshortstr);
 
             // new nodeid
-            nnodeid = new_list(LIST, NODEID);
+            elem_t * nnodeid = new_list(LIST, NODEID);
             append_addref(nnodeid, nnodestr);
 
             // new noderef
-            nnoderef = new_list(LIST, NODEREF);
+            elem_t * nnoderef = new_list(LIST, NODEREF);
             append_addref(nnoderef, nnodeid);
 
             // new node
-            nnode = new_list(LIST, NODE);
+            elem_t * nnode = new_list(LIST, NODE);
             append_addref(nnode, nnoderef);
 
             // add node to list of nodes for this act
@@ -215,7 +207,7 @@ expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset,
             append_addref(nodes, new);
 
             //new endpoint
-            nendpoint = new_list(LIST, ENDPOINT);
+            elem_t * nendpoint = new_list(LIST, ENDPOINT);
             append_addref(nendpoint, nnode);
         }
 #endif
@@ -234,8 +226,8 @@ expand_r(LIST_t * LIST, elem_t *newepset, elem_t *epset,
             free_list(LIST, nendpoint);
         }
         else {
-            newedge = new_list(LIST, EDGE);
-            newlegs = new_list(LIST, ENDPOINTSET);
+            elem_t * newedge = new_list(LIST, EDGE);
+            elem_t * newlegs = new_list(LIST, ENDPOINTSET);
             ep = newepset->u.l.first;
             while (ep) {
                 new = ref_list(LIST, ep);

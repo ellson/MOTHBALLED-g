@@ -12,14 +12,14 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *list)
 {
     THREAD_t * THREAD = CONTAINER->THREAD;
     state_t si, subjtype = 0;
-    elem_t *elem, *subject, *attributes = NULL, *disambig = NULL;
+    elem_t *subject, *attributes = NULL, *disambig = NULL;
 
     assert(list);
 
 //E();
 P(list);
 
-    elem = list->u.l.first;
+    elem_t * elem = list->u.l.first;
     assert(elem); // must always be a subject
     si = (state_t) elem->state;
     switch (si) {
@@ -51,7 +51,6 @@ P(list);
             break;
         }
     }
-    assert(elem->u.l.next == NULL);
 
     switch (subjtype) {
     case NODE:

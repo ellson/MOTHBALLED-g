@@ -34,10 +34,6 @@ noinst_HEADERS = \
     tree.h \
     types.h
 
-#    emit.h \
-#    emit_act.h \
-#
-
 noinst_LTLIBRARIES = libg_session_C.la
 lib_LTLIBRARIES = libg_session.la
 #pkgconfig_DATA = libg_session.pc
@@ -68,14 +64,6 @@ libg_session_C_la_SOURCES = \
     thread.c \
     token.c \
     tree.c
-
-#    emit.c \
-#    emit_act.c \
-#    emit_g.c \
-#    emit_gv.c \
-#    emit_ikea.c \
-#    emit_t.c \
-#	
 
 libg_session_C_la_LIBADD =
 

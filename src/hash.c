@@ -52,18 +52,14 @@ void hash_list(uint64_t *hash, elem_t *list)
  */
 static void hash_list_r(uint64_t *hash, elem_t *list)
 {
-    elem_t *elem;
-    unsigned char *cp;
-    int len;
-
-    assert(list->type == (char)LISTELEM);
-
-    if ((elem = list->u.l.first)) {
+    assert((elemtype_t)list->type == LISTELEM);
+    elem_t *elem = list->u.l.first;
+    if (elem) {
         switch ((elemtype_t) elem->type) {
         case FRAGELEM:
             while (elem) {
-                cp = elem->u.f.frag;
-                len = elem->len;
+                unsigned char *cp = elem->u.f.frag;
+                int len = elem->len;
                 assert(len > 0);
                 while (len--) {
                     // XOR with current character
@@ -128,6 +124,10 @@ void long_to_base64(char b64string[], const uint64_t *hash)
     *p = '\0';
 }
 
+#if 0
+// Not Used.  Prevent cppcheck complaints
+
+
 /**
  * Decode base64 string to a hash value
  *
@@ -138,14 +138,13 @@ void long_to_base64(char b64string[], const uint64_t *hash)
 success_t base64_to_long(const char b64string[], uint64_t *hash)
 {
     uint64_t h = 0;
-    char c;
     size_t len;
 
     if ((len = strlen(b64string)) != 11) {
         return FAIL;
     }
     while (len-- > 0) {
-        c = b64string[len];
+        char c = b64string[len];
         if (c < 0) {
             return FAIL;
         }
@@ -158,3 +157,4 @@ success_t base64_to_long(const char b64string[], uint64_t *hash)
     *hash = h;
     return SUCCESS;
 }
+#endif

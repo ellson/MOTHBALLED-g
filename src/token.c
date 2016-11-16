@@ -164,15 +164,14 @@ static void token_comment_fragment(TOKEN_t * TOKEN)
  */
 static success_t token_comment(TOKEN_t * TOKEN)
 {
-    success_t rc;
-
-    rc = SUCCESS;
-    token_comment_fragment(TOKEN);    // eat comment
-    while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during comment
-        if ((rc = token_more_in(TOKEN) == FAIL)) {
-            break;    // EOF
+    success_t rc = SUCCESS;
+    token_comment_fragment(TOKEN);      // eat comment
+    while (TOKEN->insi == NLL) {        // end_of_buffer, or EOF, during comment
+        rc = token_more_in(TOKEN);
+        if (rc == FAIL) {
+            break;                      // EOF
         }
-        token_comment_fragment(TOKEN);    // eat comment
+        token_comment_fragment(TOKEN);  // eat comment
     }
     return rc;
 }
@@ -184,11 +183,11 @@ static success_t token_comment(TOKEN_t * TOKEN)
  */
 static void token_whitespace_fragment(TOKEN_t * TOKEN)
 {
-    unsigned char *in, c;
+    unsigned char *in;
     state_t insi;
 
     if ((in = TOKEN->in)) {
-        c = *in;
+        unsigned char c = *in;
         insi = TOKEN->insi;
         while (insi == WS) {    // eat all leading whitespace
             if (c == '\n') {
@@ -213,15 +212,15 @@ static void token_whitespace_fragment(TOKEN_t * TOKEN)
  */
 static success_t token_non_comment(TOKEN_t * TOKEN)
 {
-    success_t rc;
-
-    rc = SUCCESS;
-    token_whitespace_fragment(TOKEN);    // eat whitespace
-    while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
-        if ((rc = token_more_in(TOKEN) == FAIL)) {
-            break;    // EOF
+    success_t rc = SUCCESS;
+    token_whitespace_fragment(TOKEN);     // eat whitespace
+    while (TOKEN->insi == NLL) {          // end_of_buffer, or EOF,
+                                          //   during whitespace
+        rc = token_more_in(TOKEN);
+        if (rc == FAIL) {
+            break;                        // EOF
         }
-        token_whitespace_fragment(TOKEN);    // eat all remaining leading whitespace
+        token_whitespace_fragment(TOKEN); // eat all remaining leading whitespace
     }
     return rc;
 }
@@ -373,8 +372,6 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
 
 success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
 {
-    int len, slen;
-
     assert(identifier);
     assert(identifier->type == (char)LISTELEM);
     assert(identifier->refs > 0);
@@ -382,12 +379,13 @@ success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
     TOKEN->has_ast = 0;
     TOKEN->has_bsl = 0;
     TOKEN->quote_state = ABC;
-    slen = token_identifier_fragment(TOKEN, identifier);    // leading fragment
+    int slen = token_identifier_fragment(TOKEN, identifier); // leading fragment
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        if ((len = token_identifier_fragment(TOKEN, identifier)) == 0) {
+        int len = token_identifier_fragment(TOKEN, identifier);
+        if (len == 0) {
             break;
         }
         slen += len;
@@ -494,8 +492,6 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
  */
 success_t token_vstring(TOKEN_t * TOKEN, elem_t *string)
 {
-    int len, slen;
-
     assert(string);
     assert(string->type == (char)LISTELEM);
     assert(string->refs > 0);
@@ -507,12 +503,13 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *string)
     if ( ! (TOKEN->insi == ABC || TOKEN->insi == DQT || TOKEN->insi == AST || TOKEN->insi == BSL)) {
          token_error(TOKEN, "Malformed VSTRING", TOKEN->insi);
     }
-    slen = token_vstring_fragment(TOKEN, string);    // leading string
+    int slen = token_vstring_fragment(TOKEN, string);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        if ((len = token_vstring_fragment(TOKEN, string)) == 0) {
+        int len = token_vstring_fragment(TOKEN, string);
+        if (len == 0) {
             break;
         }
         slen += len;

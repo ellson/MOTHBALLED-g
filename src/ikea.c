@@ -97,13 +97,13 @@ const static char un_b64[128] = {
 static void base64(unsigned char *ip, size_t ic, char *op, size_t oc)
 {
     // 64 ascii chars that are safe in filenames
-    uint32_t d;
     int pad1=0, pad2=0;
 
     if (!op || !oc || !ip || !ic) return;
 
     oc--; // leave room for NUL
     while (ic-- && oc--) {
+        uint32_t d;
         // input 1 to 3 bytes each with 8-bits of value
                   d  = ((uint32_t)*ip++) << 16;
         if (ic) { d |= ((uint32_t)*ip++) <<  8; ic--; } else pad2++;

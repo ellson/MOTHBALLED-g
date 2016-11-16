@@ -46,9 +46,6 @@ uint16_t print_len_frag(FILE * chan, unsigned char *len_frag)
  */
 static void print_frags(FILE * chan, state_t state, elem_t * elem, char *sep)
 {
-    unsigned char *frag;
-    uint16_t len;
-
     assert(sep);
     if (*sep) {
         putc(*sep, chan);
@@ -57,11 +54,9 @@ static void print_frags(FILE * chan, state_t state, elem_t * elem, char *sep)
         putc('"', chan);
     }
     while (elem) {
-
         assert(elem->type == FRAGELEM);
-
-        frag = elem->u.f.frag;
-        len = elem->len;
+        unsigned char *frag = elem->u.f.frag;
+        uint16_t len = elem->len;
         assert(len > 0);
         if ((state_t) elem->state == BSL) {
             putc('\\', chan);
@@ -168,28 +163,26 @@ P(p->u.t.key);
 void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
 {
     FILE *chan = TOKEN()->out;
-    elemtype_t type;
-    int ind, cnt, width;
     char *sep = &(THREAD->sep);
 
     if (elem) {
-        type = (elemtype_t) (elem->type);
+        elemtype_t type = (elemtype_t)elem->type;
+        int cnt, width, ind;
         switch (type) {
         case FRAGELEM:
             print_frags(chan, elem->state, elem, sep);
             break;
         case LISTELEM:
-            cnt = 0;
-            width = 0;
-            while (elem) {
+            for (cnt = 0, width = 0; elem; elem = elem->u.l.next) {
                 assert(elem->type == (char)type);    // check all the same type
                 if (cnt++) {
                     putc('\n', chan);
                     putc(' ', chan);
                     if (indent >= 0) {
                         ind = indent;
-                        while (ind--)
+                        while (ind--) {
                             putc(' ', chan);
+                        }
                     }
                 } else {
                     putc(' ', chan);
@@ -197,7 +190,6 @@ void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
                 width = print_len_frag(chan, NAMEP(elem->state));
                 ind = indent + width + 1;
                 print_elem(THREAD, elem->u.l.first, ind);    // recurse
-                elem = elem->u.l.next;
             }
             break;
         case SHORTSTRELEM:
