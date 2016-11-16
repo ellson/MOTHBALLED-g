@@ -72,11 +72,9 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 
     // store pattern acts, or apply patterns to non-pattern acts
     if (! (act = patterns(CONTAINER, act)) ) {
-        return SUCCESS;
+        return SUCCESS;   // new pattern stored or removed (if it had no attributes).
     }
-  
-    // patterns now applied for "add"  verb 
-    // may still have subj_has_ast in QRY or TLD
+    // NB ACTs that are QRY or TLD may still have AST in SUBJECT
 
 P(act);
 

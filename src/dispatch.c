@@ -156,7 +156,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
 
     assert(list->type == (char)LISTELEM);
 //E();
-//P(list);
+P(list);
 
     elem = list->u.l.first;
     while (elem) {

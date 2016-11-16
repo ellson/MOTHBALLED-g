@@ -168,3 +168,9 @@ myname50   _temp   j     a23b9      retVal
 The '<' is not allowed in VSTRING,  somehow it gets interpreted as an EDGE <b>
 Should be able to insist that the first char after '=' is valid...   didn't work, maybe brain has stopped working
 
+29. Rename "session"  to "process"  -- "session" is the persistent association
+across multiple process invocations,  possibly in parrallel, and possiby with periods on innactivity.
+
+30. Reduce ABC set to a set suffiecent for JSON/DOT compatibility.
+Suggest a subset of printing ASCII.  Quoting allowed (what char set in quotes?)
+
