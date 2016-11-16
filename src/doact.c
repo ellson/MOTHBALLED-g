@@ -31,7 +31,7 @@
 success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *subject, *attributes;
+    elem_t *new, *elem;
 
 
 // act initially points to the ACT tree from the parser.  We do a lot of referrencing
@@ -41,9 +41,7 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 // The initial ACT tree will be freed by the parser after we return
 
     assert(act);
-    subject = act->u.l.first;
-    assert(subject);                // minimaly, an ACT must have a SUBJECT
-    attributes = subject->u.l.next; // may be NULL
+    assert(act->u.l.first);            // minimmaly, an ACT must have a SUBJECT
 
     CONTAINER->stat_inactcount++;
 
@@ -57,28 +55,40 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     assert((CONTAINER->has_node && !CONTAINER->has_edge)
             || (!CONTAINER->has_node && CONTAINER->has_edge));
 
+    // FIXME - I don't like relying on sameas() to know if a subject is nodes or edges.
+    //   - I may want an option to bypass sameas() processing
+    //   - Its not clean, using a side-effect
+    //   - It maybe incomplete - e.g. should a pattern of '*' match only nodes
+    //     or should it apply to both?   If only nodes,  then what pattern applies to all edges?
+    //     ( <*> applies to all one-legged edges )
+    //
+    //     Proposed solution:  deal with the uncertainty.  e.g. ambiguous patterns
+    //     save as both node and edge patterns.   Remove the assert.
+    //
+    //     Alternative,  make '*' mean all nodes, and '<**>' mean all edges.
+
     // merge attrid in this ACT with tree of all attrid, keeping strings just once
-    attrid_merge(CONTAINER, attributes);
+    attrid_merge(CONTAINER, act->u.l.first->u.l.next);
 
     // store pattern acts, or apply patterns to non-pattern acts
     if (! (act = patterns(CONTAINER, act)) ) {
         return SUCCESS;
     }
+  
     // patterns now applied for "add"  verb 
     // may still have subj_has_ast in QRY or TLD
 
 P(act);
 
 #if 0
-// FIXME so this is probably flawed - doesn't it need a loop?
     // dispatch events for the ACT just finished
-    new = dispatch(CONTAINER, newsubject, CONTAINER->verb, CONTAINER->mum);
+    new = dispatch(CONTAINER, act, CONTAINER->verb, CONTAINER->has_mum);
     if (new) {
-        free_list(LIST(), newsubject);
-        newsubject = new;
+        free_list(LIST(), act);
+        act = new;
     }
 
-    elem = newsubject->u.l.first;
+    elem = act->u.l.first->u.l.first;
     while (elem) {
         CONTAINER->stat_outactcount++;
 P(elem);

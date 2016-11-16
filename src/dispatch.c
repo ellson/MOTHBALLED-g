@@ -176,8 +176,8 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
             case SET:
                 dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
                 break;
-            case NODES:
-            case EDGES:
+            case NODE:
+            case EDGE:
                 object = object->u.l.first;
                 while(object) {
                     dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
