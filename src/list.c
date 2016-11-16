@@ -24,7 +24,6 @@
 static elem_t *new_elem_sub(LIST_t * LIST)
 {
     elem_t *elem, *next;
-    int i;
 
     if (!LIST->free_elem_list) {    // if no elems in free_elem_list
 
@@ -34,7 +33,7 @@ static elem_t *new_elem_sub(LIST_t * LIST)
         LIST->stat_elemmalloc++;
 
         next = LIST->free_elem_list;    // link the new elems into free_elem_list
-        i = LISTALLOCNUM;
+        int i = LISTALLOCNUM;
         while (i--) {
             elem = next++;
             elem->u.l.next = next;
@@ -138,7 +137,6 @@ elem_t * new_shortstr(LIST_t * LIST, char state, char * str)
 {
     elem_t *elem;
     int len = 0;
-    char c;
 
     elem = new_elem_sub(LIST);
 
@@ -146,6 +144,7 @@ elem_t * new_shortstr(LIST_t * LIST, char state, char * str)
     elem->type = SHORTSTRELEM; // type
     elem->state = state;       // ABC or DQT for strings
     if (str) {  // Allow NULL for external string copying
+        char c;
         while (len < sizeof(((elem_t*)0)->u.s.str) && (c = str[len]) != '\0') {
             elem->u.s.str[len++] = c;
         }
@@ -326,7 +325,7 @@ void free_tree(LIST_t *LIST, elem_t * p)
     if ( !p ) {
         return;
     }
-    assert(p->type = (char)TREEELEM);
+    assert((elemtype_t)p->type == TREEELEM);
     free_tree(LIST, p->u.t.left);
     free_tree(LIST, p->u.t.right);
     free_tree_item(LIST, p);

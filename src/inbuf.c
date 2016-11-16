@@ -16,7 +16,6 @@
 inbufelem_t * new_inbuf(INBUF_t *INBUF)
 {
     inbufelem_t *inbuf, *next;
-    int i;
 
     if (!INBUF->free_inbuf_list) {    // if no inbufs in free_inbuf_list
 
@@ -26,7 +25,7 @@ inbufelem_t * new_inbuf(INBUF_t *INBUF)
         INBUF->stat_inbufmalloc++;
 
         next = INBUF->free_inbuf_list;    // link the new inbufs into free_inbuf_list
-        i = INBUFALLOCNUM;
+        int i = INBUFALLOCNUM;
         while (i--) {
             inbuf = next++;
             inbuf->next = next;

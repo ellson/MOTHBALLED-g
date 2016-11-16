@@ -149,7 +149,7 @@ char * info_stats(CONTAINER_t * CONTAINER)
     etot = LIST()->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
     lend = (TOKEN()->stat_lfcount ? TOKEN()->stat_lfcount : TOKEN()->stat_crcount);
     istr = TOKEN()->stat_instringshort + TOKEN()->stat_instringlong; 
-    sprintf(percent,"%ld%%", (long)(TOKEN()->stat_instringshort * 100)/ istr);
+    sprintf(percent,"%lu%%", (long)(TOKEN()->stat_instringshort * 100)/ istr);
   
     // write in canonical g format
     // - minimal spacing - one SUBJECT per line

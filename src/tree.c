@@ -222,13 +222,10 @@ static elem_t * remove_min(elem_t * p)
  */
 elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key)
 {
-    elem_t  *l, *r, *m;
-    int comp;
-
     if (!p) {
         return NULL;
     }
-    comp = compare(key, p->u.t.key);
+    int comp = compare(key, p->u.t.key);
     if (comp) {
         if (comp < 0) {
             p->u.t.left = remove_item(LIST, p->u.t.left, key);
@@ -238,8 +235,8 @@ elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key)
         }
     }
     else {
-        l = p->u.t.left;
-        r = p->u.t.right;
+        elem_t *l = p->u.t.left;
+        elem_t *r = p->u.t.right;
         
         free_tree_item(LIST, p);
     
@@ -247,7 +244,7 @@ elem_t * remove_item(LIST_t * LIST, elem_t * p, elem_t * key)
             return l;  // may be NULL
         }
     
-        m = find_min(r);
+        elem_t * m = find_min(r);
         m->u.t.right = remove_min(r);        
         m->u.t.left = l;
     
