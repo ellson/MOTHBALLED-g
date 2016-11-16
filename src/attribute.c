@@ -76,15 +76,15 @@
 void attrid_merge(CONTAINER_t * CONTAINER, elem_t * act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *attributes, *attr, *attrid, *newkey; 
+    elem_t *newkey; 
 
-    attributes = act->u.l.first->u.l.next;
+    elem_t *attributes = act->u.l.first->u.l.next;
     if (attributes) {
         assert((state_t)attributes->state == ATTRIBUTES);
-        attr = attributes->u.l.first;
+        elem_t *attr = attributes->u.l.first;
         while (attr) {
             assert((state_t)attr->state == ATTR);
-            attrid = attr->u.l.first;
+            elem_t *attrid = attr->u.l.first;
             assert(attrid);
             assert((state_t)attrid->state == ATTRID);
     
@@ -101,29 +101,28 @@ void attrid_merge(CONTAINER_t * CONTAINER, elem_t * act)
 void value_merge(CONTAINER_t * CONTAINER, elem_t * act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *attributes, *attr, *attrid, *attrid_str, *value, *value_str;
 
-    attributes = act->u.l.first->u.l.next;
+    elem_t *attributes = act->u.l.first->u.l.next;
     assert(attributes);
     assert((state_t)attributes->state == ATTRIBUTES);
 
-    attr = attributes->u.l.first;
+    elem_t *attr = attributes->u.l.first;
     while (attr) {
         assert((state_t)attr->state == ATTR);
 
         // get pointers to the fraglists for the ATTRID and VALUE
-        attrid = attr->u.l.first;
+        elem_t *attrid = attr->u.l.first;
         assert(attrid);
         assert((state_t)attrid->state == ATTRID);
 
-        attrid_str = attrid->u.l.first;
+        elem_t *attrid_str = attrid->u.l.first;
 P(attrid_str);
 
-        value = attr->u.l.first;
+        elem_t *value = attr->u.l.first;
         if (value) {
             assert((state_t)value->state == VALUE);
 
-            value_str = value->u.l.first;
+            elem_t *value_str = value->u.l.first;
 P(value_str);
         }
 
