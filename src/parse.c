@@ -6,7 +6,6 @@
 #include <string.h>
 #include <assert.h>
 
-
 #include "thread.h"
 #include "doact.h"
 
@@ -59,7 +58,6 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     static unsigned char nullstring[] = { '\0' };
 
 //E();
-
     rc = SUCCESS;
     branch = new_list(LIST(), si);
     nest++;
