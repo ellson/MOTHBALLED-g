@@ -173,4 +173,14 @@ across multiple process invocations,  possibly in parrallel, and possiby with pe
 
 30. Reduce ABC set to a set suffiecent for JSON/DOT compatibility.
 Suggest a subset of printing ASCII.  Quoting allowed (what char set in quotes?)
+DONE - aligned with C language
+
+31. - consider support for additional escape chars in quote stings,  like C's   \t\v\n\f
+    - consider support for arbtrary hex code excapes \x12 
+         - maybe nothing to do,  just carry the escape sequence through literally
+         - that would be ugly - \f would be treated differently than \" or \\
+              or maybe we should store those literally too?
+              '\' disables any special meaning of the folowing character, but the
+               pair are passed through literally ???   would apply inside and outside of quotes
+
 
