@@ -1,0 +1,2 @@
+# '#' could lose its meaning as a comment introduce when in VSTRINGs ?
+a[x=#123456]

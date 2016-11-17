@@ -277,24 +277,24 @@ for s in ${statelist[@]}; do
 #        ( printf "prop=$prop"                    ) >>${ifn}.agaws
         ( printf " "                             ) >>${ifn}.ebnf
         altc=0
-	for c in $class; do
+	    for c in $class; do
             VALABC[$c]=ABC
-	    if test $altc -gt 0; then
-		if test $(( altc % 16 )) -eq 0; then
+	        if test $altc -gt 0; then
+		        if test $(( altc % 16 )) -eq 0; then
                     ( printf "\n%18s" "| "       ) >>${ifn}.ebnf
-	        else
-		    ( printf "|"                 ) >>${ifn}.ebnf
-		fi
+	            else
+		            ( printf "|"                 ) >>${ifn}.ebnf
+		        fi
             fi
-	    ((altc++))
-	    ( printf "$c"                        ) >>${ifn}.ebnf
-	done
+	        ((altc++))
+	        ( printf "$c"                        ) >>${ifn}.ebnf
+	    done
         ;;
     *)
         class="${CONTENT[$s]}"
         tokchar=""
         for tokchar in $class; do break; done
-	if test "$tokchar" = "" -o "$s" = "IDENTIFIER" -o "$s" = "VSTRING"; then
+	    if test "$tokchar" = "" -o "$s" = "IDENTIFIER" -o "$s" = "VSTRING"; then
             tokchar=0
         else
             tokchar=0x$tokchar
@@ -349,32 +349,33 @@ Extra grammar:
 
     Comments in the form of "# ... EOL" are skipped over by the parser.
 
+    IDENTIFIER is a name used for nodes, ports, attributes, disambiguators.
+
     Whitespace (WS) has no significance in the grammar except in quoted
-    VSTRINGs and as a separator of last resort between IDENTIFIERs or VSTRINGs.
+    IDENTIFIERS or VSTRINGs and as a separator of last resort between
+    IDENTIFIERs.
 
-    IDENTIFIER is a name used for nodes, ports, attributes, disambiguators. An IDENTIFIER may not contain
-    quotes, or spaces.
+    It is strongly recommended that quoting not be used in IDENTIFIERS.
+    C/C++ do not permit quoting or special character in identifiers, 
+    but DOT and JSON do, and we may want to input graphs with their conventions.
 
-    VSTRINGs can be concatenations of quoted and unquoted character sequences.
+    That being said, IDENTIFIERS and VSTRINGs can be concatenations of
+    quoted and unquoted character sequences.
 
         for example:       abc"d e f"ghi"j\\\\k"
         is equivalent to:  "abcd e fghij\\\\k"
 
-    Characters that may be unquoted are listed in the ABC terminal above, 
-    and also '*' (see "Patterns" below).
+    Characters that may be unquoted are listed by class in the VSTRING terminal
+    above, and also '*' (see "Patterns" below).
 
     Quoted character sequences are bounded by DQT characters (i.e. '"')
     and may include any characters, except that NLL, DQT, and BSL need
     to be escaped with a BSL (i.e. '\\')
 
-    VSTRINGs are for use in VALUEs.  The unquoted character set allowed in VSTRINGs is more relaxed than
-    in IDENTIFIERs.
-
-    This permit file paths (DOS and Unix), URLS,  email addresses, signed or unsigned number
+    VSTRINGs are for use in VALUEs.  The unquoted character set allowed
+    in VSTRINGs is more relaxed than in IDENTIFIERs.  This permits:
+    file paths (DOS and Unix), URLS,  email addresses, signed or unsigned numbers,
     all to be used as values without quoting.
-
-    NB. The single-quote character ''' is not special, and has no quoting
-    behavior in this grammar.
 
     Examples of valid unquoted VALUEs:
 
@@ -384,10 +385,16 @@ Extra grammar:
         C:\dos\file\path
         http://some.host:80/some/path?foo=bar
         1
-        +1
-        -1
+        +2
         -0.5
+        1.5E-9
+        128*2**32
         95.5%
+        $200.00
+        1-800-555-1212
+
+    NB. The single-quote character ''' is not special, and has no quoting
+    behavior in this grammar.
 
 Patterns:
 
@@ -395,6 +402,10 @@ Patterns:
     SUBJECT is considered a pattern, and its ACT a pattern_act.  Patterns
     are used to add ATTRIBUTES and CONTAINER to any future ACT whose SUBJECT
     matches the pattern. The AST matches any character sequence.
+    
+    Additionally, in queries and deletessd (VERB = QRY or TLD), an
+    unquoted '*' in a VSTRING will further constrain the operation
+    to NODES or EDGES with VALUES that match.
 
 EOF
 ##############################################
@@ -502,22 +513,48 @@ EOF
         for lsb in 0 1 2 3 4 5 6 7; do
             valabc=${VALABC[${CHARMAP[${msb}${lsb}]}]}
             if test "$valabc" != ""; then
-	        printf "%3s," "$valabc"
-	    else
+	            printf "%3s," "$valabc"
+	        else
                 printf "%3s," "${CHARMAP[${msb}${lsb}]}"
-	    fi
+	        fi
         done
         printf "\n    /* ${msb}8 */   "
         for lsb in 8 9 a b c d e f; do
             valabc=${VALABC[${CHARMAP[${msb}${lsb}]}]}
             if test "$valabc" != ""; then
-	        printf "%3s," "$valabc"
-	    else
+	            printf "%3s," "$valabc"
+	        else
                 printf "%3s," "${CHARMAP[${msb}${lsb}]}"
-	    fi
+	        fi
         done
     done
     printf "\n};\n\n"
+) >>$ofc
+
+(
+    typeset -A NOTVALABC
+    printf "/**\n"
+    printf " * The character classes that are allowed unquoted in VSTRINGs are\n"
+    printf " * perhaps more easily understood by what character classes are *not* allowed,\n"
+    printf " * and which *must* be quoted by one of the available quoting mechanisms:\n"
+    printf " *\n"
+    for msb in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
+        for lsb in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
+            valabc=${VALABC[${CHARMAP[${msb}${lsb}]}]}
+            if test "$valabc" = ""; then
+                NOTVALABC[${CHARMAP[${msb}${lsb}]}]=${msb}${lsb}
+	        fi
+        done
+    done
+    printf " *       "
+    for i in "${!NOTVALABC[@]}"; do
+        printf " $i"
+    done
+    printf "\n *\n"
+    printf " * NB. AST is allowed in unquoted VSTRINGS, but retains its string\n"
+    printf " * match properties when used in queries or deletes (VERB = QRY or TLD).\n"
+    printf " * To use an AST literally in queries or deletes, it must be quoted.\n"
+    printf " */\n\n"
 ) >>$ofc
 
 cat ${ifn}.states >>$ofc
