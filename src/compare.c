@@ -131,7 +131,7 @@ int match (elem_t *a, elem_t *b)
     do {
         do { 
 #ifdef DBG
-fprintf(stderr,"a: %d.%d: \"%c\" %d.%d: \"%c\"\n", ai.type, ai.len, *ai.cp, bi.type, bi.len, *bi.cp);
+fprintf(stderr,"1: %d.%d: \"%c\" %d.%d: \"%c\"\n", ai.type, ai.len, *ai.cp, bi.type, bi.len, *bi.cp);
 #endif
             if (*bi.cp == '*') { 
                 //  "x..." matches "*"  where ai.len >= bi.len
