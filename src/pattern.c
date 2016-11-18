@@ -85,8 +85,8 @@ static void pattern_match_r(THREAD_t* THREAD, elem_t *p, elem_t *subject, elem_t
             pattern_match_r(THREAD, p->u.t.left, subject, attributes);
         }
 
-//P(subject->u.l.first);
-//P(p->u.t.key->u.l.first);
+P(subject->u.l.first);
+P(p->u.t.key->u.l.first);
         if (match(subject->u.l.first, p->u.t.key->u.l.first) == 0) {
             elem_t *attr = p->u.t.key->u.l.next->u.l.first;
             while (attr) {

@@ -17,21 +17,48 @@ typedef struct {
     uint16_t nest;
     uint16_t len;
 #ifdef DBG
-    elemtype_t type;    // for debugging only
+    elem_t * current;
 #endif
 } iter_t;
 
+static elem_t * upnext(iter_t *iter)
+{
+    elem_t *elem = NULL;
+#ifdef DBG
+    static unsigned char popmark[] = {'+'};
+#else
+    static unsigned char popmark[] = {'\0'};
+#endif
+
+    if (iter->nest) {
+        iter->cp = popmark;
+        iter->len = sizeof(popmark);
+        elem = iter->next[--(iter->nest)];
+        if (elem) {
+#ifdef DBG
+            iter->current = elem;
+#endif
+            iter->next[iter->nest] = elem->u.l.next;
+        }
+    }
+    return elem;
+}
+
 static elem_t * next(iter_t *iter, elem_t *elem)
 {
-    static unsigned char nullstr[] = {'\0'};
+#ifdef DBG
+    static unsigned char pushmark[] = {'-'};
+#else
+    static unsigned char pushmark[] = {'\0'};
+#endif
 
-    assert(elem);
     assert(iter->nest < MAXNEST);
 
+    if(elem) {
 #ifdef DBG
-    iter->type = elem->type;  // for debugging only
+        iter->current = elem;
 #endif
-    switch (elem->type) {
+        switch (elem->type) {
         case FRAGELEM:
             iter->cp = elem->u.f.frag;
             iter->len = elem->len;
@@ -40,32 +67,33 @@ static elem_t * next(iter_t *iter, elem_t *elem)
         case SHORTSTRELEM:
             iter->cp = elem->u.s.str;
             iter->len = elem->len;
-            return NULL;
+            elem = NULL;
             break;
         case LISTELEM:
             iter->next[(iter->nest)++] = elem->u.l.next;
             elem = elem->u.l.first;
+#ifdef DBG
+            iter->current = elem;
+#endif
             if ((elemtype_t)elem->type == FRAGELEM) {
                 // to align with SHORTSTRELEM
-#ifdef DBG
-                iter->type = elem->type;  // for debugging only
-#endif
                 iter->cp = elem->u.f.frag;
                 iter->len = elem->len;
-                return elem->u.f.next;
+                elem->u.f.next;
+#ifdef DBG
+                iter->current = elem;
+#endif
             } else {
-                iter->cp = nullstr;
-                iter->len = sizeof(nullstr);
+                iter->cp = pushmark;
+                iter->len = sizeof(pushmark);
             }
             break;
         default:
             assert(0);
             break;
-    }
-    if (!elem && iter->nest) {
-        iter->cp = nullstr;
-        iter->len = sizeof(nullstr);
-        elem = iter->next[--(iter->nest)];
+        }
+    } else {
+        elem = upnext(iter);
     }
     return elem;
 }
@@ -131,7 +159,9 @@ int match (elem_t *a, elem_t *b)
     do {
         do { 
 #ifdef DBG
-fprintf(stderr,"1: %d.%d: \"%c\" %d.%d: \"%c\"\n", ai.type, ai.len, *ai.cp, bi.type, bi.len, *bi.cp);
+fprintf(stderr,"1: %p:%d:%d.%d: \"%c\" %p:%d:%d.%d: \"%c\"\n",
+        ai.current, ai.current->state, ai.current->type, ai.len, *ai.cp,
+        bi.current, bi.current->state, bi.current->type, bi.len, *bi.cp);
 #endif
             if (*bi.cp == '*') { 
                 //  "x..." matches "*"  where ai.len >= bi.len
@@ -147,9 +177,13 @@ fprintf(stderr,"1: %d.%d: \"%c\" %d.%d: \"%c\"\n", ai.type, ai.len, *ai.cp, bi.t
                 //  "x..." matches "*"  where ai.len >= bi.len
                 //  also
                 //  "x" matches "x*"    where ai.len == bi.len - 1
-                ai.len=0;
-                bi.len=0;
-                // FIXME - consume any remaining frags
+                a = upnext(&ai);
+                b = upnext(&bi);
+#ifdef DBG
+fprintf(stderr,"+> %p:%d:%d.%d: \"%c\" %p:%d:%d.%d: \"%c\"\n",
+        ai.current, ai.current->state, ai.current->type, ai.len, *ai.cp,
+        bi.current, bi.current->state, bi.current->type, bi.len, *bi.cp);
+#endif
             } else {
                 // not a match while one is shorter than the other
                 rc = ai.len - bi.len;
@@ -161,6 +195,11 @@ fprintf(stderr,"1: %d.%d: \"%c\" %d.%d: \"%c\"\n", ai.type, ai.len, *ai.cp, bi.t
         if (b && bi.len == 0) {
             b = next(&bi, b);
         }
+#ifdef DBG
+fprintf(stderr,"-> %p:%d:%d.%d: \"%c\" %p:%d:%d.%d: \"%c\"\n",
+        ai.current->state, ai.current->type, ai.len, *ai.cp,
+        bi.current->state, bi.current->type, bi.len, *bi.cp);
+#endif
     } while (ai.len && bi.len && rc == 0);
     return rc;
 }

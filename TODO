@@ -183,4 +183,6 @@ DONE - aligned with C language
               '\' disables any special meaning of the folowing character, but the
                pair are passed through literally ???   would apply inside and outside of quotes
 
-31. 
+31.  option to provide small graphs on the command line.  e.g.
+	g -e '(* b *)[x=y] (a x c)'
+     single quote needed to prevent shell interaction

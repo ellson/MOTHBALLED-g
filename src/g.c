@@ -25,13 +25,13 @@ int main(int argc, char *argv[])
 
     signal(SIGINT, intr);
 
-    while ((opt = getopt(argc, argv, "d::s")) != -1) {
+    while ((opt = getopt(argc, argv, "d::s:e:")) != -1) {
         if (optarg)
             optnum = atoi(optarg);
         else
             optnum = 0;
         switch (opt) {
-        case 'd':
+        case 'd':   // debug
             switch (optnum) {
             case 0:
                 dumpg();
@@ -48,11 +48,13 @@ int main(int argc, char *argv[])
             }
 
             break;
-        case 's':
+        case 's':    // stats
             needstats = 1;
             break;
+        case 'e':    // eval
+            break;
         default:
-            fprintf(stderr,"Usage: %s [-d[01] [-s] [files] [-]\n", argv[0]);
+            fprintf(stderr,"Usage: %s [-d[01] [-s] [-e acts] [files] [-]\n", argv[0]);
             exit(EXIT_FAILURE);
             break;
         }
