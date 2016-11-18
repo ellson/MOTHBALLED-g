@@ -120,8 +120,6 @@ static void pattern_match(CONTAINER_t * CONTAINER, elem_t * act, elem_t *attribu
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
 
-P(act);
-
     if (CONTAINER->has_node) {
         pattern_match_r(THREAD, CONTAINER->node_patterns, act->u.l.first, attributes);
     } else {

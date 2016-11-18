@@ -9,11 +9,16 @@
 
 #define MAXNEST 20
 
+#define DBG 1
+
 typedef struct {
     elem_t *next[MAXNEST];
     unsigned char *cp;
     uint16_t nest;
     uint16_t len;
+#ifdef DBG
+    elemtype_t type;    // for debugging only
+#endif
 } iter_t;
 
 static elem_t * next(iter_t *iter, elem_t *elem)
@@ -23,6 +28,9 @@ static elem_t * next(iter_t *iter, elem_t *elem)
     assert(elem);
     assert(iter->nest < MAXNEST);
 
+#ifdef DBG
+    iter->type = elem->type;  // for debugging only
+#endif
     switch (elem->type) {
         case FRAGELEM:
             iter->cp = elem->u.f.frag;
@@ -32,13 +40,23 @@ static elem_t * next(iter_t *iter, elem_t *elem)
         case SHORTSTRELEM:
             iter->cp = elem->u.s.str;
             iter->len = elem->len;
-            elem = NULL;
+            return NULL;
             break;
         case LISTELEM:
-            iter->cp = nullstr;
-            iter->len = sizeof(nullstr);
             iter->next[(iter->nest)++] = elem->u.l.next;
             elem = elem->u.l.first;
+            if ((elemtype_t)elem->type == FRAGELEM) {
+                // to align with SHORTSTRELEM
+#ifdef DBG
+                iter->type = elem->type;  // for debugging only
+#endif
+                iter->cp = elem->u.f.frag;
+                iter->len = elem->len;
+                return elem->u.f.next;
+            } else {
+                iter->cp = nullstr;
+                iter->len = sizeof(nullstr);
+            }
             break;
         default:
             assert(0);
@@ -53,10 +71,8 @@ static elem_t * next(iter_t *iter, elem_t *elem)
 }
 
 /**
- * compare string value of elems: a and b
+ * compare string value of lists: a and b
  *
- * - elem may be LISTELEM or SHORSTRELEM or FRAGELEM
- * 
  * - every traversal up or down through nested lists contibutes a single
  *   '\0' to the comparison.   This is to ensure that:  a  != (a)
  *
@@ -79,6 +95,7 @@ int compare (elem_t *a, elem_t *b)
             rc = (*ai.cp++) - (*bi.cp++);
         } while (ai.len && bi.len && rc == 0);
         if (rc == 0) {
+            // not a match while one is shorter than the other
             rc = ai.len - bi.len;
         }
         if (a && ai.len == 0) {
@@ -87,20 +104,15 @@ int compare (elem_t *a, elem_t *b)
         if (b && bi.len == 0) {
             b = next(&bi, b);
         }
-    } while (a && b && rc == 0);
-    if (a || b) {
-        return (int)(a - b);
-    }
+    } while (ai.len && bi.len && rc == 0);
     return rc;
 }
 
 /**
- * match string value of elems: a and b
+ * match string value of lists: a and b
  * b may contain strings with trailing '*' which will
  * match any tail of the corresponding string in a
  *
- * - a and b may be LISTELEM or SHORSTRELEM or FRAGELEM
- * 
  * - every traversal up or down through nested lists contibutes a single
  *   '\0' to the comparison.   This is to ensure that:  a  != (a)
  *
@@ -118,7 +130,11 @@ int match (elem_t *a, elem_t *b)
     b = next(&bi, b);
     do {
         do { 
-            if (*bi.cp == '*') {
+#ifdef DBG
+fprintf(stderr,"a: %d.%d: \"%c\" %d.%d: \"%c\"\n", ai.type, ai.len, *ai.cp, bi.type, bi.len, *bi.cp);
+#endif
+            if (*bi.cp == '*') { 
+                //  "x..." matches "*"  where ai.len >= bi.len
                 rc = 0;
                 break;
             } 
@@ -126,12 +142,18 @@ int match (elem_t *a, elem_t *b)
             bi.len--;
             rc = (*ai.cp++) - (*bi.cp++);
         } while (ai.len && bi.len && rc == 0);
-        if (rc == 0 && *bi.cp == '*') {
-            ai.len=0;
-            bi.len=0;
-        }
         if (rc == 0) {
-            rc = ai.len - bi.len;
+            if (*bi.cp == '*') {
+                //  "x..." matches "*"  where ai.len >= bi.len
+                //  also
+                //  "x" matches "x*"    where ai.len == bi.len - 1
+                ai.len=0;
+                bi.len=0;
+                // FIXME - consume any remaining frags
+            } else {
+                // not a match while one is shorter than the other
+                rc = ai.len - bi.len;
+            }
         }
         if (a && ai.len == 0) {
             a = next(&ai, a);
@@ -139,9 +161,6 @@ int match (elem_t *a, elem_t *b)
         if (b && bi.len == 0) {
             b = next(&bi, b);
         }
-    } while (a && b && rc == 0);
-    if (a || b) {
-        return (int)(a - b);
-    }
+    } while (ai.len && bi.len && rc == 0);
     return rc;
 }

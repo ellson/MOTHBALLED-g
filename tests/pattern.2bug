@@ -1,8 +1,1 @@
-# pattern should not match as the form isn't the same
-# bug is likely in compore.c - in both compare() and match()
-
-#(* b *) [mumble=grumble]
-#b
-
-(*)[d=e]
-x
+(* b *)[x=y] (a x c)
