@@ -12,14 +12,13 @@
 typedef struct {
     elem_t *nextstack[MAXNEST];
     unsigned char *cp;
+    char *push_split_pop;
     uint16_t sp;
     uint16_t len;
 } iter_t;
 
 static void stepiter(iter_t *iter, elem_t *this)
 {
-    static unsigned char pushmark[] = {'\0'};
-
     switch ((elemtype_t)this->type) {
     case FRAGELEM:
         iter->nextstack[iter->sp] = this->u.f.next;
@@ -42,8 +41,8 @@ static void stepiter(iter_t *iter, elem_t *this)
             assert(iter->sp < MAXNEST);
             iter->nextstack[(iter->sp)++] = this->u.l.next;
             iter->nextstack[(iter->sp)] = this->u.l.first;
-            iter->cp = pushmark;
-            iter->len = sizeof(pushmark);
+            iter->cp = (unsigned char*)iter->push_split_pop;
+            iter->len = 1;
         }
         break;
     default:
@@ -52,25 +51,41 @@ static void stepiter(iter_t *iter, elem_t *this)
     }
 }
 
-static void inititer(iter_t *iter, elem_t *elem)
+static void inititer(iter_t *iter, elem_t *elem, char *push_split_pop)
 {
+    static char *default_push_split_pop = "\0\0\0";
+
     assert(iter);
     assert(elem);
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
 
-    iter->sp = 0;
+    if (push_split_pop) {
+        assert(*(push_split_pop) && *(push_split_pop+1) && *(push_split_pop+2));
+        iter->push_split_pop = push_split_pop;
+    } else {
+        iter->push_split_pop = default_push_split_pop;
+    }
+
     stepiter(iter, elem);
 }
 
 static void skipiter(iter_t *iter)
 {
-    static unsigned char popmark[] = {'\0'};
+    elem_t *this;
 
-    iter->cp = popmark;
-    if (iter->sp && iter->nextstack[--(iter->sp)]) {
-        iter->len = sizeof(popmark);
+    if (iter->sp && (( this = iter->nextstack[--(iter->sp)])) ) {
+        this = this->u.l.first;
+        assert((elemtype_t)this->type == LISTELEM);
+        iter->nextstack[(iter->sp)++] = this->u.l.next;
+        iter->nextstack[(iter->sp)] = this->u.l.first;
+        iter->cp = (unsigned char*)iter->push_split_pop+1;
+        iter->len = 1;
+    } else if (iter->sp && iter->nextstack[--(iter->sp)]) {
+        iter->cp = (unsigned char*)iter->push_split_pop+2;
+        iter->len = 1;
     } else {
+        iter->cp = NULL;
         iter->len = 0;
     }
 }
@@ -102,8 +117,8 @@ int compare (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    inititer(&ai, a);
-    inititer(&bi, b);
+    inititer(&ai, a, NULL);
+    inititer(&bi, b, NULL);
     do {
         do { 
             ai.len--;
@@ -142,8 +157,8 @@ int match (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    inititer(&ai, a);
-    inititer(&bi, b);
+    inititer(&ai, a, NULL);
+    inititer(&bi, b, NULL);
     do {
         do { 
             if (*bi.cp == '*') { 
