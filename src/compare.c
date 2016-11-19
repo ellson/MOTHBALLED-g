@@ -9,13 +9,8 @@
 
 #define MAXNEST 20
 
-#define DBG 1
-
 typedef struct {
     elem_t *next[MAXNEST];
-#ifdef DBG
-    elem_t * this;
-#endif
     unsigned char *cp;
     uint16_t sp;
     uint16_t len;
@@ -38,7 +33,7 @@ static void step(iter_t *iter, elem_t *this)
         break;
     case LISTELEM:
         if ((elemtype_t)this->u.l.first->type == FRAGELEM) {
-            // to align with SHORTSTRELEM
+            // align with SHORTSTRELEM
             this = this->u.l.first;
             iter->next[iter->sp] = this->u.f.next;
             iter->cp = this->u.f.frag;
@@ -55,9 +50,6 @@ static void step(iter_t *iter, elem_t *this)
         assert(0);
         break;
     }
-#ifdef DBG
-    iter->this = this;
-#endif
 }
 
 static void init(iter_t *iter, elem_t *elem)
@@ -74,28 +66,19 @@ static void init(iter_t *iter, elem_t *elem)
 static void skip(iter_t *iter)
 {
     static unsigned char popmark[] = {'\0'};
-    elem_t *this;
 
-    assert(iter->sp);
     iter->cp = popmark;
-    this = iter->next[--(iter->sp)];
-    if (this) {
-        iter->next[(iter->sp)] = this->u.l.next;
+    if (iter->sp && iter->next[--(iter->sp)]) {
         iter->len = sizeof(popmark);
     } else {
-        iter->next[(iter->sp)] = NULL;
         iter->len = 0;
     }
-#ifdef DBG
-    iter->this = this;
-#endif
 }
 
 static void next(iter_t *iter)
 {
-    elem_t *this;
+    elem_t *this = iter->next[iter->sp];
 
-    this = iter->next[iter->sp];
     if (this) {
         step(iter, this);
     } else {
@@ -163,11 +146,6 @@ int match (elem_t *a, elem_t *b)
     init(&bi, b);
     do {
         do { 
-#ifdef DBG
-fprintf(stderr,"--: %p:%d:%d.%d: \"%c\" %p:%d:%d.%d: \"%c\"\n",
-        ai.this, ai.this->state, ai.this->type, ai.len, *ai.cp,
-        bi.this, bi.this->state, bi.this->type, bi.len, *bi.cp);
-#endif
             if (*bi.cp == '*') { 
                 //  "x..." matches "*"  where ai.len >= bi.len
                 rc = 0;

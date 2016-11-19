@@ -1,2 +1,3 @@
-* [foo=bar]
-(* b *) [mumble=grumble]
+# container issue
+<a b*> [default=true] {some content}
+
