@@ -23,7 +23,7 @@
  */
 static elem_t *new_elem_sub(LIST_t * LIST)
 {
-    elem_t *elem, *next;
+    elem_t *elem, *nextelem;
 
     if (!LIST->free_elem_list) {    // if no elems in free_elem_list
 
@@ -32,11 +32,11 @@ static elem_t *new_elem_sub(LIST_t * LIST)
             FATAL("malloc()");
         LIST->stat_elemmalloc++;
 
-        next = LIST->free_elem_list;    // link the new elems into free_elem_list
+        nextelem = LIST->free_elem_list;    // link the new elems into free_elem_list
         int i = LISTALLOCNUM;
         while (i--) {
-            elem = next++;
-            elem->u.l.next = next;
+            elem = nextelem++;
+            elem->u.l.next = nextelem;
         }
         elem->u.l.next = NULL;    // terminate last elem
 
@@ -243,12 +243,12 @@ static void free_list_r(LIST_t * LIST, elem_t * list)
  */
 void free_list(LIST_t * LIST, elem_t * elem)
 {
-    elem_t *next;
+    elem_t *nextelem;
 
     while (elem) {
         assert(LIST->stat_elemnow > 0);
         assert(elem->refs > 0);
-        next = elem->u.l.next;
+        nextelem = elem->u.l.next;
         switch ((elemtype_t)(elem->type)) {
         case LISTELEM:
             if (--(elem->refs)) {
@@ -271,7 +271,7 @@ void free_list(LIST_t * LIST, elem_t * elem)
             if (--(elem->refs)) {
                 return;    // stop at any point with additional refs
             }
-            next = NULL;
+            nextelem = NULL;
             break;
         case TREEELEM:
             // trees are not ref count, must be used exactly once.
@@ -280,7 +280,7 @@ void free_list(LIST_t * LIST, elem_t * elem)
         }
         free_elem(LIST, elem);
 
-        elem = next;
+        elem = nextelem;
     }
 }
 
@@ -444,7 +444,7 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
  */
 void fraglist2shortstr(LIST_t * LIST, int slen, elem_t * string)
 {
-    elem_t *frag, *next;
+    elem_t *frag, *nextfrag;
     unsigned char *src, *dst;
     int i;
 
@@ -457,7 +457,7 @@ void fraglist2shortstr(LIST_t * LIST, int slen, elem_t * string)
     while (frag) {
         assert(frag->type == (char)FRAGELEM);
         assert(frag->refs == 1);
-        next = frag->u.f.next;
+        nextfrag = frag->u.f.next;
         (frag->u.f.inbuf->refs)--;
         for (i = frag->len, src = frag->u.f.frag; i; --i) {
             *dst++ = *src++;
@@ -465,7 +465,7 @@ void fraglist2shortstr(LIST_t * LIST, int slen, elem_t * string)
         free_elem(LIST, frag);
         LIST->stat_fragnow--;    // maintain stats
         assert(LIST->stat_fragnow >= 0);
-        frag = next;
+        frag = nextfrag;
     }
     string->type = SHORTSTRELEM; // frag is now shortstr
     string->len = slen; // save length of string

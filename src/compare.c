@@ -10,24 +10,24 @@
 #define MAXNEST 20
 
 typedef struct {
-    elem_t *next[MAXNEST];
+    elem_t *nextstack[MAXNEST];
     unsigned char *cp;
     uint16_t sp;
     uint16_t len;
 } iter_t;
 
-static void step(iter_t *iter, elem_t *this)
+static void stepiter(iter_t *iter, elem_t *this)
 {
     static unsigned char pushmark[] = {'\0'};
 
     switch ((elemtype_t)this->type) {
     case FRAGELEM:
-        iter->next[iter->sp] = this->u.f.next;
+        iter->nextstack[iter->sp] = this->u.f.next;
         iter->cp = this->u.f.frag;
         iter->len = this->len;
         break;
     case SHORTSTRELEM:
-        iter->next[iter->sp] = NULL;
+        iter->nextstack[iter->sp] = NULL;
         iter->cp = this->u.s.str;
         iter->len = this->len;
         break;
@@ -35,13 +35,13 @@ static void step(iter_t *iter, elem_t *this)
         if ((elemtype_t)this->u.l.first->type == FRAGELEM) {
             // align with SHORTSTRELEM
             this = this->u.l.first;
-            iter->next[iter->sp] = this->u.f.next;
+            iter->nextstack[iter->sp] = this->u.f.next;
             iter->cp = this->u.f.frag;
             iter->len = this->len;
         } else {
             assert(iter->sp < MAXNEST);
-            iter->next[(iter->sp)++] = this->u.l.next;
-            iter->next[(iter->sp)] = this->u.l.first;
+            iter->nextstack[(iter->sp)++] = this->u.l.next;
+            iter->nextstack[(iter->sp)] = this->u.l.first;
             iter->cp = pushmark;
             iter->len = sizeof(pushmark);
         }
@@ -52,7 +52,7 @@ static void step(iter_t *iter, elem_t *this)
     }
 }
 
-static void init(iter_t *iter, elem_t *elem)
+static void inititer(iter_t *iter, elem_t *elem)
 {
     assert(iter);
     assert(elem);
@@ -60,29 +60,29 @@ static void init(iter_t *iter, elem_t *elem)
         || (elemtype_t)elem->type == SHORTSTRELEM);
 
     iter->sp = 0;
-    step(iter, elem);
+    stepiter(iter, elem);
 }
 
-static void skip(iter_t *iter)
+static void skipiter(iter_t *iter)
 {
     static unsigned char popmark[] = {'\0'};
 
     iter->cp = popmark;
-    if (iter->sp && iter->next[--(iter->sp)]) {
+    if (iter->sp && iter->nextstack[--(iter->sp)]) {
         iter->len = sizeof(popmark);
     } else {
         iter->len = 0;
     }
 }
 
-static void next(iter_t *iter)
+static void nextiter(iter_t *iter)
 {
-    elem_t *this = iter->next[iter->sp];
+    elem_t *this = iter->nextstack[iter->sp];
 
     if (this) {
-        step(iter, this);
+        stepiter(iter, this);
     } else {
-        skip(iter);
+        skipiter(iter);
     }
 }
 
@@ -102,8 +102,8 @@ int compare (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    init(&ai, a);
-    init(&bi, b);
+    inititer(&ai, a);
+    inititer(&bi, b);
     do {
         do { 
             ai.len--;
@@ -115,10 +115,10 @@ int compare (elem_t *a, elem_t *b)
             rc = ai.len - bi.len;
         }
         if (ai.len == 0) {
-            next(&ai);
+            nextiter(&ai);
         }
         if (bi.len == 0) {
-            next(&bi);
+            nextiter(&bi);
         }
     } while (ai.len && bi.len && rc == 0);
     return rc;
@@ -142,8 +142,8 @@ int match (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    init(&ai, a);
-    init(&bi, b);
+    inititer(&ai, a);
+    inititer(&bi, b);
     do {
         do { 
             if (*bi.cp == '*') { 
@@ -160,18 +160,18 @@ int match (elem_t *a, elem_t *b)
                 //  "x..." matches "*"  where ai.len >= bi.len
                 //  also
                 //  "x" matches "x*"    where ai.len == bi.len - 1
-                skip(&ai);  // skip to next string 
-                skip(&bi);  // skip to next pattern
+                skipiter(&ai);  // skip to next string 
+                skipiter(&bi);  // skip to next pattern
             } else {
                 // not a match while one is shorter than the other
                 rc = ai.len - bi.len;
             }
         }
         if (ai.len == 0) {
-            next(&ai);
+            nextiter(&ai);
         }
         if (bi.len == 0) {
-            next(&bi);
+            nextiter(&bi);
         }
     } while (ai.len && bi.len && rc == 0);
     return rc;

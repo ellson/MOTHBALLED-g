@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 
     signal(SIGINT, intr);
 
-    while ((opt = getopt(argc, argv, "d::s:e:")) != -1) {
+    while ((opt = getopt(argc, argv, "d::se:")) != -1) {
         if (optarg)
             optnum = atoi(optarg);
         else
