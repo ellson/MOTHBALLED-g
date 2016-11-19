@@ -9,10 +9,14 @@ extern "C" {
 
 struct token_s {
     LIST_t LIST;               // LIST context. Maybe cast from TOKEN
+
+    // FIXME - Why do we have these ?  Why not leave in SESSION ?
     int *pargc;                // remaining filenames from command line
     char **argv;
     FILE *out, *err;           // output files
     char *acts;                // commandline acts
+
+
 
     // NB.  In case we do input multiplexing of parallel streams,
     // then previous needs to be associated with a particular stream
@@ -20,13 +24,16 @@ struct token_s {
     // can be switched together.
     // FIXME  The stream will also need to retain the current inbuf,
     // since some read-ahead might have occurred.
-        unsigned char *in;     // next character to be processed
-        elem_t *previous;      // the previous SUBJECT for sameas
-        char *filename;        // name of file currently being processed,
+    unsigned char *in;     // next character to be processed
+    elem_t *previous;      // the previous SUBJECT for sameas
+    char *filename;        // name of file currently being processed,
                                //   or "-" for stdin
-        FILE *file;            // file handle of file being processed
-        // FIXME - prob needs to be in a common struct with INBUF->inbuf
+    FILE *file;            // file handle of file being processed
+    // FIXME - prob needs to be in a common struct with INBUF->inbuf
+   
 
+
+    // OK
     state_t insi;              // state represented by last character read
     state_t state;             // last state entered
     state_t quote_state;       // ABC or
