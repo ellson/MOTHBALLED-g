@@ -15,7 +15,7 @@
  */
 inbufelem_t * new_inbuf(INBUF_t *INBUF)
 {
-    inbufelem_t *inbuf, *next;
+    inbufelem_t *inbuf, *nextinbuf;
 
     if (!INBUF->free_inbuf_list) {    // if no inbufs in free_inbuf_list
 
@@ -24,19 +24,19 @@ inbufelem_t * new_inbuf(INBUF_t *INBUF)
             FATAL("malloc()");
         INBUF->stat_inbufmalloc++;
 
-        next = INBUF->free_inbuf_list;    // link the new inbufs into free_inbuf_list
+        nextinbuf = INBUF->free_inbuf_list;    // link the new inbufs into free_inbuf_list
         int i = INBUFALLOCNUM;
         while (i--) {
-            inbuf = next++;
-            inbuf->next = next;
+            inbuf = nextinbuf++;
+            inbuf->nextinbuf = nextinbuf;
         }
-        inbuf->next = NULL;    // terminate last inbuf
+        inbuf->nextinbuf = NULL;    // terminate last inbuf
 
     }
     inbuf = INBUF->free_inbuf_list;    // use first inbuf from free_inbuf_list
-    INBUF->free_inbuf_list = inbuf->next;    // update list to point to next available
+    INBUF->free_inbuf_list = inbuf->nextinbuf; // point to next available
 
-    inbuf->next = NULL;
+    inbuf->nextinbuf = NULL;
     inbuf->refs = 0;
     inbuf->end_of_buf = '\0';    // parse() sees this null like an EOF
 
@@ -58,7 +58,7 @@ void free_inbuf(INBUF_t * INBUF, inbufelem_t * inbuf)
     assert(inbuf);
 
     // insert inbuf into inbuf_freelist
-    inbuf->next = INBUF->free_inbuf_list;
+    inbuf->nextinbuf = INBUF->free_inbuf_list;
     INBUF->free_inbuf_list = inbuf;
 
     INBUF->stat_inbufnow--;    // stats

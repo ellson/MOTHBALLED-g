@@ -23,7 +23,7 @@ extern "C" {
 #define INBUFALLOCNUM 128
 
 struct inbufelem_s {
-    inbufelem_t *next;
+    inbufelem_t *nextinbuf;
     int refs;
     unsigned char buf[INBUFIZE];
     unsigned char end_of_buf;    // maintain a '\0' here 
