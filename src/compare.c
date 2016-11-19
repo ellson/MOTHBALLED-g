@@ -37,16 +37,16 @@ static void step(iter_t *iter, elem_t *this)
         iter->len = this->len;
         break;
     case LISTELEM:
-        this = this->u.l.first;
-        if ((elemtype_t)this->type == FRAGELEM) {
+        if ((elemtype_t)this->u.l.first->type == FRAGELEM) {
             // to align with SHORTSTRELEM
+            this = this->u.l.first;
             iter->next[iter->sp] = this->u.f.next;
             iter->cp = this->u.f.frag;
             iter->len = this->len;
         } else {
             assert(iter->sp < MAXNEST);
             iter->next[(iter->sp)++] = this->u.l.next;
-            iter->next[(iter->sp)] = this->u.f.next;
+            iter->next[(iter->sp)] = this->u.l.first;
             iter->cp = pushmark;
             iter->len = sizeof(pushmark);
         }
@@ -77,12 +77,13 @@ static void skip(iter_t *iter)
     elem_t *this;
 
     assert(iter->sp);
+    iter->cp = popmark;
     this = iter->next[--(iter->sp)];
     if (this) {
         iter->next[(iter->sp)] = this->u.l.next;
-        iter->cp = popmark;
         iter->len = sizeof(popmark);
     } else {
+        iter->next[(iter->sp)] = NULL;
         iter->len = 0;
     }
 #ifdef DBG
@@ -183,11 +184,6 @@ fprintf(stderr,"--: %p:%d:%d.%d: \"%c\" %p:%d:%d.%d: \"%c\"\n",
                 //  "x" matches "x*"    where ai.len == bi.len - 1
                 skip(&ai);  // skip to next string 
                 skip(&bi);  // skip to next pattern
-#ifdef DBG
-fprintf(stderr,"+>: %p:%d:%d.%d: \"%c\" %p:%d:%d.%d: \"%c\"\n",
-        ai.this, ai.this->state, ai.this->type, ai.len, *ai.cp,
-        bi.this, bi.this->state, bi.this->type, bi.len, *bi.cp);
-#endif
             } else {
                 // not a match while one is shorter than the other
                 rc = ai.len - bi.len;
@@ -199,11 +195,6 @@ fprintf(stderr,"+>: %p:%d:%d.%d: \"%c\" %p:%d:%d.%d: \"%c\"\n",
         if (bi.len == 0) {
             next(&bi);
         }
-#ifdef DBG
-fprintf(stderr,"->: %p:%d:%d.%d: \"%c\" %p:%d:%d.%d: \"%c\"\n",
-        ai.this, ai.this->state, ai.this->type, ai.len, *ai.cp,
-        bi.this, bi.this->state, bi.this->type, bi.len, *bi.cp);
-#endif
     } while (ai.len && bi.len && rc == 0);
     return rc;
 }
