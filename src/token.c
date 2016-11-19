@@ -77,9 +77,6 @@ static success_t token_more_in(TOKEN_t * TOKEN)
     INBUF_t *INBUF = (INBUF_t *)TOKEN;
     int size;
 
-// FIXME
-if (TOKEN->acts) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->acts);
-
     if (INBUF->inbuf) {        // if there is an existing active-inbuf
         if (TOKEN->in == &(INBUF->inbuf->end_of_buf)) {    // if it is full
             if ((--(INBUF->inbuf->refs)) == 0) {    // dereference active-inbuf
@@ -120,6 +117,11 @@ if (TOKEN->acts) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->acts);
             if (strcmp(TOKEN->filename, "-") == 0) {
                 TOKEN->file = stdin;
                 *(TOKEN->pargc) = 0;    // No files after stdin
+            } else if (strcmp(TOKEN->filename, "-e") == 0) {
+                TOKEN->membuf = TOKEN->argv[0];
+                (*(TOKEN->pargc))--;
+if (TOKEN->membuf) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->membuf);
+                return FAIL;    // no more input available
             } else {
                 if (! (TOKEN->file = fopen(TOKEN->filename, "rb")))
                     FATAL("fopen(\"%s\", \"rb\")", TOKEN->filename);

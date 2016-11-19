@@ -45,7 +45,7 @@ struct thread_s {
     long stat_containdepthmax;      
 };
 
-THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind, char *acts);
+THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind);
 
 #ifdef __cplusplus
 }

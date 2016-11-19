@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
         case 's':    // stats
             needstats = 1;
             break;
-        case 'e':    // eval
+        case 'e':    // eval    - leave in arglist
             acts = optarg;
             break;
         default:
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     }
 
     // create the top-level context for processing the inputs
-    session(&argc, argv, optind, needstats, acts);
+    session(&argc, argv, optind, needstats);
 
     exit(EXIT_SUCCESS);
 }

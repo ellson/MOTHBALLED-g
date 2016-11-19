@@ -7,7 +7,7 @@
 
 #include "thread.h"
 
-THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind, char* acts)
+THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind)
 {
     THREAD_t thread = { 0 };      // FIXME - may need to calloced
     THREAD_t *THREAD = &thread;    // needed for LIST() and E() macros.
@@ -15,7 +15,7 @@ THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind, char
     argv = &argv[optind];
     *pargc -= optind;
 
-    if (*pargc == 0 && !acts) {    // No file args, or commandline acts,  default to stdin
+    if (*pargc == 0) {    // No file args, or commandline acts,  default to stdin
         argv[0] = "-";
         *pargc = 1;
     }
@@ -25,7 +25,6 @@ THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind, char
     thread.TOKEN.err = stderr;
     thread.TOKEN.pargc = pargc;
     thread.TOKEN.argv = argv;
-    thread.TOKEN.acts = acts;
     thread.ikea_store = ikea_store_open( NULL );
 
 // FIXME - fork() here ??

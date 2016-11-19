@@ -30,7 +30,7 @@
 // public include
 #include "libg_session.h"
 
-void session(int *pargc, char *argv[], int optind, char needstats, char *acts)
+void session(int *pargc, char *argv[], int optind, char needstats)
 {
     SESSION_t session;
     struct passwd *pw;
@@ -82,5 +82,5 @@ void session(int *pargc, char *argv[], int optind, char needstats, char *acts)
     session.needstats = needstats;
 
     // run a THREAD to process the input
-    session.THREAD = thread(&session, pargc, argv, optind, acts);
+    session.THREAD = thread(&session, pargc, argv, optind);
 }

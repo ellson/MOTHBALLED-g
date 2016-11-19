@@ -14,7 +14,6 @@ struct token_s {
     int *pargc;                // remaining filenames from command line
     char **argv;
     FILE *out, *err;           // output files
-    char *acts;                // commandline acts
 
 
 
@@ -29,7 +28,9 @@ struct token_s {
     char *filename;        // name of file currently being processed,
                                //   or "-" for stdin
     FILE *file;            // file handle of file being processed
-    // FIXME - prob needs to be in a common struct with INBUF->inbuf
+    char *membuf;          // An externally memory-managed, in-memory,
+                           // NUL-terminated string providing ACT(s),
+                           // e.g. following -e on the commandline
    
 
 
