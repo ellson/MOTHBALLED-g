@@ -24,3 +24,4 @@ testref:
 
 EXTRA_DIST = g.spec g.spec.in autogen.sh
 
+DISTCLEANFILES = autom4te.cache/* doxygen/*/*/* doxygen/*/*
