@@ -12,6 +12,7 @@ struct token_s {
     int *pargc;                // remaining filenames from command line
     char **argv;
     FILE *out, *err;           // output files
+    char *acts;                // commandline acts
 
     // NB.  In case we do input multiplexing of parallel streams,
     // then previous needs to be associated with a particular stream

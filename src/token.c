@@ -77,6 +77,9 @@ static success_t token_more_in(TOKEN_t * TOKEN)
     INBUF_t *INBUF = (INBUF_t *)TOKEN;
     int size;
 
+// FIXME
+if (TOKEN->acts) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->acts);
+
     if (INBUF->inbuf) {        // if there is an existing active-inbuf
         if (TOKEN->in == &(INBUF->inbuf->end_of_buf)) {    // if it is full
             if ((--(INBUF->inbuf->refs)) == 0) {    // dereference active-inbuf

@@ -22,6 +22,7 @@ static void intr(int s)
 int main(int argc, char *argv[])
 {
     int opt, optnum, needstats = 0;
+    char *acts = NULL;
 
     signal(SIGINT, intr);
 
@@ -52,6 +53,7 @@ int main(int argc, char *argv[])
             needstats = 1;
             break;
         case 'e':    // eval
+            acts = optarg;
             break;
         default:
             fprintf(stderr,"Usage: %s [-d[01] [-s] [-e acts] [files] [-]\n", argv[0]);
@@ -61,7 +63,7 @@ int main(int argc, char *argv[])
     }
 
     // create the top-level context for processing the inputs
-    session(&argc, argv, optind, needstats);
+    session(&argc, argv, optind, needstats, acts);
 
     exit(EXIT_SUCCESS);
 }
