@@ -190,10 +190,3 @@ DONE - aligned with C language
 
 32. Optimizations
   - pattern.c - search less than the whole pattern tree for matches
-  - include AST in ABC tokens so that pattern strings can be packed into shortstr
-  - 
-
-33.  doxygen gets confused by name reuse:   see "next" in fraglist2shortstr
-  - make all variable names unique
-
-

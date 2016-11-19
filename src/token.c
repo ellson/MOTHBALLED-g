@@ -353,10 +353,9 @@ static int token_identifier_fragment(TOKEN_t * TOKEN, elem_t * identifier)
  */
 static void
 token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
-    // string must be short and not with special AST or BSL fragments
-    if (slen <= sizeof(((elem_t*)0)->u.s.str)
-                && !TOKEN->has_ast
-                && !TOKEN->has_bsl) {
+    // string must be short and not with special BSL fragments
+    // ( AST is not special this )
+    if (slen <= sizeof(((elem_t*)0)->u.s.str) && !TOKEN->has_bsl) {
         fraglist2shortstr(LIST(), slen, string);
         TOKEN->stat_instringshort++;
     } else {
