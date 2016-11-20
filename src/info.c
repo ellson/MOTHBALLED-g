@@ -96,8 +96,7 @@ void info_process(THREAD_t * THREAD)
     append_token   (THREAD, &pos, ']');
     assert(pos < buf+BUF_SIZE);
 
-    fprintf(stdout,buf);
-    putc('\n', stdout);
+    fprintf(stdout,"%s\n", buf);
 }
 
 
@@ -112,7 +111,7 @@ void info_thread(THREAD_t * THREAD)
     PROCESS_t *PROCESS = THREAD->PROCESS;
     uint64_t runtime, lend, itot, etot, istr;
     char percent[6];
-    static char buf[BUF_SIZE];
+    char buf[BUF_SIZE];
     char *pos = &buf[0];
     
 #ifdef HAVE_CLOCK_GETTIME
@@ -158,8 +157,8 @@ void info_thread(THREAD_t * THREAD)
     Au("elemnow",               LIST()->stat_elemnow);
     Au("fragmax",               LIST()->stat_fragmax);
     Au("fragnow",               LIST()->stat_fragnow);
-// FIXME - move stat->inactcount to thread
-//    Au("inactspersecond",       CONTAINER->stat_inactcount*TEN9/runtime);
+    Au("inactcount",            THREAD->stat_inactcount);
+    Au("inactspersecond",       THREAD->stat_inactcount*TEN9/runtime);
     Au("inbufmalloccount",      INBUF()->stat_inbufmalloc);
     Au("inbufmalloctotal",      itot);
     Au("inbufmax",              INBUF()->stat_inbufmax);
@@ -176,8 +175,7 @@ void info_thread(THREAD_t * THREAD)
     append_token   (THREAD, &pos, ']');
     assert(pos < buf+BUF_SIZE);
 
-    fprintf(stdout,buf);
-    putc('\n', stdout);
+    fprintf(stdout,"%s\n", buf);
 }
 
 /**
@@ -197,16 +195,20 @@ void info_container(CONTAINER_t * CONTAINER)
     append_string  (THREAD, &pos, "container");
     append_token   (THREAD, &pos, '[');
     Au("containercount",        CONTAINER->stat_containercount);
-    Au("inactcount",            CONTAINER->stat_inactcount);
     Au("inactedgepatterns",     CONTAINER->stat_patternedgecount);
     Au("inactnodepatterns",     CONTAINER->stat_patternnodecount);
     Au("inactnonpatterns",      CONTAINER->stat_nonpatternactcount);
     Au("inactpatternmatches",   CONTAINER->stat_patternmatches);
+// FIXME - also need e.g.: dominactcount 
+//         to gather the merged count
+// FIXME - also need e.g.: threadoutactcount
+//         to gather the merged count
+// FIXME - not sure if this per-container count is useful?
+//         do we also need a per-container  inactcount?
     Au("outactcount",           CONTAINER->stat_outactcount);
     Au("sameas",                CONTAINER->stat_sameas);
     append_token   (THREAD, &pos, ']');
     assert(pos < buf+BUF_SIZE);
 
-    fprintf(stdout,buf);
-    putc('\n', stdout);
+    fprintf(stdout,"%s\n", buf);
 }

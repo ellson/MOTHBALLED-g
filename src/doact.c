@@ -44,7 +44,7 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     assert(act);
     assert(act->u.l.first);            // minimmaly, an ACT must have a SUBJECT
 
-    CONTAINER->stat_inactcount++;
+    THREAD->stat_inactcount++;
 
     // replace each SAMEAS token in the current act, with reference to the corresponding
     // token in the previous act (which may itself be a substituted sameas.)

@@ -40,6 +40,7 @@ struct thread_s {
     elem_t *attrid;            // tree of attrid strings;
 
     // stats
+    long stat_inactcount;
     long stat_containdepth;      
     long stat_containdepthmax;      
 };
