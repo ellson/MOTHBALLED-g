@@ -17,7 +17,7 @@ extern "C" {
 #include "tree.h"
 #include "parse.h"
 #include "container.h"
-#include "session.h"
+#include "process.h"
 #include "print.h"
 #include "info.h"
 
@@ -29,7 +29,7 @@ extern "C" {
 struct thread_s {
     TOKEN_t TOKEN;             // TOKEN context. May be cast from THREAD
     CONTAINER_t *CONTAINER;    // The top level CONTAINER in this THREAD
-    SESSION_t *SESSION;        // The SESSION that started this THREAD
+    PROCESS_t *PROCESS;        // The PROCESS that started this THREAD
     ikea_store_t *ikea_store;  // persistency
     int style;                 // degree of friendliness in print outputs
     char sep;                  // the next separator
@@ -45,7 +45,7 @@ struct thread_s {
     long stat_containdepthmax;      
 };
 
-THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind);
+THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind);
 
 #ifdef __cplusplus
 }

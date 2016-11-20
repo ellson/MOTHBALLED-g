@@ -65,7 +65,7 @@
 /**
  * Stash away all the attrid in the THREAD->attrid tree, removing any duplicates.
  *
- * FIXME - attrid tree should be stored in SESSION,  but need some mutex to 
+ * FIXME - attrid tree should be stored in PROCESS,  but need some mutex to 
  *               make that safe when we have multiple threads
  *
  * FIXME - need something to keep track of how many elems are in attrid tree  .....  tough!

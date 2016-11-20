@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-char * info_session(CONTAINER_t *CONTAINER);
+char * info_process(CONTAINER_t *CONTAINER);
 char * info_stats(CONTAINER_t *CONTAINER);
 
 #ifdef __cplusplus

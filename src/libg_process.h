@@ -1,7 +1,7 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#ifndef LIBG_SESSION_H
-#define LIBG_SESSION_H
+#ifndef LIBG_PROCESS_H
+#define LIBG_PROCESS_H
 
 #ifdef __cplusplus
 extern "C" {

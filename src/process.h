@@ -1,7 +1,7 @@
 /* vim:set shiftwidth=4 ts=8 expandtab: */
 
-#ifndef SESSION_H
-#define SESSION_H
+#ifndef PROCESS_H
+#define PROCESS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,8 +10,8 @@ extern "C" {
 #define TEN9 1000000000
 #define TEN3 1000
 
-struct session_s {
-    THREAD_t *THREAD;          // THREADs in this SESSION
+struct process_s {
+    THREAD_t *THREAD;          // THREADs in this PROCESS
 
 // FIXME - replace with a properly formed QRY
     char needstats;            // flag set if -s on command line

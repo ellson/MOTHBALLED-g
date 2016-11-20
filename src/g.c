@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include "libg_session.h"
+#include "libg_process.h"
 
 // if interrupted we try to gracefully snapshot the current state 
 static void intr(int s)
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     }
 
     // create the top-level context for processing the inputs
-    session(&argc, argv, optind, needstats);
+    process(&argc, argv, optind, needstats);
 
     exit(EXIT_SUCCESS);
 }

@@ -7,7 +7,7 @@
 
 #include "thread.h"
 
-THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind)
+THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
 {
     THREAD_t thread = { 0 };      // FIXME - may need to calloced
     THREAD_t *THREAD = &thread;    // needed for LIST() and E() macros.
@@ -20,7 +20,7 @@ THREAD_t * thread(SESSION_t *SESSION, int *pargc, char *argv[], int optind)
         *pargc = 1;
     }
 
-    thread.SESSION = SESSION;
+    thread.PROCESS = PROCESS;
     thread.TOKEN.out = stdout;
     thread.TOKEN.err = stderr;
     thread.TOKEN.pargc = pargc;

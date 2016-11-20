@@ -6,7 +6,7 @@ pdfdir = $(pkgdatadir)/doc/pdf
 pkgconfigdir = $(libdir)/pkgconfig
 
 include_HEADERS = \
-    libg_session.h
+    libg_process.h
 
 noinst_HEADERS = \
     attribute.h \
@@ -28,17 +28,17 @@ noinst_HEADERS = \
     print.h \
     reduce.h \
     sameas.h \
-    session.h \
+    process.h \
     thread.h \
     token.h \
     tree.h \
     types.h
 
-noinst_LTLIBRARIES = libg_session_C.la
-lib_LTLIBRARIES = libg_session.la
-#pkgconfig_DATA = libg_session.pc
+noinst_LTLIBRARIES = libg_process_C.la
+lib_LTLIBRARIES = libg_process.la
+#pkgconfig_DATA = libg_process.pc
 
-libg_session_C_la_SOURCES = \
+libg_process_C_la_SOURCES = \
     attribute.c \
     compare.c \
     container.c \
@@ -59,20 +59,20 @@ libg_session_C_la_SOURCES = \
     print.c \
     reduce.c \
     sameas.c \
-    session.c \
+    process.c \
     sslhash.c \
     thread.c \
     token.c \
     tree.c
 
-libg_session_C_la_LIBADD =
+libg_process_C_la_LIBADD =
 
-libg_session_la_LDFLAGS = -version-info $(LIBJE_VERSION) -no-undefined
-libg_session_la_SOURCES = $(libg_session_C_la_SOURCES)
-libg_session_la_LIBADD = $(libg_session_C_la_LIBADD) 
+libg_process_la_LDFLAGS = -version-info $(LIBJE_VERSION) -no-undefined
+libg_process_la_SOURCES = $(libg_process_C_la_SOURCES)
+libg_process_la_LIBADD = $(libg_process_C_la_LIBADD) 
 
-#man_MANS = libg_session.3 g.1
-#pdf_DATA = libg_session.3.pdf g.1.pdf
+#man_MANS = libg_process.3 g.1
+#pdf_DATA = libg_process.3.pdf g.1.pdf
 
 bin_PROGRAMS = g g_static
 
@@ -80,11 +80,11 @@ BUILT_SOURCES = grammar.h grammar.c
 
 g_SOURCES = g.c
 g_CPPFLAGS = 
-g_LDADD = libg_session.la @LIBS@
+g_LDADD = libg_process.la @LIBS@
 
 g_static_SOURCES = g.c
 g_static_CPPFLAGS = 
-g_static_LDADD = libg_session_C.la @LIBS@
+g_static_LDADD = libg_process_C.la @LIBS@
 
 grammar.c: grammar.h
 
@@ -97,10 +97,10 @@ grammar.svg: grammar.gv
 g.1.pdf: $(srcdir)/g.1
 	    - $(GROFF) -Tps -man $(srcdir)/g.1 | $(PS2PDF) - - >g.1.pdf
 
-libg_session.3.pdf: $(srcdir)/libg_session.3
-	    - $(GROFF) -Tps -man $(srcdir)/libg_session.3 | $(PS2PDF) - - >libg_session.3.pdf
+libg_process.3.pdf: $(srcdir)/libg_process.3
+	    - $(GROFF) -Tps -man $(srcdir)/libg_process.3 | $(PS2PDF) - - >libg_process.3.pdf
 
-#EXTRA_DIST = g.1 g.1.pdf libg_session.3 libg_session.3.pdf gacc.sh grammar.g
+#EXTRA_DIST = g.1 g.1.pdf libg_process.3 libg_process.3.pdf gacc.sh grammar.g
 EXTRA_DIST = gacc.sh grammar.g
 
-DISTCLEANFILES = g.1.pdf libg_session.3.pdf grammar.h grammar.c grammar.ebnf grammar.gv grammar.svg
+DISTCLEANFILES = g.1.pdf libg_process.3.pdf grammar.h grammar.c grammar.ebnf grammar.gv grammar.svg

@@ -25,14 +25,14 @@
 
 // private includes
 #include "thread.h"
-#include "session.h"
+#include "process.h"
 //
 // public include
-#include "libg_session.h"
+#include "libg_process.h"
 
-void session(int *pargc, char *argv[], int optind, char needstats)
+void process(int *pargc, char *argv[], int optind, char needstats)
 {
-    SESSION_t session;
+    PROCESS_t process;
     struct passwd *pw;
     struct utsname unamebuf;
     uid_t uid;
@@ -45,12 +45,12 @@ void session(int *pargc, char *argv[], int optind, char needstats)
     struct timespec starttime; 
     if (clock_gettime(CLOCK_BOOTTIME, &(uptime)))
         FATAL("clock_gettime()");
-    session.uptime = uptime.tv_sec;
-    session.uptime_nsec = uptime.tv_nsec;
+    process.uptime = uptime.tv_sec;
+    process.uptime_nsec = uptime.tv_nsec;
     if (clock_gettime(CLOCK_REALTIME, &(starttime)))
         FATAL("clock_gettime()");
-    session.starttime = starttime.tv_sec;
-    session.starttime_nsec = starttime.tv_nsec;
+    process.starttime = starttime.tv_sec;
+    process.starttime_nsec = starttime.tv_nsec;
 #else
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
@@ -58,29 +58,29 @@ void session(int *pargc, char *argv[], int optind, char needstats)
     struct timeval starttime;   
     if (gettimeofday(&(uptime), NULL))
         FATAL("gettimeofday()");
-    session.uptime = uptime.tv_sec;
-    session.uptime_nsec = uptime.tv_usec * TEN3;
+    process.uptime = uptime.tv_sec;
+    process.uptime_nsec = uptime.tv_usec * TEN3;
     if (gettimeofday(&starttime, NULL))
         FATAL("gettimeofday()");
-    session.starttime = starttime.tv_sec;
-    session.starttime_nsec = starttime.tv_usec * TEN3;
+    process.starttime = starttime.tv_sec;
+    process.starttime_nsec = starttime.tv_usec * TEN3;
 #endif
 
-    session.progname = argv[0];
+    process.progname = argv[0];
     pid = geteuid();
-    session.pid = pid;
+    process.pid = pid;
     uid = geteuid();
     if (!(pw = getpwuid(uid)))
         FATAL("getpwuid()");
-    session.username = pw->pw_name;
+    process.username = pw->pw_name;
     if (uname(&unamebuf))
         FATAL("uname()");
-    session.hostname = unamebuf.nodename;
-    session.osname = unamebuf.sysname;
-    session.osrelease = unamebuf.release;
-    session.osmachine = unamebuf.machine;
-    session.needstats = needstats;
+    process.hostname = unamebuf.nodename;
+    process.osname = unamebuf.sysname;
+    process.osrelease = unamebuf.release;
+    process.osmachine = unamebuf.machine;
+    process.needstats = needstats;
 
     // run a THREAD to process the input
-    session.THREAD = thread(&session, pargc, argv, optind);
+    process.THREAD = thread(&process, pargc, argv, optind);
 }

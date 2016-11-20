@@ -9,7 +9,7 @@
 #include "thread.h"
 #include "container.h"
 #include "info.h"
-#include "session.h"
+#include "process.h"
 
 /**
  * @param THREAD context   
@@ -71,8 +71,8 @@ success_t container(THREAD_t * THREAD)
     free_tree(LIST(), container.node_patterns);
     free_tree(LIST(), container.edge_patterns);
 
-    if (THREAD->SESSION->needstats) {
-        fprintf(TOKEN()->out, "\n%s\n", info_session(&container));
+    if (THREAD->PROCESS->needstats) {
+        fprintf(TOKEN()->out, "\n%s\n", info_process(&container));
         fprintf(TOKEN()->out, "%s\n", info_stats(&container));
     }
 

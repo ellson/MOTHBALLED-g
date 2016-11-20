@@ -10,7 +10,7 @@ extern "C" {
 struct token_s {
     LIST_t LIST;               // LIST context. Maybe cast from TOKEN
 
-    // FIXME - Why do we have these ?  Why not leave in SESSION ?
+    // FIXME - Why do we have these ?  Why not leave in PROCESS ?
     int *pargc;                // remaining filenames from command line
     char **argv;
     FILE *out, *err;           // output files

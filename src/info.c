@@ -24,7 +24,7 @@
 #endif
 
 #include "thread.h"
-#include "session.h"
+#include "process.h"
 #include "info.h"
 
 #define BUF_SIZE 2048
@@ -57,16 +57,16 @@
  * is printed for the user.
  *
  * This info is gathered just once, so a statically sized buffer
- * is used. It is only filled on the first call,  if session() is
+ * is used. It is only filled on the first call,  if info_process() is
  * called again the same result is used.
  *
  * @param CONTAINER context
  * @return formatted string result
  */
-char * info_session(CONTAINER_t * CONTAINER)
+char * info_process(CONTAINER_t * CONTAINER)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    SESSION_t *SESSION = THREAD->SESSION;
+    PROCESS_t *PROCESS = THREAD->PROCESS;
 
 // FIXME - can't do this in threaded code!!
     static char buf[BUF_SIZE];
@@ -86,19 +86,19 @@ char * info_session(CONTAINER_t * CONTAINER)
     Au("elemmallocsize",        LISTALLOCNUM * sizeof(elem_t));
     Au("elempermalloc",         LISTALLOCNUM);
     Au("elemsize",              sizeof(elem_t));
-    As("hostname",              SESSION->hostname);
+    As("hostname",              PROCESS->hostname);
     Au("inbufcapacity",         INBUFIZE);
     Au("inbufmallocsize",       INBUFALLOCNUM * sizeof(inbufelem_t));
     Au("inbufpermalloc",        INBUFALLOCNUM);
     Au("inbufsize",             sizeof(inbufelem_t));
-    As("osmachine",             SESSION->osmachine);
-    As("osname",                SESSION->osname);
-    As("osrelease",             SESSION->osrelease);
-    Au("pid",                   SESSION->pid);
-    As("progname",              SESSION->progname);
-    Au("starttime",             SESSION->starttime);
-    Au("uptime",                SESSION->uptime);
-    As("username",              SESSION->username);
+    As("osmachine",             PROCESS->osmachine);
+    As("osname",                PROCESS->osname);
+    As("osrelease",             PROCESS->osrelease);
+    Au("pid",                   PROCESS->pid);
+    As("progname",              PROCESS->progname);
+    Au("starttime",             PROCESS->starttime);
+    Au("uptime",                PROCESS->uptime);
+    As("username",              PROCESS->username);
     Au("voidptrsize",           sizeof(void*));
     append_token   (THREAD, &pos, ']');
 
@@ -116,7 +116,7 @@ char * info_session(CONTAINER_t * CONTAINER)
 char * info_stats(CONTAINER_t * CONTAINER)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    SESSION_t *SESSION = THREAD->SESSION;
+    PROCESS_t *PROCESS = THREAD->PROCESS;
     uint64_t runtime, lend, itot, etot, istr;
     char percent[6];
 
@@ -134,7 +134,7 @@ char * info_stats(CONTAINER_t * CONTAINER)
     if (clock_gettime(CLOCK_REALTIME, &nowtime))
         FATAL("clock_gettime()");
     runtime = ((uint64_t)uptime.tv_sec * TEN9 + (uint64_t)uptime.tv_nsec)
-            - (SESSION->uptime * TEN9 + SESSION->uptime_nsec);
+            - (PROCESS->uptime * TEN9 + PROCESS->uptime_nsec);
 #else
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
@@ -142,7 +142,7 @@ char * info_stats(CONTAINER_t * CONTAINER)
     if (gettimeofday(&nowtime, NULL))
         FATAL("gettimeofday()");
     runtime = ((uint64_t)nowtime.tv_sec * TEN9 + (uint64_t)nowtime.tv_usec) * TEN3
-            - (SESSION->uptime * TEN9 + SESSION->uptime_nsec);
+            - (PROCESS->uptime * TEN9 + PROCESS->uptime_nsec);
 #endif
 
     itot = INBUF()->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbufelem_t);
