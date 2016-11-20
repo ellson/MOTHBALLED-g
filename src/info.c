@@ -171,6 +171,7 @@ void info_thread(THREAD_t * THREAD)
     As("instringshort",         percent);
     Au("malloctotal",           itot+etot);
     Au("nowtime",               nowtime.tv_sec);
+    Au("outactcount",           THREAD->stat_outactcount);
     Ar("runtime",               runtime/TEN9, runtime%TEN9);
     append_token   (THREAD, &pos, ']');
     assert(pos < buf+BUF_SIZE);
@@ -195,6 +196,7 @@ void info_container(CONTAINER_t * CONTAINER)
     append_string  (THREAD, &pos, "container");
     append_token   (THREAD, &pos, '[');
     Au("containercount",        CONTAINER->stat_containercount);
+    Au("inactcount",            CONTAINER->stat_inactcount);
     Au("inactedgepatterns",     CONTAINER->stat_patternedgecount);
     Au("inactnodepatterns",     CONTAINER->stat_patternnodecount);
     Au("inactnonpatterns",      CONTAINER->stat_nonpatternactcount);
@@ -202,9 +204,7 @@ void info_container(CONTAINER_t * CONTAINER)
 // FIXME - also need e.g.: dominactcount 
 //         to gather the merged count
 // FIXME - also need e.g.: threadoutactcount
-//         to gather the merged count
-// FIXME - not sure if this per-container count is useful?
-//         do we also need a per-container  inactcount?
+//         to gain insight into act expansion
     Au("outactcount",           CONTAINER->stat_outactcount);
     Au("sameas",                CONTAINER->stat_sameas);
     append_token   (THREAD, &pos, ']');

@@ -44,6 +44,7 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     assert(act);
     assert(act->u.l.first);            // minimmaly, an ACT must have a SUBJECT
 
+    CONTAINER->stat_inactcount++;
     THREAD->stat_inactcount++;
 
     // replace each SAMEAS token in the current act, with reference to the corresponding
@@ -90,6 +91,7 @@ printlist(act);
 
     elem = act->u.l.first->u.l.first;
     while (elem) {
+        THREAD->stat_outactcount++;
         CONTAINER->stat_outactcount++;
 P(elem);
         reduce(CONTAINER, elem);  // eliminate redundancy by insertion sorting into trees.

@@ -27,6 +27,7 @@ struct container_s {      // CONTAINER context
 
     // stats
     long stat_containercount;
+    long stat_inactcount;
     long stat_sameas;
     long stat_patternnodecount;
     long stat_patternedgecount;

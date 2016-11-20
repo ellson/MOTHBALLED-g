@@ -43,6 +43,7 @@ struct thread_s {
     long stat_inactcount;
     long stat_containdepth;      
     long stat_containdepthmax;      
+    long stat_outactcount;
 };
 
 THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind);
