@@ -23,11 +23,6 @@ static void intr(int s)
     exit (EXIT_FAILURE);
 }
 
-static void add_input(int thread, char inputtype, char *input)
-{
-    printf("%d %c: %s\n", thread, inputtype, input);
-}
-
 static void usage(char *prog) {
     fprintf(stderr,"\
 Usage: %s [-Vh?]\n\
@@ -37,12 +32,14 @@ Usage: %s [-Vh?]\n\
  -V          - Print version and exit\n\
  -h          - Print this help text and exit\n\
  -?          - Print this help text and exit\n\
- -D<dom>     - Select DOM where: <dom> = 'g'  - one time graph (default)\n\
-                                 <dom> = 'G'  - persistent graph\n\
-                                 <dom> = 'c'  - document\n\
-                                 <dom> = 'f'  - filter\n\
+ -D<dom>     - Select DOM type:
+               <dom> = 'g'  - one time graph (default)\n\
+               <dom> = 'G'  - persistent graph\n\
+               <dom> = 'd'  - document\n\
+               <dom> = '0'  - null dom for: translator, prettyprinter\n\
  -o<file>    - output to file (default stdout)\n\
  -T<fmt>     - output format:  g, (more to come)\n\
+ -t<tab>     - tabsize to use for output nesting (default 0)\n\
  -p          - start new parallel thread for following inputs\n\
  -f<file>... - input from file(s).  Use '-' for stdin. (default stdin)\n\
  -e<str>     - input from string\n\
@@ -54,26 +51,49 @@ static void version(void) {
     fprintf(stderr,"Version: %s\n", PACKAGE_VERSION);
 }
 
+static void add_input(int thread, char inputsource, char *input)
+{
+    printf("%d %c: %s\n", thread, inputsource, input);
+}
+
 int main(int argc, char *argv[])
 {
     int opt, optnum;
+
+// defaults
     int thread = 0;
-    char inputtype = 'f';
+    char inputsource = 'f';
+    char dom = "g";
+    char outputfile = "-";
+    char outputtype = "g";
+    int outputtab = 0;
 
     signal(SIGINT, intr);
 
-    while ((opt = getopt(argc, argv, "-fesph?V")) != -1) {
+    while ((opt = getopt(argc, argv, "-fespD:t:?hV")) != -1) {
+        if (optarg) {
+            optnum = atoi(optarg);
+        } else {
+            optnum = 0;
+        }
         switch (opt) {
         case 1: 
-            add_input(thread, inputtype, optarg);
+            add_input(thread, inputsource, optarg);
             break;
         case 'f':  
         case 'e':   
         case 's':    
-            inputtype = opt;
+            inputsource = opt;
             break;
         case 'p':    
             thread++;
+            break;
+        case 'D':    
+            switch (optarg) {
+            case 'g':
+            case 'G':
+            case 'd':
+            case '0':
             break;
         case 'V':    
             version();
