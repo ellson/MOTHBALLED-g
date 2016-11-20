@@ -5,8 +5,11 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include "libg_session.h"
+// #include "libg_session.h"
 
+#ifndef PACKAGE_NAME
+#define PACKAGE_NAME "unknown"
+#endif
 #ifndef PACKAGE_VERSION
 #define PACKAGE_VERSION "unknown"
 #endif
@@ -26,29 +29,33 @@ static void intr(int s)
 static void usage(char *prog) {
     fprintf(stderr,"\
 Usage: %s [-Vh?]\n\
-       %s [-D<dom>][-o<file>][-T<fmt>][[-p][[-f<file>...]|[-s<skt>]|[-e<str>]]]\n\n\
+       %s [<DOM_and_output>][<input_source_and_thread>]*\n\n\
 ", prog, prog);
-    fprintf(stderr,"\
- -V          - Print version and exit\n\
- -h          - Print this help text and exit\n\
- -?          - Print this help text and exit\n\
- -D<dom>     - Select DOM type:
+fprintf(stderr,"\
+where: <DOM_and_output>  is:\n\
+       [-D<dom>][-o<fn>][-T<fmt>]\n\n\
+  and: <input_source>\n\
+       [-p][[-f<fn>...]|[-s<skt>]|[-e<str>]]]\n\n\
+ -V        - Print version and exit\n\
+ -h        - Print this help text and exit\n\
+ -?        - Print this help text and exit\n\
+ -D<dom>   - Select DOM type:\n\
                <dom> = 'g'  - one time graph (default)\n\
                <dom> = 'G'  - persistent graph\n\
                <dom> = 'd'  - document\n\
                <dom> = '0'  - null dom for: translator, prettyprinter\n\
- -o<file>    - output to file (default stdout)\n\
- -T<fmt>     - output format:  g, (more to come)\n\
- -t<tab>     - tabsize to use for output nesting (default 0)\n\
- -p          - start new parallel thread for following inputs\n\
- -f<file>... - input from file(s).  Use '-' for stdin. (default stdin)\n\
- -e<str>     - input from string\n\
- -s<skt>     - input from socket\n\
+ -o<fn>    - output to file (default stdout)\n\
+ -T<fmt>   - output format:  g, (more to come)\n\
+ -t<tab>   - tabsize to use for output nesting (default 0)\n\
+ -p        - start new parallel thread for following inputs\n\
+ -f<fn>... - input from file(s).  Use '-' for stdin. (default stdin)\n\
+ -e<str>   - input from string\n\
+ -s<skt>   - input from socket\n\
 ");
 }
 
 static void version(void) {
-    fprintf(stderr,"Version: %s\n", PACKAGE_VERSION);
+    fprintf(stderr,"Version: %s-%s\n", PACKAGE_NAME, PACKAGE_VERSION);
 }
 
 static void add_input(int thread, char inputsource, char *input)
@@ -63,9 +70,9 @@ int main(int argc, char *argv[])
 // defaults
     int thread = 0;
     char inputsource = 'f';
-    char dom = "g";
-    char outputfile = "-";
-    char outputtype = "g";
+    char dom = 'g';
+    char *outputfile = "-";
+    char outputtype = 'g';
     int outputtab = 0;
 
     signal(SIGINT, intr);
@@ -89,11 +96,14 @@ int main(int argc, char *argv[])
             thread++;
             break;
         case 'D':    
+#if 0
             switch (optarg) {
             case 'g':
             case 'G':
             case 'd':
             case '0':
+            }
+#endif
             break;
         case 'V':    
             version();
