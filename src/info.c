@@ -68,10 +68,12 @@ void info_process(THREAD_t * THREAD)
     // - alpha sorted nodes and attributes
 
     // FIXME - add:
-    //    - prog basename ?
-    //    - proc version
+    //    - prog basename ?   ... TMI ?
+    //    - prog packagename
+    //    - prog version
 
-    // FIXME - sanitize for security - don't provide too much info
+    // FIXME - Audit for security
+    //          - don't provide too much info
  
     THREAD->sep = '\0';
     append_string  (THREAD, &pos, "process");
@@ -79,19 +81,19 @@ void info_process(THREAD_t * THREAD)
     Au("elemmallocsize",        LISTALLOCNUM * sizeof(elem_t));
     Au("elempermalloc",         LISTALLOCNUM);
     Au("elemsize",              sizeof(elem_t));
-    As("hostname",              PROCESS->hostname);
+    As("hostname",              PROCESS->hostname);  // FIXME - TMI ?
     Au("inbufcapacity",         INBUFIZE);
     Au("inbufmallocsize",       INBUFALLOCNUM * sizeof(inbufelem_t));
     Au("inbufpermalloc",        INBUFALLOCNUM);
     Au("inbufsize",             sizeof(inbufelem_t));
-    As("osmachine",             PROCESS->osmachine);
-    As("osname",                PROCESS->osname);
-    As("osrelease",             PROCESS->osrelease);
-    Au("pid",                   PROCESS->pid);
-    As("progname",              PROCESS->progname);
+    As("osmachine",             PROCESS->osmachine); // FIXME - TMI ?
+    As("osname",                PROCESS->osname);    // FIXME - TMI ?
+    As("osrelease",             PROCESS->osrelease); // FIXME - TMI ?
+    Au("pid",                   PROCESS->pid);       // FIXME - TMI ?
+    As("progname",              PROCESS->progname);  // FIXME - TMI ?
     Au("starttime",             PROCESS->starttime);
     Au("uptime",                PROCESS->uptime);
-    As("username",              PROCESS->username);
+    As("username",              PROCESS->username);  // FIXME - TMI ?
     Au("voidptrsize",           sizeof(void*));
     append_token   (THREAD, &pos, ']');
     assert(pos < buf+BUF_SIZE);
