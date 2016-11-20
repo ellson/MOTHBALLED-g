@@ -11,7 +11,8 @@
 
 typedef struct {
     elem_t *nextstack[MAXNEST];
-    unsigned char *cp, *push, *split, *pop;
+    char *pps[MAXNEST];
+    unsigned char *cp;
     uint16_t sp;
     uint16_t len;
 } iter_t;
@@ -38,10 +39,17 @@ static void stepiter(iter_t *iter, elem_t *this)
             iter->len = this->len;
         } else {
             assert(iter->sp < MAXNEST);
+            switch ((state_t)this->state) {
+            case EDGE:        iter->pps[(iter->sp)] = "<>\0"  ; break;
+            case ATTR:        iter->pps[(iter->sp)] = "[] "   ; break;
+            case SET:
+            case ENDPOINTSET: iter->pps[(iter->sp)] = "()\0"  ; break;
+            default:          iter->pps[(iter->sp)] = "\0\0 " ; break;
+            }
+            iter->cp = (unsigned char*)iter->pps[(iter->sp)]+0;
+            iter->len = 1;
             iter->nextstack[(iter->sp)++] = this->u.l.next;
             iter->nextstack[(iter->sp)] = this->u.l.first;
-            iter->cp = iter->push;
-            iter->len = 1;
         }
         break;
     default:
@@ -50,24 +58,12 @@ static void stepiter(iter_t *iter, elem_t *this)
     }
 }
 
-static void inititer(iter_t *iter, elem_t *elem, char *push_split_pop)
+static void inititer(iter_t *iter, elem_t *elem)
 {
-    static char *default_push_split_pop = "\0\0\0";
-
     assert(iter);
     assert(elem);
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
-
-    if (push_split_pop) {
-        assert(*(push_split_pop) && *(push_split_pop+1) && *(push_split_pop+2));
-        iter->push = (unsigned char*)push_split_pop;
-    } else {
-        iter->push = (unsigned char*)default_push_split_pop;
-    }
-    iter->split=iter->push+1;
-    iter->pop=iter->push+2;
-
     stepiter(iter, elem);
 }
 
@@ -78,12 +74,18 @@ static void skipiter(iter_t *iter)
     if (iter->sp) {
         this = iter->nextstack[--(iter->sp)];
         if (this) {
+            switch ((state_t)this->state) {
+            case CONTENTS: 
+            case ATTRIBUTES:  iter->pps[(iter->sp)] = "\0\0\0" ; break;
+            case VALUE:       iter->pps[(iter->sp)] = "\0\0="  ; break;
+            default: break;
+            }
+            iter->cp = (unsigned char*)iter->pps[(iter->sp)]+2;
+            iter->len = 1;
             iter->nextstack[(iter->sp)++] = this->u.l.next;
             iter->nextstack[(iter->sp)] = this->u.l.first;
-            iter->cp = iter->split;
-            iter->len = 1;
         } else {
-            iter->cp = iter->pop;
+            iter->cp = (unsigned char*)iter->pps[(iter->sp)]+1;
             iter->len = 1;
         }
     } else {
@@ -119,8 +121,8 @@ int compare (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    inititer(&ai, a, NULL);
-    inititer(&bi, b, NULL);
+    inititer(&ai, a);
+    inititer(&bi, b);
     do {
         do { 
             ai.len--;
@@ -159,8 +161,8 @@ int match (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    inititer(&ai, a, NULL);
-    inititer(&bi, b, NULL);
+    inititer(&ai, a);
+    inititer(&bi, b);
     do {
         do { 
             if (*bi.cp == '*') { 
@@ -205,12 +207,16 @@ int match (elem_t *a, elem_t *b)
 void printlist (elem_t *a)
 {
     iter_t ai = { 0 };
+    char c;
 
-    inititer(&ai, a, "( )");
+    inititer(&ai, a);
     do {
         if (ai.len) {
             while (ai.len--) {
-                putc(*ai.cp++, stdout);
+                c = *ai.cp++;
+                if (c) {
+                    putc(c, stdout);
+                }
             }
         } 
         nextiter(&ai);

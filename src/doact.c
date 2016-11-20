@@ -12,6 +12,7 @@
 #include "dispatch.h"
 #include "reduce.h"
 #include "sameas.h"
+#include "compare.h"  // for printlist()
 #include "doact.h"
 
 /**
@@ -76,8 +77,8 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     }
     // NB ACTs that are QRY or TLD may still have AST in SUBJECT
 
+//P(act);
 printlist(act);
-P(act);
 
 #if 0
     // dispatch events for the ACT just finished
