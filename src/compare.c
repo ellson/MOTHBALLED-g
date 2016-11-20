@@ -11,8 +11,7 @@
 
 typedef struct {
     elem_t *nextstack[MAXNEST];
-    unsigned char *cp;
-    char *push_split_pop;
+    unsigned char *cp, *push, *split, *pop;
     uint16_t sp;
     uint16_t len;
 } iter_t;
@@ -41,7 +40,7 @@ static void stepiter(iter_t *iter, elem_t *this)
             assert(iter->sp < MAXNEST);
             iter->nextstack[(iter->sp)++] = this->u.l.next;
             iter->nextstack[(iter->sp)] = this->u.l.first;
-            iter->cp = (unsigned char*)iter->push_split_pop;
+            iter->cp = iter->push;
             iter->len = 1;
         }
         break;
@@ -62,10 +61,12 @@ static void inititer(iter_t *iter, elem_t *elem, char *push_split_pop)
 
     if (push_split_pop) {
         assert(*(push_split_pop) && *(push_split_pop+1) && *(push_split_pop+2));
-        iter->push_split_pop = push_split_pop;
+        iter->push = (unsigned char*)push_split_pop;
     } else {
-        iter->push_split_pop = default_push_split_pop;
+        iter->push = (unsigned char*)default_push_split_pop;
     }
+    iter->split=iter->push+1;
+    iter->pop=iter->push+2;
 
     stepiter(iter, elem);
 }
@@ -74,16 +75,17 @@ static void skipiter(iter_t *iter)
 {
     elem_t *this;
 
-    if (iter->sp && (( this = iter->nextstack[--(iter->sp)])) ) {
-        this = this->u.l.first;
-        assert((elemtype_t)this->type == LISTELEM);
-        iter->nextstack[(iter->sp)++] = this->u.l.next;
-        iter->nextstack[(iter->sp)] = this->u.l.first;
-        iter->cp = (unsigned char*)iter->push_split_pop+1;
-        iter->len = 1;
-    } else if (iter->sp && iter->nextstack[--(iter->sp)]) {
-        iter->cp = (unsigned char*)iter->push_split_pop+2;
-        iter->len = 1;
+    if (iter->sp) {
+        this = iter->nextstack[--(iter->sp)];
+        if (this) {
+            iter->nextstack[(iter->sp)++] = this->u.l.next;
+            iter->nextstack[(iter->sp)] = this->u.l.first;
+            iter->cp = iter->split;
+            iter->len = 1;
+        } else {
+            iter->cp = iter->pop;
+            iter->len = 1;
+        }
     } else {
         iter->cp = NULL;
         iter->len = 0;
@@ -190,4 +192,28 @@ int match (elem_t *a, elem_t *b)
         }
     } while (ai.len && bi.len && rc == 0);
     return rc;
+}
+
+/**
+ * printlist string value of lists: a and b
+ *
+ * - every traversal up, across, or down, through nested lists contibutes a single
+ *   'char' to the printed.   Typically: '(', ' ', or ')'
+ *
+ * @param a
+ */
+void printlist (elem_t *a)
+{
+    iter_t ai = { 0 };
+
+    inititer(&ai, a, "( )");
+    do {
+        if (ai.len) {
+            while (ai.len--) {
+                putc(*ai.cp++, stdout);
+            }
+        } 
+        nextiter(&ai);
+    } while (ai.len || ai.sp);
+    putc('\n', stdout);
 }

@@ -9,6 +9,7 @@ extern "C" {
 
 int compare(elem_t * a, elem_t * b);
 int match(elem_t * a, elem_t * b);
+void printlist(elem_t * a);
 
 #ifdef __cplusplus
 }
