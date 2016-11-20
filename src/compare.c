@@ -46,11 +46,11 @@ static void stepiter(iter_t *iter, elem_t *this)
         } else {
             assert(iter->sp < MAXNEST);
             switch ((state_t)this->state) {
-            case EDGE:        iter->pps[(iter->sp)] = "<>\0"  ; break;
-            case ATTR:        iter->pps[(iter->sp)] = "[] "   ; break;
+            case EDGE:        iter->pps[(iter->sp)] = "<>\0"   ; break;
+            case ATTR:        iter->pps[(iter->sp)] = "[] "    ; break;
             case SET:
-            case ENDPOINTSET: iter->pps[(iter->sp)] = "()\0"  ; break;
-            default:          iter->pps[(iter->sp)] = "\0\0 " ; break;
+            case ENDPOINTSET: iter->pps[(iter->sp)] = "()\0"   ; break;
+            default:          iter->pps[(iter->sp)] = "\0\0 "  ; break;
             }
             iter->cp = (unsigned char*)iter->pps[(iter->sp)]+0;
             iter->len = 1;
