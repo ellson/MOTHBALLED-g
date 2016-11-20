@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-// session.c
-void session(int *pargc, char *argv[], int optind, char needstats);
+// process.c
+void process(int *pargc, char *argv[], int optind, char needstats);
 
 // emit.c
 int select_emitter(char *name);
