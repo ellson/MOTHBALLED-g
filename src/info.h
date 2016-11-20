@@ -8,7 +8,8 @@ extern "C" {
 #endif
 
 char * info_process(CONTAINER_t *CONTAINER);
-char * info_stats(CONTAINER_t *CONTAINER);
+char * info_thread(CONTAINER_t *CONTAINER);
+char * info_container(CONTAINER_t *CONTAINER);
 
 #ifdef __cplusplus
 }
