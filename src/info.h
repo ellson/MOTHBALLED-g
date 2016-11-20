@@ -7,9 +7,9 @@
 extern "C" {
 #endif
 
-char * info_process(CONTAINER_t *CONTAINER);
-char * info_thread(CONTAINER_t *CONTAINER);
-char * info_container(CONTAINER_t *CONTAINER);
+void info_process(THREAD_t *THREAD);
+void info_thread(THREAD_t *THREAD);
+void info_container(CONTAINER_t *CONTAINER);
 
 #ifdef __cplusplus
 }

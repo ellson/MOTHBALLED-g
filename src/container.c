@@ -70,13 +70,15 @@ success_t container(THREAD_t * THREAD)
     free_tree(LIST(), container.edges);
     free_tree(LIST(), container.node_patterns);
     free_tree(LIST(), container.edge_patterns);
+// Some elem's are retained by the attrid tree
+//E();
 
+    // FIXME - move to Aunt Sally query
     if (THREAD->PROCESS->needstats) {
-        fprintf(TOKEN()->out, "\n%s\n", info_process(&container));
-        fprintf(TOKEN()->out, "%s\n", info_stats(&container));
+        info_process(THREAD);
+        info_thread(THREAD);
+        info_container(&container);
     }
 
-// Some elem's are reatained by the attrid tree
-//E();
     return rc;
 }

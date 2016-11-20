@@ -51,30 +51,17 @@
 /**
  * The info is formatted into a buffer using minimal
  * spacing g format
- * e.g.      "stats_fixed[progname=g username=ellson hostname=work .... ]
+ * e.g.      "process[progname=g username=ellson hostname=work .... ]
  *
- * There is an attribute pretty-printer function for when this
- * is printed for the user.
- *
- * This info is gathered just once, so a statically sized buffer
- * is used. It is only filled on the first call,  if info_process() is
- * called again the same result is used.
- *
- * @param CONTAINER context
+ * @param THREAD context
  * @return formatted string result
  */
-char * info_process(CONTAINER_t * CONTAINER)
+void info_process(THREAD_t * THREAD)
 {
-    THREAD_t *THREAD = CONTAINER->THREAD;
     PROCESS_t *PROCESS = THREAD->PROCESS;
 
-// FIXME - can't do this in threaded code!!
-    static char buf[BUF_SIZE];
-    static char *pos = &buf[0];  // NB. static. This initalization happens only once
-
-    if (pos != &buf[0]) { // have we been here before?
-        return buf;
-    }
+    char buf[BUF_SIZE];
+    char *pos = &buf[0];
 
     // write in canonical g format
     // - minimal spacing - one SUBJECT per line
@@ -84,8 +71,10 @@ char * info_process(CONTAINER_t * CONTAINER)
     //    - prog basename ?
     //    - proc version
 
+    // FIXME - sanitize for security - don't provide too much info
+ 
     THREAD->sep = '\0';
-    append_string  (THREAD, &pos, "stats_process");
+    append_string  (THREAD, &pos, "process");
     append_token   (THREAD, &pos, '[');
     Au("elemmallocsize",        LISTALLOCNUM * sizeof(elem_t));
     Au("elempermalloc",         LISTALLOCNUM);
@@ -105,28 +94,26 @@ char * info_process(CONTAINER_t * CONTAINER)
     As("username",              PROCESS->username);
     Au("voidptrsize",           sizeof(void*));
     append_token   (THREAD, &pos, ']');
-
     assert(pos < buf+BUF_SIZE);
-    return buf;
+
+    fprintf(stdout,buf);
+    putc('\n', stdout);
 }
 
 
 /**
  * format running thread stats as a string
  *
- * @param CONTAINER context
+ * @param THREAD context
  * @return formatted string
  */
-char * info_thread(CONTAINER_t * CONTAINER)
+void info_thread(THREAD_t * THREAD)
 {
-    THREAD_t *THREAD = CONTAINER->THREAD;
     PROCESS_t *PROCESS = THREAD->PROCESS;
     uint64_t runtime, lend, itot, etot, istr;
     char percent[6];
-
-// FIXME - can't do this in threaded code!!
     static char buf[BUF_SIZE];
-    char *pos = &buf[0];  // NB non-static.  stats are updated and re-formatted on each call
+    char *pos = &buf[0];
     
 #ifdef HAVE_CLOCK_GETTIME
     // Y2038-unsafe struct - but should be ok for uptime
@@ -160,7 +147,7 @@ char * info_thread(CONTAINER_t * CONTAINER)
     // - alpha sorted nodes and attributes
 
     THREAD->sep = '\0';
-    append_string  (THREAD, &pos, "stats_thread");
+    append_string  (THREAD, &pos, "thread");
     append_token   (THREAD, &pos, '[');
     Au("charpersecond",         TOKEN()->stat_incharcount+TEN9/runtime);
     Au("containdepth",          THREAD->stat_containdepth);
@@ -171,6 +158,8 @@ char * info_thread(CONTAINER_t * CONTAINER)
     Au("elemnow",               LIST()->stat_elemnow);
     Au("fragmax",               LIST()->stat_fragmax);
     Au("fragnow",               LIST()->stat_fragnow);
+// FIXME - move stat->inactcount to thread
+//    Au("inactspersecond",       CONTAINER->stat_inactcount*TEN9/runtime);
     Au("inbufmalloccount",      INBUF()->stat_inbufmalloc);
     Au("inbufmalloctotal",      itot);
     Au("inbufmax",              INBUF()->stat_inbufmax);
@@ -185,9 +174,10 @@ char * info_thread(CONTAINER_t * CONTAINER)
     Au("nowtime",               nowtime.tv_sec);
     Ar("runtime",               runtime/TEN9, runtime%TEN9);
     append_token   (THREAD, &pos, ']');
-
     assert(pos < buf+BUF_SIZE);
-    return buf;
+
+    fprintf(stdout,buf);
+    putc('\n', stdout);
 }
 
 /**
@@ -196,17 +186,15 @@ char * info_thread(CONTAINER_t * CONTAINER)
  * @param CONTAINER context
  * @return formatted string
  */
-char * info_container(CONTAINER_t * CONTAINER)
+void info_container(CONTAINER_t * CONTAINER)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    PROCESS_t *PROCESS = THREAD->PROCESS;
 
-// FIXME - can't do this in threaded code!!
-    static char buf[BUF_SIZE];
-    char *pos = &buf[0];  // NB non-static.  stats are updated and re-formatted on each call
+    char buf[BUF_SIZE];
+    char *pos = &buf[0];
     
     THREAD->sep = '\0';
-    append_string  (THREAD, &pos, "stats_container");
+    append_string  (THREAD, &pos, "container");
     append_token   (THREAD, &pos, '[');
     Au("containercount",        CONTAINER->stat_containercount);
     Au("inactcount",            CONTAINER->stat_inactcount);
@@ -214,11 +202,11 @@ char * info_container(CONTAINER_t * CONTAINER)
     Au("inactnodepatterns",     CONTAINER->stat_patternnodecount);
     Au("inactnonpatterns",      CONTAINER->stat_nonpatternactcount);
     Au("inactpatternmatches",   CONTAINER->stat_patternmatches);
-    Au("inactspersecond",       CONTAINER->stat_inactcount*TEN9/runtime);
     Au("outactcount",           CONTAINER->stat_outactcount);
     Au("sameas",                CONTAINER->stat_sameas);
     append_token   (THREAD, &pos, ']');
-
     assert(pos < buf+BUF_SIZE);
-    return buf;
+
+    fprintf(stdout,buf);
+    putc('\n', stdout);
 }
