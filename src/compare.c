@@ -17,6 +17,12 @@ typedef struct {
     uint16_t len;
 } iter_t;
 
+/*
+ * - traversals up, down, or accross lists may contribute
+ *   an entra character to be printed that depends on the state_t
+ *   e.g. The '<' '>' that surround edges, and a '\0' to indicate that
+ *   there is no need for anything between '>' and '<'
+ */
 static void stepiter(iter_t *iter, elem_t *this)
 {
     switch ((elemtype_t)this->type) {
@@ -197,12 +203,9 @@ int match (elem_t *a, elem_t *b)
 }
 
 /**
- * printlist string value of lists: a and b
+ * printlist canonical g string value of a list
  *
- * - every traversal up, across, or down, through nested lists contibutes a single
- *   'char' to the printed.   Typically: '(', ' ', or ')'
- *
- * @param a
+ * @param a - list to be printed
  */
 void printlist (elem_t *a)
 {
@@ -211,12 +214,11 @@ void printlist (elem_t *a)
 
     inititer(&ai, a);
     do {
-        if (ai.len) {
-            while (ai.len--) {
-                c = *ai.cp++;
-                if (c) {
-                    putc(c, stdout);
-                }
+        while (ai.len) {
+            ai.len--;
+            c = *ai.cp++;
+            if (c) {
+                putc(c, stdout);
             }
         } 
         nextiter(&ai);
