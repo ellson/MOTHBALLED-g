@@ -190,3 +190,16 @@ DONE - aligned with C language
 
 32. Optimizations
   - pattern.c - search less than the whole pattern tree for matches
+
+33. Use specialcase pattern '*<>' to match all edges
+       - distinct from '<*>' which matches all edges with one leg
+       - distinct from '* ' which matches all nodes
+
+34. incremental updates from files ...
+        - parse and store a g file as one act/line,  but without any
+          modification to ordering or duplication.
+        - if new, then process every act
+        - if updated then process only diff lines (- acts)
+             - generate deletes for missing lines.
+             - generate add for new lines or updates.
+                   - reset any attributes missing from new - not quite!
