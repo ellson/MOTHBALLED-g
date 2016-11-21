@@ -203,3 +203,10 @@ DONE - aligned with C language
              - generate deletes for missing lines.
              - generate add for new lines or updates.
                    - reset any attributes missing from new - not quite!
+
+35. conceptually encode input files as:
+        -f"filename_or_path"`sequencenumber
+    where
+        -f              = class of object
+        file_or_path    = instance (quoted if necessary)
+        `sequencenumber = disambig for tracking resuse
