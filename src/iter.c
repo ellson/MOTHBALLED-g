@@ -10,8 +10,6 @@
 #include "grammar.h"
 #include "iter.h"
 
-#define MAXNEST 20
-
 /*
  * - traversals up, down, or accross lists may contribute
  *   an entra character to be printed that depends on the state_t
