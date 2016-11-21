@@ -6,14 +6,29 @@
 #include <assert.h>
 #include <signal.h>
 
-// #include "libg_session.h"
+#if 0
+#include "libg_session.h"
+#else
+// Dummy API for testing main()
+#define PACKAGE_NAME "g-fake"
+#define PACKAGE_VERSION "1234-1"
+static void process_version(void) {
+    fprintf(stderr,"%s version %s\n", PACKAGE_NAME, PACKAGE_VERSION);
+}
+static void process_input(int thread, char type, char *input, long sequence)
+{
+    printf("inp: -%c\"%s\"`%ld par: %d\n", type, input, sequence, thread);
+}
+static void process_output(char *output, char *layout, char* format)
+{
+    printf("out: -o\"%s\" -K%s -T%s\n", output, layout, format);
+}
+static void process_dom_start(char dom)
+{
+    printf("dom: -D%c\n", dom);
+}
+#endif
 
-#ifndef PACKAGE_NAME
-#define PACKAGE_NAME "unknown"
-#endif
-#ifndef PACKAGE_VERSION
-#define PACKAGE_VERSION "unknown"
-#endif
 
 // if interrupted we try to gracefully snapshot the current state 
 static void intr(int s)
@@ -58,33 +73,6 @@ and where <dest> is:\n\
 \n", prog, prog);
 }
 
-static void version(void) {
-    fprintf(stderr,"%s version %s\n", PACKAGE_NAME, PACKAGE_VERSION);
-}
-
-/**************** FIXME - move to libg_process public api ***/
- 
-static int
-process_input(int thread, char type, char *input, long sequence)
-{
-    printf("inp: -%c\"%s\"`%ld par: %d\n", type, input, sequence, thread);
-    return 0;
-}
-
-static int
-process_output(char *output, char *layout, char* format)
-{
-    printf("out: -o\"%s\" -K%s -T%s\n", output, layout, format);
-    return 0;
-}
-
-static void
-process_dom_start(char dom)
-{
-    printf("dom: -D%c\n", dom);
-}
-/***********************************************************/
-
 int main(int argc, char *argv[])
 {
     int opt, optnum, rc;
@@ -116,17 +104,11 @@ int main(int argc, char *argv[])
             case 's':
             case 'f':  
             case 'e':   
-                rc = process_input(thread, multiopt, optarg, sequence++);
-                if (rc) {
-                    exit(EXIT_FAILURE);
-                }
+                process_input(thread, multiopt, optarg, sequence++);
                 inpcnt++;
                 break;
             case 'o':    
-                rc = process_output(optarg, layout, format);
-                if (rc) {
-                    exit(EXIT_FAILURE);
-                }
+                process_output(optarg, layout, format);
                 outcnt++;
                 break;
             default:
@@ -160,7 +142,7 @@ int main(int argc, char *argv[])
             }
             break;
         case 'v':    
-            version();
+            process_version();
             exit(EXIT_SUCCESS);
             break;
         case 'h':
