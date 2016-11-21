@@ -15,8 +15,8 @@ int select_emitter(char *name);
 
 // dumpg.c
 void set_sstyle( void );
-void printg( void );
-void dumpg( void );
+void printgrammar0( void );
+void printgrammar1( void );
 
 #ifdef __cplusplus
 }

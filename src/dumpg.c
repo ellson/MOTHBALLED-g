@@ -78,7 +78,7 @@ static void print_prop(unsigned char prop)
     }
 }
 
-static void printg_r(state_t si, int indent)
+static void printgrammar_r(state_t si, int indent)
 {
     char so;        // state offset, signed
     state_t ti, ni;
@@ -93,7 +93,7 @@ static void printg_r(state_t si, int indent)
         print_prop(state_props[ti]);
         fprintf(OUT, "%s\n", styleLBE);
         if (ni != ACTIVITY) {    // stop recursion
-            printg_r(ni, indent + 2);
+            printgrammar_r(ni, indent + 2);
         }
         for (i = indent; i--;)
             putc(' ', OUT);
@@ -104,9 +104,9 @@ static void printg_r(state_t si, int indent)
 }
 
 // recursively walk the grammar - tests all possible transitions
-void printg(void)
+void printgrammar1(void)
 {
-    printg_r(ACTIVITY, 0);
+    printgrammar_r(ACTIVITY, 0);
 }
 
 static void print_chars(state_t si)
@@ -129,9 +129,9 @@ static void print_chars(state_t si)
     }
 }
 
-// just dump the grammar linearly,  should result in same
-// logical graph as printg()
-void dumpg(void)
+// just printgrammar0 the grammar linearly,  should result in same
+// logical graph as printgrammar()
+void printgrammar0(void)
 {
     char so;
     state_t si, ni, ti;

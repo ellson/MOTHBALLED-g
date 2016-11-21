@@ -35,11 +35,11 @@ int main(int argc, char *argv[])
         case 'd':   // debug
             switch (optnum) {
             case 0:
-                dumpg();
+                printgrammar0();
                 exit(EXIT_SUCCESS);
                 break;
             case 1:
-                printg();
+                printgrammar1();
                 exit(EXIT_SUCCESS);
                 break;
             default:

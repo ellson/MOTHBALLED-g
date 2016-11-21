@@ -14,6 +14,7 @@ extern "C" {
 #include "grammar.h"
 #include "token.h"
 #include "ikea.h"
+#include "iter.h"
 #include "tree.h"
 #include "parse.h"
 #include "container.h"
