@@ -210,3 +210,12 @@ DONE - aligned with C language
         -f              = class of object
         file_or_path    = instance (quoted if necessary)
         `sequencenumber = disambig for tracking resuse
+
+36. Instead of supporting -K and -T options directly
+    perhaps suppot the command, e.g.
+               -C "gv" "dot -Kfdp -Tgv -Tsvg -O"
+    then cache all output files with the contenthash of the .g
+
+    Might be a more general facility for, e.g. document processors.
+
+37. json2g, g2.json ??   xml2g, g2xml ??
