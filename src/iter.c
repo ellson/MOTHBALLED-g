@@ -10,11 +10,16 @@
 #include "grammar.h"
 #include "iter.h"
 
-/*
+/**
+ * complete the iter state update or the new elem
+ *
  * - traversals up, down, or accross lists may contribute
- *   an entra character to be printed that depends on the state_t
- *   e.g. The '<' '>' that surround edges, and a '\0' to indicate that
- *   there is no need for anything between '>' and '<'
+ *   an entra character to be printed (or considered in comparisons or matched)
+ *   that depends on the state_t e.g. The '<' '>' that surround edges
+ *   and a '\0' to indicate that there is no need for anything between '>' and '<'
+ *
+ * @param iter - a struct containg the current state of the iterator
+ * @param this - the elem for this latest step
  */
 static void stepiter(iter_t *iter, elem_t *this)
 {
@@ -57,6 +62,12 @@ static void stepiter(iter_t *iter, elem_t *this)
     }
 }
 
+/**
+ * skip the iterator to the end of a chain of elems
+ *    and to the next elem in traversal order
+ *
+ * @param iter - a struct containg the current state of the iterator
+ */
 void skipiter(iter_t *iter)
 {
     elem_t *this;
@@ -84,6 +95,12 @@ void skipiter(iter_t *iter)
     }
 }
 
+/**
+ * initialize an iterator for traversing a parser() output list.
+ *
+ * @param iter - a struct containg the current state of the iterator
+ * @param elem - the root elem of the list to be iterated
+ */
 void inititer(iter_t *iter, elem_t *elem)
 {
     assert(iter);
@@ -93,6 +110,11 @@ void inititer(iter_t *iter, elem_t *elem)
     stepiter(iter, elem);
 }
 
+/**
+ * move the iterator to the next elem in traversal order
+ *
+ * @param iter - a struct containg the current state of the iterator
+ */
 void nextiter(iter_t *iter)
 {
     elem_t *this = iter->nextstack[iter->sp];
