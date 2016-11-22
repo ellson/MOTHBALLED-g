@@ -11,7 +11,7 @@ extern "C" {
 
 typedef struct {
     elem_t *nextstack[MAXNEST];
-    char *spp[MAXNEST];
+    char *pop_space_push[MAXNEST];
     unsigned char *cp;
     uint16_t sp;
     uint16_t len;

@@ -44,13 +44,12 @@ static void stepiter(iter_t *iter, elem_t *this)
         } else {
             assert(iter->sp < MAXNEST);
             switch ((state_t)this->state) {
-                case EDGE:        iter->spp[(iter->sp)] = "\0<>"   ; break;
-                case ATTR:        iter->spp[(iter->sp)] = "\0[]"   ; break;
+                case EDGE:        iter->pop_space_push[(iter->sp)] = ">\0<"   ; break;
                 case SET:
-                case ENDPOINTSET: iter->spp[(iter->sp)] = "\0()"   ; break;
-                default:          iter->spp[(iter->sp)] = " \0\0"  ; break;
+                case ENDPOINTSET: iter->pop_space_push[(iter->sp)] = ")\0("   ; break;
+                default:          iter->pop_space_push[(iter->sp)] = "\0 \0"  ; break;
             }
-            iter->cp = (unsigned char*)iter->spp[(iter->sp)]+1;
+            iter->cp = (unsigned char*)iter->pop_space_push[(iter->sp)]+2;
             iter->len = 1;
             iter->nextstack[(iter->sp)++] = this->u.l.next;
             iter->nextstack[(iter->sp)] = this->u.l.first;
@@ -76,16 +75,16 @@ void skipiter(iter_t *iter)
         this = iter->nextstack[--(iter->sp)];
         if (this) {
             switch ((state_t)this->state) {
-            case ATTRIBUTES:  iter->spp[(iter->sp)] = "\0\0\0" ; break;
-            case VALUE:       iter->spp[(iter->sp)] = "=\0\0"  ; break;
-            default: break;
+                case ATTRIBUTES:  iter->pop_space_push[(iter->sp)] = "]\0["   ; break;
+                case VALUE:       iter->pop_space_push[(iter->sp)] = "\0=\0"  ; break;
+                default: break;
             }
-            iter->cp = (unsigned char*)iter->spp[(iter->sp)]+0;
-            iter->len = 1;
+            iter->cp = (unsigned char*)iter->pop_space_push[(iter->sp)]+0;
+            iter->len = 3;
             iter->nextstack[(iter->sp)++] = this->u.l.next;
             iter->nextstack[(iter->sp)] = this->u.l.first;
         } else {
-            iter->cp = (unsigned char*)iter->spp[(iter->sp)]+2;
+            iter->cp = (unsigned char*)iter->pop_space_push[(iter->sp)]+0;
             iter->len = 1;
         }
     } else {
