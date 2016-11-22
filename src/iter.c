@@ -13,9 +13,9 @@
 /**
  * complete the iter state update or the new elem
  *
- * - traversals up, down, or accross lists may contribute
- *   an entra character to be printed (or considered in comparisons or matched)
- *   that depends on the state_t e.g. The '<' '>' that surround edges
+ * - Traversals up, down, or accross lists may contribute
+ *   an extra character to be printed, or considered in comparisons or matched.
+ *   The extra character depends on the state_t e.g. The '<' '>' that surround edges
  *   and a '\0' to indicate that there is no need for anything between '>' and '<'
  *
  * @param iter - a struct containg the current state of the iterator
@@ -44,13 +44,13 @@ static void stepiter(iter_t *iter, elem_t *this)
         } else {
             assert(iter->sp < MAXNEST);
             switch ((state_t)this->state) {
-            case EDGE:        iter->pps[(iter->sp)] = "<>\0"   ; break;
-            case ATTR:        iter->pps[(iter->sp)] = "[] "    ; break;
-            case SET:
-            case ENDPOINTSET: iter->pps[(iter->sp)] = "()\0"   ; break;
-            default:          iter->pps[(iter->sp)] = "\0\0 "  ; break;
+                case EDGE:        iter->spp[(iter->sp)] = "\0<>"   ; break;
+                case ATTR:        iter->spp[(iter->sp)] = "\0[]"   ; break;
+                case SET:
+                case ENDPOINTSET: iter->spp[(iter->sp)] = "\0()"   ; break;
+                default:          iter->spp[(iter->sp)] = " \0\0"  ; break;
             }
-            iter->cp = (unsigned char*)iter->pps[(iter->sp)]+0;
+            iter->cp = (unsigned char*)iter->spp[(iter->sp)]+1;
             iter->len = 1;
             iter->nextstack[(iter->sp)++] = this->u.l.next;
             iter->nextstack[(iter->sp)] = this->u.l.first;
@@ -76,17 +76,16 @@ void skipiter(iter_t *iter)
         this = iter->nextstack[--(iter->sp)];
         if (this) {
             switch ((state_t)this->state) {
-            case CONTENTS: 
-            case ATTRIBUTES:  iter->pps[(iter->sp)] = "\0\0\0" ; break;
-            case VALUE:       iter->pps[(iter->sp)] = "\0\0="  ; break;
+            case ATTRIBUTES:  iter->spp[(iter->sp)] = "\0\0\0" ; break;
+            case VALUE:       iter->spp[(iter->sp)] = "=\0\0"  ; break;
             default: break;
             }
-            iter->cp = (unsigned char*)iter->pps[(iter->sp)]+2;
+            iter->cp = (unsigned char*)iter->spp[(iter->sp)]+0;
             iter->len = 1;
             iter->nextstack[(iter->sp)++] = this->u.l.next;
             iter->nextstack[(iter->sp)] = this->u.l.first;
         } else {
-            iter->cp = (unsigned char*)iter->pps[(iter->sp)]+1;
+            iter->cp = (unsigned char*)iter->spp[(iter->sp)]+2;
             iter->len = 1;
         }
     } else {
