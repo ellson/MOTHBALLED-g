@@ -35,7 +35,7 @@ static void stepiter(iter_t *iter, elem_t *this)
         iter->len = this->len;
         break;
     case LISTELEM:
-        if ((elemtype_t)this->u.l.first->type == FRAGELEM) {
+        if (this->u.l.first && (elemtype_t)this->u.l.first->type == FRAGELEM) {
             // align with SHORTSTRELEM
             this = this->u.l.first;
             iter->nextstack[iter->sp] = this->u.f.next;
@@ -45,6 +45,7 @@ static void stepiter(iter_t *iter, elem_t *this)
             assert(iter->sp < MAXNEST);
             switch ((state_t)this->state) {
                 case EDGE:        iter->pop_space_push[(iter->sp)] = ">><"   ; break;
+                case MUM:         iter->pop_space_push[(iter->sp)] = "\0\0^"   ; break;
                 case SET:
                 case ENDPOINTSET: iter->pop_space_push[(iter->sp)] = "))("   ; break;
                 default:          iter->pop_space_push[(iter->sp)] = "\0 \0"  ; break;
@@ -76,10 +77,15 @@ void skipiter(iter_t *iter)
         this = iter->nextstack[--(iter->sp)];
         if (this) {
             switch ((state_t)this->state) {
+                // elems that follow elems of a diferent state_t (non-homogenous lists)
+                // need to over-ride the pop_space_push of the preceeding elem
                 case ATTRIBUTES:  iter->pop_space_push[(iter->sp)] = "]\0["   ; break;
-                case VALUE:       iter->pop_space_push[(iter->sp)] = "\0=\0"  ; break;
+                case VALUE:       iter->pop_space_push[(iter->sp)] = "\0\0="  ; break;
+                case SIS:         iter->pop_space_push[(iter->sp)] = "\0\0\0"   ; break;
+                case KID:         iter->pop_space_push[(iter->sp)] = "\0/\0"   ; break;
                 default: break;
             }
+            // emit space-push (2 chars)
             iter->cp = (unsigned char*)iter->pop_space_push[(iter->sp)]+1;
             iter->len = 2;
             iter->nextstack[(iter->sp)++] = this->u.l.next;
