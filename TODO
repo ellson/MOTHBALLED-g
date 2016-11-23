@@ -219,3 +219,26 @@ DONE - aligned with C language
     Might be a more general facility for, e.g. document processors.
 
 37. json2g, g2.json ??   xml2g, g2xml ??
+
+38. Need edgelist per node to support node deletion.  Deleting a node
+    has to delete all dependent edges.    Also needed for queries ... presumably
+    .. but was does that query look likes?
+           EDGE patterns
+
+		?*<>     - matches all edges
+		?<* *>   - matches all 2 leg edges
+
+		?n*<>    - matches all edges with n* in any leg
+		?n*<* n> - matches all edges with n* in leg2
+		?n*<* *> - matches all 2 leg edges with n in any leg
+
+           NODE patterns
+
+                ?*                  <-- trailing WS
+                ?n*[...]
+                ?n*{....}
+                ?n*[...]{....}
+
+    .. watch out for :
+
+                ?* <a>              <-- two acts
