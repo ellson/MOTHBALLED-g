@@ -162,47 +162,46 @@ P(list);
     while (elem) {
         si1 = (state_t) elem->state;
         switch (si1) {
-        case ACT:
-            dispatch_r(CONTAINER, elem, attributes, nodes, edges, verb);
-            break;
-        case ATTRIBUTES:
-            new = ref_list(LIST(), elem);
-            append_transfer(attributes, new);
-            break;
-        case SUBJECT:
-            object = elem->u.l.first;
-            si2 = (state_t)object->state;
-            switch (si2) {
-            case SET:
-                dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
+            case ACT:
+                dispatch_r(CONTAINER, elem, attributes, nodes, edges, verb);
                 break;
-            case NODE:
-            case EDGE:
-                object = object->u.l.first;
-                while(object) {
-                    dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
-                    object = object->u.l.next;
+            case ATTRIBUTES:
+                new = ref_list(LIST(), elem);
+                append_transfer(attributes, new);
+                break;
+            case SUBJECT:
+                object = elem->u.l.first;
+                si2 = (state_t)object->state;
+                switch (si2) {
+                    case SET:
+                        dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
+                        break;
+                    case NODE:
+                        new = ref_list(LIST(), elem);
+                        append_transfer(nodes, new);
+                        break;
+                    case EDGE:
+                        object = object->u.l.first;
+                        while(object) {
+                            dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
+                            object = object->u.l.next;
+                        }
+                        break;
+                    default:
+                        S(si2);
+                        assert(0); //should never get here
+                        break;
                 }
                 break;
-            default:
-                S(si2);
-                assert(0); //should never get here
+            case EDGE:
+                expand(CONTAINER, elem, nodes, edges);
                 break;
-            }
-            break;
-        case NODE:
-            new = ref_list(LIST(), elem);
-            append_transfer(nodes, new);
-            break;
-        case EDGE:
-            expand(CONTAINER, elem, nodes, edges);
-            break;
-        case VERB:  // ignore - already dealt with
-            break;
-        default:
-            S(si1);
-            assert(0);  // should never get here
-            break;
+            case VERB:  // ignore - already dealt with
+                break;
+            default:
+                S(si1);
+                assert(0);  // should never get here
+                break;
         }
         elem = elem->u.l.next;
     }

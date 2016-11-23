@@ -66,7 +66,9 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     //     Proposed solution:  deal with the uncertainty.  e.g. ambiguous patterns
     //     save as both node and edge patterns.   Remove the assert.
     //
-    //     Alternative,  make '*' mean all nodes, and '<**>' mean all edges.
+    //     Alternatives:
+    //        look ahead one char: make '* '|'*;'|'*[' mean all nodes
+    //        look ahead two char: make '*<>' mean all edges. (anything other than an empty edge is an error)
 
     // merge attrid in this ACT with tree of all attrid, keeping strings just once
     attrid_merge(CONTAINER, act);
@@ -77,10 +79,9 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     }
     // NB ACTs that are QRY or TLD may still have AST in SUBJECT
 
-P(act);
+//P(act);
 printg(act);
 
-#if 0
     // dispatch events for the ACT just finished
     new = dispatch(CONTAINER, act, CONTAINER->verb, CONTAINER->has_mum);
     if (new) {
@@ -88,6 +89,7 @@ printg(act);
         act = new;
     }
 
+#if 0
     elem = act->u.l.first->u.l.first;
     while (elem) {
         THREAD->stat_outactcount++;
