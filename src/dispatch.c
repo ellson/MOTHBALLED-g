@@ -14,7 +14,9 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
         elem_t *attributes, elem_t * nodes, elem_t * edges, state_t verb);
 
 static elem_t *
-assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
+assemble_act(LIST_t * LIST, state_t verb, elem_t *elem, elem_t *disambig,
+        elem_t *attributes);
+
 
 /*
  * Processes an ACT after sameas and pattern substitutions.
@@ -88,7 +90,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
     if (CONTAINER->has_node) {
         elem = nodes->u.l.first;
         while (elem) {
-            new = assemble_act(LIST(), elem, attributes, verb);
+            new = assemble_act(LIST(), verb, elem, disambig, attributes);
             append_transfer(newacts, new);
             elem = elem->u.l.next;
         }
@@ -102,14 +104,14 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
                 elem = nodes->u.l.first;
                 while (elem) {
                     // inducing nodes from NODEREFS - no attributes from these
-                    new = assemble_act(LIST(), elem, NULL, verb);    //FIXME we dont want to delete induced nodes!!
+                    new = assemble_act(LIST(), verb, elem, disambig, NULL);    //FIXME we dont want to delete induced nodes!!
                     append_transfer(newacts, new);
                     elem = elem->u.l.next;
                 }
 
                 elem = edges->u.l.first;
                 while (elem) {
-                    new = assemble_act(LIST(), elem, attributes, verb);
+                    new = assemble_act(LIST(), verb, elem, disambig, attributes);
                     append_transfer(newacts, new);
                     elem = elem->u.l.next;
                 }
@@ -209,7 +211,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
  * @return a node act
  */
 static elem_t *
-assemble_act(LIST_t * LIST, elem_t *elem, elem_t *attributes, state_t verb)
+assemble_act(LIST_t * LIST, state_t verb, elem_t *elem, elem_t *disambig, elem_t *attributes)
 {
     elem_t *new, *act;
 
@@ -230,8 +232,16 @@ assemble_act(LIST_t * LIST, elem_t *elem, elem_t *attributes, state_t verb)
     }
 
     // subject
-    new = ref_list(LIST, elem);
+    new = new_list(LIST, SUBJECT);
+    append_addref(new, elem);
     append_transfer(act, new);
+
+    // disambig
+    if (disambig && disambig->u.l.first) {
+        new = new_list(LIST, DISAMBIG);
+        append_addref(new, disambig->u.l.first);
+        append_transfer(act, new);
+    }
 
     // attributes
     if (attributes && attributes->u.l.first) {
