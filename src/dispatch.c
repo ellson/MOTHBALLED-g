@@ -156,7 +156,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
 
     assert(list->type == (char)LISTELEM);
 //E();
-P(list);
+//P(list);
 
     elem = list->u.l.first;
     while (elem) {
@@ -177,15 +177,11 @@ P(list);
                         dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
                         break;
                     case NODE:
-                        new = ref_list(LIST(), elem);
+                        new = ref_list(LIST(), object);
                         append_transfer(nodes, new);
                         break;
                     case EDGE:
-                        object = object->u.l.first;
-                        while(object) {
-                            dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
-                            object = object->u.l.next;
-                        }
+                        expand(CONTAINER, object, nodes, edges);
                         break;
                     default:
                         S(si2);
@@ -193,10 +189,12 @@ P(list);
                         break;
                 }
                 break;
+            case NODE:
+                new = ref_list(LIST(), elem);
+                append_transfer(nodes, new);
+                break;
             case EDGE:
                 expand(CONTAINER, elem, nodes, edges);
-                break;
-            case VERB:  // ignore - already dealt with
                 break;
             default:
                 S(si1);
