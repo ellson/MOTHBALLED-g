@@ -44,9 +44,9 @@ static void stepiter(iter_t *iter, elem_t *this)
         } else {
             assert(iter->sp < MAXNEST);
             switch ((state_t)this->state) {
-                case EDGE:        iter->pop_space_push[(iter->sp)] = ">\0<"   ; break;
+                case EDGE:        iter->pop_space_push[(iter->sp)] = ">><"   ; break;
                 case SET:
-                case ENDPOINTSET: iter->pop_space_push[(iter->sp)] = ")\0("   ; break;
+                case ENDPOINTSET: iter->pop_space_push[(iter->sp)] = "))("   ; break;
                 default:          iter->pop_space_push[(iter->sp)] = "\0 \0"  ; break;
             }
             iter->cp = (unsigned char*)iter->pop_space_push[(iter->sp)]+2;
@@ -70,6 +70,7 @@ static void stepiter(iter_t *iter, elem_t *this)
 void skipiter(iter_t *iter)
 {
     elem_t *this;
+    char save_pop;
 
     if (iter->sp) {
         this = iter->nextstack[--(iter->sp)];
@@ -79,8 +80,8 @@ void skipiter(iter_t *iter)
                 case VALUE:       iter->pop_space_push[(iter->sp)] = "\0=\0"  ; break;
                 default: break;
             }
-            iter->cp = (unsigned char*)iter->pop_space_push[(iter->sp)]+0;
-            iter->len = 3;
+            iter->cp = (unsigned char*)iter->pop_space_push[(iter->sp)]+1;
+            iter->len = 2;
             iter->nextstack[(iter->sp)++] = this->u.l.next;
             iter->nextstack[(iter->sp)] = this->u.l.first;
         } else {
