@@ -44,11 +44,12 @@ static void stepiter(iter_t *iter, elem_t *this)
         } else {
             assert(iter->sp < MAXNEST);
             switch ((state_t)this->state) {
+                case ACT:         iter->pop_space_push[(iter->sp)] = "\0\n\0"; break;
                 case EDGE:        iter->pop_space_push[(iter->sp)] = ">><"   ; break;
-                case MUM:         iter->pop_space_push[(iter->sp)] = "\0\0^"   ; break;
+                case MUM:         iter->pop_space_push[(iter->sp)] = "\0\0^" ; break;
                 case SET:
                 case ENDPOINTSET: iter->pop_space_push[(iter->sp)] = "))("   ; break;
-                default:          iter->pop_space_push[(iter->sp)] = "\0 \0"  ; break;
+                default:          iter->pop_space_push[(iter->sp)] = "\0 \0" ; break;
             }
             iter->cp = (unsigned char*)iter->pop_space_push[(iter->sp)]+2;
             iter->len = 1;
@@ -81,8 +82,8 @@ void skipiter(iter_t *iter)
                 // need to over-ride the pop_space_push of the preceeding elem
                 case ATTRIBUTES:  iter->pop_space_push[(iter->sp)] = "]\0["   ; break;
                 case VALUE:       iter->pop_space_push[(iter->sp)] = "\0\0="  ; break;
-                case SIS:         iter->pop_space_push[(iter->sp)] = "\0\0\0"   ; break;
-                case KID:         iter->pop_space_push[(iter->sp)] = "\0/\0"   ; break;
+                case SIS:         iter->pop_space_push[(iter->sp)] = "\0\0\0" ; break;
+                case KID:         iter->pop_space_push[(iter->sp)] = "\0/\0"  ; break;
                 default: break;
             }
             // emit space-push (2 chars)
