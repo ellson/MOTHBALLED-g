@@ -79,7 +79,7 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     }
     // NB ACTs that are QRY or TLD may still have AST in SUBJECT
 
-//P(act);
+P(act);
 
     // dispatch events for the ACT just finished
     new = dispatch(CONTAINER, act, CONTAINER->verb, CONTAINER->has_mum);

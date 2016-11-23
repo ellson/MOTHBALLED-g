@@ -62,7 +62,6 @@ elem_t *
 dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    state_t si;
     elem_t *new, *newacts, *elem, *nodes, *edges, *attributes;
     
     assert(act);
@@ -85,19 +84,15 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
     //                      for each EDGE, generate new ACT: verb edge attributes
 
-// FIXME ....
-si = NODE;
-//    si = CONTAINER->subject_type;
-    switch (si) {
-    case NODE:
+    if (CONTAINER->has_node) {
         elem = nodes->u.l.first;
         while (elem) {
             new = assemble_act(LIST(), elem, attributes, verb);
             append_transfer(newacts, new);
             elem = elem->u.l.next;
         }
-        break;
-    case EDGE:
+    }
+    if (CONTAINER->has_edge) {
         if (mum) {
             // FIXME - deal with edges that require help from ancestors
             fprintf(stdout,"Need Mum's help\n");
@@ -118,11 +113,6 @@ si = NODE;
                     elem = elem->u.l.next;
                 }
         }
-        break;
-    default:
-        S(si);
-        assert(0);  // shouldn't happen
-        break;
     }
 
     free_list(LIST(), nodes);
@@ -152,7 +142,6 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *elem, *new, *object;
-    state_t si1, si2;
 
     assert(list->type == (char)LISTELEM);
 //E();
@@ -160,8 +149,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
 
     elem = list->u.l.first;
     while (elem) {
-        si1 = (state_t) elem->state;
-        switch (si1) {
+        switch ((state_t) elem->state) {
             case ACT:
                 dispatch_r(CONTAINER, elem, attributes, nodes, edges, verb);
                 break;
@@ -171,8 +159,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
                 break;
             case SUBJECT:
                 object = elem->u.l.first;
-                si2 = (state_t)object->state;
-                switch (si2) {
+                switch ((state_t)object->state) {
                     case SET:
                         dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
                         break;
@@ -184,7 +171,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
                         expand(CONTAINER, object, nodes, edges);
                         break;
                     default:
-                        S(si2);
+                        S((state_t)object->state);
                         assert(0); //should never get here
                         break;
                 }
@@ -197,7 +184,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
                 expand(CONTAINER, elem, nodes, edges);
                 break;
             default:
-                S(si1);
+                S((state_t) elem->state);
                 assert(0);  // should never get here
                 break;
         }
