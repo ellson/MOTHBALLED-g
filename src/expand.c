@@ -214,21 +214,21 @@ expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset,
         }
         else {
             elem_t * newedge = new_list(LIST(), EDGE);
-            elem_t * newlegs = new_list(LIST(), ENDPOINTSET);
             ep = newepset->u.l.first;
             while (ep) {
+                elem_t * newleg = new_list(LIST(), LEG);
                 new = ref_list(LIST(), ep);
-                append_addref(newlegs, new);
+                append_addref(newleg, new);
+                append_transfer(newedge, newleg);
                 ep = ep->u.l.next;
             }
-            append_addref(newedge, newlegs);
     
             if (disambig) {
                 new = ref_list(LIST(), disambig);
                 append_addref(newedge, new);
             }
             // and append the new simplified edge to the result
-            append_addref(edges, newedge);
+            append_transfer(edges, newedge);
         }
     }
 }
