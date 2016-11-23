@@ -79,6 +79,9 @@ void attrid_merge(CONTAINER_t * CONTAINER, elem_t * act)
     elem_t *newkey; 
 
     elem_t *attributes = act->u.l.first->u.l.next;
+    if (attributes && (state_t)attributes->state == DISAMBIG) {
+        attributes = attributes->u.l.next;
+    }
     if (attributes) {
         assert((state_t)attributes->state == ATTRIBUTES);
         elem_t *attr = attributes->u.l.first;

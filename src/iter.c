@@ -80,10 +80,11 @@ void skipiter(iter_t *iter)
             switch ((state_t)this->state) {
                 // elems that follow elems of a diferent state_t (non-homogenous lists)
                 // need to over-ride the pop_space_push of the preceeding elem
-                case ATTRIBUTES:  iter->pop_space_push[(iter->sp)] = "]\0["   ; break;
-                case VALUE:       iter->pop_space_push[(iter->sp)] = "\0\0="  ; break;
-                case SIS:         iter->pop_space_push[(iter->sp)] = "\0\0\0" ; break;
-                case KID:         iter->pop_space_push[(iter->sp)] = "\0/\0"  ; break;
+                case ATTRIBUTES:  iter->pop_space_push[(iter->sp)] = "]\0["  ; break;
+                case DISAMBIG:    iter->pop_space_push[(iter->sp)] = "\0\0`"  ; break;
+                case VALUE:       iter->pop_space_push[(iter->sp)] = "\0\0=" ; break;
+                case SIS:         iter->pop_space_push[(iter->sp)] = "\0\0\0"; break;
+                case KID:         iter->pop_space_push[(iter->sp)] = "\0/\0" ; break;
                 default: break;
             }
             // emit space-push (2 chars)

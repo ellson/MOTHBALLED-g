@@ -10,8 +10,8 @@
 #include "dispatch.h"
 
 static void
-dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *attributes,
-        elem_t * nodes, elem_t * edges, state_t verb);
+dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
+        elem_t *attributes, elem_t * nodes, elem_t * edges, state_t verb);
 
 static elem_t *
 assemble_act(LIST_t * LIST, elem_t * elem, elem_t * attributes, state_t verb);
@@ -62,7 +62,7 @@ elem_t *
 dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *new, *newacts, *elem, *nodes, *edges, *attributes;
+    elem_t *new, *newacts, *elem, *nodes, *edges, *disambig, *attributes;
     
     assert(act);
     assert(act->type == (char)LISTELEM);
@@ -71,14 +71,15 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
 //E();
 //P(act);
 
-    newacts = new_list(LIST(), 0); // return list
+    newacts = new_list(LIST(), ACTIVITY); // return list
 
-    nodes = new_list(LIST(), 0);
-    edges = new_list(LIST(), 0);
-    attributes = new_list(LIST(), 0);
+    nodes = new_list(LIST(), NODES);
+    edges = new_list(LIST(), EDGES);
+    attributes = new_list(LIST(), ATTRIBUTES);
+    disambig = new_list(LIST(), DISAMBIG);
 
     // expand SET and ENDPOINTSET
-    dispatch_r(CONTAINER, act, attributes, nodes, edges, verb);
+    dispatch_r(CONTAINER, act, disambig, attributes, nodes, edges, verb);
 
     // if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
     // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
@@ -137,8 +138,8 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
  * @param verb -- add, QRY, TLD
  */
 static void
-dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
-        elem_t * nodes, elem_t * edges, state_t verb)
+dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
+        elem_t * attributes, elem_t * nodes, elem_t * edges, state_t verb)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *elem, *new, *object;
@@ -151,17 +152,13 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
     while (elem) {
         switch ((state_t) elem->state) {
             case ACT:
-                dispatch_r(CONTAINER, elem, attributes, nodes, edges, verb);
-                break;
-            case ATTRIBUTES:
-                new = ref_list(LIST(), elem);
-                append_transfer(attributes, new);
+                dispatch_r(CONTAINER, elem, disambig, attributes, nodes, edges, verb);
                 break;
             case SUBJECT:
                 object = elem->u.l.first;
                 switch ((state_t)object->state) {
                     case SET:
-                        dispatch_r(CONTAINER, object, attributes, nodes, edges, verb);
+                        dispatch_r(CONTAINER, object, disambig, attributes, nodes, edges, verb);
                         break;
                     case NODE:
                         new = ref_list(LIST(), object);
@@ -175,6 +172,14 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t * attributes,
                         assert(0); //should never get here
                         break;
                 }
+                break;
+            case DISAMBIG:
+                new = ref_list(LIST(), elem->u.l.first);
+                append_transfer(disambig, new);
+                break;
+            case ATTRIBUTES:
+                new = ref_list(LIST(), elem);
+                append_transfer(attributes, new);
                 break;
             case NODE:
                 new = ref_list(LIST(), elem);

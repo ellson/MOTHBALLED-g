@@ -140,14 +140,19 @@ static void pattern_match(CONTAINER_t * CONTAINER, elem_t * act, elem_t *attribu
 elem_t * patterns(CONTAINER_t *CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *subject, *attributes;
+    elem_t *subject, *attributes, *disambig, *disambid = NULL;
     elem_t *newact, *newsubject, *newattributes;
  
     assert(act);
     subject = act->u.l.first;
     assert(subject);                // minimaly, an ACT must have a SUBJECT
-    attributes = subject->u.l.next; // may be NULL
-
+    disambig = subject->u.l.next;   // may be NULL or may be ATTRIBUTES
+    if (disambig && (state_t)disambig->state == DISAMBIG) {
+        attributes = disambig->u.l.next;  // may be NULL
+        disambid = disambig->u.l.first;
+    } else {
+        attributes = disambig; //may be NULL
+    }
     if ( !CONTAINER->verb) { // if verb is default (add)
         if (CONTAINER->subj_has_ast) {
             if (attributes) {
@@ -167,15 +172,22 @@ elem_t * patterns(CONTAINER_t *CONTAINER, elem_t *act)
     // Now we are going to build a rewritten ACT tree, with references
     // to various bits from the parser's tree,  but no changes to it.
     //
-    // In particular,  we must use fresh ACT, SUBJECT, ATTRIBUTE lists.
+    // In particular,  we must use fresh ACT, SUBJECT, DISAMBIG, ATTRIBUTE lists.
 
     newact = new_list(LIST(), ACT);
     newsubject = new_list(LIST(), SUBJECT);
     append_addref(newsubject, subject->u.l.first);
     append_transfer(newact, newsubject);
-    newattributes = NULL;
 
-    // append pattern attrs, if any
+    // append disambig, if any
+    if (disambig) {
+        elem_t *newdisambig = new_list(LIST(), DISAMBIG);
+        append_addref(newdisambig, disambid);
+        append_transfer(newact, newdisambig);
+    }
+
+    // append pattern attributes, if any
+    newattributes = NULL;
     if ( !CONTAINER->verb) { // if verb is default (add)
         newattributes = new_list(LIST(), ATTRIBUTES);
         pattern_match(CONTAINER, act, newattributes);
