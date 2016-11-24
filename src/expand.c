@@ -88,14 +88,14 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
         elem = elem->u.l.next;
     }
 
-P(newleglist);
+//P(newleglist);
     // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
     newepset = new_list(LIST(), ENDPOINTSET);
     expand_r(THREAD, newepset, newleglist->u.l.first, disambig, nodes, edges);
     free_list(LIST(), newepset);
 
-P(nodes);
-P(edges);
+//P(nodes);
+//P(edges);
 
     if (disambig) {
         free_list(LIST(), disambig);

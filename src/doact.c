@@ -67,8 +67,8 @@ printg(act);
     activity = dispatch(CONTAINER, act, CONTAINER->verb, CONTAINER->has_mum);
     free_list(LIST(), act);
 
-//P(activity);
-//printg(activity);
+P(activity);
+printg(activity);
 
 #if 0
     elem = act->u.l.first->u.l.first;

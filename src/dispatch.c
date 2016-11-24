@@ -14,7 +14,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
         elem_t *attributes, elem_t * nodes, elem_t * edges, state_t verb);
 
 static elem_t *
-assemble_act(LIST_t * LIST, state_t verb, elem_t *elem, elem_t *disambig,
+assemble_act(THREAD_t * THREAD, state_t verb, elem_t *elem, elem_t *disambig,
         elem_t *attributes);
 
 
@@ -86,7 +86,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
     if (CONTAINER->has_node) {
         elem = nodes->u.l.first;
         while (elem) {
-            new = assemble_act(LIST(), verb, elem, disambig, attributes);
+            new = assemble_act(THREAD, verb, elem, disambig, attributes);
             append_transfer(newacts, new);
             elem = elem->u.l.next;
         }
@@ -97,20 +97,22 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
             fprintf(stdout,"Need Mum's help\n");
         }
         else {
+            // induce all nodes refered to by the edge
+            if (!verb) { // don't query or delete induced nodes
                 elem = nodes->u.l.first;
                 while (elem) {
                     // inducing nodes from NODEREFS - no attributes from these
-                    new = assemble_act(LIST(), verb, elem, disambig, NULL);    //FIXME we dont want to delete induced nodes!!
+                    new = assemble_act(THREAD, verb, elem, disambig, NULL);
                     append_transfer(newacts, new);
                     elem = elem->u.l.next;
                 }
-
-                elem = edges->u.l.first;
-                while (elem) {
-                    new = assemble_act(LIST(), verb, elem, disambig, attributes);
-                    append_transfer(newacts, new);
-                    elem = elem->u.l.next;
-                }
+            }
+            elem = edges->u.l.first;
+            while (elem) {
+                new = assemble_act(THREAD, verb, elem, disambig, attributes);
+                append_transfer(newacts, new);
+                elem = elem->u.l.next;
+            }
         }
     }
 
@@ -199,26 +201,26 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
 
 /**
  * This function assembles ACTs with simplified SUBJECT and no CONTAINER
- * The act VERB is copied from the current input ACTIVITY verb
+ * The act VERB is copied from the current input ACT verb
  *
- * @param LIST context
+ * @param THREAD context
  * @param elem   -- node or edge object -- not modified
  * @param attributes -- not modified
  * @param verb --  add, delete, query
  * @return a node act
  */
 static elem_t *
-assemble_act(LIST_t * LIST, state_t verb, elem_t *elem, elem_t *disambig, elem_t *attributes)
+assemble_act(THREAD_t * THREAD, state_t verb, elem_t *elem, elem_t *disambig, elem_t *attributes)
 {
-    elem_t *new, *act;
+    elem_t *new, *act, *subject, *noun;
 
-    act = new_list(LIST, ACT);  // return list
+    act = new_list(LIST(), ACT);  // return list
 
     // verb
     switch(verb) {
     case QRY:
     case TLD:
-        new = new_list(LIST, verb);
+        new = new_list(LIST(), verb);
         append_transfer(act, new);
         break;
     case 0:  // default is add
@@ -229,20 +231,33 @@ assemble_act(LIST_t * LIST, state_t verb, elem_t *elem, elem_t *disambig, elem_t
     }
 
     // subject
-    new = new_list(LIST, SUBJECT);
-    append_addref(new, elem);
-    append_transfer(act, new);
+    switch ((state_t)elem->state) {
+        case NODE:
+        case SIS:
+            noun = new_list(LIST(), NODE);
+            break;
+        case EDGE:
+            noun = new_list(LIST(), EDGE);
+            break;
+        default:
+            S((state_t)elem->state);
+            assert(0);
+    }
+    append_addref(noun, elem->u.l.first);
+    subject = new_list(LIST(), SUBJECT);
+    append_transfer(subject, noun);
+    append_transfer(act, subject);
 
     // disambig
     if (disambig && disambig->u.l.first) {
-        new = new_list(LIST, DISAMBIG);
+        new = new_list(LIST(), DISAMBIG);
         append_addref(new, disambig->u.l.first);
         append_transfer(act, new);
     }
 
     // attributes
     if (attributes && attributes->u.l.first) {
-        new = ref_list(LIST, attributes->u.l.first);
+        new = ref_list(LIST(), attributes->u.l.first);
         append_transfer(act, new);
     }
 
