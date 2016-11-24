@@ -31,7 +31,7 @@
 success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *new, *elem;
+    elem_t *new, *elem, *activity = NULL;
 
 
 // act initially points to the ACT tree from the parser.  We do a lot of referrencing
@@ -60,16 +60,15 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     // NB ACTs that are QRY or TLD may still have AST in SUBJECT
 
 P(act);
+printg(act);
 
     // dispatch events for the ACT just finished
-    new = dispatch(CONTAINER, act, CONTAINER->verb, CONTAINER->has_mum);
-    if (new) {
-        free_list(LIST(), act);
-        act = new;
-    }
+    //   the result is multiple simple acts -- hence activity
+    activity = dispatch(CONTAINER, act, CONTAINER->verb, CONTAINER->has_mum);
+    free_list(LIST(), act);
 
-P(act);
-printg(act);
+//P(activity);
+//printg(activity);
 
 #if 0
     elem = act->u.l.first->u.l.first;
@@ -84,7 +83,7 @@ P(elem);
 #endif
 
     // must free our rewritten act
-    free_list(LIST(), act);
+    free_list(LIST(), activity);
 
     return SUCCESS;
 }

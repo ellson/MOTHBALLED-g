@@ -83,10 +83,6 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
     // expand SET and ENDPOINTSET
     dispatch_r(CONTAINER, act, disambig, attributes, nodes, edges, verb);
 
-    // if NODE ACT ... for each NODE from nodes, generate new ACT: verb node attributes
-    // else if EDGE ACT ... for each NODEREF, generate new ACT: verb node
-    //                      for each EDGE, generate new ACT: verb edge attributes
-
     if (CONTAINER->has_node) {
         elem = nodes->u.l.first;
         while (elem) {
@@ -121,6 +117,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
     free_list(LIST(), nodes);
     free_list(LIST(), edges);
     free_list(LIST(), attributes);
+    free_list(LIST(), disambig);
 
 //E();
 //P(newacts);
