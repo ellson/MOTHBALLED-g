@@ -72,7 +72,6 @@ static void stepiter(iter_t *iter, elem_t *this)
 void skipiter(iter_t *iter)
 {
     elem_t *this;
-    char save_pop;
 
     if (iter->sp) {
         this = iter->nextstack[--(iter->sp)];
