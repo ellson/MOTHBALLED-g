@@ -153,13 +153,15 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
     while (elem) {
         switch ((state_t) elem->state) {
             case ACT:
-                dispatch_r(CONTAINER, elem, disambig, attributes, nodes, edges, verb);
+                dispatch_r(CONTAINER, elem, disambig,
+                        attributes, nodes, edges, verb);
                 break;
             case SUBJECT:
                 object = elem->u.l.first;
                 switch ((state_t)object->state) {
                     case SET:
-                        dispatch_r(CONTAINER, object, disambig, attributes, nodes, edges, verb);
+                        dispatch_r(CONTAINER, object, disambig,
+                                attributes, nodes, edges, verb);
                         break;
                     case NODE:
                         new = ref_list(LIST(), object);
