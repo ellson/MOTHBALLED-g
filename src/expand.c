@@ -8,28 +8,32 @@
 #include "thread.h"
 #include "expand.h"
 
-static void expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset, elem_t *disambig, elem_t *nodes, elem_t *edges);
+static void expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset,
+        elem_t *nodes, elem_t *edges);
 
-static void expand_hub(THREAD_t * THREAD, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges);  // two node edge
+static void expand_hub(THREAD_t * THREAD, elem_t *tail, elem_t *head,
+        elem_t *edges);  // two node edge
 
 /**
  * this function expands EDGEs into:
  *  - a list of nodes reference by the edge
- *  - a list of simple edges, each with the same disambiguation as the compound edge
+ *  - and a list of simple edges 
  * 
  * @param CONTAINER context
  * @param list - a simple or compound edge
  * @param nodes - resulting nodes
  * @param edges - resulting simple edges
  */
-void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
+void expand(CONTAINER_t * CONTAINER, elem_t *list,
+        elem_t *nodes, elem_t *edges)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *elem, *epset, *ep, *new, *disambig = NULL;
+    elem_t *elem, *epset, *ep, *new;
     elem_t *newepset, *newleglist, *singletonepset;
 
 //E();
 //S((state_t)list->state);
+P(list);
 
     assert(list);
     assert((state_t)list->state == EDGE);
@@ -38,20 +42,19 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
     elem = list->u.l.first;
     while (elem) {
         switch ((state_t)elem->state) {
-            case DISAMBIG:
-                disambig = elem;
-                break;
             case LEG:
                 // build a leg list with endpointsets for each leg
                 epset = elem->u.l.first;
                 new = ref_list(LIST(), epset);
                 singletonepset = NULL;
-                if ((state_t)epset->state != ENDPOINTSET) { // put singletons into lists too
+                if ((state_t)epset->state != ENDPOINTSET) {
+                    // put singletons into lists too
                     singletonepset = new_list(LIST(), ENDPOINTSET);
                     append_addref(singletonepset, new);
                     new = ref_list(LIST(), singletonepset);
                 }
-                // induce all sibling nodes, and gather a cleaned up epset for each leg
+                // induce all sibling nodes, and gather a cleaned up 
+                //   epset for each leg
                 epset = new_list(LIST(), ENDPOINTSET);
                 ep = new->u.l.first;
                 while(ep) {
@@ -88,20 +91,16 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
         elem = elem->u.l.next;
     }
 
-P(newleglist);
+//P(newleglist);
     // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
     newepset = new_list(LIST(), ENDPOINTSET);
-    expand_r(THREAD, newepset, newleglist->u.l.first, disambig, nodes, edges);
+    expand_r(THREAD, newepset, newleglist->u.l.first, nodes, edges);
+
+//P(nodes);
+//P(edges);
+
     free_list(LIST(), newepset);
-
-P(nodes);
-P(edges);
-
-    if (disambig) {
-        free_list(LIST(), disambig);
-    }
     free_list(LIST(), newleglist);
-
 //E();
 }
 
@@ -119,13 +118,12 @@ P(edges);
  * @param THREAD context
  * @param newepset
  * @param epset
- * @param disambig
  * @param nodes - list of nodes
  * @param edges - list of edges
  */
 static void
 expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset,
-        elem_t *disambig, elem_t *nodes, elem_t *edges)
+        elem_t *nodes, elem_t *edges)
 {
     elem_t *ep, *new;
 
@@ -140,7 +138,7 @@ expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset,
             append_addref(newepset, new);
             
             // recursively process the rest of the epsets
-            expand_r(THREAD, newepset, epset->u.l.next, disambig, nodes, edges);
+            expand_r(THREAD, newepset, epset->u.l.next, nodes, edges);
 
             remove_next_from_list(LIST(), newepset, eplast);
 
@@ -202,12 +200,12 @@ expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset,
         // if no more epsets, then we can create a new edge with the current newepset and dismbig
         if (nendpoint) { // if we have a hub at this point, then we are to split into simple 2-node <tail head> edges
             ep = newepset->u.l.first;
-            if (ep) {
-                expand_hub(THREAD, ep, nendpoint, disambig, edges);  // first leg is the tail
+            if (ep) { // first leg is the tail
+                expand_hub(THREAD, ep, nendpoint, edges);
                 ep = ep->u.l.next;
             }
-            while (ep) {
-                expand_hub(THREAD, nendpoint, ep, disambig, edges);  // all other legs are head
+            while (ep) { // all other legs are head
+                expand_hub(THREAD, nendpoint, ep, edges);
                 ep = ep->u.l.next;
             }
             free_list(LIST(), nendpoint);
@@ -223,17 +221,14 @@ expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset,
                 ep = ep->u.l.next;
             }
     
-            if (disambig) {
-                new = ref_list(LIST(), disambig);
-                append_addref(newedge, new);
-            }
             // and append the new simplified edge to the result
             append_transfer(edges, newedge);
         }
     }
 }
 
-static void expand_hub(THREAD_t * THREAD, elem_t *tail, elem_t *head, elem_t *disambig, elem_t *edges)
+static void expand_hub(THREAD_t * THREAD, elem_t *tail,
+        elem_t *head, elem_t *edges)
 {
     elem_t *new;
     elem_t *newedge = new_list(LIST(), EDGE);
@@ -244,9 +239,5 @@ static void expand_hub(THREAD_t * THREAD, elem_t *tail, elem_t *head, elem_t *di
     new = ref_list(LIST(), head);
     append_addref(newlegs, new);
     append_addref(newedge, newlegs);
-    if (disambig) {
-        new = ref_list(LIST(), disambig);
-        append_addref(newedge, new);
-    }
     append_addref(edges, newedge);
 }
