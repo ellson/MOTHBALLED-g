@@ -24,12 +24,10 @@ static void expand_hub(THREAD_t * THREAD, elem_t *tail, elem_t *head,
  * @param nodes - resulting nodes
  * @param edges - resulting simple edges
  */
-void expand(CONTAINER_t * CONTAINER, elem_t *list,
-        elem_t *nodes, elem_t *edges)
+void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *elem, *epset, *ep, *new;
-    elem_t *newepset, *newleglist, *singletonepset;
+    elem_t *elem, *epset, *ep, *refepset, *newepset, *newleglist;
 
 //E();
 //S((state_t)list->state);
@@ -44,26 +42,26 @@ P(list);
         switch ((state_t)elem->state) {
             case LEG:
                 // build a leg list with endpointsets for each leg
-                epset = elem->u.l.first;
-                new = ref_list(LIST(), epset);
-                singletonepset = NULL;
-                if ((state_t)epset->state != ENDPOINTSET) {
+                ep = elem->u.l.first;
+                if ((state_t)ep->state == ENDPOINTSET) {
+                    refepset = ref_list(LIST(), ep);
+                } else {
                     // put singletons into lists too
-                    singletonepset = new_list(LIST(), ENDPOINTSET);
-                    append_addref(singletonepset, new);
-                    new = ref_list(LIST(), singletonepset);
-                }
+                    elem_t *singleton = new_list(LIST(), ENDPOINTSET);
+                    append_addref(singleton, ep);
+                    refepset = new_list(LIST(), ENDPOINTSET);
+                    append_transfer(refepset, singleton);
+                } 
+P(refepset);
                 // induce all sibling nodes, and gather a cleaned up 
                 //   epset for each leg
                 epset = new_list(LIST(), ENDPOINTSET);
-                ep = new->u.l.first;
+                ep = refepset->u.l.first->u.l.first;    // FIXME - may be further nesting
                 while(ep) {
-                    new = ref_list(LIST(), ep);
-                    append_addref(epset, new);
+                    append_addref(epset, ep);
                     switch ((state_t)ep->state) {
                         case SIS:
-                            new = ref_list(LIST(), ep);
-                            append_addref(nodes, new);
+                            append_addref(nodes, ep);
                             // FIXME - induce KIDs in this node's container
                             break;
                         case MUM:
@@ -76,12 +74,8 @@ P(list);
                     }
                     ep = ep->u.l.next;
                 }
-                new = ref_list(LIST(), epset);
-                append_addref(newleglist, new);
-                if (singletonepset) {
-                    free_list(LIST(), singletonepset);
-                }
-                free_list(LIST(), epset);
+                append_transfer(newleglist, epset);
+                free_list(LIST(), refepset);
                 break;
             default:
                 S((state_t)elem->state);
@@ -91,16 +85,18 @@ P(list);
         elem = elem->u.l.next;
     }
 
-//P(newleglist);
-    // now recursively generate all combinations of ENDPOINTS in LEGS, and append new simplified EDGEs to edges
+P(newleglist);
+
+    // recursively generate all combinations of ENDPOINTS in LEGS,
+    //    and append new simplified EDGEs to edges
     newepset = new_list(LIST(), ENDPOINTSET);
-    expand_r(THREAD, newepset, newleglist->u.l.first, nodes, edges);
+// FIXME    expand_r(THREAD, newepset, newleglist->u.l.first, nodes, edges);
+    free_list(LIST(), newepset);
+    free_list(LIST(), newleglist);
 
 //P(nodes);
 //P(edges);
 
-    free_list(LIST(), newepset);
-    free_list(LIST(), newleglist);
 //E();
 }
 
@@ -147,7 +143,7 @@ expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset,
         }
     }
     else {
-        elem_t * nendpoint = NULL;
+        elem_t * hub = NULL;
 
 //#define BINODE_EDGES 1
 
@@ -192,31 +188,33 @@ expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset,
             append_addref(nodes, new);
 
             //new endpoint
-            elem_t * nendpoint = new_list(LIST(), ENDPOINT);
-            append_addref(nendpoint, nnode);
+            elem_t * hub = new_list(LIST(), ENDPOINT);
+            append_addref(hub, nnode);
         }
 #endif
 
-        // if no more epsets, then we can create a new edge with the current newepset and dismbig
-        if (nendpoint) { // if we have a hub at this point, then we are to split into simple 2-node <tail head> edges
+        // if no more epsets, then we can create a new edge with the
+        // current newepset
+        if (hub) { // if we have a hub at this point
+            // split into simple 2-node <tail head> edges
             ep = newepset->u.l.first;
             if (ep) { // first leg is the tail
-                expand_hub(THREAD, ep, nendpoint, edges);
+                expand_hub(THREAD, ep, hub, edges);
                 ep = ep->u.l.next;
             }
             while (ep) { // all other legs are head
-                expand_hub(THREAD, nendpoint, ep, edges);
+                expand_hub(THREAD, hub, ep, edges);
                 ep = ep->u.l.next;
             }
-            free_list(LIST(), nendpoint);
+            free_list(LIST(), hub);
         }
         else {
             elem_t * newedge = new_list(LIST(), EDGE);
             ep = newepset->u.l.first;
             while (ep) {
                 elem_t * newleg = new_list(LIST(), LEG);
-                new = ref_list(LIST(), ep);
-                append_addref(newleg, new);
+//                new = ref_list(LIST(), ep);
+                append_addref(newleg, ep);
                 append_transfer(newedge, newleg);
                 ep = ep->u.l.next;
             }

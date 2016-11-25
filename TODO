@@ -242,3 +242,21 @@ DONE - aligned with C language
     .. watch out for :
 
                 ?* <a>              <-- two acts
+
+    Could this be subsumed into a syntax for querying chains .. really connected graphs
+
+               ?* <> * <> * ... ;
+
+39. Stash all identifier strings  (e.g.  NODEID get used muliple tims in document mode )
+
+40. Strip out NODEID, ATTRID, DISAMBIG as they are all just IDENTIFIERs
+
+41. Extend CONTAINER->attrid into CONTAINER->identifier  tree for all identifiers
+
+42. Optimize out one pointer traversal by making a tree node castable to an elem_t.
+      -- tree elems will be ~double size.  Probably need a separate freelist.
+      
+43. Compute hubhash for edges iff .gv is one of the outputs.
+
+44. BUG - why doesn't the grammar catch this as an error:   (<a b><c d)
+                                          it does catch:    <a b)
