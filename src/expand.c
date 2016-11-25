@@ -53,12 +53,16 @@ P(refepset);
 P(refepset);
                 } 
                 // induce all sibling nodes, 
+                // and resolve parent/child issues
                 ep = refepset->u.l.first;
                 while(ep) {
 P(ep);
                     switch ((state_t)ep->state) {
                         case SIS:
+                            // add NODEID to node list
+//P(ep);
                             append_addref(nodes, ep);
+//P(ep);
                             // FIXME - induce KIDs in this node's container
                             break;
                         case MUM:
@@ -72,6 +76,7 @@ P(ep);
                     ep = ep->u.l.next;
                 }
                 append_transfer(newleglist, refepset);
+P(refepset);
                 break;
             default:
                 S((state_t)elem->state);
@@ -211,7 +216,7 @@ P(newepset);
             while (ep) {
                 elem_t * newleg = new_list(LIST(), LEG);
                 new = ref_list(LIST(), ep);
-                append_addref(newleg, ep);
+                append_transfer(newleg, new);
                 append_transfer(newedge, newleg);
                 ep = ep->u.l.next;
             }
