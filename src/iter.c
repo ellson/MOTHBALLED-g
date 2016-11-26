@@ -48,7 +48,7 @@ static void stepiter(iter_t *iter, elem_t *this)
                 case EDGE:        iter->pop_space_push[(iter->sp)] = ">><"   ; break;
                 case MUM:         iter->pop_space_push[(iter->sp)] = "\0\0^" ; break;
                 case SET:
-                case ENDPOINTSET: iter->pop_space_push[(iter->sp)] = "))("   ; break;
+                case ENDPOINTSET: iter->pop_space_push[(iter->sp)] = ") ("   ; break;
                 default:          iter->pop_space_push[(iter->sp)] = "\0 \0" ; break;
             }
             iter->cp = (unsigned char*)iter->pop_space_push[(iter->sp)]+2;
@@ -82,7 +82,7 @@ void skipiter(iter_t *iter)
                 case ATTRIBUTES:  iter->pop_space_push[(iter->sp)] = "]\0["  ; break;
                 case DISAMBIG:    iter->pop_space_push[(iter->sp)] = "\0\0`"  ; break;
                 case VALUE:       iter->pop_space_push[(iter->sp)] = "\0\0=" ; break;
-                case SIS:         iter->pop_space_push[(iter->sp)] = "\0\0\0"; break;
+                case SIS:         iter->pop_space_push[(iter->sp)] = "\0 \0"; break;
                 case KID:         iter->pop_space_push[(iter->sp)] = "\0/\0" ; break;
                 default: break;
             }

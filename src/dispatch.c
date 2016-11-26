@@ -101,6 +101,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
             if (!verb) { // don't query or delete induced nodes
                 elem = nodes->u.l.first;
                 while (elem) {
+//P(elem);
                     // inducing nodes from NODEREFS - no attributes from these
                     new = assemble_act(THREAD, verb, elem, disambig, NULL);
                     append_transfer(newacts, new);
@@ -109,6 +110,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
             }
             elem = edges->u.l.first;
             while (elem) {
+//P(elem);
                 new = assemble_act(THREAD, verb, elem, disambig, attributes);
                 append_transfer(newacts, new);
                 elem = elem->u.l.next;
@@ -234,8 +236,7 @@ assemble_act(THREAD_t * THREAD, state_t verb, elem_t *elem, elem_t *disambig, el
 
     // subject
     switch ((state_t)elem->state) {
-        case NODE:
-        case SIS:
+        case NODEID:
             noun = new_list(LIST(), NODE);
             break;
         case EDGE:

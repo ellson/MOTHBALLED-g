@@ -27,11 +27,11 @@ static void expand_hub(THREAD_t * THREAD, elem_t *tail, elem_t *head,
 void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *elem, *ep, *refepset, *newepset, *newleglist;
+    elem_t *elem, *ep, *np, *leg, *refepset, *newepset, *newleglist;
 
 //E();
 //S((state_t)list->state);
-P(list);
+//P(list);
 
     assert(list);
     assert((state_t)list->state == EDGE);
@@ -39,30 +39,33 @@ P(list);
     newleglist = new_list(LIST(), ENDPOINTSET);
     elem = list->u.l.first;
     while (elem) {
+        leg = new_list(LIST(), ENDPOINTSET);
         switch ((state_t)elem->state) {
             case LEG:
                 // build a leg list with endpointsets for each leg
+                refepset = new_list(LIST(), ENDPOINTSET);
                 ep = elem->u.l.first;
                 if ((state_t)ep->state == ENDPOINTSET) {
-                    refepset = ref_list(LIST(), ep);
-P(refepset);
+                    append_addref(refepset, ep->u.l.first);
                 } else {
                     // put singletons into lists too
-                    refepset = new_list(LIST(), ENDPOINTSET);
                     append_addref(refepset, ep);
-P(refepset);
                 } 
+//P(refepset);
                 // induce all sibling nodes, 
                 // and resolve parent/child issues
                 ep = refepset->u.l.first;
                 while(ep) {
-P(ep);
+//P(ep);
                     switch ((state_t)ep->state) {
                         case SIS:
                             // add NODEID to node list
-//P(ep);
-                            append_addref(nodes, ep);
-//P(ep);
+                            np = ref_list(LIST(), ep->u.l.first);
+//P(np);
+                            append_transfer(nodes, np);
+                            np = ref_list(LIST(), ep->u.l.first);
+                            append_transfer(leg, np);
+//P(leg);
                             // FIXME - induce KIDs in this node's container
                             break;
                         case MUM:
@@ -75,18 +78,24 @@ P(ep);
                     }
                     ep = ep->u.l.next;
                 }
-                append_transfer(newleglist, refepset);
-P(refepset);
+                free_list(LIST(), refepset);
                 break;
             default:
                 S((state_t)elem->state);
                 assert(0);  // should never get here
                 break;
         }
+        if (leg->u.l.first) {
+//P(leg);
+//P(newleglist);
+            append_addref(newleglist, leg);
+//P(newleglist);
+        }
+        free_list(LIST(), leg);
         elem = elem->u.l.next;
     }
 
-P(newleglist);
+//P(nodes);
 
     // recursively generate all combinations of ENDPOINTS in LEGS,
     //    and append new simplified EDGEs to edges
@@ -210,7 +219,7 @@ expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset,
             free_list(LIST(), hub);
         }
         else {
-P(newepset);
+//P(newepset);
             elem_t * newedge = new_list(LIST(), EDGE);
             ep = newepset->u.l.first;
             while (ep) {
