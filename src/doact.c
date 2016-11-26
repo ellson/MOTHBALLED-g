@@ -31,7 +31,7 @@
 success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *elem, *activity;
+    elem_t *activity, *elem;
 
 
 // act initially points to the ACT tree from the parser.  We do a lot of referrencing
@@ -70,17 +70,17 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 //P(activity);
 printg(activity);
 
-#if 0
-    elem = act->u.l.first->u.l.first;
+    elem = activity->u.l.first;
     while (elem) {
         THREAD->stat_outactcount++;
         CONTAINER->stat_outactcount++;
-P(elem);
-        reduce(CONTAINER, elem);  // eliminate redundancy by insertion sorting into trees.
+
+        act = elem->u.l.first;
+P(act);
+//        reduce(CONTAINER, act);  // eliminate redundancy by insertion sorting into trees.
 
         elem = elem->u.l.next;
     }
-#endif
 
     // must free our rewritten act
     free_list(LIST(), activity);

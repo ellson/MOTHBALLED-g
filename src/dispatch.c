@@ -236,6 +236,7 @@ assemble_act(THREAD_t * THREAD, state_t verb, elem_t *elem, elem_t *disambig, el
 
     // subject
     switch ((state_t)elem->state) {
+        case NODE:
         case NODEID:
             noun = new_list(LIST(), NODE);
             break;
