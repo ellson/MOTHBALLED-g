@@ -260,3 +260,23 @@ DONE - aligned with C language
 
 44. BUG - why doesn't the grammar catch this as an error:   (<a b><c d)
                                           it does catch:    <a b)
+
+
+45. Security:
+        - Authentication   -- ssh
+        - Authorized       -- ssh + authorized_keys
+        - Individual       -- ?    (User or g node, not logged in twice)
+        - Anonymous        -- ?
+
+    Like not spending twice ....  blockchain ?
+      
+
+46. Input handlers.
+
+        - Files - onetime -- incremental
+        - Files - inotify -- keep contenthash of canonical g version of file
+                             on update, recompute contenthash, if different
+                             use a simple diff to obtain incremental updates
+        - Named pipe      -- incremental 
+        - RESTful         -- incremental
+        - stdin           -- incremental

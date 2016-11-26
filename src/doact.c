@@ -76,7 +76,7 @@ printg(activity);
         CONTAINER->stat_outactcount++;
 
         act = elem->u.l.first;
-P(act);
+//P(act);
 //        reduce(CONTAINER, act);  // eliminate redundancy by insertion sorting into trees.
 
         elem = elem->u.l.next;
