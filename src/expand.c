@@ -27,7 +27,7 @@ static void expand_hub(THREAD_t * THREAD, elem_t *tail, elem_t *head,
 void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *elem, *ep, *np, *leg, *refepset, *newepset, *newleglist;
+    elem_t *elem, *ep, *nodeid, *np, *leg, *refepset, *newepset, *newleglist;
 
 //E();
 //S((state_t)list->state);
@@ -60,9 +60,11 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                     switch ((state_t)ep->state) {
                         case SIS:
                             // add NODEID to node list
-                            np = ref_list(LIST(), ep->u.l.first);
-//P(np);
+                            np = new_list(LIST(), NODE);
+                            nodeid = ref_list(LIST(), ep->u.l.first);
+                            append_transfer(np, nodeid);
                             append_transfer(nodes, np);
+//P(np);
                             np = ref_list(LIST(), ep->u.l.first);
                             append_transfer(leg, np);
 //P(leg);
