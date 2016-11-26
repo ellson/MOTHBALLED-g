@@ -11,7 +11,7 @@
 
 static void
 dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
-        elem_t *attributes, elem_t * nodes, elem_t * edges, state_t verb);
+        elem_t *attributes, elem_t * nodes, elem_t * edges);
 
 static elem_t *
 assemble_act(THREAD_t * THREAD, state_t verb, elem_t *elem, elem_t *disambig,
@@ -80,7 +80,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
     disambig = new_list(LIST(), DISAMBIG);
 
     // expand SET and ENDPOINTSET
-    dispatch_r(CONTAINER, act, disambig, attributes, nodes, edges, verb);
+    dispatch_r(CONTAINER, act, disambig, attributes, nodes, edges);
 
     if (CONTAINER->has_node) {
         elem = nodes->u.l.first;
@@ -130,14 +130,14 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
  *
  * @param CONTAINER context
  * @param list of object -- not modified
+ * @param disambig -- set if one found
  * @param attributes -- appended
  * @param nodes -- appended
  * @param edges -- appended
- * @param verb -- add, QRY, TLD
  */
 static void
 dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
-        elem_t * attributes, elem_t * nodes, elem_t * edges, state_t verb)
+        elem_t * attributes, elem_t * nodes, elem_t * edges)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *elem, *new, *object;
@@ -150,15 +150,13 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
     while (elem) {
         switch ((state_t) elem->state) {
             case ACT:
-                dispatch_r(CONTAINER, elem, disambig,
-                        attributes, nodes, edges, verb);
+                dispatch_r(CONTAINER, elem, disambig, attributes, nodes, edges);
                 break;
             case SUBJECT:
                 object = elem->u.l.first;
                 switch ((state_t)object->state) {
                     case SET:
-                        dispatch_r(CONTAINER, object, disambig,
-                                attributes, nodes, edges, verb);
+                        dispatch_r(CONTAINER, object, disambig, attributes, nodes, edges);
                         break;
                     case NODE:
                         new = ref_list(LIST(), object);
@@ -203,10 +201,11 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
  * The act VERB is copied from the current input ACT verb
  *
  * @param THREAD context
- * @param elem   -- node or edge object -- not modified
- * @param attributes -- not modified
  * @param verb --  add, delete, query
- * @return a node act
+ * @param elem -- node or edge object
+ * @param disambig -- subject disambiguator
+ * @param attributes 
+ * @return a reassembled node or edge act
  */
 static elem_t *
 assemble_act(THREAD_t * THREAD, state_t verb, elem_t *elem, elem_t *disambig, elem_t *attributes)
