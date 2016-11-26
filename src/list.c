@@ -431,7 +431,7 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
     list->len--;                             // list has one less elem
 
     assert(old->refs > 0);
-    free_list_r(LIST, old);                  // free the removed elem
+    free_list(LIST, old);                    // free the removed elem
 }
 
 /**

@@ -141,7 +141,7 @@ expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset,
 
             // append the next ep for this epset
             new = ref_list(LIST(), ep); 
-            append_addref(newepset, new);
+            append_transfer(newepset, new);
             
             // recursively process the rest of the epsets
             expand_r(THREAD, newepset, epset->u.l.next, nodes, edges);
@@ -151,8 +151,7 @@ expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset,
             // and iterate to next ep for this epset
             ep = ep->u.l.next;
         }
-    }
-    else {
+    } else {
         elem_t * hub = NULL;
 
 //#define BINODE_EDGES 1
