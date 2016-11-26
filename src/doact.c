@@ -68,16 +68,16 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     free_list(LIST(), act);
 
 //P(activity);
-printg(activity);
+//printg(activity);
 
     elem = activity->u.l.first;
     while (elem) {
         THREAD->stat_outactcount++;
         CONTAINER->stat_outactcount++;
 
-        act = elem->u.l.first;
-//P(act);
-//        reduce(CONTAINER, act);  // eliminate redundancy by insertion sorting into trees.
+        // Populate GOM
+        // eliminate redundancy by insertion sorting into trees.
+        reduce(CONTAINER, elem->u.l.first);
 
         elem = elem->u.l.next;
     }

@@ -24,21 +24,20 @@ P(list);
     si = (state_t) elem->state;
     switch (si) {
     case NODE:
-    case SIS:
-        subject = elem;
-        subjtype = si; // NODE or SIS
-        break;
     case EDGE:
-        subject = elem->u.l.first;  // ENDPOINTS (legs)
-        disambig = subject->u.l.next; // DISAMBIG (may be NULL)
-        subjtype = si; // EDGE
+        subject = elem;
+        subjtype = si;
         break;
     default:
         S(si);
-        assert(0); // SUBJECT must be NODE,SIS, or EDGE
+        assert(0); // SUBJECT must be NODE or EDGE
         break;
     }
     elem = elem->u.l.next;
+    if (elem && (state_t) elem->state == DISAMBIG) {
+        disambig = elem;
+        elem = elem->u.l.next;
+    }
     if (elem) {
         si = (state_t) elem->state;
         switch (si) {
@@ -50,21 +49,24 @@ P(list);
             assert(0); // that should be all
             break;
         }
+        elem = elem->u.l.next;
     }
+    assert(elem == NULL); // that should be all
 
+P(subject);
     switch (subjtype) {
     case NODE:
         CONTAINER->nodes =
             insert_item(LIST(),
                 CONTAINER->nodes,
-                subject->u.l.next, // skip NODEID
+                subject,
                 merge_attributes, NULL); 
         break;
     case EDGE:
         CONTAINER->edges =
             insert_item(LIST(),
                 CONTAINER->edges,
-                subject, // EDGES can have complex structure in SUBJECT
+                subject,
                 merge_attributes, NULL); 
         break;
     default:
