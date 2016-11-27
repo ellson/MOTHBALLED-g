@@ -47,10 +47,7 @@ static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
 void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
 {
     THREAD_t * THREAD = CONTAINER->THREAD;
-    elem_t *subject;
-
-
-P(act);
+    elem_t *subject, *disambig, *newsubj, *newnoun;
 
     assert(act);
     assert((state_t)act->state == ACT);
@@ -59,25 +56,34 @@ P(act);
     assert(subject);
     assert((state_t)subject->state == SUBJECT);
 
-    assert(subject->u.l.first);
+    newsubj = new_list(LIST(), SUBJECT);
+    newnoun = new_list(LIST(), NOUNS);
+    append_transfer(newsubj, newnoun);
+    append_addref(newnoun, subject->u.l.first);
+    disambig = subject->u.l.next;
+    if (disambig) {
+        append_addref(newsubj, disambig);
+    }
+
+//P(newsubj);
 
     // FIXME - attributes need to be in a sorted tree
 
     switch ((state_t)subject->u.l.first->state) {
     case NODE:
         if (!verb) {
-            CONTAINER->nodes = insert_item(LIST(), CONTAINER->nodes, subject,
+            CONTAINER->nodes = insert_item(LIST(), CONTAINER->nodes, newsubj,
                 merge_attributes, NULL); 
         } else if (verb == TLD) {
-            CONTAINER->nodes = remove_item(LIST(), CONTAINER->nodes, subject);
+            CONTAINER->nodes = remove_item(LIST(), CONTAINER->nodes, newsubj);
         }
         break;
     case EDGE:
         if (!verb) {
-            CONTAINER->edges = insert_item(LIST(), CONTAINER->edges, subject,
+            CONTAINER->edges = insert_item(LIST(), CONTAINER->edges, newsubj,
                 merge_attributes, NULL); 
         } else if (verb == TLD) {
-            CONTAINER->edges = remove_item(LIST(), CONTAINER->edges, subject);
+            CONTAINER->edges = remove_item(LIST(), CONTAINER->edges, newsubj);
         }
         break;
     default:
@@ -85,4 +91,5 @@ P(act);
         assert(0); // that should be all
         break;
     }
+    free_list(LIST(), newsubj);
 }

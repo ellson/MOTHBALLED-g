@@ -60,7 +60,6 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                             // add NODEID to node list
                             np = ref_list(LIST(), ep);
                             np->state = NODE;
-P(np);
                             append_transfer(nodes, np);
                             np = ref_list(LIST(), ep);
                             np->state = NODE;

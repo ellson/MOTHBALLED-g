@@ -178,8 +178,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
                 }
                 break;
             case DISAMBIG:
-                new = ref_list(LIST(), elem->u.l.first);
-                append_transfer(disambig, new);
+                append_addref(disambig, elem->u.l.first);
                 break;
             case ATTRIBUTES:
                 new = ref_list(LIST(), elem);
