@@ -49,6 +49,9 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
     THREAD_t * THREAD = CONTAINER->THREAD;
     elem_t *subject;
 
+
+P(act);
+
     assert(act);
     assert((state_t)act->state == ACT);
 

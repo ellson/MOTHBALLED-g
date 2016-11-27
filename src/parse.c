@@ -246,13 +246,13 @@ done: // State exit processing
         // FIXME   keep one copy of child identifier itself
         // FIXME   then drop token with no chain, but retain subtree
         case NODEID:
-        case DISAMBID:
         case PORTID:
             THREAD->identifiers = insert_item(LIST(), THREAD->identifiers, branch->u.l.first, merge_identifier, &newkey);
             branch->u.l.first = newkey;
             append_addref(root, branch->u.l.first); 
             break;
 
+        case DISAMBID:
         case ATTRID:  // its followed by VALUE
             THREAD->identifiers = insert_item(LIST(), THREAD->identifiers, branch->u.l.first, merge_identifier, &newkey);
             branch->u.l.first = newkey;
