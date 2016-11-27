@@ -114,41 +114,18 @@ static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
  * @param p the root of the tree (should be in the middle of the resulting list)
  * @param sep the separator beween items
  */
-static void print_tree(THREAD_t * THREAD, elem_t * p, char *sep)
+void print_tree(THREAD_t * THREAD, elem_t * p)
 {
-    FILE *chan = TOKEN()->out;
-    elem_t *key;
-    elemtype_t type;
-
     assert(p);
 
-    key = p->u.t.key;
-    assert(key);
-    type = key->type;
-
     if (p->u.t.left) {
-        print_tree(THREAD, p->u.t.left, sep);
+        print_tree(THREAD, p->u.t.left);
     }
 
-    switch (type) {
-    case LISTELEM:
-//        print_elem(LIST(), p->u.t.key, 2);   // FIXME - needs a print of just strings
-P(p->u.t.key);
-        break;
-    case FRAGELEM:
-        assert(p->u.t.key->u.l.first);
-        assert(p->u.t.key->u.l.first->u.l.first);
-        print_frags(chan, 0, key->u.l.first->u.l.first, sep);
-        break;
-    case SHORTSTRELEM:
-        print_shortstr(chan, key, sep);
-        break;
-    default:
-        assert(0);
-    }
+    printg(THREAD, p->u.t.key);
 
     if (p->u.t.right) {
-        print_tree(THREAD, p->u.t.right, sep);
+        print_tree(THREAD, p->u.t.right);
     }
 }
 
@@ -199,7 +176,7 @@ void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
             print_shortstr(chan, elem, sep);
             break;
         case TREEELEM:
-            print_tree(THREAD, elem, sep);
+            print_tree(THREAD, elem);
             break;
         }
     }
@@ -261,12 +238,14 @@ void append_runtime(THREAD_t * THREAD, char **pos, uint64_t run_sec, uint64_t ru
 /**
  * printg - print the canonical g string representation of a list
  *
+ * @param THREAD context
  * @param a - list to be printed
  */
-void printg (elem_t *a)
+void printg (THREAD_t *THREAD, elem_t *a)
 {
     iter_t ai = { 0 };
     char c;
+    FILE *out = TOKEN()->out;
 
     inititer(&ai, a);
     do {
@@ -274,11 +253,11 @@ void printg (elem_t *a)
             ai.len--;
             c = *ai.cp++;
             if (c) {
-                putc(c, stdout);
+                putc(c, out);
             }
         }
         nextiter(&ai);
     } while (ai.len || ai.sp);
-    putc('\n', stdout);
+    putc('\n', out);
 }
 

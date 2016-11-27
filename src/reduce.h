@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-void reduce(CONTAINER_t * CONTAINER, elem_t *list);
+void reduce(CONTAINER_t * CONTAINER, elem_t *list, state_t verb);
 
 #ifdef __cplusplus
 }

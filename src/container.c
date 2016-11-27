@@ -44,8 +44,7 @@ success_t container(THREAD_t * THREAD)
     }
 
     if (container.nodes) {
-        THREAD->sep = ' ';
-        print_elem(THREAD, container.nodes, 0);
+        print_tree(THREAD, container.nodes);
 
 //        ikea_box_append(ikea_box, data, data_len)
 
@@ -53,8 +52,7 @@ success_t container(THREAD_t * THREAD)
     if (container.edges) {
 //        ikea_box_append(ikea_box, data, data_len)
 
-        THREAD->sep = ' ';
-        print_elem(THREAD, container.edges, 0);
+        print_tree(THREAD, container.edges);
     }
 
 // FIXME - don't forget to include NODE and EDGE patterns, after NODES and EDGES

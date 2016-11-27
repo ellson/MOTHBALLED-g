@@ -8,78 +8,48 @@
 #include "merge.h"
 #include "reduce.h"
 
-void reduce(CONTAINER_t * CONTAINER, elem_t *list)
+void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
 {
     THREAD_t * THREAD = CONTAINER->THREAD;
-    state_t si, subjtype = 0;
-    elem_t *subject, *attributes = NULL, *disambig = NULL;
+    elem_t *subject;
 
-    assert(list);
+    assert(act);
+    assert((state_t)act->state == ACT);
 
-//E();
-P(list);
+    subject = act->u.l.first;
+    assert(subject);
+    assert((state_t)subject->state == SUBJECT);
 
-    elem_t * elem = list->u.l.first;
-    assert(elem); // must always be a subject
-    si = (state_t) elem->state;
-    switch (si) {
+    assert(subject->u.l.first);
+
+    switch ((state_t)subject->u.l.first->state) {
     case NODE:
-    case EDGE:
-        subject = elem;
-        subjtype = si;
-        break;
-    default:
-        S(si);
-        assert(0); // SUBJECT must be NODE or EDGE
-        break;
-    }
-    elem = elem->u.l.next;
-    if (elem && (state_t) elem->state == DISAMBIG) {
-        disambig = elem;
-        elem = elem->u.l.next;
-    }
-    if (elem) {
-        si = (state_t) elem->state;
-        switch (si) {
-        case ATTRIBUTES:
-            attributes = elem;
-            break;
-        default:
-            S(si);
-            assert(0); // that should be all
-            break;
-        }
-        elem = elem->u.l.next;
-    }
-    assert(elem == NULL); // that should be all
-
-P(subject);
-    switch (subjtype) {
-    case NODE:
-        CONTAINER->nodes =
-            insert_item(LIST(),
+        if (!verb) {
+            CONTAINER->nodes = insert_item(LIST(),
                 CONTAINER->nodes,
                 subject,
                 merge_attributes, NULL); 
+        } else if (verb == TLD) {
+            CONTAINER->nodes = remove_item(LIST(),
+                CONTAINER->nodes,
+                subject);
+        }
         break;
     case EDGE:
-        CONTAINER->edges =
-            insert_item(LIST(),
+        if (!verb) {
+            CONTAINER->edges = insert_item(LIST(),
                 CONTAINER->edges,
                 subject,
                 merge_attributes, NULL); 
+        } else if (verb == TLD) {
+            CONTAINER->edges = remove_item(LIST(),
+                CONTAINER->edges,
+                subject);
+        }
         break;
     default:
-        S(subjtype);
+        S((state_t)subject->u.l.first->state);
         assert(0); // that should be all
         break;
     }
-    if (disambig) {
-        //FIXME - what to do with this?
-    }
-    if (attributes) {
-        //FIXME - what to do with this?
-    }
-
-//E();
 }
