@@ -43,6 +43,8 @@ success_t container(THREAD_t * THREAD)
         }
     }
 
+//P(THREAD->identifiers);
+
     if (container.nodes) {
         printt(THREAD, container.nodes);
 
@@ -56,7 +58,7 @@ success_t container(THREAD_t * THREAD)
     }
 
 // FIXME - don't forget to include NODE and EDGE patterns, after NODES and EDGES
-//   (Paterns are in effect now, but may not have been at the creation of existing objects.)
+//   (Patterns are in effect now, but may not have been at the creation of existing objects.)
 
     ikea_box_close ( container.ikea_box );
 

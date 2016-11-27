@@ -12,6 +12,8 @@
 #define MORE_REP(prop, ei) \
     ((prop & (REP | SREP)) && ei != RPN && ei != RAN && ei != RBR && ei != RBE)
 
+static elem_t * merge_identifier(LIST_t *LIST, elem_t *identifier, elem_t *key);
+
 /**
  * This parser recurses at two levels:
  *
@@ -54,7 +56,7 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     char so;        // offset to next state, signed
     state_t ti, ni, ei;
     success_t rc;
-    elem_t *branch;
+    elem_t *branch, *newkey;
     static unsigned char nullstring[] = { '\0' };
 
 //E();
@@ -247,6 +249,10 @@ done: // State exit processing
         case ATTRID:
         case DISAMBID:
         case PORTID:
+
+            THREAD->identifiers = insert_item(LIST(), THREAD->identifiers, branch->u.l.first, merge_identifier, &newkey);
+            branch->u.l.first = newkey;
+
             append_addref(root, branch);  // FIXME keeping for now
             break;
 
@@ -280,3 +286,21 @@ done: // State exit processing
 //E();
     return rc;
 }
+
+
+/**
+ * save new or duplicate identifier
+ * by updating the new to use the identical existing, and then freeing the duplicate
+ *
+ * @param LIST 
+ * @param identifier - the new, possibly duplicate, identifier 
+ * @param key    - the key with the oldest copy of the identifier
+ * @return       - the key with the oldest copy of the identifier
+ */
+static elem_t * merge_identifier(LIST_t *LIST, elem_t *identifier, elem_t *key)
+{
+    key->refs++;
+    free_list(LIST, identifier);
+    return key;
+}
+

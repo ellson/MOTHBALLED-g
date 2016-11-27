@@ -34,7 +34,7 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     ikea_store_snapshot(thread.ikea_store);
     ikea_store_close(thread.ikea_store);
 
-    free_tree(LIST(), thread.attrid);
+    free_tree(LIST(), thread.identifiers);
 
     if (LIST()->stat_elemnow != 0) {
         E();

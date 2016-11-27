@@ -7,9 +7,7 @@
 extern "C" {
 #endif
 
-void attrid_merge(CONTAINER_t * CONTAINER, elem_t * act);
 void value_merge(CONTAINER_t * CONTAINER, elem_t * act);
-
 
 #ifdef __cplusplus
 }

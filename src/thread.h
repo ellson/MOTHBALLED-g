@@ -38,7 +38,7 @@ struct thread_s {
                                // the next character is a token which
                                // implicitly separates.)
  
-    elem_t *attrid;            // tree of attrid strings;
+    elem_t *identifiers;       // tree of identifiers    // FIXME - add mmutex and move to PROCESS  ??
 
     // stats
     long stat_inactcount;

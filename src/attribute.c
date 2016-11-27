@@ -13,15 +13,11 @@
 
 /**
  * ATTRID and VALUE are stored in separate trees:
- * Both trees are sorted by ATTRID
  *
- * The ATTRID tree is common to all the CONTAINERs in a THREAD
- * This is to permit the FRAGLIST representing the ATTRID to
- * be inserted just once, on first use, and then shared by
- * reference from all NODEs or EDGEs that set a VALUE for that ATTRID.
+ * The ATTRID is an identifier, which are stored in a common tree to eliminate duplicates.
  *
  * Every NODE or EDGE has its own ATTRID + VALUE tree, but sharing the
- * ATTRID from the single ATTRID tree in THREAD.
+ * ATTRID from the single identifier tree.
  *
  *     a NODE or EDGE's
  *         VALUE tree
@@ -31,7 +27,7 @@
  *                                 |    (valu)
  *                                 |
  *         THREAD's                | next
- *         ATTRID tree             | (attrid)
+ *      IDENTIFIER tree            | (attrid)
  *          /      \               |
  *       /    \  /    \   key      v    first
  *                    .---------> ABC ---------> FRAGLIST of ATTRID
@@ -60,45 +56,6 @@
  * but referring to the ATTRID from the THREAD's ATTRID tree.
  */
  
-
-
-/**
- * Stash away all the attrid in the THREAD->attrid tree, removing any duplicates.
- *
- * FIXME - attrid tree should be stored in PROCESS,  but need some mutex to 
- *               make that safe when we have multiple threads
- *
- * FIXME - need something to keep track of how many elems are in attrid tree  .....  tough!
- *
- * @param CONTAINER - the current container context
- * @param act - the ACT whose ATTRID are to be processed to share strings
- */
-void attrid_merge(CONTAINER_t * CONTAINER, elem_t * act)
-{
-    THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *newkey; 
-
-    elem_t *attributes = act->u.l.first->u.l.next;
-    if (attributes && (state_t)attributes->state == DISAMBIG) {
-        attributes = attributes->u.l.next;
-    }
-    if (attributes) {
-        assert((state_t)attributes->state == ATTRIBUTES);
-        elem_t *attr = attributes->u.l.first;
-        while (attr) {
-            assert((state_t)attr->state == ATTR);
-            elem_t *attrid = attr->u.l.first;
-            assert(attrid);
-            assert((state_t)attrid->state == ATTRID);
-    
-            THREAD->attrid =
-                insert_item(LIST(), THREAD->attrid, attrid->u.l.first, merge_attrid, &newkey);
-            attrid->u.l.first = newkey;
-            attr = attr->u.l.next;
-        }
-    }
-}
-
 
 
 void value_merge(CONTAINER_t * CONTAINER, elem_t * act)

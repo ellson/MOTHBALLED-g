@@ -8,22 +8,6 @@
 #include "merge.h"
 
 /**
- * merge a new attrid which matches an existing attrib
- * by updating new to use the identical existing, and then freeing the duplicate
- *
- * @param LIST 
- * @param attrid - the new (duplicate) attrid
- * @param key    - the key with the original attrid
- * @return       - the key with the original attrid
- */
-elem_t * merge_attrid(LIST_t *LIST, elem_t *attrid, elem_t *key)
-{
-    key->refs++;
-    free_list(LIST, attrid);
-    return key;
-}
-
-/**
  * merge ATTRIBUTEs for a NODE or EDGE which may have existing ATTRIBUTES
  *
  * @param LIST 

@@ -33,7 +33,6 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *activity;
 
-
 // act initially points to the ACT tree from the parser.  We do a lot of referrencing
 // of bits of that tree,  so we must be very careful with modifications to it to avoid
 // retoactively affecting references, from other parts.
@@ -49,9 +48,6 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     // replace each SAMEAS token in the current act, with reference to the corresponding
     // token in the previous act (which may itself be a substituted sameas.)
     sameas(CONTAINER, act);
-
-    // merge attrid in this ACT with tree of all attrid, keeping strings just once
-    attrid_merge(CONTAINER, act);
 
     // store pattern acts, or apply patterns to non-pattern acts
     if (! (act = patterns(CONTAINER, act)) ) {

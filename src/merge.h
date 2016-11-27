@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-elem_t * merge_attrid(LIST_t *LIST, elem_t *attrid, elem_t *key);
 elem_t * merge_attributes(LIST_t *LIST, elem_t *attributes, elem_t *key);
 elem_t * merge_pattern(LIST_t *LIST, elem_t *act, elem_t *key);
 
