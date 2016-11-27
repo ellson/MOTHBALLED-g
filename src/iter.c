@@ -11,12 +11,14 @@
 #include "iter.h"
 
 /**
- * complete the iter state update or the new elem
+ * complete the iter state update for the new elem
  *
  * - Traversals up, down, or accross lists may contribute
- *   an extra character to be printed, or considered in comparisons or matched.
- *   The extra character depends on the state_t e.g. The '<' '>' that surround edges
- *   and a '\0' to indicate that there is no need for anything between '>' and '<'
+ *   an extra character to be printed, or considered in comparisons or matches.
+ *   The extra character depends on the state_t e.g. The '<' '>' that surround edges.
+ *   A '\0' is used when there is no need for a character to be printed, but that
+ *   there is still a separation of strings when comparing.
+ *   e.g.  "abcdef\0ghi"  does not match  "abc\0defghi"
  *
  * @param iter - a struct containg the current state of the iterator
  * @param this - the elem for this latest step
@@ -102,7 +104,8 @@ void skipiter(iter_t *iter)
 }
 
 /**
- * initialize an iterator for traversing a parser() output list.
+ * initialize an iterator for traversing progeny and siblings of elem
+ *   ( used in printt() to print key and value )
  *
  * @param iter - a struct containg the current state of the iterator
  * @param elem - the root elem of the list to be iterated
@@ -114,6 +117,23 @@ void inititer(iter_t *iter, elem_t *elem)
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
     stepiter(iter, elem);
+}
+
+/**
+ * initialize an iterator for traversing progeny only of elem
+ *   (used in trees where elem and progeny are the key, and siblings are the value)
+ *
+ * @param iter - a struct containg the current state of the iterator
+ * @param elem - the root elem of the list to be iterated
+ */
+void inititer0(iter_t *iter, elem_t *elem)
+{
+    assert(iter);
+    assert(elem);
+    assert((elemtype_t)elem->type == LISTELEM
+        || (elemtype_t)elem->type == SHORTSTRELEM);
+    stepiter(iter, elem);
+    iter->nextstack[0] = NULL;
 }
 
 /**

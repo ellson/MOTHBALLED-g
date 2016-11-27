@@ -151,7 +151,8 @@ elem_t * patterns(CONTAINER_t *CONTAINER, elem_t *act)
         attributes = disambig->u.l.next;  // may be NULL
         disambid = disambig->u.l.first;
     } else {
-        attributes = disambig; //may be NULL
+        attributes = disambig;   // wasn't disambig
+        disambig = NULL;
     }
     if ( !CONTAINER->verb) { // if verb is default (add)
         if (CONTAINER->subj_has_ast) {

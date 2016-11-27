@@ -11,10 +11,7 @@
 #include "compare.h"
 
 /**
- * compare string value of lists: a and b
- *
- * - every traversal up or down through nested lists contibutes a single
- *   '\0' to the comparison.   This is to ensure that:  a  != (a)
+ * compare string value of lists: a and b (not extending to siblings)
  *
  * @param a
  * @param b
@@ -26,8 +23,9 @@ int compare (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    inititer(&ai, a);
-    inititer(&bi, b);
+    inititer0(&ai, a);  // compare a and a's progeny
+    inititer0(&bi, b);  //    with b and b's progeny
+                        // i.e. do not extend to siblings of a or b
     do {
         do { 
             ai.len--;
@@ -49,12 +47,10 @@ int compare (elem_t *a, elem_t *b)
 }
 
 /**
- * match string value of lists: a and b
+ * match string value of lists: a and b (not extending to siblings)
+ *
  * b may contain strings with trailing '*' which will
  * match any tail of the corresponding string in a
- *
- * - every traversal up or down through nested lists contibutes a single
- *   '\0' to the comparison.   This is to ensure that:  a  != (a)
  *
  * @param a
  * @param b (may contain '*')
@@ -66,8 +62,9 @@ int match (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    inititer(&ai, a);
-    inititer(&bi, b);
+    inititer0(&ai, a);  // compare a and a's progeny
+    inititer0(&bi, b);  //    with b and b's progeny
+                        // i.e. do not extend to siblings of a or b
     do {
         do { 
             if (*bi.cp == '*') { 

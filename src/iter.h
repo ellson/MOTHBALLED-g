@@ -19,6 +19,7 @@ typedef struct {
 
 
 void inititer(iter_t *iter, elem_t *elem);
+void inititer0(iter_t *iter, elem_t *elem);
 void nextiter(iter_t *iter);
 void skipiter(iter_t *iter);
 
