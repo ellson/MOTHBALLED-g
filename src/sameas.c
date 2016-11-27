@@ -70,6 +70,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t *target, elem_t * replacement)
             case KID:
             case PORT:
             case DISAMBIG:
+            case ATTRIBUTES:
                 // no need to recurse deeper
                 break;
             case SAMEAS:
