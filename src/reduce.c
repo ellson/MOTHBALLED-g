@@ -12,13 +12,35 @@
  * merge ATTRIBUTEs for a NODE or EDGE which may have existing ATTRIBUTES
  *
  * @param LIST 
- * @param attributes - the new attributes
- * @param key        - the key with previous attributes
- * @return           - the key with previous attributes
+ * @param subject - the new attributes
+ * @param key     - the key with previous subject
+ * @return        - the key with previous subject  - not used
  */
-elem_t * merge_attributes(LIST_t *LIST, elem_t *attributes, elem_t *key)
+static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
 {
-    //FIXME
+    elem_t *disambig, *attributes;
+   
+    disambig = subject->u.l.next;
+    if (disambig) {
+        if ((state_t)disambig->state == DISAMBIG) {
+            attributes = disambig->u.l.next;
+        } else {
+            attributes = disambig;
+            disambig = NULL;
+        }
+    } 
+    if (attributes) {
+        assert((state_t)attributes->state == ATTRIBUTES);
+        elem_t *attr = attributes->u.l.first;
+
+        // FIXME - insert new values into attribute tree - new value wins
+        while (attr) {
+
+//printf("hello\n");
+
+            attr = attr->u.l.next;
+        }
+    }
     return key;
 }
 
@@ -35,6 +57,8 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
     assert((state_t)subject->state == SUBJECT);
 
     assert(subject->u.l.first);
+
+    // FIXME - attributes need to be in a sorted tree
 
     switch ((state_t)subject->u.l.first->state) {
     case NODE:
