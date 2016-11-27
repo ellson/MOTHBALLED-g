@@ -176,21 +176,11 @@ expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset,
 // FIXME - this is ugly!
 
             // create a string fragment with the hash string
-            elem_t * nshortstr = new_shortstr(LIST(), EDGE, hubhash_b64);
-            elem_t * nnodestr = new_list(LIST(), ABC);
-            append_addref(nnodestr, nshortstr);
-
-            // new nodeid
-            elem_t * nnodeid = new_list(LIST(), NODEID);
-            append_addref(nnodeid, nnodestr);
-
-            // new noderef
-            elem_t * nnoderef = new_list(LIST(), NODEREF);
-            append_addref(nnoderef, nnodeid);
+            elem_t * nnodestr = new_shortstr(LIST(), EDGE, hubhash_b64);
 
             // new node
             elem_t * nnode = new_list(LIST(), NODE);
-            append_addref(nnode, nnoderef);
+            append_addref(nnode, nnodestr);
 
             // add node to list of nodes for this act
             new = ref_list(LIST(), nnode);

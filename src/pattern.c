@@ -7,7 +7,6 @@
 #include <assert.h>
 
 #include "thread.h"
-#include "merge.h"
 #include "compare.h"
 #include "pattern.h"
 
@@ -32,6 +31,23 @@
  * match, after pattern substitution.
  */ 
  
+/**
+ * merge a new pattern act
+ * by replacing old ATTRIBUTES with ATTRIBUTES from the new pattern act.
+ *
+ * @param LIST 
+ * @param act - the new (replacement) pattern act
+ * @param key - the key with the old pattern act
+ * @return    - the key with the old pattern act
+ */
+static elem_t * merge_pattern(LIST_t *LIST, elem_t *act, elem_t *key)
+{
+    // free old ATTRIBUTES and append new ATTRIBUTES
+    free_list(LIST, key->u.l.first->u.l.next);
+    key->u.l.first->u.l.next = ref_list(LIST, act->u.l.first->u.l.next);
+    return key;
+}
+
 static void pattern_update(CONTAINER_t * CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;   // needed for LIST() macro

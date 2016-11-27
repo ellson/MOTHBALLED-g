@@ -23,7 +23,6 @@ noinst_HEADERS = \
     info.h \
     iter.h \
     list.h \
-    merge.h \
     parse.h \
     pattern.h \
     print.h \
@@ -55,7 +54,6 @@ libg_process_C_la_SOURCES = \
     info.c \
     iter.c \
     list.c \
-    merge.c \
     parse.c \
     pattern.c \
     print.c \

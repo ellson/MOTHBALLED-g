@@ -7,7 +7,6 @@
 #include <assert.h>
 
 #include "thread.h"
-#include "merge.h"
 #include "compare.h"
 #include "attribute.h"
 
@@ -30,7 +29,7 @@
  *      IDENTIFIER tree            | (attrid)
  *          /      \               |
  *       /    \  /    \   key      v    first
- *                    .---------> ABC ---------> FRAGLIST of ATTRID
+ *                    .---------> ABC ---------> FRAGLIST of identifier
  *
  * ( The "ABC---->FRAGLIST", which is a minimum of two elem_t
  * is optimized to a single SHORTSTRELEM elem_t whenever possible.
@@ -61,6 +60,8 @@
 void value_merge(CONTAINER_t * CONTAINER, elem_t * act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
+
+P(act);
 
     elem_t *attributes = act->u.l.first->u.l.next;
     assert(attributes);
