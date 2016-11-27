@@ -241,6 +241,15 @@ done: // State exit processing
             append_addref(root, branch->u.l.first);
             break;
 
+        // FIXME   keep one copy of identifier itself
+        // FIXME   then drop identifier token with no chain, but retain subtree
+        case NODEID:
+        case ATTRID:
+        case DISAMBID:
+        case PORTID:
+            append_addref(root, branch);  // FIXME keeping for now
+            break;
+
         // drop single character tokens
         case LBR:  // bracketing ATTRs
         case RBR:
