@@ -107,28 +107,39 @@ static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
     *sep = ' ';
 }
 
-/**
- * print a tree from left to right.  i.e in insertion sort order
- *
- * @param THREAD context
- * @param p the root of the tree (should be in the middle of the resulting list)
- * @param sep the separator beween items
- */
-void print_tree(THREAD_t * THREAD, elem_t * p)
-{
-    assert(p);
+static void print_tree(THREAD_t * THREAD, elem_t * p, char *sep)
+ {
+    FILE *chan = TOKEN()->out;
+    elem_t *key;
 
     if (p->u.t.left) {
-        print_tree(THREAD, p->u.t.left);
+        print_tree(THREAD, p->u.t.left, sep);
     }
+ 
 
-    printg(THREAD, p->u.t.key);
-
+    key = p->u.t.key;
+    switch (key->type) {
+        case LISTELEM:
+//        print_elem(LIST(), p->u.t.key, 2);   // FIXME - needs a print of just strings
+P(key);
+            break;
+        case FRAGELEM:
+            assert(key->u.l.first);
+            assert(key->u.l.first->u.l.first);
+            print_frags(chan, 0, key->u.l.first->u.l.first, sep);
+            break;
+        case SHORTSTRELEM:
+            print_shortstr(chan, key, sep);
+            break;
+        default:
+            assert(0);
+    }
+ 
     if (p->u.t.right) {
-        print_tree(THREAD, p->u.t.right);
+        print_tree(THREAD, p->u.t.right, sep);
     }
-}
-
+ }
+ 
 /**
  * Print an elem, recursively, with appropriate separators and indentation
  *
@@ -176,7 +187,7 @@ void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
             print_shortstr(chan, elem, sep);
             break;
         case TREEELEM:
-            print_tree(THREAD, elem);
+            print_tree(THREAD, elem, sep);
             break;
         }
     }
@@ -259,5 +270,23 @@ void printg (THREAD_t *THREAD, elem_t *a)
         nextiter(&ai);
     } while (ai.len || ai.sp);
     putc('\n', out);
+}
+
+/**
+ * print a tree from left to right.  i.e in insertion sort order
+ *
+ * @param THREAD context
+ * @param p the root of the tree (should be in the middle of the resulting list)
+ * @param sep the separator beween items
+ */
+void printt(THREAD_t * THREAD, elem_t * p)
+{
+    if (p->u.t.left) {
+        printt(THREAD, p->u.t.left);
+    }
+    printg(THREAD, p->u.t.key);
+    if (p->u.t.right) {
+        printt(THREAD, p->u.t.right);
+    }
 }
 

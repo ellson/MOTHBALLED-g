@@ -13,7 +13,7 @@ void append_token(THREAD_t * THREAD, char **pos, char tok);
 void append_string(THREAD_t * THREAD, char **pos, char *string);
 void append_ulong(THREAD_t * THREAD, char **pos, uint64_t integer);
 void append_runtime(THREAD_t * THREAD, char **pos, uint64_t run_sec, uint64_t run_ns);
-void print_tree(THREAD_t * THREAD, elem_t * p);
+void printt(THREAD_t * THREAD, elem_t * p);
 void printg(THREAD_t *THREAD, elem_t * a);
 
 

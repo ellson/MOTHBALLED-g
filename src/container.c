@@ -44,7 +44,7 @@ success_t container(THREAD_t * THREAD)
     }
 
     if (container.nodes) {
-        print_tree(THREAD, container.nodes);
+        printt(THREAD, container.nodes);
 
 //        ikea_box_append(ikea_box, data, data_len)
 
@@ -52,7 +52,7 @@ success_t container(THREAD_t * THREAD)
     if (container.edges) {
 //        ikea_box_append(ikea_box, data, data_len)
 
-        print_tree(THREAD, container.edges);
+        printt(THREAD, container.edges);
     }
 
 // FIXME - don't forget to include NODE and EDGE patterns, after NODES and EDGES
