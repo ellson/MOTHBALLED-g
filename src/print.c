@@ -163,7 +163,7 @@ void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
             break;
         case LISTELEM:
             for (cnt = 0, width = 0; elem; elem = elem->u.l.next) {
-                assert(elem->type == (char)type);    // check all the same type
+                assert((elemtype_t)elem->type == type);    // check all the same type
                 if (cnt++) {
                     putc('\n', chan);
                     putc(' ', chan);

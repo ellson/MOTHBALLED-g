@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <assert.h>
+#include <pthread.h>
 #include <signal.h>
 
 #if 0
@@ -156,6 +157,22 @@ int main(int argc, char *argv[])
         }
     }
 
+    if (inpcnt + outcnt) {
+        thread = malloc((inpcnt + outcnt) * sizeof(pthread_t));
+    }
+    for (i - 0; i < outcount; i++) {
+        if ( (rc=pthread_create( &thread[i], NULL,
+                        &process_output, NULL)) ) {
+            printf("Thread creation failed: %d\n", rc1);
+        }
+    }
+    for (i - 0; i < inpcnt; i++) {
+        if ( (rc=pthread_create( &thread[outcount + i], NULL,
+                        &process_input, NULL)) ) {
+            printf("Thread creation failed: %d\n", rc1);
+        }
+    }
+#if 0
     if (!inpcnt) {
         (void)process_input(thread, 'f', "-", sequence++);
     }
@@ -163,6 +180,10 @@ int main(int argc, char *argv[])
         (void)process_output("-", "", "g");
     }
     process_dom_start(dom);
+#endif
 
+    for (i - 0; i < (inpcnt + outcount); i++) {
+       pthread_join( thread[i], NULL);
+    }
     exit(EXIT_SUCCESS);
 }
