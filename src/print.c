@@ -107,21 +107,35 @@ static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
     *sep = ' ';
 }
 
-static void print_tree(THREAD_t * THREAD, elem_t * p, char *sep)
+static void print_tree(THREAD_t * THREAD, elem_t * p, int *cnt, int indent)
  {
     FILE *chan = TOKEN()->out;
+    char *sep = &(THREAD->sep);
     elem_t *key;
+    int ind, width;
 
     if (p->u.t.left) {
-        print_tree(THREAD, p->u.t.left, sep);
+        print_tree(THREAD, p->u.t.left, cnt, indent);
     }
  
-
+    if ((*cnt)++) {
+        putc('\n', chan);
+        putc(' ', chan);
+        if (indent >= 0) {
+            ind = indent;
+            while (ind--) {
+                putc(' ', chan);
+            }
+        }
+    } else {
+        putc(' ', chan);
+    }
+    width = print_len_frag(chan, NAMEP(p->state));
+    ind = indent + width + 1;
     key = p->u.t.key;
     switch (key->type) {
         case LISTELEM:
-//        print_elem(LIST(), p->u.t.key, 2);   // FIXME - needs a print of just strings
-P(key);
+            print_elem(THREAD, p->u.t.key, ind);
             break;
         case FRAGELEM:
             assert(key->u.l.first);
@@ -136,7 +150,7 @@ P(key);
     }
  
     if (p->u.t.right) {
-        print_tree(THREAD, p->u.t.right, sep);
+        print_tree(THREAD, p->u.t.right, cnt, indent);
     }
  }
  
@@ -187,7 +201,8 @@ void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
             print_shortstr(chan, elem, sep);
             break;
         case TREEELEM:
-            print_tree(THREAD, elem, sep);
+            cnt = 0;
+            print_tree(THREAD, elem, &cnt, indent);
             break;
         }
     }
