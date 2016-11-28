@@ -59,6 +59,11 @@ static void stepiter(iter_t *iter, elem_t *this)
             iter->nextstack[(iter->sp)] = this->u.l.first;
         }
         break;
+    case TREEELEM:
+        iter->nextstack[iter->sp] = NULL;
+        iter->cp = (unsigned char*)"\0";
+        iter->len = 1;
+        break;
     default:
         assert(0);
         break;

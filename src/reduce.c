@@ -79,7 +79,7 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
 {
     THREAD_t * THREAD = CONTAINER->THREAD;
     elem_t *subject, *disambig, *attributes, *attr;
-    elem_t *newact, *newsubj, *newattrtree = NULL;
+    elem_t *newact, *newsubj, *newnouns, *newattrtree = NULL;
 
     assert(act);
     assert((state_t)act->state == ACT);
@@ -92,8 +92,10 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
 
     newact = new_list(LIST(), ACT);
     newsubj = new_list(LIST(), SUBJECT);
+    newnouns = new_list(LIST(), NOUNS);
     append_transfer(newact, newsubj);
-    append_addref(newsubj, subject->u.l.first);
+    append_transfer(newsubj, newnouns);
+    append_addref(newnouns, subject->u.l.first);
     disambig = subject->u.l.next;
     if (disambig && (state_t)disambig->state == DISAMBIG) {
         elem_t *newdisambig = new_list(LIST(), DISAMBIG);
