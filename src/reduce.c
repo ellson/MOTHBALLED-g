@@ -118,7 +118,7 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
             }
 //P(newattr);
             newattrtree = insert_item(LIST(), newattrtree,
-                    newattr->u.l.first, merge_value, NULL); 
+                    ATTR, newattr->u.l.first, merge_value, NULL); 
 
             attr = attr->u.l.next;
             free_list(LIST(), newattr);
@@ -135,16 +135,16 @@ P(newact);
     switch ((state_t)subject->u.l.first->state) {
     case NODE:
         if (!verb) {
-            CONTAINER->nodes = insert_item(LIST(), CONTAINER->nodes, newact,
-                merge_attributes, NULL); 
+            CONTAINER->nodes = insert_item(LIST(), CONTAINER->nodes,
+                ACT, newact, merge_attributes, NULL); 
         } else if (verb == TLD) {
             CONTAINER->nodes = remove_item(LIST(), CONTAINER->nodes, newact);
         }
         break;
     case EDGE:
         if (!verb) {
-            CONTAINER->edges = insert_item(LIST(), CONTAINER->edges, newact,
-                merge_attributes, NULL); 
+            CONTAINER->edges = insert_item(LIST(), CONTAINER->edges, 
+                ACT, newact, merge_attributes, NULL); 
         } else if (verb == TLD) {
             CONTAINER->edges = remove_item(LIST(), CONTAINER->edges, newact);
         }
