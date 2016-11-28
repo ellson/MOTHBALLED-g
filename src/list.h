@@ -27,7 +27,7 @@ struct elem_s {
             unsigned char *frag; // pointer to beginning of frag
         } f;
         struct {
-            unsigned char str[sizeof(void*)*3]; // short string (12char on 32bit machines)
+            unsigned char str[sizeof(void*)*3]; // short string (24char on 64bit, 12char on 32bit machines)
         } s;
         struct {
             elem_t *key;         // a list providing key and value

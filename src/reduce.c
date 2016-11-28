@@ -79,7 +79,7 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
 {
     THREAD_t * THREAD = CONTAINER->THREAD;
     elem_t *subject, *disambig, *attributes, *attr;
-    elem_t *newsubj, *newnoun, *newattributes = NULL;
+    elem_t *newact, *newsubj, *newattrtree = NULL;
 
     assert(act);
     assert((state_t)act->state == ACT);
@@ -90,13 +90,15 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
 
 //P(act);
 
+    newact = new_list(LIST(), ACT);
     newsubj = new_list(LIST(), SUBJECT);
-    newnoun = new_list(LIST(), NOUNS);
-    append_transfer(newsubj, newnoun);
-    append_addref(newnoun, subject->u.l.first);
+    append_transfer(newact, newsubj);
+    append_addref(newsubj, subject->u.l.first);
     disambig = subject->u.l.next;
     if (disambig && (state_t)disambig->state == DISAMBIG) {
-        append_addref(newsubj, disambig);
+        elem_t *newdisambig = new_list(LIST(), DISAMBIG);
+        append_addref(newdisambig, disambig->u.l.first);
+        append_transfer(newsubj, newdisambig);
         attributes = disambig->u.l.next;
     } else {
         attributes = disambig;
@@ -113,37 +115,36 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
                 append_transfer(newattr, value);
             }
 //P(newattr);
-            newattributes = insert_item(LIST(), newattributes,
+            newattrtree = insert_item(LIST(), newattrtree,
                     newattr->u.l.first, merge_value, NULL); 
-//P(newattributes);
 
             attr = attr->u.l.next;
             free_list(LIST(), newattr);
         }
     }
-    if (newattributes) {
-        append_transfer(newsubj, newattributes);
+    if (newattrtree) {
+        elem_t *newattributes = new_list(LIST(), ATTRIBUTES);
+        append_transfer(newattributes, newattrtree);
+        append_transfer(newact, newattributes);
     }
 
-P(newsubj);
-
-    // FIXME - attributes need to be in a sorted tree
+P(newact);
 
     switch ((state_t)subject->u.l.first->state) {
     case NODE:
         if (!verb) {
-            CONTAINER->nodes = insert_item(LIST(), CONTAINER->nodes, newsubj,
+            CONTAINER->nodes = insert_item(LIST(), CONTAINER->nodes, newact,
                 merge_attributes, NULL); 
         } else if (verb == TLD) {
-            CONTAINER->nodes = remove_item(LIST(), CONTAINER->nodes, newsubj);
+            CONTAINER->nodes = remove_item(LIST(), CONTAINER->nodes, newact);
         }
         break;
     case EDGE:
         if (!verb) {
-            CONTAINER->edges = insert_item(LIST(), CONTAINER->edges, newsubj,
+            CONTAINER->edges = insert_item(LIST(), CONTAINER->edges, newact,
                 merge_attributes, NULL); 
         } else if (verb == TLD) {
-            CONTAINER->edges = remove_item(LIST(), CONTAINER->edges, newsubj);
+            CONTAINER->edges = remove_item(LIST(), CONTAINER->edges, newact);
         }
         break;
     default:
@@ -151,5 +152,5 @@ P(newsubj);
         assert(0); // that should be all
         break;
     }
-    free_list(LIST(), newsubj);
+    free_list(LIST(), newact);
 }
