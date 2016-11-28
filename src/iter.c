@@ -60,6 +60,29 @@ static void stepiter(iter_t *iter, elem_t *this)
         }
         break;
     case TREEELEM:
+#if 0
+        dir = iter->treestackdir[iter->tsp];
+        this = iter->treestack[iter->tsp];
+        do {
+            if  (dir < 0  && this->u.t.left) {
+                push(p, left);
+
+                continue;
+            }
+            if  (dir == 0) {
+                dir = 1;
+                this = p;
+                iter->cp = (unsigned char*)"\0";
+                iter->len = 1;
+                break;
+            }
+            if (dir > 0 && this->u.t.right) {
+                push(p, right);
+                continue;
+            }
+        while (this);                                               }
+        if (!this) {
+#endif
         iter->nextstack[iter->sp] = NULL;
         iter->cp = (unsigned char*)"\0";
         iter->len = 1;
