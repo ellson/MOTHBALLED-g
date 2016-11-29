@@ -25,6 +25,7 @@
  */
 static void stepiter(iter_t *iter, elem_t *this)
 {
+//int i;
     switch ((elemtype_t)this->type) {
     case FRAGELEM:
         iter->lnxstack[iter->lsp].lnx = this->u.f.next;
@@ -46,14 +47,14 @@ static void stepiter(iter_t *iter, elem_t *this)
         } else {
             assert(iter->lsp < MAXNEST);
             switch ((state_t)this->state) {
-                case ACT:         iter->lnxstack[(iter->lsp)].psp = "\0\n\0"; break;
-                case EDGE:        iter->lnxstack[(iter->lsp)].psp = ">><"   ; break;
-                case MUM:         iter->lnxstack[(iter->lsp)].psp = "\0\0^" ; break;
+                case ACT:         iter->lnxstack[iter->lsp].psp = "\0\n\0"; break;
+                case EDGE:        iter->lnxstack[iter->lsp].psp = ">><"   ; break;
+                case MUM:         iter->lnxstack[iter->lsp].psp = "\0\0^" ; break;
                 case SET:
-                case ENDPOINTSET: iter->lnxstack[(iter->lsp)].psp = ") ("   ; break;
-                default:          iter->lnxstack[(iter->lsp)].psp = "\0 \0" ; break;
+                case ENDPOINTSET: iter->lnxstack[iter->lsp].psp = ") ("   ; break;
+                default:          iter->lnxstack[iter->lsp].psp = "\0 \0" ; break;
             }
-            iter->cp = (unsigned char*)iter->lnxstack[(iter->lsp)].psp+2;
+            iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
             iter->len = 1;
             iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
             iter->lnxstack[iter->lsp].lnx = this->u.l.first;
@@ -61,32 +62,50 @@ static void stepiter(iter_t *iter, elem_t *this)
         break;
     case TREEELEM:
         if (iter->tsp == 0) {
-            iter->tnxstack[iter->tsp].dir = -1;
+            iter->tsp++;
             iter->tnxstack[iter->tsp].tnx = this;
+            iter->tnxstack[iter->tsp].dir = 0;
+            iter->lnxstack[iter->lsp].psp = "\0 \0";
+            iter->lsp++;
         }
+        iter->lsp--;
+        iter->lnxstack[iter->lsp++].lnx = iter->tnxstack[iter->tsp].tnx;
         do {
-            if  (iter->tnxstack[iter->tsp].dir++ < 0  && this->u.t.left) {
-                iter->tsp++;
-                assert (iter->tsp < MAXNEST);
-                this = iter->tnxstack[iter->tsp].tnx = this->u.t.left;
-                iter->tnxstack[iter->tsp].dir = -1;
-                continue;
-            }
-            if  (iter->tnxstack[iter->tsp].dir++ == 0) {
+            if  (iter->tnxstack[iter->tsp].dir == 0) {
+                iter->tnxstack[iter->tsp].dir++;
                 this = iter->tnxstack[iter->tsp].tnx;
-                iter->lnxstack[iter->lsp].lnx = this->u.t.key;
-                iter->cp = (unsigned char*)" ";
+                if (this->u.t.left) {
+                    iter->tsp++;
+                    assert (iter->tsp < MAXNEST);
+                    this = iter->tnxstack[iter->tsp].tnx = this->u.t.left;
+                    iter->tnxstack[iter->tsp].dir = 0;
+                    continue;
+                }
+            }
+            if  (iter->tnxstack[iter->tsp].dir == 1) {
+                this = iter->tnxstack[iter->tsp].tnx;
+                iter->tnxstack[iter->tsp].dir++;
+                iter->lnxstack[iter->lsp].psp = "\0 \0";
+                iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
                 iter->len = 1;
+                iter->lnxstack[iter->lsp++].lnx = this;
+                iter->lnxstack[iter->lsp].lnx = this->u.t.key;
                 break;
             }
-            if (iter->tnxstack[iter->tsp].dir > 0 && this->u.t.right) {
-                iter->tsp++;
-                assert (iter->tsp < MAXNEST);
-                this = iter->tnxstack[iter->tsp].tnx = this->u.t.right;
-                iter->tnxstack[iter->tsp].dir = -1;
-                continue;
+            if (iter->tnxstack[iter->tsp].dir == 2) {
+                iter->tnxstack[iter->tsp].dir++;
+                this = iter->tnxstack[iter->tsp].tnx;
+                if (this->u.t.right) {
+                    iter->tsp++;
+                    assert (iter->tsp < MAXNEST);
+                    this = iter->tnxstack[iter->tsp].tnx = this->u.t.right;
+                    iter->tnxstack[iter->tsp].dir = 0;
+                    continue;
+                }
             }
-            if (iter->tsp-- == 0) {
+            iter->tsp--;
+            assert(iter->lsp);
+            if (iter->tsp == 0) {
                 iter->lnxstack[iter->lsp].lnx = NULL;
                 iter->cp = (unsigned char*)"\0";
                 iter->len = 1;
@@ -124,12 +143,12 @@ void skipiter(iter_t *iter)
                 default: break;
             }
             // emit space-push (2 chars)
-            iter->cp = (unsigned char*)iter->lnxstack[(iter->lsp)].psp+1;
+            iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+1;
             iter->len = 2;
             iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
             iter->lnxstack[iter->lsp].lnx = this->u.l.first;
         } else {
-            iter->cp = (unsigned char*)iter->lnxstack[(iter->lsp)].psp+0;
+            iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+0;
             iter->len = 1;
         }
     } else {

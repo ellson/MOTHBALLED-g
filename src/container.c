@@ -46,14 +46,12 @@ success_t container(THREAD_t * THREAD)
 //P(THREAD->identifiers);
 
     if (container.nodes) {
-        printt(THREAD, container.nodes);
-
 //        ikea_box_append(ikea_box, data, data_len)
+        printt(THREAD, container.nodes);
 
     }
     if (container.edges) {
 //        ikea_box_append(ikea_box, data, data_len)
-
         printt(THREAD, container.edges);
     }
 

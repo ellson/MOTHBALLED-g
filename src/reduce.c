@@ -116,7 +116,6 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
             if (value) {
                 append_transfer(newattr, value);
             }
-//P(newattr);
             newattrtree = insert_item(LIST(), newattrtree,
                     ATTR, newattr->u.l.first, merge_value, NULL); 
 
@@ -129,8 +128,6 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
         append_transfer(newattributes, newattrtree);
         append_transfer(newact, newattributes);
     }
-
-P(newact);
 
     switch ((state_t)subject->u.l.first->state) {
     case NODE:
