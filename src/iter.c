@@ -25,7 +25,6 @@
  */
 static void stepiter(iter_t *iter, elem_t *this)
 {
-//int i;
     switch ((elemtype_t)this->type) {
     case FRAGELEM:
         iter->lnxstack[iter->lsp].lnx = this->u.f.next;
@@ -70,39 +69,46 @@ static void stepiter(iter_t *iter, elem_t *this)
         }
         iter->lsp--;
         iter->lnxstack[iter->lsp++].lnx = iter->tnxstack[iter->tsp].tnx;
+printf("\nthis %p tsp = %d tnode %p dir %d\n", this, iter->tsp, iter->tnxstack[iter->tsp].tnx, iter->tnxstack[iter->tsp].dir);
         do {
+            elem_t *tnode;
+
             if  (iter->tnxstack[iter->tsp].dir == 0) {
+printf("L\n");
                 iter->tnxstack[iter->tsp].dir++;
-                this = iter->tnxstack[iter->tsp].tnx;
-                if (this->u.t.left) {
+                tnode = iter->tnxstack[iter->tsp].tnx;
+                if (tnode->u.t.left) {
                     iter->tsp++;
                     assert (iter->tsp < MAXNEST);
-                    this = iter->tnxstack[iter->tsp].tnx = this->u.t.left;
+                    iter->tnxstack[iter->tsp].tnx = tnode->u.t.left;
                     iter->tnxstack[iter->tsp].dir = 0;
                     continue;
                 }
             }
             if  (iter->tnxstack[iter->tsp].dir == 1) {
-                this = iter->tnxstack[iter->tsp].tnx;
+printf("N\n");
                 iter->tnxstack[iter->tsp].dir++;
+                tnode = iter->tnxstack[iter->tsp].tnx;
                 iter->lnxstack[iter->lsp].psp = "\0 \0";
                 iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
                 iter->len = 1;
-                iter->lnxstack[iter->lsp++].lnx = this;
-                iter->lnxstack[iter->lsp].lnx = this->u.t.key;
+                iter->lnxstack[iter->lsp++].lnx = tnode;
+                this = iter->lnxstack[iter->lsp].lnx = tnode->u.t.key;
                 break;
             }
             if (iter->tnxstack[iter->tsp].dir == 2) {
+printf("R\n");
                 iter->tnxstack[iter->tsp].dir++;
-                this = iter->tnxstack[iter->tsp].tnx;
-                if (this->u.t.right) {
+                tnode = iter->tnxstack[iter->tsp].tnx;
+                if (tnode->u.t.right) {
                     iter->tsp++;
                     assert (iter->tsp < MAXNEST);
-                    this = iter->tnxstack[iter->tsp].tnx = this->u.t.right;
+                    iter->tnxstack[iter->tsp].tnx = tnode->u.t.right;
                     iter->tnxstack[iter->tsp].dir = 0;
                     continue;
                 }
             }
+printf("E\n");
             iter->tsp--;
             assert(iter->lsp);
             if (iter->tsp == 0) {
