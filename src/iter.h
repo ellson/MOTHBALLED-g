@@ -10,11 +10,22 @@ extern "C" {
 #define MAXNEST 20
 
 typedef struct {
-    elem_t *nextstack[MAXNEST];
-    char *pop_space_push[MAXNEST];
-    unsigned char *cp;
-    uint16_t sp;
+    elem_t *lnx;
+    char *psp;
+} lnx_t;
+
+typedef struct {
+    elem_t *tnx;
+    int dir;
+} tnx_t;
+
+typedef struct {
+    lnx_t lnxstack[MAXNEST];
+    tnx_t tnxstack[MAXNEST];
+    uint16_t lsp;
+    uint16_t tsp;
     uint16_t len;
+    unsigned char *cp;
 } iter_t;
 
 

@@ -283,7 +283,7 @@ void printg (THREAD_t *THREAD, elem_t *a)
             }
         }
         nextiter(&ai);
-    } while (ai.len || ai.sp);
+    } while (ai.len || ai.lsp);
     putc('\n', out);
 }
 

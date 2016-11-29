@@ -27,12 +27,12 @@ static void stepiter(iter_t *iter, elem_t *this)
 {
     switch ((elemtype_t)this->type) {
     case FRAGELEM:
-        iter->nextstack[iter->sp] = this->u.f.next;
+        iter->lnxstack[iter->lsp].lnx = this->u.f.next;
         iter->cp = this->u.f.frag;
         iter->len = this->len;
         break;
     case SHORTSTRELEM:
-        iter->nextstack[iter->sp] = NULL;
+        iter->lnxstack[iter->lsp].lnx = NULL;
         iter->cp = this->u.s.str;
         iter->len = this->len;
         break;
@@ -40,52 +40,59 @@ static void stepiter(iter_t *iter, elem_t *this)
         if (this->u.l.first && (elemtype_t)this->u.l.first->type == FRAGELEM) {
             // align with SHORTSTRELEM
             this = this->u.l.first;
-            iter->nextstack[iter->sp] = this->u.f.next;
+            iter->lnxstack[iter->lsp].lnx = this->u.f.next;
             iter->cp = this->u.f.frag;
             iter->len = this->len;
         } else {
-            assert(iter->sp < MAXNEST);
+            assert(iter->lsp < MAXNEST);
             switch ((state_t)this->state) {
-                case ACT:         iter->pop_space_push[(iter->sp)] = "\0\n\0"; break;
-                case EDGE:        iter->pop_space_push[(iter->sp)] = ">><"   ; break;
-                case MUM:         iter->pop_space_push[(iter->sp)] = "\0\0^" ; break;
+                case ACT:         iter->lnxstack[(iter->lsp)].psp = "\0\n\0"; break;
+                case EDGE:        iter->lnxstack[(iter->lsp)].psp = ">><"   ; break;
+                case MUM:         iter->lnxstack[(iter->lsp)].psp = "\0\0^" ; break;
                 case SET:
-                case ENDPOINTSET: iter->pop_space_push[(iter->sp)] = ") ("   ; break;
-                default:          iter->pop_space_push[(iter->sp)] = "\0 \0" ; break;
+                case ENDPOINTSET: iter->lnxstack[(iter->lsp)].psp = ") ("   ; break;
+                default:          iter->lnxstack[(iter->lsp)].psp = "\0 \0" ; break;
             }
-            iter->cp = (unsigned char*)iter->pop_space_push[(iter->sp)]+2;
+            iter->cp = (unsigned char*)iter->lnxstack[(iter->lsp)].psp+2;
             iter->len = 1;
-            iter->nextstack[(iter->sp)++] = this->u.l.next;
-            iter->nextstack[(iter->sp)] = this->u.l.first;
+            iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
+            iter->lnxstack[iter->lsp].lnx = this->u.l.first;
         }
         break;
     case TREEELEM:
-#if 0
-        dir = iter->treestackdir[iter->tsp];
-        this = iter->treestack[iter->tsp];
+        if (iter->tsp == 0) {
+            iter->tnxstack[iter->tsp].dir = -1;
+            iter->tnxstack[iter->tsp].tnx = this;
+        }
         do {
-            if  (dir < 0  && this->u.t.left) {
-                push(p, left);
-
+            if  (iter->tnxstack[iter->tsp].dir++ < 0  && this->u.t.left) {
+                iter->tsp++;
+                assert (iter->tsp < MAXNEST);
+                this = iter->tnxstack[iter->tsp].tnx = this->u.t.left;
+                iter->tnxstack[iter->tsp].dir = -1;
                 continue;
             }
-            if  (dir == 0) {
-                dir = 1;
-                this = p;
+            if  (iter->tnxstack[iter->tsp].dir++ == 0) {
+                this = iter->tnxstack[iter->tsp].tnx;
+                iter->lnxstack[iter->lsp].lnx = this->u.t.key;
+                iter->cp = (unsigned char*)" ";
+                iter->len = 1;
+                break;
+            }
+            if (iter->tnxstack[iter->tsp].dir > 0 && this->u.t.right) {
+                iter->tsp++;
+                assert (iter->tsp < MAXNEST);
+                this = iter->tnxstack[iter->tsp].tnx = this->u.t.right;
+                iter->tnxstack[iter->tsp].dir = -1;
+                continue;
+            }
+            if (iter->tsp-- == 0) {
+                iter->lnxstack[iter->lsp].lnx = NULL;
                 iter->cp = (unsigned char*)"\0";
                 iter->len = 1;
                 break;
             }
-            if (dir > 0 && this->u.t.right) {
-                push(p, right);
-                continue;
-            }
-        while (this);                                               }
-        if (!this) {
-#endif
-        iter->nextstack[iter->sp] = NULL;
-        iter->cp = (unsigned char*)"\0";
-        iter->len = 1;
+        } while (1); 
         break;
     default:
         assert(0);
@@ -103,26 +110,26 @@ void skipiter(iter_t *iter)
 {
     elem_t *this;
 
-    if (iter->sp) {
-        this = iter->nextstack[--(iter->sp)];
+    if (iter->lsp) {
+        this = iter->lnxstack[--iter->lsp].lnx;
         if (this) {
             switch ((state_t)this->state) {
                 // elems that follow elems of a diferent state_t (non-homogenous lists)
                 // need to over-ride the pop_space_push of the preceeding elem
-                case ATTRIBUTES:  iter->pop_space_push[(iter->sp)] = "]\0["  ; break;
-                case DISAMBIG:    iter->pop_space_push[(iter->sp)] = "\0\0`"  ; break;
-                case VALUE:       iter->pop_space_push[(iter->sp)] = "\0\0=" ; break;
-                case SIS:         iter->pop_space_push[(iter->sp)] = "\0 \0"; break;
-                case KID:         iter->pop_space_push[(iter->sp)] = "\0/\0" ; break;
+                case ATTRIBUTES:  iter->lnxstack[iter->lsp].psp = "]\0["  ; break;
+                case DISAMBIG:    iter->lnxstack[iter->lsp].psp = "\0\0`" ; break;
+                case VALUE:       iter->lnxstack[iter->lsp].psp = "\0\0=" ; break;
+                case SIS:         iter->lnxstack[iter->lsp].psp = "\0 \0" ; break;
+                case KID:         iter->lnxstack[iter->lsp].psp = "\0/\0" ; break;
                 default: break;
             }
             // emit space-push (2 chars)
-            iter->cp = (unsigned char*)iter->pop_space_push[(iter->sp)]+1;
+            iter->cp = (unsigned char*)iter->lnxstack[(iter->lsp)].psp+1;
             iter->len = 2;
-            iter->nextstack[(iter->sp)++] = this->u.l.next;
-            iter->nextstack[(iter->sp)] = this->u.l.first;
+            iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
+            iter->lnxstack[iter->lsp].lnx = this->u.l.first;
         } else {
-            iter->cp = (unsigned char*)iter->pop_space_push[(iter->sp)]+0;
+            iter->cp = (unsigned char*)iter->lnxstack[(iter->lsp)].psp+0;
             iter->len = 1;
         }
     } else {
@@ -161,7 +168,7 @@ void inititer0(iter_t *iter, elem_t *elem)
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
     stepiter(iter, elem);
-    iter->nextstack[0] = NULL;
+    iter->lnxstack[0].lnx = NULL;
 }
 
 /**
@@ -171,7 +178,7 @@ void inititer0(iter_t *iter, elem_t *elem)
  */
 void nextiter(iter_t *iter)
 {
-    elem_t *this = iter->nextstack[iter->sp];
+    elem_t *this = iter->lnxstack[iter->lsp].lnx;
 
     if (this) {
         stepiter(iter, this);
