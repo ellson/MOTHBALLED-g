@@ -69,12 +69,12 @@ static void stepiter(iter_t *iter, elem_t *this)
         }
         iter->lsp--;
         iter->lnxstack[iter->lsp++].lnx = iter->tnxstack[iter->tsp].tnx;
-printf("\nthis %p tsp = %d tnode %p dir %d\n", this, iter->tsp, iter->tnxstack[iter->tsp].tnx, iter->tnxstack[iter->tsp].dir);
+printf("\nA tsp %d dir %d this %p tnode %p\n", iter->tsp, iter->tnxstack[iter->tsp].dir, this, iter->tnxstack[iter->tsp].tnx);
         do {
             elem_t *tnode;
 
             if  (iter->tnxstack[iter->tsp].dir == 0) {
-printf("L\n");
+printf("L tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
                 iter->tnxstack[iter->tsp].dir++;
                 tnode = iter->tnxstack[iter->tsp].tnx;
                 if (tnode->u.t.left) {
@@ -86,7 +86,7 @@ printf("L\n");
                 }
             }
             if  (iter->tnxstack[iter->tsp].dir == 1) {
-printf("N\n");
+printf("N tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
                 iter->tnxstack[iter->tsp].dir++;
                 tnode = iter->tnxstack[iter->tsp].tnx;
                 iter->lnxstack[iter->lsp].psp = "\0 \0";
@@ -97,7 +97,7 @@ printf("N\n");
                 break;
             }
             if (iter->tnxstack[iter->tsp].dir == 2) {
-printf("R\n");
+printf("R tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
                 iter->tnxstack[iter->tsp].dir++;
                 tnode = iter->tnxstack[iter->tsp].tnx;
                 if (tnode->u.t.right) {
@@ -108,7 +108,7 @@ printf("R\n");
                     continue;
                 }
             }
-printf("E\n");
+printf("E tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
             iter->tsp--;
             assert(iter->lsp);
             if (iter->tsp == 0) {
