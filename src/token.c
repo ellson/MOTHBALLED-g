@@ -257,12 +257,14 @@ success_t token_whitespace(TOKEN_t * TOKEN)
     return rc;
 }
 
-// I wanted to turn this off, to make it more C likes, and to enforce a 
-// cleaner coding stle, IMHO.   Pragmatically though, if we want to allow
-// translations from other languages, like DOT or JSON, thane we
+// I wanted to turn QUOTING_IN_IDENTIFIERS off, to make it more C like, and to
+// enforce a cleaner coding style, IMHO.   Pragmatically though, if we want
+// to allow translations from other languages, like DOT or JSON, then we
 // will need to support quoting in identifiers.
 
+#ifndef QUOTING_IN_IDENTIFIERS
 #define QUOTING_IN_IDENTIFIERS 1
+#endif
 
 /**
  * load IDENTIFIER fragments
@@ -280,7 +282,7 @@ static int token_identifier_fragment(TOKEN_t * TOKEN, elem_t * identifier)
 
     slen = 0;
     while (1) {
-#ifdef QUOTING_IN_IDENTIFIERS
+#if QUOTING_IN_IDENTIFIERS
         if (TOKEN->in_quote) {
             if (TOKEN->in_quote == 2) {    // character after BSL
                 TOKEN->in_quote = 1;
@@ -404,11 +406,11 @@ success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
 /**
  * load VSTRING fragments
  *
- * FIXME - add support for additonal quoting formats:
- *     HTML-like.  < and > must be properly nested
- *            <....>
- *     Binary. "length" bytes are completely transparent after the ']'
- *            [length]...
+ * Supports additonal quoting formats:
+ *     <...>    XML, HTML, ...             unquoted < and > must be properly nested
+ *     (...)    Lisp, Guile, Scheme, ...   unquoted ( and ) must be properly nested
+ *     {...}    JSON, DOT, ...             unquoted { and } must be properly nested
+ *     [nnn]... Binary.                    nnn bytes transparently after the ']'
  *
  * @param TOKEN context
  * @param string
