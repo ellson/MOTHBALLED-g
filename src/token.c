@@ -425,7 +425,9 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
 
     slen = 0;
     while (1) {
-        if (TOKEN->in_quote) {
+        if (TOKEN->quote_type != ABC) {
+            // FIXME - extra quoting modes
+        } else if (TOKEN->in_quote) {
             if (TOKEN->in_quote == 2) {    // character after BSL
                 TOKEN->in_quote = 1;
                 frag = TOKEN->in;
@@ -505,9 +507,16 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *string)
     TOKEN->has_bsl = 0;
 
     TOKEN->quote_state = ABC;
+    TOKEN->quote_type = ABC;
     TOKEN->insi = char2vstate[*(TOKEN->in)]; // recheck the first char against expanded set
-    if ( ! (TOKEN->insi == ABC || TOKEN->insi == DQT || TOKEN->insi == AST || TOKEN->insi == BSL)) {
-         token_error(TOKEN, "Malformed VSTRING", TOKEN->insi);
+    if (TOKEN->insi != ABC) {
+        if (TOKEN->insi == LPN || TOKEN->insi == LAN || TOKEN->insi == LBE || TOKEN->insi == LBE) {
+            // balanced paren quoting or binary quoting modes
+            TOKEN->quote_type = TOKEN->insi;
+            TOKEN->quote_counter = 0;
+        } else if ( ! (TOKEN->insi == DQT || TOKEN->insi == AST || TOKEN->insi == BSL)) {
+            token_error(TOKEN, "Malformed VSTRING", TOKEN->insi);
+        }
     }
     int slen = token_vstring_fragment(TOKEN, string);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace

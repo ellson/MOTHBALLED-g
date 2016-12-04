@@ -39,6 +39,7 @@ struct token_s {
     state_t state;             // last state entered
     state_t quote_state;       // ABC or
                                // DQT if VSTRING contains any DQT fragments
+    state_t quote_type;        // ABC, or LPN, LBE, LAN, LBR
     state_t elem_has_ast;      // flag set if an '*' is found in any elem
                                //   -- reset by parse(), so parse defines "elem"
     state_t has_ast;           // flag set if an '*' is found in an IDENTIFIER or VSTRING
@@ -46,6 +47,7 @@ struct token_s {
     int in_quote;              // 0 not in quotes
                                // 1 between DQT
                                // 2 char following BSL between DQT
+    int quote_counter;         // paren nesting level, or tranparent char count
 
     long linecount_at_start;   // line count when this file was opened.
                                //   -- used to calulate line # within file
