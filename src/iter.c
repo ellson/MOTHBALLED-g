@@ -25,6 +25,8 @@
  */
 static void stepiter(iter_t *iter, elem_t *this)
 {
+    int i;
+
     switch ((elemtype_t)this->type) {
     case FRAGELEM:
         iter->lnxstack[iter->lsp].lnx = this->u.f.next;
@@ -70,7 +72,13 @@ static void stepiter(iter_t *iter, elem_t *this)
         iter->lnxstack[iter->lsp].psp = "\0 \0";
         iter->lnxstack[iter->lsp++].lnx = iter->tnxstack[iter->tsp].tnx;
 printf("\nA tsp %d dir %d tnode %p\n", iter->tsp, iter->tnxstack[iter->tsp].dir, iter->tnxstack[iter->tsp].tnx);
-printf("  lsp %d this %p\n", iter->lsp, this);
+for (i=0; i<5; i++) {
+    if (i == iter->lsp) {
+        printf("  lnxstack[%d] %p this %p\n", i, iter->lnxstack[i], this);
+    } else {
+        printf("  lnxstack[%d] %p\n", i, iter->lnxstack[i]);
+    }
+}
         do {
             elem_t *tnode;
 
@@ -94,7 +102,13 @@ printf("N tsp %d dir %d tnode %p\n", iter->tsp, iter->tnxstack[iter->tsp].dir, t
                 iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
                 iter->len = 1;
                 this = iter->lnxstack[iter->lsp].lnx = tnode->u.t.key;
-printf("  lsp %d this %p\n", iter->lsp, this);
+for (i=0; i<5; i++) {
+    if (i == iter->lsp) {
+        printf("  lnxstack[%d] %p this %p\n", i, iter->lnxstack[i], this);
+    } else {
+        printf("  lnxstack[%d] %p\n", i, iter->lnxstack[i]);
+    }
+}
                 break;
             }
             if (iter->tnxstack[iter->tsp].dir == 2) {
@@ -116,7 +130,13 @@ printf("E tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
                 iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
                 iter->len = 1;
                 this = iter->lnxstack[iter->lsp].lnx = NULL;
-printf("  lsp %d this %p\n", iter->lsp, this);
+for (i=0; i<5; i++) {
+    if (i == iter->lsp) {
+        printf("  lnxstack[%d] %p this %p\n", i, iter->lnxstack[i], this);
+    } else {
+        printf("  lnxstack[%d] %p\n", i, iter->lnxstack[i]);
+    }
+}
                 break;
             }
         } while (1); 
