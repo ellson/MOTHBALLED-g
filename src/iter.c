@@ -64,12 +64,13 @@ static void stepiter(iter_t *iter, elem_t *this)
             iter->tsp++;
             iter->tnxstack[iter->tsp].tnx = this;
             iter->tnxstack[iter->tsp].dir = 0;
-            iter->lnxstack[iter->lsp].psp = "\0 \0";
-            iter->lsp++;
+        } else {
+            iter->lsp--;
         }
-        iter->lsp--;
+        iter->lnxstack[iter->lsp].psp = "\0 \0";
         iter->lnxstack[iter->lsp++].lnx = iter->tnxstack[iter->tsp].tnx;
-printf("\nA tsp %d dir %d this %p tnode %p\n", iter->tsp, iter->tnxstack[iter->tsp].dir, this, iter->tnxstack[iter->tsp].tnx);
+printf("\nA tsp %d dir %d tnode %p\n", iter->tsp, iter->tnxstack[iter->tsp].dir, iter->tnxstack[iter->tsp].tnx);
+printf("  lsp %d this %p\n", iter->lsp, this);
         do {
             elem_t *tnode;
 
@@ -86,14 +87,14 @@ printf("L tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
                 }
             }
             if  (iter->tnxstack[iter->tsp].dir == 1) {
-printf("N tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
-                iter->tnxstack[iter->tsp].dir++;
                 tnode = iter->tnxstack[iter->tsp].tnx;
+printf("N tsp %d dir %d tnode %p\n", iter->tsp, iter->tnxstack[iter->tsp].dir, tnode);
+                iter->tnxstack[iter->tsp].dir++;
                 iter->lnxstack[iter->lsp].psp = "\0 \0";
                 iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
                 iter->len = 1;
-                iter->lnxstack[iter->lsp++].lnx = tnode;
                 this = iter->lnxstack[iter->lsp].lnx = tnode->u.t.key;
+printf("  lsp %d this %p\n", iter->lsp, this);
                 break;
             }
             if (iter->tnxstack[iter->tsp].dir == 2) {
@@ -110,11 +111,12 @@ printf("R tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
             }
 printf("E tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
             iter->tsp--;
-            assert(iter->lsp);
             if (iter->tsp == 0) {
-                iter->lnxstack[iter->lsp].lnx = NULL;
-                iter->cp = (unsigned char*)"\0";
+                iter->lnxstack[iter->lsp].psp = "\0 \0";
+                iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
                 iter->len = 1;
+                this = iter->lnxstack[iter->lsp].lnx = NULL;
+printf("  lsp %d this %p\n", iter->lsp, this);
                 break;
             }
         } while (1); 
@@ -135,6 +137,7 @@ void skipiter(iter_t *iter)
 {
     elem_t *this;
 
+//printf("skipiter\n");
     if (iter->lsp) {
         this = iter->lnxstack[--iter->lsp].lnx;
         if (this) {
