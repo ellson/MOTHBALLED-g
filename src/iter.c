@@ -27,6 +27,7 @@ static void stepiter(iter_t *iter, elem_t *this)
 {
     int i;
     elem_t *next, *first;
+//    char *psp;
 
     switch ((elemtype_t)this->type) {
     case FRAGELEM:
@@ -68,13 +69,8 @@ static void stepiter(iter_t *iter, elem_t *this)
             iter->tnxstack[iter->tsp].tnx = this;
             iter->tnxstack[iter->tsp].dir = 0;
         }
-//printf("\nA tsp %d dir %d this %p\n", iter->tsp, iter->tnxstack[iter->tsp].dir, iter->tnxstack[iter->tsp].tnx);
-//for (i=0; i<5; i++) {
-//    printf(" %clnxstack[%d] %p\n", iter->lsp==i?'>':' ', i, iter->lnxstack[i]);
-//}
         do {
             if  (iter->tnxstack[iter->tsp].dir == 0) {
-//printf("L tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
                 iter->tnxstack[iter->tsp].dir++;
                 next = iter->tnxstack[iter->tsp].tnx;
                 if (next->u.t.left) {
@@ -87,13 +83,11 @@ static void stepiter(iter_t *iter, elem_t *this)
             }
             if  (iter->tnxstack[iter->tsp].dir == 1) {
                 next = iter->tnxstack[iter->tsp].tnx;
-//printf("N tsp %d dir %d next %p\n", iter->tsp, iter->tnxstack[iter->tsp].dir, next);
                 iter->tnxstack[iter->tsp].dir++;
                 first = next->u.t.key;
                 break;
             }
             if (iter->tnxstack[iter->tsp].dir == 2) {
-//printf("R tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
                 iter->tnxstack[iter->tsp].dir++;
                 next = iter->tnxstack[iter->tsp].tnx;
                 if (next->u.t.right) {
@@ -104,7 +98,6 @@ static void stepiter(iter_t *iter, elem_t *this)
                     continue;
                 }
             }
-//printf("E tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
             iter->tsp--;
             if (iter->tsp == 0) {
                 next = NULL;
@@ -112,15 +105,8 @@ static void stepiter(iter_t *iter, elem_t *this)
                 break;
             }
         } while (1); 
-        iter->lnxstack[iter->lsp].psp = "\0 \0";
-        iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
-        iter->len = 1;
         iter->lnxstack[iter->lsp++].lnx = next;
         iter->lnxstack[iter->lsp].lnx = first;
-        
-//for (i=0; i<5; i++) {
-//    printf(" %clnxstack[%d] %p\n", iter->lsp==i?'>':' ', i, iter->lnxstack[i]);
-//}
         break;
     default:
         assert(0);
@@ -143,7 +129,6 @@ void skipiter(iter_t *iter)
         if (this) {
             switch ((elemtype_t)this->type) {
                 case TREEELEM:
-//printf("skipiter\n");
                     iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+1;
                     iter->len = 2;
                     break;
