@@ -26,6 +26,7 @@
 static void stepiter(iter_t *iter, elem_t *this)
 {
     int i;
+    elem_t *next, *first;
 
     switch ((elemtype_t)this->type) {
     case FRAGELEM:
@@ -66,82 +67,60 @@ static void stepiter(iter_t *iter, elem_t *this)
             iter->tsp++;
             iter->tnxstack[iter->tsp].tnx = this;
             iter->tnxstack[iter->tsp].dir = 0;
-        } else {
-            iter->lsp--;
         }
-        iter->lnxstack[iter->lsp].psp = "\0 \0";
-        iter->lnxstack[iter->lsp++].lnx = iter->tnxstack[iter->tsp].tnx;
-printf("\nA tsp %d dir %d tnode %p\n", iter->tsp, iter->tnxstack[iter->tsp].dir, iter->tnxstack[iter->tsp].tnx);
-for (i=0; i<5; i++) {
-    if (i == iter->lsp) {
-        printf("  lnxstack[%d] %p this %p\n", i, iter->lnxstack[i].lnx, this);
-    } else {
-        printf("  lnxstack[%d] %p\n", i, iter->lnxstack[i].lnx);
-    }
-}
+//printf("\nA tsp %d dir %d this %p\n", iter->tsp, iter->tnxstack[iter->tsp].dir, iter->tnxstack[iter->tsp].tnx);
+//for (i=0; i<5; i++) {
+//    printf(" %clnxstack[%d] %p\n", iter->lsp==i?'>':' ', i, iter->lnxstack[i]);
+//}
         do {
-            elem_t *tnode;
-
             if  (iter->tnxstack[iter->tsp].dir == 0) {
-printf("L tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
+//printf("L tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
                 iter->tnxstack[iter->tsp].dir++;
-                tnode = iter->tnxstack[iter->tsp].tnx;
-                if (tnode->u.t.left) {
+                next = iter->tnxstack[iter->tsp].tnx;
+                if (next->u.t.left) {
                     iter->tsp++;
                     assert (iter->tsp < MAXNEST);
-                    iter->tnxstack[iter->tsp].tnx = tnode->u.t.left;
+                    iter->tnxstack[iter->tsp].tnx = next->u.t.left;
                     iter->tnxstack[iter->tsp].dir = 0;
                     continue;
                 }
             }
             if  (iter->tnxstack[iter->tsp].dir == 1) {
-                tnode = iter->tnxstack[iter->tsp].tnx;
-printf("N tsp %d dir %d tnode %p\n", iter->tsp, iter->tnxstack[iter->tsp].dir, tnode);
+                next = iter->tnxstack[iter->tsp].tnx;
+//printf("N tsp %d dir %d next %p\n", iter->tsp, iter->tnxstack[iter->tsp].dir, next);
                 iter->tnxstack[iter->tsp].dir++;
-                iter->lnxstack[iter->lsp].psp = "\0 \0";
-                iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
-                iter->len = 1;
-//                iter->lsp--;
-//                iter->lnxstack[iter->lsp++].lnx = tnode;
-                this = iter->lnxstack[iter->lsp].lnx = tnode->u.t.key;
-for (i=0; i<5; i++) {
-    if (i == iter->lsp) {
-        printf("  lnxstack[%d] %p this %p\n", i, iter->lnxstack[i].lnx, this);
-    } else {
-        printf("  lnxstack[%d] %p\n", i, iter->lnxstack[i].lnx);
-    }
-}
+                first = next->u.t.key;
                 break;
             }
             if (iter->tnxstack[iter->tsp].dir == 2) {
-printf("R tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
+//printf("R tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
                 iter->tnxstack[iter->tsp].dir++;
-                tnode = iter->tnxstack[iter->tsp].tnx;
-                if (tnode->u.t.right) {
+                next = iter->tnxstack[iter->tsp].tnx;
+                if (next->u.t.right) {
                     iter->tsp++;
                     assert (iter->tsp < MAXNEST);
-                    iter->tnxstack[iter->tsp].tnx = tnode->u.t.right;
+                    iter->tnxstack[iter->tsp].tnx = next->u.t.right;
                     iter->tnxstack[iter->tsp].dir = 0;
                     continue;
                 }
             }
-printf("E tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
+//printf("E tsp %d dir %d\n", iter->tsp, iter->tnxstack[iter->tsp].dir);
             iter->tsp--;
             if (iter->tsp == 0) {
-                iter->lnxstack[iter->lsp].psp = "\0 \0";
-                iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
-                iter->len = 1;
-                this = iter->lnxstack[iter->lsp].lnx = NULL;
-for (i=0; i<5; i++) {
-    if (i == iter->lsp) {
-        printf("  lnxstack[%d] %p this %p\n", i, iter->lnxstack[i].lnx, this);
-    } else {
-        printf("  lnxstack[%d] %p\n", i, iter->lnxstack[i].lnx);
-    }
-}
+                next = NULL;
+                first = NULL;
                 break;
             }
         } while (1); 
+        iter->lnxstack[iter->lsp].psp = "\0 \0";
+        iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
+        iter->len = 1;
+        iter->lnxstack[iter->lsp++].lnx = next;
+        iter->lnxstack[iter->lsp].lnx = first;
+        
+//for (i=0; i<5; i++) {
+//    printf(" %clnxstack[%d] %p\n", iter->lsp==i?'>':' ', i, iter->lnxstack[i]);
+//}
         break;
     default:
         assert(0);
@@ -153,31 +132,40 @@ for (i=0; i<5; i++) {
  * skip the iterator to the end of a chain of elems
  *    and to the next elem in traversal order
  *
- * @param iter - a struct containg the current state of the iterator
+ * @param iter - a struct containing the current state of the iterator
  */
 void skipiter(iter_t *iter)
 {
     elem_t *this;
 
-//printf("skipiter\n");
     if (iter->lsp) {
         this = iter->lnxstack[--iter->lsp].lnx;
         if (this) {
-            switch ((state_t)this->state) {
-                // elems that follow elems of a diferent state_t (non-homogenous lists)
-                // need to over-ride the pop_space_push of the preceeding elem
-                case ATTRIBUTES:  iter->lnxstack[iter->lsp].psp = "]\0["  ; break;
-                case DISAMBIG:    iter->lnxstack[iter->lsp].psp = "\0\0`" ; break;
-                case VALUE:       iter->lnxstack[iter->lsp].psp = "\0\0=" ; break;
-                case SIS:         iter->lnxstack[iter->lsp].psp = "\0 \0" ; break;
-                case KID:         iter->lnxstack[iter->lsp].psp = "\0/\0" ; break;
-                default: break;
+            switch ((elemtype_t)this->type) {
+                case TREEELEM:
+//printf("skipiter\n");
+                    iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+1;
+                    iter->len = 2;
+                    break;
+                default:
+                    switch ((state_t)this->state) {
+                        // elems that follow elems of a diferent state_t
+                        // (non-homogenous lists) need to over-ride the
+                        // pop_space_push of the preceeding elem
+                        case ATTRIBUTES:  iter->lnxstack[iter->lsp].psp = "]\0["  ; break;
+                        case DISAMBIG:    iter->lnxstack[iter->lsp].psp = "\0\0`" ; break;
+                        case VALUE:       iter->lnxstack[iter->lsp].psp = "\0\0=" ; break;
+                        case SIS:         iter->lnxstack[iter->lsp].psp = "\0 \0" ; break;
+                        case KID:         iter->lnxstack[iter->lsp].psp = "\0/\0" ; break;
+                        default: break;
+                    }
+                    // emit space-push (2 chars)
+                    iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+1;
+                    iter->len = 2;
+                    iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
+                    iter->lnxstack[iter->lsp].lnx = this->u.l.first;
+                    break;
             }
-            // emit space-push (2 chars)
-            iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+1;
-            iter->len = 2;
-            iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
-            iter->lnxstack[iter->lsp].lnx = this->u.l.first;
         } else {
             iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+0;
             iter->len = 1;
