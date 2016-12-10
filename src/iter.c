@@ -25,9 +25,7 @@
  */
 static void stepiter(iter_t *iter, elem_t *this)
 {
-    int i;
     elem_t *next, *first;
-//    char *psp;
 
     switch ((elemtype_t)this->type) {
     case FRAGELEM:
@@ -55,6 +53,8 @@ static void stepiter(iter_t *iter, elem_t *this)
                 case MUM:         iter->lnxstack[iter->lsp].psp = "\0\0^" ; break;
                 case SET:
                 case ENDPOINTSET: iter->lnxstack[iter->lsp].psp = ") ("   ; break;
+// FIXME - this results in an extra space before the attr=value list..
+                case ATTRID:      iter->lnxstack[iter->lsp].psp = "\0\0 " ; break;
                 default:          iter->lnxstack[iter->lsp].psp = "\0 \0" ; break;
             }
             iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
@@ -129,8 +129,9 @@ void skipiter(iter_t *iter)
         if (this) {
             switch ((elemtype_t)this->type) {
                 case TREEELEM:
-                    iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+1;
-                    iter->len = 2;
+// FIXME - this results in an extra space after the attr=value list..
+//                    iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+1;
+//                    iter->len = 2;
                     break;
                 default:
                     switch ((state_t)this->state) {
