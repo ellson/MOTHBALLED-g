@@ -510,7 +510,7 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *string)
     TOKEN->quote_type = ABC;
     TOKEN->insi = char2vstate[*(TOKEN->in)]; // recheck the first char against expanded set
     if (TOKEN->insi != ABC) {
-        if (TOKEN->insi == LPN || TOKEN->insi == LAN || TOKEN->insi == LBE || TOKEN->insi == LBE) {
+        if (TOKEN->insi == LPN || TOKEN->insi == LAN || TOKEN->insi == LBE || TOKEN->insi == LBR) {
             // balanced paren quoting or binary quoting modes
             TOKEN->quote_type = TOKEN->insi;
             TOKEN->quote_counter = 0;
