@@ -13,6 +13,8 @@ extern "C" {
 #include "list.h"
 #include "grammar.h"
 #include "token.h"
+#include "identifier.h"
+#include "vstring.h"
 #include "ikea.h"
 #include "iter.h"
 #include "tree.h"

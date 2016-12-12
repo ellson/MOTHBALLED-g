@@ -18,6 +18,7 @@ noinst_HEADERS = \
     fatal.h \
     grammar.h \
     hash.h \
+    identifier.h \
     ikea.h \
     inbuf.h \
     info.h \
@@ -32,7 +33,8 @@ noinst_HEADERS = \
     thread.h \
     token.h \
     tree.h \
-    types.h
+    types.h \
+    vstring.h
 
 noinst_LTLIBRARIES = libg_process_C.la
 lib_LTLIBRARIES = libg_process.la
@@ -49,6 +51,7 @@ libg_process_C_la_SOURCES = \
     fatal.c \
     grammar.c \
     hash.c \
+    identifier.c \
     ikea.c \
     inbuf.c \
     info.c \
@@ -63,7 +66,8 @@ libg_process_C_la_SOURCES = \
     sslhash.c \
     thread.c \
     token.c \
-    tree.c
+    tree.c \
+    vstring.c
 
 libg_process_C_la_LIBADD =
 

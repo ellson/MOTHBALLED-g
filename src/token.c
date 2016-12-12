@@ -72,7 +72,7 @@ void token_error(TOKEN_t * TOKEN, char *message, state_t si)
  * @param TOKEN context
  * @return success/fail
  */
-static success_t token_more_in(TOKEN_t * TOKEN)
+success_t token_more_in(TOKEN_t * TOKEN)
 {
     INBUF_t *INBUF = (INBUF_t *)TOKEN;
     int size;
@@ -257,97 +257,6 @@ success_t token_whitespace(TOKEN_t * TOKEN)
     return rc;
 }
 
-// I wanted to turn QUOTING_IN_IDENTIFIERS off, to make it more C like, and to
-// enforce a cleaner coding style, IMHO.   Pragmatically though, if we want
-// to allow translations from other languages, like DOT or JSON, then we
-// will need to support quoting in identifiers.
-
-#ifndef QUOTING_IN_IDENTIFIERS
-#define QUOTING_IN_IDENTIFIERS 1
-#endif
-
-/**
- * load IDENTIFIER fragments
- *
- * @param TOKEN context
- * @param identifier - list of frags constituting a identifier
- * @return length of identifier
- */
-static int token_identifier_fragment(TOKEN_t * TOKEN, elem_t * identifier)
-{
-    unsigned char *frag;
-    state_t insi;
-    int slen, len;
-    elem_t *elem;
-
-    slen = 0;
-    while (1) {
-#if QUOTING_IN_IDENTIFIERS
-        if (TOKEN->in_quote) {
-            if (TOKEN->in_quote == 2) {    // character after BSL
-                TOKEN->in_quote = 1;
-                frag = TOKEN->in;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
-                elem = new_frag(LIST(), BSL, 1, frag);
-                slen++;
-            } else if (TOKEN->insi == DQT) {
-                TOKEN->in_quote = 0;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
-                continue;
-            } else if (TOKEN->insi == BSL) {
-                TOKEN->in_quote = 2;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
-                TOKEN->has_bsl = BSL;
-                continue;
-            } else if (TOKEN->insi == NLL) {
-                break;
-            } else {
-                frag = TOKEN->in;
-                len = 1;
-                while (1) {
-                    insi = char2state[*++(TOKEN->in)];
-                    if (insi == DQT || insi == BSL || insi == NLL) {
-                        break;
-                    }
-                    len++;
-                }
-                TOKEN->insi = insi;
-                elem = new_frag(LIST(), DQT, len, frag);
-                slen += len;
-            }
-        } else if (TOKEN->insi == DQT) {
-            TOKEN->in_quote = 1;
-            TOKEN->quote_state = DQT;
-            TOKEN->insi = char2state[*++(TOKEN->in)];
-            continue;
-        } else
-#endif
-        if (TOKEN->insi == ABC) {
-            frag = TOKEN->in;
-            len = 1;
-            while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
-                len++;
-            }
-            TOKEN->insi = insi;
-            elem = new_frag(LIST(), ABC, len, frag);
-            slen += len;
-        } else if (TOKEN->insi == AST) {
-            TOKEN->has_ast = AST;
-            TOKEN->elem_has_ast = AST;
-            frag = TOKEN->in;
-            while ((TOKEN->insi = char2state[*++(TOKEN->in)]) == AST) {
-            }    // extra '*' ignored
-            elem = new_frag(LIST(), AST, 1, frag);
-            slen++;
-        } else {
-            break;
-        }
-        append_transfer(identifier, elem);
-        TOKEN->stat_infragcount++;
-    }
-    return slen;
-}
-
 /**
  * if a string is suitable, convert to a shortstr
  *
@@ -355,7 +264,7 @@ static int token_identifier_fragment(TOKEN_t * TOKEN, elem_t * identifier)
  * @param slen - string length of the string
  * @param string
  */
-static void
+void
 token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
     // string must be short and not with special BSL fragments
     // ( AST is not special in this )
@@ -366,174 +275,6 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
         TOKEN->stat_instringlong++;
     }
     string->state = TOKEN->quote_state;
-}
-
-/**
- * collect fragments to form an IDENTIFIER token
- *
- * @param TOKEN context
- * @param identifier
- * @return success/fail
- */
-
-success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
-{
-    assert(identifier);
-    assert(identifier->type == (char)LISTELEM);
-    assert(identifier->refs > 0);
-
-    TOKEN->has_ast = 0;
-    TOKEN->has_bsl = 0;
-    TOKEN->quote_state = ABC;
-    int slen = token_identifier_fragment(TOKEN, identifier); // leading fragment
-    while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
-        if ((token_more_in(TOKEN) == FAIL)) {
-            break;    // EOF
-        }
-        int len = token_identifier_fragment(TOKEN, identifier);
-        if (len == 0) {
-            break;
-        }
-        slen += len;
-    }
-    if (slen > 0) {
-        token_pack_string(TOKEN, slen, identifier); // may replace identifier with a shortstr elem
-        return SUCCESS;
-    }
-    return FAIL;
-}
-
-/**
- * load VSTRING fragments
- *
- * Supports additonal quoting formats:
- *     <...>    XML, HTML, ...             unquoted < and > must be properly nested
- *     (...)    Lisp, Guile, Scheme, ...   unquoted ( and ) must be properly nested
- *     {...}    JSON, DOT, ...             unquoted { and } must be properly nested
- *     [nnn]... Binary.                    nnn bytes transparently after the ']'
- *
- * @param TOKEN context
- * @param string
- * @return length of string
- */
-static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *string)
-{
-    unsigned char *frag;
-    state_t insi;
-    int slen, len;
-    elem_t *elem;
-
-    slen = 0;
-    while (1) {
-        if (TOKEN->quote_type != ABC) {
-            // FIXME - extra quoting modes
-        } else if (TOKEN->in_quote) {
-            if (TOKEN->in_quote == 2) {    // character after BSL
-                TOKEN->in_quote = 1;
-                frag = TOKEN->in;
-                TOKEN->insi = char2vstate[*++(TOKEN->in)];
-                elem = new_frag(LIST(), BSL, 1, frag);
-                slen++;
-            } else if (TOKEN->insi == DQT) {
-                TOKEN->in_quote = 0;
-                TOKEN->insi = char2vstate[*++(TOKEN->in)];
-                continue;
-            } else if (TOKEN->insi == BSL) {
-                TOKEN->in_quote = 2;
-                TOKEN->insi = char2vstate[*++(TOKEN->in)];
-                TOKEN->has_bsl = BSL;
-                continue;
-            } else if (TOKEN->insi == NLL) {
-                break;
-            } else {
-                frag = TOKEN->in;
-                len = 1;
-                while (1) {
-                    insi = char2vstate[*++(TOKEN->in)];
-                    if (insi == DQT || insi == BSL || insi == NLL) {
-                        break;
-                    }
-                    len++;
-                }
-                TOKEN->insi = insi;
-                elem = new_frag(LIST(), DQT, len, frag);
-                slen += len;
-            }
-        } else if (TOKEN->insi == DQT) {
-            TOKEN->in_quote = 1;
-            TOKEN->quote_state = DQT;
-            TOKEN->insi = char2vstate[*++(TOKEN->in)];
-            continue;
-        } else if (TOKEN->insi == ABC) {
-            frag = TOKEN->in;
-            len = 1;
-            while ((insi = char2vstate[*++(TOKEN->in)]) == ABC) {
-                len++;
-            }
-            TOKEN->insi = insi;
-            elem = new_frag(LIST(), ABC, len, frag);
-            slen += len;
-        // but '*' are still special  (maybe used as wild card in queries)
-        } else if (TOKEN->insi == AST) {
-            TOKEN->has_ast = AST;
-            TOKEN->elem_has_ast = AST;
-            frag = TOKEN->in;
-            while ((TOKEN->insi = char2vstate[*++(TOKEN->in)]) == AST) {
-            }    // extra '*' ignored
-            elem = new_frag(LIST(), AST, 1, frag);
-            slen++;
-        } else {
-            break;
-        }
-        append_transfer(string, elem);
-        TOKEN->stat_infragcount++;
-    }
-    return slen;
-}
-
-/**
- * collect fragments to form a VSTRING token
- *
- * @param TOKEN context
- * @param string
- * @return success/fail
- */
-success_t token_vstring(TOKEN_t * TOKEN, elem_t *string)
-{
-    assert(string);
-    assert(string->type == (char)LISTELEM);
-    assert(string->refs > 0);
-    TOKEN->has_ast = 0;
-    TOKEN->has_bsl = 0;
-
-    TOKEN->quote_state = ABC;
-    TOKEN->quote_type = ABC;
-    TOKEN->insi = char2vstate[*(TOKEN->in)]; // recheck the first char against expanded set
-    if (TOKEN->insi != ABC) {
-        if (TOKEN->insi == LPN || TOKEN->insi == LAN || TOKEN->insi == LBE || TOKEN->insi == LBR) {
-            // balanced paren quoting or binary quoting modes
-            TOKEN->quote_type = TOKEN->insi;
-            TOKEN->quote_counter = 0;
-        } else if ( ! (TOKEN->insi == DQT || TOKEN->insi == AST || TOKEN->insi == BSL)) {
-            token_error(TOKEN, "Malformed VSTRING", TOKEN->insi);
-        }
-    }
-    int slen = token_vstring_fragment(TOKEN, string);    // leading string
-    while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
-        if ((token_more_in(TOKEN) == FAIL)) {
-            break;    // EOF
-        }
-        int len = token_vstring_fragment(TOKEN, string);
-        if (len == 0) {
-            break;
-        }
-        slen += len;
-    }
-    if (slen > 0) {
-        token_pack_string(TOKEN, slen, string); // may replace string with a shortstr elem
-        return SUCCESS;
-    }
-    return FAIL;
 }
 
 /**

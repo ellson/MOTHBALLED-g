@@ -63,9 +63,10 @@ struct token_s {
 
 void token_error(TOKEN_t * TOKEN, char *message, state_t si);
 success_t token_whitespace(TOKEN_t * TOKEN);
-success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier);
-success_t token_vstring(TOKEN_t * TOKEN, elem_t *string);
 state_t token(TOKEN_t * TOKEN);
+success_t token_more_in(TOKEN_t *TOKEN);
+void token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string);
+
 
 #ifdef __cplusplus
 }
