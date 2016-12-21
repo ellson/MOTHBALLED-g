@@ -18,8 +18,9 @@
  */
 static elem_t * merge_value(LIST_t *LIST, elem_t *attr, elem_t *key)
 {
-    THREAD_t *THREAD = (THREAD_t*)LIST;
+    THREAD_t *THREAD = (THREAD_t*)LIST;  // for P(x)
 
+printf("merge_value hello\n");
 P(key);
 P(attr);
     elem_t *oldattr = key->u.l.first;
@@ -48,6 +49,10 @@ P(attr);
 static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
 {
 #if 0
+    THREAD_t *THREAD = (THREAD_t*)LIST;  // for P(x)
+
+printf("merge_attributes hello\n");
+P(subject);
     elem_t *disambig, *attributes;
    
     disambig = subject->u.l.next;
@@ -77,7 +82,7 @@ static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
 
 void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
 {
-    THREAD_t * THREAD = CONTAINER->THREAD;
+    THREAD_t * THREAD = CONTAINER->THREAD;   // for P(x)
     elem_t *subject, *disambig, *attributes, *attr;
     elem_t *newact, *newsubj, *newnouns, *newattrtree = NULL;
 
@@ -116,8 +121,10 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
             if (value) {
                 append_transfer(newattr, value);
             }
+//P(newattr);
             newattrtree = insert_item(LIST(), newattrtree,
                     ATTR, newattr->u.l.first, merge_value, NULL); 
+//P(newattrtree);
 
             attr = attr->u.l.next;
             free_list(LIST(), newattr);
@@ -132,6 +139,7 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
     switch ((state_t)subject->u.l.first->state) {
     case NODE:
         if (!verb) {
+P(newact);
             CONTAINER->nodes = insert_item(LIST(), CONTAINER->nodes,
                 ACT, newact, merge_attributes, NULL); 
         } else if (verb == TLD) {
