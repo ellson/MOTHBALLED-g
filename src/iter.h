@@ -25,7 +25,7 @@ typedef struct {
     uint16_t lsp;
     uint16_t tsp;
     uint16_t len;
-    unsigned char *cp;
+    unsigned char *cp, intree;
 } iter_t;
 
 

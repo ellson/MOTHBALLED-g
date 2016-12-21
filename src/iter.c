@@ -53,8 +53,14 @@ static void stepiter(iter_t *iter, elem_t *this)
                 case MUM:         iter->lnxstack[iter->lsp].psp = "\0\0^" ; break;
                 case SET:
                 case ENDPOINTSET: iter->lnxstack[iter->lsp].psp = ") ("   ; break;
-// FIXME - this results in an extra space before the attr=value list..
-                case ATTRID:      iter->lnxstack[iter->lsp].psp = "\0\0 " ; break;
+                case ATTRID:
+                    if (iter->intree) {
+                                  iter->lnxstack[iter->lsp].psp = "\0\0 " ; 
+                    } else {
+                         // suppress extra space before the attr=value list..
+                                  iter->lnxstack[iter->lsp].psp = "\0\0\0"; 
+                    }
+                    break;
                 default:          iter->lnxstack[iter->lsp].psp = "\0 \0" ; break;
             }
             iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
@@ -68,6 +74,9 @@ static void stepiter(iter_t *iter, elem_t *this)
             iter->tsp++;
             iter->tnxstack[iter->tsp].tnx = this;
             iter->tnxstack[iter->tsp].dir = 0;
+            iter->intree = 0; // used to suppress extra space before the attr=value list..
+        } else {
+            iter->intree = 1;
         }
         do {
             if  (iter->tnxstack[iter->tsp].dir == 0) {
@@ -123,15 +132,15 @@ static void stepiter(iter_t *iter, elem_t *this)
 void skipiter(iter_t *iter)
 {
     elem_t *this;
+    int i;
 
     if (iter->lsp) {
         this = iter->lnxstack[--iter->lsp].lnx;
         if (this) {
             switch ((elemtype_t)this->type) {
                 case TREEELEM:
-// FIXME - this results in an extra space after the attr=value list..
-//                    iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+1;
-//                    iter->len = 2;
+                    iter->cp = NULL;
+                    iter->len = 0;
                     break;
                 default:
                     switch ((state_t)this->state) {

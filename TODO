@@ -280,3 +280,5 @@ DONE - aligned with C language
         - Named pipe      -- incremental 
         - RESTful         -- incremental
         - stdin           -- incremental
+
+47. IKEA should use storag compatible with AWS or Ceph Object Store.  A RESTful interface to objects.
