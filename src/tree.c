@@ -144,9 +144,9 @@ elem_t * search_item(elem_t * p, elem_t * key)
  * @param key - elem being inserted.
  * @param merge function
  * @param newkey - if not NULL, provides a location to store a pointer to the key
- *                 just stored in the tree;  (note the return from insert it
- *                 to the root of the tree, which is not necesarily the node
- *                 of the tree holding the newly inserted key.)
+ *                 just stored in the tree;  (note the return from insert is
+ *                 to the balanced root of the updated tree, which is nots
+ *                 ecesarily the node of the tree holding the newly inserted key.)
  * @return the new root of the tree after inserting and rebalancing
  */
 elem_t * insert_item(LIST_t * LIST, elem_t * p, char state, elem_t *key,

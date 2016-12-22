@@ -42,18 +42,21 @@ P(attr);
  * merge ATTRIBUTEs for a NODE or EDGE which may have existing ATTRIBUTES
  *
  * @param LIST 
- * @param subject - the new attributes
- * @param key     - the key with previous subject
- * @return        - the key with previous subject  - not used
+ * @param act - the new attributes
+ * @param key - the key with previous act
+ * @return    - the key with previous act  - not used
  */
-static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
+static elem_t * merge_attributes(LIST_t *LIST, elem_t *act, elem_t *key)
 {
-#if 0
     THREAD_t *THREAD = (THREAD_t*)LIST;  // for P(x)
+    elem_t *subject, *disambig, *attributes;
 
-printf("merge_attributes hello\n");
-P(subject);
-    elem_t *disambig, *attributes;
+//printf("merge_attributes hello\n");
+//P(subject);
+//P(key);
+
+    assert((state_t)act->state == ACT);
+    subject = act->u.l.first;
    
     disambig = subject->u.l.next;
     if (disambig) {
@@ -66,17 +69,21 @@ P(subject);
     } 
     if (attributes) {
         assert((state_t)attributes->state == ATTRIBUTES);
+P(attributes);
+P(key);
+#if 0
         elem_t *attr = attributes->u.l.first;
-
-        // FIXME - insert new values into attribute tree - new value wins
+        elem_t *attrid, *value;
         while (attr) {
-
-//printf("hello\n");
-
-            attr = attr->u.l.next;
+printf("attr=value\n");
+            attrid = attr->u.l.first;
+P(attrid);
+//P(value);
+//          value = attrid->u.l.next;
+        attr = attr->u.l.next;
         }
-    }
 #endif
+    }
     return key;
 }
 
@@ -139,7 +146,7 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
     switch ((state_t)subject->u.l.first->state) {
     case NODE:
         if (!verb) {
-P(newact);
+//P(newact);
             CONTAINER->nodes = insert_item(LIST(), CONTAINER->nodes,
                 ACT, newact, merge_attributes, NULL); 
         } else if (verb == TLD) {
