@@ -54,6 +54,7 @@ static void stepiter(iter_t *iter, elem_t *this)
                 case SET:
                 case ENDPOINTSET: iter->lnxstack[iter->lsp].psp = ") ("   ; break;
                 case ATTRID:
+                    // FIXME - This is a hack! Probably the whole spacing character scheme needs to be rethunk.
                     if (iter->intree) {
                                   iter->lnxstack[iter->lsp].psp = "\0\0 " ; 
                     } else {

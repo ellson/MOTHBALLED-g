@@ -19,23 +19,32 @@
 static elem_t * merge_value(LIST_t *LIST, elem_t *attr, elem_t *key)
 {
     THREAD_t *THREAD = (THREAD_t*)LIST;  // for P(x)
-
-printf("merge_value hello\n");
+//
 P(key);
 P(attr);
-    elem_t *oldattr = key->u.l.first;
-    elem_t *oldvalue = oldattr->u.l.next;
-    if (oldvalue) {
-        free_list(LIST, oldvalue);
-        oldattr->u.l.next = NULL;
-        key->u.l.last = key->u.l.first;
-        key->len = 1;
-    }
-    elem_t *value = attr->u.l.first->u.l.next;
-    if (value) {
-        append_transfer(key, value);
-    }
+//    if (key->u.l.next) {
+//        free_list(LIST, key->u.l.next);
+//    }
+// FIXME - not right
+    key->u.l.next = attr->u.l.next;
     return key;
+}
+
+/**
+ * recurse over elems of b, merging them into a
+ *
+ * @param a - tree to be updated with elems from b
+ * @param b - tree of elems to be merged into a
+ */
+static void merge_tree(LIST_t *LIST, elem_t **a, elem_t *b)
+{
+    if (b->u.t.left) {
+        merge_tree(LIST, a, b->u.t.left);
+    }
+    *a = insert_item(LIST, *a, ATTR, b->u.t.key, merge_value, NULL);
+    if (b->u.t.right) {
+        merge_tree(LIST, a, b->u.t.right);
+    }
 }
 
 /**
@@ -48,48 +57,44 @@ P(attr);
  */
 static elem_t * merge_attributes(LIST_t *LIST, elem_t *act, elem_t *key)
 {
-    THREAD_t *THREAD = (THREAD_t*)LIST;  // for P(x)
-    elem_t *subject, *disambig, *attributes;
-
-//printf("merge_attributes hello\n");
-//P(subject);
-//P(key);
+    elem_t *elem;
 
     assert((state_t)act->state == ACT);
-    subject = act->u.l.first;
-   
-    disambig = subject->u.l.next;
-    if (disambig) {
-        if ((state_t)disambig->state == DISAMBIG) {
-            attributes = disambig->u.l.next;
-        } else {
-            attributes = disambig;
-            disambig = NULL;
+    elem = act->u.l.first; // subject
+    elem = elem->u.l.next;  // disambig or attributes
+    if (elem) {
+        if ((state_t)elem->state == DISAMBIG) {
+            elem = elem->u.l.next;  // attributes
         }
     } 
-    if (attributes) {
-        assert((state_t)attributes->state == ATTRIBUTES);
-P(attributes);
-P(key);
-#if 0
-        elem_t *attr = attributes->u.l.first;
-        elem_t *attrid, *value;
-        while (attr) {
-printf("attr=value\n");
-            attrid = attr->u.l.first;
-P(attrid);
-//P(value);
-//          value = attrid->u.l.next;
-        attr = attr->u.l.next;
+    if (elem) {
+        assert((state_t)elem->state == ATTRIBUTES);
+        elem_t *attrtree = elem->u.l.first;
+        assert((elemtype_t)attrtree->type == TREEELEM);  // attributes to be merged
+
+        assert((state_t)key->state == ACT);
+        elem = key->u.l.first; // subject
+        elem = elem->u.l.next;  // disambig or attributes
+        if (elem) {
+            if ((state_t)elem->state == DISAMBIG) {
+                elem = elem->u.l.next;  // attributes
+            }
+        } 
+        if (elem) {
+            assert((elemtype_t)elem->u.l.first->type == TREEELEM);  // previous attributes
+            merge_tree(LIST, &(elem->u.l.first), attrtree);
+        } else {
+//            append_transfer(elem, attrtree);
+            // FIXME - old had no attributes: newattrtree = attrtree
+            assert(0);
         }
-#endif
     }
     return key;
 }
 
 void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
 {
-    THREAD_t * THREAD = CONTAINER->THREAD;   // for P(x)
+    THREAD_t * THREAD = CONTAINER->THREAD;   // for LIST() and P(x)
     elem_t *subject, *disambig, *attributes, *attr;
     elem_t *newact, *newsubj, *newnouns, *newattrtree = NULL;
 
@@ -128,11 +133,9 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
             if (value) {
                 append_transfer(newattr, value);
             }
-//P(newattr);
+            // insert attr into tree,  if attr already exists, then last one wins
             newattrtree = insert_item(LIST(), newattrtree,
                     ATTR, newattr->u.l.first, merge_value, NULL); 
-//P(newattrtree);
-
             attr = attr->u.l.next;
             free_list(LIST(), newattr);
         }

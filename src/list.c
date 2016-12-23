@@ -250,7 +250,7 @@ void free_list(LIST_t * LIST, elem_t * elem)
         assert(LIST->stat_elemnow > 0);
         assert(elem->refs > 0);
         nextelem = elem->u.l.next;
-        switch ((elemtype_t)(elem->type)) {
+        switch ((elemtype_t)elem->type) {
         case LISTELEM:
             if (--(elem->refs)) {
                 return;    // stop at any point with additional refs
