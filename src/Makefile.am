@@ -9,7 +9,6 @@ include_HEADERS = \
     libg_process.h
 
 noinst_HEADERS = \
-    attribute.h \
     compare.h \
     container.h \
     dispatch.h \
@@ -41,7 +40,6 @@ lib_LTLIBRARIES = libg_process.la
 #pkgconfig_DATA = libg_process.pc
 
 libg_process_C_la_SOURCES = \
-    attribute.c \
     compare.c \
     container.c \
     dispatch.c \
