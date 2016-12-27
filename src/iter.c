@@ -48,21 +48,33 @@ static void stepiter(iter_t *iter, elem_t *this)
         } else {
             assert(iter->lsp < MAXNEST);
             switch ((state_t)this->state) {
-                case ACT:         iter->lnxstack[iter->lsp].psp = "\0\n\0"; break;
-                case EDGE:        iter->lnxstack[iter->lsp].psp = ">><"   ; break;
-                case MUM:         iter->lnxstack[iter->lsp].psp = "\0\0^" ; break;
+                case ACT:
+                    iter->lnxstack[iter->lsp].psp = "\0\n\0";
+                    break;
+                case EDGE:
+                    iter->lnxstack[iter->lsp].psp = ">><";
+                    break;
+                case MUM:
+                    iter->lnxstack[iter->lsp].psp = "\0\0^";
+                    break;
                 case SET:
-                case ENDPOINTSET: iter->lnxstack[iter->lsp].psp = ") ("   ; break;
+
+                case ENDPOINTSET:
+                    iter->lnxstack[iter->lsp].psp = ") (";
+                    break;
                 case ATTRID:
-                    // FIXME - This is a hack! Probably the whole spacing character scheme needs to be rethunk.
+                    // FIXME - This is a hack! Probably the whole
+                    //    psp spacing character scheme needs to be rethunk.
                     if (iter->intree) {
-                                  iter->lnxstack[iter->lsp].psp = "\0\0 " ; 
+                        iter->lnxstack[iter->lsp].psp = "\0\0 "; 
                     } else {
-                         // suppress extra space before the attr=value list..
-                                  iter->lnxstack[iter->lsp].psp = "\0\0\0"; 
+                        // suppress extra space before the attr=value list..
+                        iter->lnxstack[iter->lsp].psp = "\0\0\0"; 
                     }
                     break;
-                default:          iter->lnxstack[iter->lsp].psp = "\0 \0" ; break;
+                default:
+                    iter->lnxstack[iter->lsp].psp = "\0 \0";
+                    break;
             }
             iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
             iter->len = 1;
@@ -133,7 +145,6 @@ static void stepiter(iter_t *iter, elem_t *this)
 void skipiter(iter_t *iter)
 {
     elem_t *this;
-    int i;
 
     if (iter->lsp) {
         this = iter->lnxstack[--iter->lsp].lnx;
@@ -148,12 +159,23 @@ void skipiter(iter_t *iter)
                         // elems that follow elems of a diferent state_t
                         // (non-homogenous lists) need to over-ride the
                         // pop_space_push of the preceeding elem
-                        case ATTRIBUTES:  iter->lnxstack[iter->lsp].psp = "]\0["  ; break;
-                        case DISAMBIG:    iter->lnxstack[iter->lsp].psp = "\0\0`" ; break;
-                        case VALUE:       iter->lnxstack[iter->lsp].psp = "\0\0=" ; break;
-                        case SIS:         iter->lnxstack[iter->lsp].psp = "\0 \0" ; break;
-                        case KID:         iter->lnxstack[iter->lsp].psp = "\0/\0" ; break;
-                        default: break;
+                        case ATTRIBUTES:
+                            iter->lnxstack[iter->lsp].psp = "]\0[";
+                            break;
+                        case DISAMBIG:
+                            iter->lnxstack[iter->lsp].psp = "\0\0`";
+                            break;
+                        case VALUE:
+                            iter->lnxstack[iter->lsp].psp = "\0\0=";
+                            break;
+                        case SIS:
+                            iter->lnxstack[iter->lsp].psp = "\0 \0";
+                            break;
+                        case KID:
+                            iter->lnxstack[iter->lsp].psp = "\0/\0";
+                            break;
+                        default:
+                            break;
                     }
                     // emit space-push (2 chars)
                     iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+1;

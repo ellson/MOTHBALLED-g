@@ -51,17 +51,17 @@ static void merge_tree(LIST_t *LIST, elem_t **a, elem_t *b)
  * merge ATTRIBUTEs for a NODE or EDGE which may have existing ATTRIBUTES
  *
  * @param LIST 
- * @param act - the new attributes
+ * @param subject - the new subject
  * @param key - the key with previous act
  * @return    - the key with previous act  - not used
  */
-static elem_t * merge_attributes(LIST_t *LIST, elem_t *act, elem_t *key)
+static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
 {
+    THREAD_t *THREAD = (THREAD_t *)LIST; // for P(x)
     elem_t *elem;
 
-    assert((state_t)act->state == ACT);
-    elem = act->u.l.first; // subject
-    elem = elem->u.l.next;  // disambig or attributes
+    assert((state_t)subject->state == SUBJECT);
+    elem = subject->u.l.next;  // disambig or attributes
     if (elem) {
         if ((state_t)elem->state == DISAMBIG) {
             elem = elem->u.l.next;  // attributes
@@ -69,12 +69,12 @@ static elem_t * merge_attributes(LIST_t *LIST, elem_t *act, elem_t *key)
     } 
     if (elem) {
         assert((state_t)elem->state == ATTRIBUTES);
+//P(elem);
         elem_t *attrtree = elem->u.l.first;
         assert((elemtype_t)attrtree->type == TREEELEM);  // attributes to be merged
 
-        assert((state_t)key->state == ACT);
-        elem = key->u.l.first; // subject
-        elem = elem->u.l.next;  // disambig or attributes
+        assert((state_t)key->state == SUBJECT);
+        elem = subject->u.l.next;  // disambig or attributes
         if (elem) {
             if ((state_t)elem->state == DISAMBIG) {
                 elem = elem->u.l.next;  // attributes
@@ -127,20 +127,17 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
         assert((state_t)attributes->state == ATTRIBUTES);
         attr = attributes->u.l.first;
         while (attr) {
-            elem_t *newattr = new_list(LIST(), ATTR);
-            append_addref(newattr, attr->u.l.first);
-            elem_t *value = attr->u.l.last;
-            if (value) {
-                append_transfer(newattr, value);
-            }
-            // insert attr into tree,  if attr already exists, then last one wins
+//P(attr);
+            // insert attr into tree, 
+            //     if attr already exists then last one wins
             newattrtree = insert_item(LIST(), newattrtree,
-                    newattr->u.l.first, merge_value, NULL); 
+                    attr->u.l.first, merge_value, NULL); 
             attr = attr->u.l.next;
-            free_list(LIST(), newattr);
         }
     }
     if (newattrtree) {
+//P(newattrtree);
+        // FIXME - I suspect we don't need all these ...
         elem_t *newattributes = new_list(LIST(), ATTRIBUTES);
         append_transfer(newattributes, newattrtree);
         append_transfer(newact, newattributes);
@@ -149,19 +146,21 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
     switch ((state_t)subject->u.l.first->state) {
     case NODE:
         if (!verb) {
-P(newact);
+//P(newact);
             CONTAINER->nodes = insert_item(LIST(), CONTAINER->nodes,
-                newact, merge_attributes, NULL); 
+                    newact->u.l.first, merge_attributes, NULL); 
         } else if (verb == TLD) {
-            CONTAINER->nodes = remove_item(LIST(), CONTAINER->nodes, newact);
+            CONTAINER->nodes = remove_item(LIST(), CONTAINER->nodes,
+                    newact->u.l.first);
         }
         break;
     case EDGE:
         if (!verb) {
-            CONTAINER->edges = insert_item(LIST(), CONTAINER->edges, 
-                newact, merge_attributes, NULL); 
+            CONTAINER->edges = insert_item(LIST(), CONTAINER->edges,
+                    newact->u.l.first, merge_attributes, NULL); 
         } else if (verb == TLD) {
-            CONTAINER->edges = remove_item(LIST(), CONTAINER->edges, newact);
+            CONTAINER->edges = remove_item(LIST(), CONTAINER->edges,
+                    newact->u.l.first);
         }
         break;
     default:

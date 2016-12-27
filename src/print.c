@@ -112,7 +112,7 @@ static void print_tree(THREAD_t * THREAD, elem_t * p, int *cnt, int indent)
     FILE *chan = TOKEN()->out;
     char *sep = &(THREAD->sep);
     elem_t *key;
-    int ind, width;
+    int ind;
 
     if (p->u.t.left) {
         print_tree(THREAD, p->u.t.left, cnt, indent);
@@ -130,8 +130,8 @@ static void print_tree(THREAD_t * THREAD, elem_t * p, int *cnt, int indent)
     } else {
         putc(' ', chan);
     }
-    width = print_len_frag(chan, NAMEP(p->state));
-    ind = indent + width + 1;
+    putc('+', chan);
+    ind = indent + 2;
     key = p->u.t.key;
     switch (key->type) {
         case LISTELEM:
