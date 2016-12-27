@@ -18,15 +18,14 @@
  */
 static elem_t * merge_value(LIST_t *LIST, elem_t *attr, elem_t *key)
 {
-    THREAD_t *THREAD = (THREAD_t*)LIST;  // for P(x)
-//
-P(key);
-P(attr);
-//    if (key->u.l.next) {
-//        free_list(LIST, key->u.l.next);
-//    }
-// FIXME - not right
+//THREAD_t *THREAD = (THREAD_t*)LIST;  // for P(x)
+//P(key);
+//P(attr);
+    if (key->u.l.next) {
+        free_list(LIST, key->u.l.next);
+    }
     key->u.l.next = attr->u.l.next;
+    key->u.l.next->refs++;
     return key;
 }
 
@@ -57,7 +56,7 @@ static void merge_tree(LIST_t *LIST, elem_t **a, elem_t *b)
  */
 static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
 {
-    THREAD_t *THREAD = (THREAD_t *)LIST; // for P(x)
+//THREAD_t *THREAD = (THREAD_t *)LIST; // for P(x)
     elem_t *elem;
 
     assert((state_t)subject->state == SUBJECT);
@@ -74,7 +73,7 @@ static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
         assert((elemtype_t)attrtree->type == TREEELEM);  // attributes to be merged
 
         assert((state_t)key->state == SUBJECT);
-        elem = subject->u.l.next;  // disambig or attributes
+        elem = key->u.l.next;  // disambig or attributes
         if (elem) {
             if ((state_t)elem->state == DISAMBIG) {
                 elem = elem->u.l.next;  // attributes
@@ -82,6 +81,8 @@ static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
         } 
         if (elem) {
             assert((elemtype_t)elem->u.l.first->type == TREEELEM);  // previous attributes
+//P(elem->u.l.first);
+//P(attrtree);
             merge_tree(LIST, &(elem->u.l.first), attrtree);
         } else {
 //            append_transfer(elem, attrtree);

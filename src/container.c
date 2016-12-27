@@ -48,7 +48,7 @@ success_t container(THREAD_t * THREAD)
     if (container.nodes) {
 //        ikea_box_append(ikea_box, data, data_len)
         printt(THREAD, container.nodes);
-P(container.nodes);
+//P(container.nodes);
 
     }
     if (container.edges) {
