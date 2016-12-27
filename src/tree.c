@@ -149,7 +149,7 @@ elem_t * search_item(elem_t * p, elem_t * key)
  *                 ecesarily the node of the tree holding the newly inserted key.)
  * @return the new root of the tree after inserting and rebalancing
  */
-elem_t * insert_item(LIST_t * LIST, elem_t * p, char state, elem_t *key,
+elem_t * insert_item(LIST_t * LIST, elem_t * p, elem_t *key,
        elem_t * (*merge)(LIST_t* LIST, elem_t *key, elem_t *oldkey),
        elem_t ** newkey)
 {
@@ -162,17 +162,17 @@ elem_t * insert_item(LIST_t * LIST, elem_t * p, char state, elem_t *key,
         if (newkey) {
             *newkey = key;
         }
-        return new_tree(LIST, state, key);
+        return new_tree(LIST, key);
     }
     comp = compare(key, p->u.t.key);
     if (comp) {
         if (comp < 0) {
             p->u.t.left = insert_item(LIST, p->u.t.left,
-                state, key, merge, newkey);
+                key, merge, newkey);
         }
         else {
             p->u.t.right = insert_item(LIST, p->u.t.right,
-                state, key, merge, newkey);
+                key, merge, newkey);
         }
     }
     else {

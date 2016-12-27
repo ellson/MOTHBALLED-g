@@ -161,11 +161,10 @@ elem_t * new_shortstr(LIST_t * LIST, char state, char * str)
  * The elem_t is memory managed without caller involvement.
  *
  * @param LIST the top-level context in which all lists are managed
- * @param state a one character value stored with the elem, no internal meaning
  * @param key a list containing (as some point) some frags wihich are the key
  * @return a new intialized elem_t
  */
-elem_t *new_tree(LIST_t * LIST, char state, elem_t *key)
+elem_t *new_tree(LIST_t * LIST, elem_t *key)
 {
     elem_t *elem;
 
@@ -183,7 +182,7 @@ elem_t *new_tree(LIST_t * LIST, char state, elem_t *key)
     elem->u.t.right = NULL;
     elem->height = 1;
     elem->refs = 1;        // init, but don't use since tree root changes during balancing
-    elem->state = state;
+    elem->state = key->state;
     elem->len = 0;         // notused
 
     return elem;

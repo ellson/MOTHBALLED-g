@@ -41,7 +41,7 @@ static void merge_tree(LIST_t *LIST, elem_t **a, elem_t *b)
     if (b->u.t.left) {
         merge_tree(LIST, a, b->u.t.left);
     }
-    *a = insert_item(LIST, *a, ATTR, b->u.t.key, merge_value, NULL);
+    *a = insert_item(LIST, *a, b->u.t.key, merge_value, NULL);
     if (b->u.t.right) {
         merge_tree(LIST, a, b->u.t.right);
     }
@@ -135,7 +135,7 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
             }
             // insert attr into tree,  if attr already exists, then last one wins
             newattrtree = insert_item(LIST(), newattrtree,
-                    ATTR, newattr->u.l.first, merge_value, NULL); 
+                    newattr->u.l.first, merge_value, NULL); 
             attr = attr->u.l.next;
             free_list(LIST(), newattr);
         }
@@ -149,9 +149,9 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
     switch ((state_t)subject->u.l.first->state) {
     case NODE:
         if (!verb) {
-//P(newact);
+P(newact);
             CONTAINER->nodes = insert_item(LIST(), CONTAINER->nodes,
-                ACT, newact, merge_attributes, NULL); 
+                newact, merge_attributes, NULL); 
         } else if (verb == TLD) {
             CONTAINER->nodes = remove_item(LIST(), CONTAINER->nodes, newact);
         }
@@ -159,7 +159,7 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
     case EDGE:
         if (!verb) {
             CONTAINER->edges = insert_item(LIST(), CONTAINER->edges, 
-                ACT, newact, merge_attributes, NULL); 
+                newact, merge_attributes, NULL); 
         } else if (verb == TLD) {
             CONTAINER->edges = remove_item(LIST(), CONTAINER->edges, newact);
         }

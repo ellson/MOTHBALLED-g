@@ -249,14 +249,14 @@ done: // State exit processing
         case PORTID:
         case DISAMBID:
             THREAD->identifiers = insert_item(LIST(), THREAD->identifiers,
-                si, branch->u.l.first, merge_identifier, &newkey);
+                branch->u.l.first, merge_identifier, &newkey);
             branch->u.l.first = newkey;
             append_addref(root, branch->u.l.first); 
             break;
 
         case ATTRID:  // its followed by VALUE
             THREAD->identifiers = insert_item(LIST(), THREAD->identifiers, 
-                si, branch->u.l.first, merge_identifier, &newkey);
+                branch->u.l.first, merge_identifier, &newkey);
             branch->u.l.first = newkey;
             append_addref(root, branch); 
             break;

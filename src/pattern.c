@@ -56,12 +56,12 @@ static void pattern_update(CONTAINER_t * CONTAINER, elem_t *act)
         CONTAINER->stat_patternnodecount++;
         CONTAINER->node_patterns =
             insert_item(LIST(), CONTAINER->node_patterns,
-                ACT, act->u.l.first, merge_pattern, NULL);
+                act->u.l.first, merge_pattern, NULL);
     } else {
         CONTAINER->stat_patternedgecount++;
         CONTAINER->edge_patterns =
             insert_item(LIST(), CONTAINER->edge_patterns,
-                ACT, act->u.l.first, merge_pattern, NULL);
+                act->u.l.first, merge_pattern, NULL);
     }
 }
 
