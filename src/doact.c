@@ -32,48 +32,42 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *activity;
 
-// act initially points to the ACT tree from the parser.  We do a lot of referrencing
-// of bits of that tree,  so we must be very careful with modifications to it to avoid
-// retoactively affecting references, from other parts.
+// act initially points to the ACT tree from the parser.  We do a lot of
+// referrencing of bits of that tree,  so we must be very careful with
+// modifications to it to avoid retoactively affecting references from
+// other parts.
 //
 // The initial ACT tree will be freed by the parser after we return
 
     assert(act);
-    assert(act->u.l.first);            // minimmaly, an ACT must have a SUBJECT
+    assert(act->u.l.first);    // minimmaly, an ACT must have a SUBJECT
 
     CONTAINER->stat_inactcount++;
     THREAD->stat_inactcount++;
 
-    // replace each SAMEAS token in the current act, with reference to the corresponding
-    // token in the previous act (which may itself be a substituted sameas.)
+    // replace each SAMEAS token in the current act, with reference to
+    // the corresponding token in the previous act (which may itself
+    // be a substituted sameas.)
     sameas(CONTAINER, act);
 
     // store pattern acts, or apply patterns to non-pattern acts
     if (! (act = patterns(CONTAINER, act)) ) {
-        return SUCCESS;   // new pattern stored or removed (if it had no attributes).
+        return SUCCESS;   // new pattern stored, or removed (if no attributes).
     }
     // NB ACTs that are QRY or TLD may still have AST in SUBJECT
-
-//P(act);
-//printg(THREAD, act);
 
     // dispatch events for the ACT just finished
     //   the result is multiple simple acts -- hence activity
     activity = dispatch(CONTAINER, act, CONTAINER->verb, CONTAINER->has_mum);
     free_list(LIST(), act);
 
-//P(activity);
-//printg(THREAD, activity);
-
     act = activity->u.l.first;
     while (act) {
         THREAD->stat_outactcount++;
         CONTAINER->stat_outactcount++;
-
         // Populate GOM
-        // eliminate redundancy by insertion sorting into trees.
+        // eliminate redundancy by insertion-sorting into trees.
         reduce(CONTAINER, act, CONTAINER->verb);
-
         act = act->u.l.next;
     }
 

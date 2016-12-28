@@ -8,24 +8,22 @@
 #include "reduce.h"
 
 /**
- * merge VALUE for an ATTR which may have seen before
+ * merge VALUE for an ATTR which already exists
  *                latest VALUE wins
  *
  * @param LIST 
- * @param attr    - attr value 
- * @param key     - key 
+ * @param attr    - attr newvalue 
+ * @param key     - key oldvalue
  * @return        - key - not used
  */
 static elem_t * merge_value(LIST_t *LIST, elem_t *attr, elem_t *key)
 {
-//THREAD_t *THREAD = (THREAD_t*)LIST;  // for P(x)
-//P(key);
-//P(attr);
     if (key->u.l.next) {
         free_list(LIST, key->u.l.next);
     }
-    key->u.l.next = attr->u.l.next;
-    key->u.l.next->refs++;
+    if ((key->u.l.next = attr->u.l.next)) {
+        key->u.l.next->refs++;
+    }
     return key;
 }
 
@@ -56,7 +54,6 @@ static void merge_tree(LIST_t *LIST, elem_t **a, elem_t *b)
  */
 static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
 {
-//THREAD_t *THREAD = (THREAD_t *)LIST; // for P(x)
     elem_t *elem;
 
     assert((state_t)subject->state == SUBJECT);
@@ -68,10 +65,8 @@ static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
     } 
     if (elem) {
         assert((state_t)elem->state == ATTRIBUTES);
-//P(elem);
         elem_t *attrtree = elem->u.l.first;
-        assert((elemtype_t)attrtree->type == TREEELEM);  // attributes to be merged
-
+        assert((elemtype_t)attrtree->type == TREEELEM);  // attrs to be merged
         assert((state_t)key->state == SUBJECT);
         elem = key->u.l.next;  // disambig or attributes
         if (elem) {
@@ -80,9 +75,7 @@ static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
             }
         } 
         if (elem) {
-            assert((elemtype_t)elem->u.l.first->type == TREEELEM);  // previous attributes
-//P(elem->u.l.first);
-//P(attrtree);
+            assert((elemtype_t)elem->u.l.first->type == TREEELEM);  // prev attrs
             merge_tree(LIST, &(elem->u.l.first), attrtree);
         } else {
 //            append_transfer(elem, attrtree);
@@ -106,8 +99,6 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
     assert(subject);
     assert((state_t)subject->state == SUBJECT);
 
-//P(act);
-
     newact = new_list(LIST(), ACT);
     newsubj = new_list(LIST(), SUBJECT);
     newnouns = new_list(LIST(), NOUNS);
@@ -128,7 +119,6 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
         assert((state_t)attributes->state == ATTRIBUTES);
         attr = attributes->u.l.first;
         while (attr) {
-//P(attr);
             // insert attr into tree, 
             //     if attr already exists then last one wins
             newattrtree = insert_item(LIST(), newattrtree,
@@ -137,17 +127,14 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
         }
     }
     if (newattrtree) {
-//P(newattrtree);
         // FIXME - I suspect we don't need all these ...
         elem_t *newattributes = new_list(LIST(), ATTRIBUTES);
         append_transfer(newattributes, newattrtree);
         append_transfer(newact, newattributes);
     }
-
     switch ((state_t)subject->u.l.first->state) {
     case NODE:
         if (!verb) {
-//P(newact);
             CONTAINER->nodes = insert_item(LIST(), CONTAINER->nodes,
                     newact->u.l.first, merge_attributes, NULL); 
         } else if (verb == TLD) {

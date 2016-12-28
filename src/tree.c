@@ -141,7 +141,7 @@ elem_t * search_item(elem_t * p, elem_t * key)
  *
  * @param LIST the context of the tree
  * @param p the root of the tree
- * @param key - elem being inserted.
+ * @param key - elem being inserted.  (maybe be a key,value sequence)
  * @param merge function
  * @param newkey - if not NULL, provides a location to store a pointer to the key
  *                 just stored in the tree;  (note the return from insert is
