@@ -54,33 +54,33 @@ static void merge_tree(LIST_t *LIST, elem_t **a, elem_t *b)
  */
 static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
 {
-    elem_t *elem;
+    elem_t *attributes, **prevattributes_p;
 
     assert((state_t)subject->state == SUBJECT);
-    elem = subject->u.l.next;  // disambig or attributes
-    if (elem) {
-        if ((state_t)elem->state == DISAMBIG) {
-            elem = elem->u.l.next;  // attributes
+    attributes = subject->u.l.next;  // disambig or attributes
+    if (attributes) {
+        if ((state_t)attributes->state == DISAMBIG) {
+            attributes = attributes->u.l.next;  // attributes
         }
     } 
-    if (elem) {
-        assert((state_t)elem->state == ATTRIBUTES);
-        elem_t *attrtree = elem->u.l.first;
+    if (attributes) {
+        assert((state_t)attributes->state == ATTRIBUTES);
+        elem_t *attrtree = attributes->u.l.first;
         assert((elemtype_t)attrtree->type == TREEELEM);  // attrs to be merged
         assert((state_t)key->state == SUBJECT);
-        elem = key->u.l.next;  // disambig or attributes
-        if (elem) {
-            if ((state_t)elem->state == DISAMBIG) {
-                elem = elem->u.l.next;  // attributes
+        prevattributes_p = &(key->u.l.next);  // disambig or attributes
+        if (*prevattributes_p) {
+            if ((state_t)(*prevattributes_p)->state == DISAMBIG) {
+                prevattributes_p = &((*prevattributes_p)->u.l.next);
             }
         } 
-        if (elem) {
-            assert((elemtype_t)elem->u.l.first->type == TREEELEM);  // prev attrs
-            merge_tree(LIST, &(elem->u.l.first), attrtree);
+        if (*prevattributes_p) {
+            assert((elemtype_t)(*prevattributes_p)->u.l.first->type == TREEELEM);
+            merge_tree(LIST, &((*prevattributes_p)->u.l.first), attrtree);
         } else {
-//            append_transfer(elem, attrtree);
-            // FIXME - old had no attributes: newattrtree = attrtree
-            assert(0);
+            // old had no attributes... append
+            *prevattributes_p = attributes;
+            attributes->refs++;
         }
     }
     return key;
