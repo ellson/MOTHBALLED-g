@@ -33,8 +33,6 @@ struct token_s {
                            // e.g. following -e on the commandline
    
 
-
-    // OK
     state_t insi;              // state represented by last character read
     state_t state;             // last state entered
     state_t quote_state;       // ABC or

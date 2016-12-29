@@ -59,7 +59,6 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     elem_t *branch, *newkey;
     static unsigned char nullstring[] = { '\0' };
 
-//E();
     rc = SUCCESS;
     branch = new_list(LIST(), si);
     nest++;
@@ -95,7 +94,7 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
 
     switch (si) {
     case ACTIVITY:         // Recursion into Contained activity
-        if (bi == LBE) {   // if not top-level of containment
+        if (nest != 1) {   // if not top-level of containment - FIXME - this is ugly
             // recursively process contained ACTIVITY in to its own root
             rc = container(THREAD);
             bi = TOKEN()->insi; // The char class that terminates the ACTIVITY
@@ -261,6 +260,10 @@ done: // State exit processing
             append_addref(root, branch); 
             break;
 
+        // drop all CONTENTS as these are processed separately
+        case CONTENTS:
+            break;
+
         // drop single character tokens
         case LBR:  // bracketing ATTRs
         case RBR:
@@ -272,7 +275,6 @@ done: // State exit processing
         case HAT:  // indicating MUM
         case FSL:  // prefixing KID
         case CLN:  // prefixing PORT
-//        case EQL:  // in VALASSIGN and SAMEAS
         case SCN:  // terminal
             break;
 
@@ -288,7 +290,6 @@ done: // State exit processing
     nest--;
     assert(nest >= 0);
 
-//E();
     return rc;
 }
 
