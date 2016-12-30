@@ -15,22 +15,13 @@ struct token_s {
     char **argv;
     FILE *out, *err;           // output files
 
-
-
-    // NB.  In case we do input multiplexing of parallel streams,
-    // then previous needs to be associated with a particular stream
-    // So we keep it in TOKEN->previous, close to TOKEN->in, so they
-    // can be switched together.
-    // FIXME  The stream will also need to retain the current inbuf,
-    // since some read-ahead might have occurred.
-    unsigned char *in;     // next character to be processed
-    elem_t *previous;      // the previous SUBJECT for sameas
-    char *filename;        // name of file currently being processed,
+    unsigned char *in;         // next character to be processed
+    char *filename;            // name of file currently being processed,
                                //   or "-" for stdin
-    FILE *file;            // file handle of file being processed
-    char *membuf;          // An externally memory-managed, in-memory,
-                           // NUL-terminated string providing ACT(s),
-                           // e.g. following -e on the commandline
+    FILE *file;                // file handle of file being processed
+    char *membuf;              // An externally memory-managed, in-memory,
+                               // NUL-terminated string providing ACT(s),
+                               // e.g. following -e on the commandline
    
 
     state_t insi;              // state represented by last character read

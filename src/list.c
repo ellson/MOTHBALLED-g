@@ -10,6 +10,9 @@
 #include "inbuf.h"
 #include "list.h"
 
+#include "thread.h"  // for S(x) in free_list()
+#undef INBUF
+
 #define INBUF() ((INBUF_t*)LIST)
 
 /**
@@ -247,7 +250,11 @@ void free_list(LIST_t * LIST, elem_t * elem)
 
     while (elem) {
         assert(LIST->stat_elemnow > 0);
-        assert(elem->refs > 0);
+        if (elem->refs <= 0) {   // try to identify before crashing
+            THREAD_t *THREAD = (THREAD_t*)LIST;
+            S(elem->state);
+            assert(elem->refs > 0);
+        }
         nextelem = elem->u.l.next;
         switch ((elemtype_t)elem->type) {
         case LISTELEM:

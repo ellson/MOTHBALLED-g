@@ -18,6 +18,7 @@ struct container_s {      // CONTAINER context
     state_t has_node;     // flag set if NODE occurred in SUBJECT
     state_t has_edge;     // flag set if EDHE occurred in SUBJECT
 
+    elem_t *previous;     // previous ACT for sameas
     elem_t *node_patterns;// complete ACTs where the NODE SUBJECT contains an "*"
     elem_t *edge_patterns;// complete ACTs where the EDGE SUBJECT contains an "*"
     elem_t *nodes;        // tree of unique NODEs

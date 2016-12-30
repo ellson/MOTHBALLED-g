@@ -25,7 +25,7 @@ success_t container(THREAD_t * THREAD)
 
     container.THREAD = THREAD;
 
-    TOKEN()->previous = new_list(LIST(), SUBJECT);  // for sameas
+    container.previous = new_list(LIST(), SUBJECT);  // for sameas
 
     THREAD->stat_containdepth++;      // containment nesting level
     if (THREAD->stat_containdepth > THREAD->stat_containdepthmax) {
@@ -64,7 +64,7 @@ success_t container(THREAD_t * THREAD)
     THREAD->stat_containdepth--;
 
     free_list(LIST(), root);
-    free_list(LIST(), TOKEN()->previous);
+    free_list(LIST(), container.previous);
     free_tree(LIST(), container.nodes);
     free_tree(LIST(), container.edges);
     free_tree(LIST(), container.node_patterns);
