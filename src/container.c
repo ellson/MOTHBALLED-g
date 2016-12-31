@@ -52,7 +52,7 @@ success_t container(THREAD_t * THREAD)
 //        ikea_box_append(ikea_box, data, data_len)
         printt(THREAD, container.edges);
     }
-    if (container.node_patters) {
+    if (container.node_patterns) {
 //        ikea_box_append(ikea_box, data, data_len)
 //        printt(THREAD, container.edges);
     }

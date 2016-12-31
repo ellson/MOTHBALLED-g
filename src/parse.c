@@ -253,7 +253,7 @@ done: // State exit processing
             append_addref(root, branch->u.l.first); 
             break;
 
-        case ATTRID:  // its followed by VALUE
+        case ATTRID:  // it is followed by VALUE
             THREAD->identifiers = insert_item(LIST(), THREAD->identifiers, 
                 branch->u.l.first, merge_identifier, &newkey);
             branch->u.l.first = newkey;
@@ -262,7 +262,6 @@ done: // State exit processing
 
         // drop all CONTENTS as these are processed separately
         case CONTENTS:
-            rc = doact(CONTAINER, root);
             break;
 
         // drop single character tokens
