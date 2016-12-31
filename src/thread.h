@@ -45,6 +45,8 @@ struct thread_s {
     ikea_box_t *ikea_box;      // box for container
     char buf[1024];            // output buffering
     int pos;
+    char contenthash[1024];    // big enough for content hash
+                               // checked by assert in ikea_box_open()
 
     // stats
     long stat_inactcount;

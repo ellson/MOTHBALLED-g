@@ -24,8 +24,6 @@ struct container_s {      // CONTAINER context
     elem_t *nodes;        // tree of unique NODEs
     elem_t *edges;        // tree of unique EDGEs
 
-    char contenthash[1024]; // big enough - size checked by assert
-
     // stats
     long stat_containercount;
     long stat_inactcount;

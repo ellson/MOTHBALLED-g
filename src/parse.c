@@ -94,9 +94,12 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
 
     switch (si) {
     case ACTIVITY:         // Recursion into Contained activity
-        if (nest != 1) {   // if not top-level of containment - FIXME - this is ugly
+        if (nest != 1) {   // if not top-level of containment
+// FIXME - this is ugly using nest like this 
+//    (its almost accidental that nest != 1)
             // recursively process contained ACTIVITY in to its own root
             rc = container(THREAD);
+            printf (" contenthash=%s\n", THREAD->contenthash);
             bi = TOKEN()->insi; // The char class that terminates the ACTIVITY
             goto done;
         }

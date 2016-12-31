@@ -51,8 +51,7 @@ success_t container(THREAD_t * THREAD)
             printt(THREAD, container.edges);
         }
         ikea_box_close ( THREAD->ikea_box,
-                container.contenthash, sizeof(container.contenthash) );
-        printf (" contenthash=%s\n", container.contenthash);
+                THREAD->contenthash, sizeof(THREAD->contenthash) );
     }
 
 //    if (container.node_patterns) {
