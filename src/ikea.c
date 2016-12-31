@@ -167,12 +167,10 @@ void ikea_box_append(ikea_box_t* ikea_box, const char *data, size_t data_len)
         FATAL("EVP_DigestUpdate()");
 }
 
-char * ikea_box_close(ikea_box_t* ikea_box) 
+void ikea_box_close(ikea_box_t* ikea_box, char *contenthash) 
 {
     unsigned char digest[EVP_MAX_MD_SIZE];  // contenthash digest 
     unsigned int digest_len = sizeof(digest); 
-    static char contenthash[(((EVP_MAX_MD_SIZE+1)*8/6)+1)];
-        // big enough for base64 encode largest possible digest, plus \0
     char contentpathname[sizeof(tempdir_template) +1 +sizeof(contenthash) +1];
     ikea_store_t * ikea_store = ikea_box->ikea_store;
 
@@ -194,8 +192,6 @@ char * ikea_box_close(ikea_box_t* ikea_box)
 
     // free resources
     free(ikea_box);
-
-    return contenthash;  // return the contenthash string - good until next call
 }
 
 

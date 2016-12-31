@@ -10,6 +10,30 @@
 #include "grammar.h"
 #include "iter.h"
 
+static void itersep(iter_t *iter, int idx, int len)
+{
+    iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+idx;
+    iter->len = len;
+
+#if 0     
+    // FIXME - this breaks some compare()
+    // make sure we don't output NUL
+    // FIXME ugly!
+    if (len == 2) {
+        if (*(iter->cp+1) == '\0') {
+            iter->len--;
+        }
+    }
+    if (len) {
+        if (*(iter->cp) == '\0') {
+            iter->cp++;
+            iter->len--;
+        }
+        assert(len);
+    }
+#endif
+}
+
 /**
  * complete the iter state update for the new elem
  *
@@ -76,8 +100,7 @@ static void stepiter(iter_t *iter, elem_t *this)
                     iter->lnxstack[iter->lsp].psp = "\0 \0";
                     break;
             }
-            iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+2;
-            iter->len = 1;
+            itersep(iter, 2, 1);
             iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
             iter->lnxstack[iter->lsp].lnx = this->u.l.first;
         }
@@ -178,19 +201,16 @@ void skipiter(iter_t *iter)
                             break;
                     }
                     // emit space-push (2 chars)
-                    iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+1;
-                    iter->len = 2;
+                    itersep(iter, 1, 2);
                     iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
                     iter->lnxstack[iter->lsp].lnx = this->u.l.first;
                     break;
             }
         } else {
-            iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+0;
-            iter->len = 1;
+            itersep(iter, 0, 1);
         }
     } else {
-        iter->cp = NULL;
-        iter->len = 0;
+        itersep(iter, 0, 0);
     }
 }
 

@@ -284,15 +284,14 @@ void printg (THREAD_t *THREAD, elem_t *a)
         }
         nextiter(&ai);
     } while (ai.len || ai.lsp);
-    putc('\n', out);
+    putc('\n', out);   // canonical form,  '\n' between ACTs
 }
 
 /**
  * print a tree from left to right.  i.e in insertion sort order
  *
  * @param THREAD context
- * @param p the root of the tree (should be in the middle of the resulting list)
- * @param sep the separator beween items
+ * @param p the root of the tree
  */
 void printt(THREAD_t * THREAD, elem_t * p)
 {

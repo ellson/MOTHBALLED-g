@@ -14,7 +14,7 @@ void ikea_store_close ( ikea_store_t *ikea_store );
 
 ikea_box_t* ikea_box_open( ikea_store_t *ikea_store, const char *appends_content );
 void ikea_box_append( ikea_box_t* ikea_box, const char *data, size_t data_len );
-char * ikea_box_close( ikea_box_t* ikea_box );
+void ikea_box_close( ikea_box_t* ikea_box, char *contenthash );
 
 #ifdef __cplusplus
 }

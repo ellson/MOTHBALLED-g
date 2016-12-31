@@ -25,6 +25,13 @@ struct container_s {      // CONTAINER context
     elem_t *edges;        // tree of unique EDGEs
 
     ikea_box_t *ikea_box; // box for these contents
+#if 0
+    char contenthash[(((EVP_MAX_MD_SIZE+1)*8/6)+1)];
+            // big enough for base64 encode largest possible digest, plus \0
+#else
+    char contenthash[1024];
+            // big enough   // FIXME - not cool
+#endif
 
     // stats
     long stat_containercount;

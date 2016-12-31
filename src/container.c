@@ -52,16 +52,16 @@ success_t container(THREAD_t * THREAD)
 //        ikea_box_append(ikea_box, data, data_len)
         printt(THREAD, container.edges);
     }
-    if (container.node_patterns) {
+//    if (container.node_patterns) {
 //        ikea_box_append(ikea_box, data, data_len)
 //        printt(THREAD, container.edges);
-    }
-    if (container.edge_patterns) {
+//    }
+//    if (container.edge_patterns) {
 //        ikea_box_append(ikea_box, data, data_len)
 //        printt(THREAD, container.edges);
-    }
+//    }
 
-    ikea_box_close ( container.ikea_box );
+    ikea_box_close ( container.ikea_box, container.contenthash );
 
     THREAD->stat_containdepth--;
 
