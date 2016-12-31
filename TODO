@@ -1,9 +1,9 @@
-2. attribute merging
+DONE 2. attribute merging
 
-3. need some kind of print_edge_name
-- for compare and for ikea ...
-- needs logical space between str elems, and between legs and disambig
--- maybe insert real: < > `
+DONE 3. need some kind of print_edge_name
+     - for compare and for ikea ...
+     - needs logical space between str elems, and between legs and disambig
+     -- maybe insert real: < > `
 
 6. extend match patterns
 - currently ABC* matching only
@@ -122,17 +122,19 @@
 
 22. additional VSTRING quoting modes:
     <...>        <> must be balanced  XML/HTML/SVG
+    (...)        () must be balanced  LISP/SCHEME/GUILE
     {...}        {} must be balanced  JSON/YAML/DOT
     [length].... length bytes immediately following ']'  Binary
 
 23. alternate DOM mode - GOM or DOM
-    - GOM - merges dupes and does not preserver order, provides a
-            cananical representation of a graph
+    - GOM - merges dupes and does not preserve order, provides a
+            canonical representation of a graph
     - DOM - retains dupes and preserves arrival order,
             but does not provide a canoncal representation of the doc
     In DOM mode, maybe we can use the same NODE, EDGE, ATTRIBUTE trees for
-    indexing,  but the tree nodes should have a list of all the original objects 
-    in arrival order. (Separated NODE and EDGE lists might be a problem.)
+    indexing,  but the tree nodes should have a list of all the original
+    objects in arrival order. (Separated NODE and EDGE lists might
+    be a problem.)
 
     See also #26
 
@@ -147,7 +149,7 @@
 25. Foreign renderings:
    - can we use foreign svg renderings ? - e.g.
 	https://commons.wikimedia.org/wiki/File:Ttl_inside_7400.svg
-   - an in turn:
+   - and in turn:
         http://www.tutorsglobe.com/homework-help/electrical-engneering/ttl-logic-gate-series-74148.aspx
    - would need to edit to make individual components clickable
    
@@ -161,32 +163,41 @@ C does not allow punctuation characters such as @, $, and % within identifiers. 
 mohd       zara    abc   move_name  a_123
 myname50   _temp   j     a23b9      retVal
 
-27a.   Then, maybe, rename VSTRING to STRING ?
+27a. If we want to defines IDENTIFIES exactly like C, then:
+   - reduce character set to match C
+   - dissallow leading numeric 
 
+27b. - reserve identifiers beginnong with '_' for internal use:
+    - _contenthash
+    - _nodeedges
 
 28.  BUG    a[a=<b>]
 The '<' is not allowed in VSTRING,  somehow it gets interpreted as an EDGE <b>
 Should be able to insist that the first char after '=' is valid...   didn't work, maybe brain has stopped working
 
-29. Rename "session"  to "process"  -- "session" is the persistent association
-across multiple process invocations,  possibly in parrallel, and possibly
-with periods of innactivity.
+DONE 29. Rename "session"  to "process"  -- "session" is the persistent
+     association across multiple process invocations,  possibly in
+     parrallel, and possibly with periods of innactivity.
 
 30. Reduce ABC set to a set sufficient for JSON/YAML/DOT compatibility.
-Suggest a subset of printing ASCII.  Quoting allowed (what char set in quotes?)
-DONE - aligned with C language
+Suggest a subset of printing ASCII.  Quoting allowed (what char set in
+quotes?)
+    - see IDENTIFIER vs VSTRING
 
 31. - consider support for additional escape chars in quote stings,  like C's   \t\v\n\f
     - consider support for arbtrary hex code excapes \x12 
-         - maybe nothing to do,  just carry the escape sequence through literally
-         - that would be ugly - \f would be treated differently than \" or \\
-              or maybe we should store those literally too?
-              '\' disables any special meaning of the folowing character, but the
-               pair are passed through literally ???   would apply inside and outside of quotes
+         - maybe nothing to do,  just carry the escape sequence
+           through literally
+         - that would be ugly - \f would be treated differently
+           than \" or \\
+           or maybe we should store those literally too?
+           '\' disables any special meaning of the folowing character,s
+           but the pair are passed through literally ???
+           would apply inside and outside of quotes
 
-31.  option to provide small graphs on the command line.  e.g.
+31. option to provide small graphs on the command line.  e.g.
 	g -e '(* b *)[x=y] (a x c)'
-     single quote needed to prevent shell interaction
+    single quote needed to prevent shell interaction
 
 32. Optimizations
   - pattern.c - search less than the whole pattern tree for matches
@@ -221,7 +232,8 @@ DONE - aligned with C language
 37. json2g, g2.json ??   xml2g, g2xml ??
 
 38. Need edgelist per node to support node deletion.  Deleting a node
-    has to delete all dependent edges.    Also needed for queries ... presumably
+    has to delete all dependent edges.
+    Also needed for queries ... presumably
     .. but was does that query look likes?
            EDGE patterns
 
@@ -253,10 +265,12 @@ DONE - aligned with C language
 
 41. Extend CONTAINER->attrid into CONTAINER->identifier  tree for all identifiers
 
-42. Optimize out one pointer traversal by making a tree node castable to an elem_t.
-      -- tree elems will be ~double size.  Probably need a separate freelist.
+PROBABLY NOT 42. Optimize out one pointer traversal by making a tree node
+    castable to an elem_t.
+    -- tree elems will be ~double size.  Probably need a separate freelist.
       
 43. Compute hubhash for edges iff .gv is one of the outputs.
+    -- also useful for edgelist on nodes ???
 
 44. BUG - why doesn't the grammar catch this as an error:   (<a b><c d)
                                           it does catch:    <a b)
@@ -281,4 +295,4 @@ DONE - aligned with C language
         - RESTful         -- incremental
         - stdin           -- incremental
 
-47. IKEA should use storag compatible with AWS or Ceph Object Store.  A RESTful interface to objects.
+47. IKEA should use storaaeg compatible with AWS or Ceph Object Store.  A RESTful interface to objects.
