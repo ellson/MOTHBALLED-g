@@ -98,8 +98,9 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
 // FIXME - this is ugly using nest like this 
 //    (its almost accidental that nest != 1)
             // recursively process contained ACTIVITY in to its own root
+            //    this leaves THREAD->contenthash
+            //    which is taken by reduce()
             rc = container(THREAD);
-            printf (" contenthash=%s\n", THREAD->contenthash);
             bi = TOKEN()->insi; // The char class that terminates the ACTIVITY
             goto done;
         }
