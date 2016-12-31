@@ -264,6 +264,10 @@ done: // State exit processing
         case CONTENTS:
             break;
 
+        // drop explicit TERMINAL
+        case TERMINAL:
+            break;
+
         // drop single character tokens
         case LBR:  // bracketing ATTRs
         case RBR:
