@@ -167,8 +167,10 @@ void ikea_box_append(ikea_box_t* ikea_box, const char *data, size_t data_len)
         FATAL("EVP_DigestUpdate()");
 }
 
-void ikea_box_close(ikea_box_t* ikea_box, char *contenthash) 
+void ikea_box_close(ikea_box_t* ikea_box, char *contenthash, int contenthashsz) 
 {
+    assert(contenthashsz >= (((EVP_MAX_MD_SIZE+1)*8/6)+1));
+
     unsigned char digest[EVP_MAX_MD_SIZE];  // contenthash digest 
     unsigned int digest_len = sizeof(digest); 
     char contentpathname[sizeof(tempdir_template) +1 +sizeof(contenthash) +1];

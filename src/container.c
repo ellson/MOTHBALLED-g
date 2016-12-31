@@ -33,8 +33,6 @@ success_t container(THREAD_t * THREAD)
     }
     container.stat_containercount++;    // number of containers in this container
 
-    container.ikea_box = ikea_box_open(THREAD->ikea_store, NULL);
-
     if ((rc = parse(&container, root, 0, SREP, 0, 0, NLL)) == FAIL) {
         if (TOKEN()->insi == NLL) {    // EOF is OK
             rc = SUCCESS;
@@ -45,13 +43,17 @@ success_t container(THREAD_t * THREAD)
 
 
     if (container.nodes) {
-//        ikea_box_append(ikea_box, data, data_len)
+        THREAD->ikea_box = ikea_box_open( THREAD->ikea_store, NULL);
+        ikea_printt (THREAD, container.nodes);
         printt(THREAD, container.nodes);
+        if (container.edges) {
+            ikea_printt (THREAD, container.edges);
+            printt(THREAD, container.edges);
+        }
+        ikea_box_close ( THREAD->ikea_box,
+                container.contenthash, sizeof(container.contenthash) );
     }
-    if (container.edges) {
-//        ikea_box_append(ikea_box, data, data_len)
-        printt(THREAD, container.edges);
-    }
+
 //    if (container.node_patterns) {
 //        ikea_box_append(ikea_box, data, data_len)
 //        printt(THREAD, container.edges);
@@ -61,7 +63,6 @@ success_t container(THREAD_t * THREAD)
 //        printt(THREAD, container.edges);
 //    }
 
-    ikea_box_close ( container.ikea_box, container.contenthash );
 
     THREAD->stat_containdepth--;
 

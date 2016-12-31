@@ -40,7 +40,11 @@ struct thread_s {
                                // the next character is a token which
                                // implicitly separates.)
  
-    elem_t *identifiers;       // tree of identifiers    // FIXME - add mmutex and move to PROCESS  ??
+    elem_t *identifiers;       // tree of identifiers    // FIXME - add mutex and move to PROCESS  ??
+
+    ikea_box_t *ikea_box;      // box for container
+    char buf[1024];            // output buffering
+    int pos;
 
     // stats
     long stat_inactcount;
