@@ -266,6 +266,7 @@ done: // State exit processing
 
         // drop all CONTENTS as these are processed separately
         case CONTENTS:
+            rc = doact(CONTAINER, root);
             break;
 
         // drop explicit TERMINAL

@@ -51,11 +51,14 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     sameas(CONTAINER, act);
 
     // store pattern acts, or apply patterns to non-pattern acts
+    //
+    // patterns() also adds "_contenthash" (if any) to
+    //     pattern and non-pattern acts.
     if (! (act = patterns(CONTAINER, act)) ) {
         return SUCCESS;   // new pattern stored, or removed (if no attributes).
     }
     // NB ACTs that are QRY or TLD may still have AST in SUBJECT
-
+ 
     // dispatch events for the ACT just finished
     //   the result is multiple simple acts -- hence activity
     activity = dispatch(CONTAINER, act, CONTAINER->verb, CONTAINER->has_mum);

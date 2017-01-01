@@ -126,11 +126,6 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
             attr = attr->u.l.next;
         }
     }
-    if (THREAD->contenthash[0]) {
-//        elem_t *contenthash_attr = new_list(LIST(), ATTR);
-        printf (" contenthash=%s\n", THREAD->contenthash);
-        THREAD->contenthash[0] = '\0';
-    }
     if (newattrtree) {
         // FIXME - I suspect we don't need all these ...
         elem_t *newattributes = new_list(LIST(), ATTRIBUTES);

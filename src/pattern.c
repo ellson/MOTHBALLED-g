@@ -172,30 +172,30 @@ elem_t * patterns(CONTAINER_t *CONTAINER, elem_t *act)
         attributes = disambig;   // wasn't disambig
         disambig = NULL;
     }
+    if (THREAD->contenthash[0]) {
+        elem_t *newattr, *newattrid, *newvalue, *newident;
+        // Build newattributes for "_contenthash=xxxxx"
+        // FIXME - need a litle-language to simplify
+        //     these constructions
+        newattr = new_list(LIST(), ATTR);
+        newattrid = new_list(LIST(), ATTRID);
+        append_transfer(newattr, newattrid);
+        newident = new_shortstr(LIST(), ABC, "_contenthash");
+        append_transfer(newattrid, newident);
+        newvalue = new_list(LIST(), VALUE);
+        append_transfer(newattr, newvalue);
+        newident = new_shortstr(LIST(), ABC, THREAD->contenthash);
+        append_transfer(newvalue, newident);
+        if (attributes) { // append to existing attibutes
+            append_transfer(attributes, newattr);
+        } else {
+            newattributes = new_list(LIST(), ATTRIBUTES);
+            append_transfer(newattributes, newattr);
+            append_transfer(act, newattributes);
+        }
+    }
     if ( !CONTAINER->verb) { // if verb is default (add)
         if (CONTAINER->subj_has_ast) {
-            if (THREAD->contenthash[0]) {
-                elem_t *newattr, *newattrid, *newvalue, *newident;
-                // build newattributes for "_contenthash=xxxxx"
-                // FIXME - need a litle-language to simplify
-                //     these constructions
-                newattr = new_list(LIST(), ATTR);
-                newattrid = new_list(LIST(), ATTRID);
-                append_transfer(newattr, newattrid);
-                newident = new_shortstr(LIST(), ABC, "_contenthash");
-                append_transfer(newattrid, newident);
-                newvalue = new_list(LIST(), VALUE);
-                append_transfer(newattr, newvalue);
-                newident = new_shortstr(LIST(), ABC, THREAD->contenthash);
-                append_transfer(newvalue, newident);
-                if (attributes) { // append to existing attibutes
-                    append_transfer(attributes, newattr);
-                } else {
-                    newattributes = new_list(LIST(), ATTRIBUTES);
-                    append_transfer(newattributes, newattr);
-                    append_transfer(act, newattributes);
-                }
-            }
             if (attributes || THREAD->contenthash[0]) {
                 // If the pattern act has attributes and/or contents,
                 // then it is added to saved patterns.
@@ -212,6 +212,7 @@ elem_t * patterns(CONTAINER_t *CONTAINER, elem_t *act)
                           //   no more processing for this ACT
         }
     }
+    THREAD->contenthash[0] = '\0';
 
     // Now we are going to build a rewritten ACT tree, with references
     // to various bits from the parser's tree,  but no changes to it.
