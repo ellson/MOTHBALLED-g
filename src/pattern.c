@@ -174,17 +174,42 @@ elem_t * patterns(CONTAINER_t *CONTAINER, elem_t *act)
     }
     if ( !CONTAINER->verb) { // if verb is default (add)
         if (CONTAINER->subj_has_ast) {
-            if (attributes) {
-                // if the pattern act has attributes, then it is added to saved patterns
-                // (if if the pattern subject is already saved, then it is replaced
-                // by this new one)
+            if (THREAD->contenthash[0]) {
+                elem_t *newattr, *newattrid, *newvalue, *newident;
+                // build newattributes for "_contenthash=xxxxx"
+                // FIXME - need a litle-language to simplify
+                //     these constructions
+                newattr = new_list(LIST(), ATTR);
+                newattrid = new_list(LIST(), ATTRID);
+                append_transfer(newattr, newattrid);
+                newident = new_shortstr(LIST(), ABC, "_contenthash");
+                append_transfer(newattrid, newident);
+                newvalue = new_list(LIST(), VALUE);
+                append_transfer(newattr, newvalue);
+                newident = new_shortstr(LIST(), ABC, THREAD->contenthash);
+                append_transfer(newvalue, newident);
+                if (attributes) { // append to existing attibutes
+                    append_transfer(attributes, newattr);
+                } else {
+                    newattributes = new_list(LIST(), ATTRIBUTES);
+                    append_transfer(newattributes, newattr);
+                    append_transfer(act, newattributes);
+                }
+            }
+            if (attributes || THREAD->contenthash[0]) {
+                // If the pattern act has attributes and/or contents,
+                // then it is added to saved patterns.
+                // If the pattern subject is already saved,
+                // then it is replaced by this new one.
                 pattern_update(CONTAINER, act);
             } else {
-                // if the pattern has no attributes then it is removed from saved patterns
+                // if the pattern has no attributes and no content
+                // hen it is removed from saved patterns
                 // N.B. This is how patterns are deleted
                 pattern_remove(CONTAINER, act);
             }
-            return NULL;  // new pattern stored,  no more processing for this ACT
+            return NULL;  // new pattern stored,
+                          //   no more processing for this ACT
         }
     }
 

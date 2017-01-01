@@ -435,16 +435,14 @@ void ikea_store_close ( ikea_store_t * ikea_store )
     if ((rc = glob(glob_pattern, 0, glob_err, &pglob))) {
         switch (rc) {
         case GLOB_NOSPACE:
-            fprintf(stderr,"Error - glob(): no memory available (GLOB_NOSPACE)");
+            FATAL("glob(): no memory available (GLOB_NOSPACE)");
             break;
         case GLOB_ABORTED:
-            fprintf(stderr,"Error - glob(): read error (GLOB_ABORTED)");
+            FATAL("glob(): read error (GLOB_ABORTED)");
             break;
         case GLOB_NOMATCH:
-            fprintf(stderr,"Error - glob(): no matches found (GLOB_NOMATCH)");
-            break;
+            break; // not an error to have an empty graph
         }
-        exit(EXIT_FAILURE);
     }
     for (pathc=0; pathc < pglob.gl_pathc; pathc++) {
         if ((unlink(pglob.gl_pathv[pathc])) == -1)
