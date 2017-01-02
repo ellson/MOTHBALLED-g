@@ -169,7 +169,7 @@ void ikea_box_append(ikea_box_t* ikea_box, const char *data, size_t data_len)
 
 void ikea_box_close(ikea_box_t* ikea_box, char *contenthash, int contenthashsz) 
 {
-    assert(contenthashsz >= (((EVP_MAX_MD_SIZE+1)*8/6)+1));
+    assert(contenthashsz >= (((EVP_MAX_MD_SIZE+1)*8/6)+1));   // =87, last time I checked
 
     unsigned char digest[EVP_MAX_MD_SIZE];  // contenthash digest 
     unsigned int digest_len = sizeof(digest); 

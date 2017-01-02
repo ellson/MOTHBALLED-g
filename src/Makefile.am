@@ -16,7 +16,6 @@ noinst_HEADERS = \
     expand.h \
     fatal.h \
     grammar.h \
-    hash.h \
     identifier.h \
     ikea.h \
     inbuf.h \
@@ -28,6 +27,7 @@ noinst_HEADERS = \
     print.h \
     reduce.h \
     sameas.h \
+	sslhash.h \
     process.h \
     thread.h \
     token.h \
@@ -48,7 +48,6 @@ libg_process_C_la_SOURCES = \
     expand.c \
     fatal.c \
     grammar.c \
-    hash.c \
     identifier.c \
     ikea.c \
     inbuf.c \

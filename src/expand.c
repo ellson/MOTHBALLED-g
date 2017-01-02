@@ -170,7 +170,7 @@ expand_r(THREAD_t * THREAD, elem_t *newepset, elem_t *epset,
                 || (newepset->u.l.first->u.l.next->u.l.next)) {
             // create a special node to represent the hub
             char hubhash_b64[12];
-            hash_list(&hubhash, newepset);
+            sslhash_list(&hubhash, newepset);
             long_to_base64(hubhash_b64, &hubhash);
     
 // FIXME - this is ugly!

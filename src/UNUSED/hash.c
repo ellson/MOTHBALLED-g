@@ -11,37 +11,9 @@
 #include "list.h"
 #include "hash.h"
 
-static void hash_list_r(uint64_t *hash, elem_t *list);
-
 #define MSB_LONG (8*(sizeof(long))-1)
 #define FNV_INIT  0xcbf29ce484222325
 #define FNV_PRIME 0x100000001b3
-
-/**
- * Objective:
- *    - produce names suitable for use as filenames
- *    - hash all the frags from all the strings from a tree of elem_t
- *      into a hashname that has ~0 chance of collision
- *    - minimal cpu cost
- * It is not an objective for this hash to be cryptographic.     
- *
- * The resulting hashes are 64bits which can be represented in 11 filename-safe characters.
- *
- * Hash chosen is the FNV-1a for 64bits
- * (Ref: http://isthe.com/chongo/tech/comp/fnv/ )
- * The FNV_prime is: 2**40 + 2**8 + 0xb3 = 0x100000001b3 = 1099511628211
- *
- * @param hash place for resulting hash
- * @param list - fraglist or list of fraglist to be hashed
- */
-void hash_list(uint64_t *hash, elem_t *list)
-{
-    assert(sizeof(long) == 8);
-    assert(list);
-
-    *hash = FNV_INIT;
-    hash_list_r(hash, list);
-}
 
 /**
  * Recursive hash function building on a previously initialized or
@@ -81,6 +53,32 @@ static void hash_list_r(uint64_t *hash, elem_t *list)
             break;
         }
     }
+}
+
+/**
+ * Objective:
+ *    - produce names suitable for use as filenames
+ *    - hash all the frags from all the strings from a tree of elem_t
+ *      into a hashname that has ~0 chance of collision
+ *    - minimal cpu cost
+ * It is not an objective for this hash to be cryptographic.     
+ *
+ * The resulting hashes are 64bits which can be represented in 11 filename-safe characters.
+ *
+ * Hash chosen is the FNV-1a for 64bits
+ * (Ref: http://isthe.com/chongo/tech/comp/fnv/ )
+ * The FNV_prime is: 2**40 + 2**8 + 0xb3 = 0x100000001b3 = 1099511628211
+ *
+ * @param hash place for resulting hash
+ * @param list - fraglist or list of fraglist to be hashed
+ */
+void hash_list(uint64_t *hash, elem_t *list)
+{
+    assert(sizeof(long) == 8);
+    assert(list);
+
+    *hash = FNV_INIT;
+    hash_list_r(hash, list);
 }
 
 // 64 ascii chars that are safe in filenames

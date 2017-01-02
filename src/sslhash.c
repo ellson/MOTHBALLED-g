@@ -12,7 +12,42 @@
 #include "thread.h"
 #include "sslhash.h"
 
-static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list);
+/**
+ * Recursive hash accumulation of a fraglist, or list of fraglists
+ *
+ * @param ctx  - hashing context
+ * @param list - fraglist or list of fraglist to be hashed
+ */
+static void sslhash_list_r(EVP_MD_CTX *ctx, elem_t *list)
+{
+    elem_t *elem;
+
+// FIXME - this should be using iter()
+// FIXME - where does this deal with shortstr?
+
+    assert(list->type == (char)LISTELEM);
+
+    if ((elem = list->u.l.first)) {
+        switch ((elemtype_t) elem->type) {
+        case FRAGELEM:
+            while (elem) {
+                if ((EVP_DigestUpdate(ctx, elem->u.f.frag, elem->len)) != 1)
+                    FATAL("EVP_DigestUpdate()");
+                elem = elem->u.l.next;
+            }
+            break;
+        case LISTELEM:
+            while (elem) {
+                sslhash_list_r(ctx, elem);    // recurse
+                elem = elem->u.l.next;
+            }
+            break;
+        default:
+            assert(0);  // should not be here
+            break;
+        }
+    }
+}
 
 /**
  * Objective:
@@ -40,40 +75,7 @@ void sslhash_list(uint64_t *hash, elem_t *list)
 
     if ((EVP_DigestInit_ex(ctx, EVP_sha1(), NULL)) != 1)
         FATAL("EVP_DigestInit_ex()");
-    hash_list_r(ctx, list);
+    sslhash_list_r(ctx, list);
     if ((EVP_DigestFinal_ex(ctx, digest, &digest_len)) != 1)
         FATAL("EVP_DigestFinal_ex()");
-}
-/**
- * Recursive hash accumulation of a fraglist, or list of fraglists
- *
- * @param ctx  - hashing context
- * @param list - fraglist or list of fraglist to be hashed
- */
-static void hash_list_r(EVP_MD_CTX *ctx, elem_t *list)
-{
-    elem_t *elem;
-
-    assert(list->type == (char)LISTELEM);
-
-    if ((elem = list->u.l.first)) {
-        switch ((elemtype_t) elem->type) {
-        case FRAGELEM:
-            while (elem) {
-                if ((EVP_DigestUpdate(ctx, elem->u.f.frag, elem->len)) != 1)
-                    FATAL("EVP_DigestUpdate()");
-                elem = elem->u.l.next;
-            }
-            break;
-        case LISTELEM:
-            while (elem) {
-                hash_list_r(ctx, elem);    // recurse
-                elem = elem->u.l.next;
-            }
-            break;
-        default:
-            assert(0);  // should not be here
-            break;
-        }
-    }
 }
