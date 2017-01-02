@@ -11,7 +11,7 @@
  * merge VALUE for an ATTR which already exists
  *                latest VALUE wins
  *
- * @param LIST 
+ * @param LIST    - context
  * @param attr    - attr newvalue 
  * @param key     - key oldvalue
  * @return        - key - not used
@@ -30,6 +30,7 @@ static elem_t * merge_value(LIST_t *LIST, elem_t *attr, elem_t *key)
 /**
  * recurse over elems of b, merging them into a
  *
+ * @param LIST    - context
  * @param a - tree to be updated with elems from b
  * @param b - tree of elems to be merged into a
  */
@@ -54,7 +55,7 @@ static void merge_tree(LIST_t *LIST, elem_t **a, elem_t *b)
  */
 static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
 {
-    elem_t *attributes, **prevattributes_p;
+    elem_t *attributes;
 
     assert((state_t)subject->state == SUBJECT);
     attributes = subject->u.l.next;  // disambig or attributes
@@ -68,7 +69,7 @@ static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
         elem_t *attrtree = attributes->u.l.first;
         assert((elemtype_t)attrtree->type == TREEELEM);  // attrs to be merged
         assert((state_t)key->state == SUBJECT);
-        prevattributes_p = &(key->u.l.next);  // disambig or attributes
+        elem_t **prevattributes_p = &(key->u.l.next);  // disambig or attributes
         if (*prevattributes_p) {
             if ((state_t)(*prevattributes_p)->state == DISAMBIG) {
                 prevattributes_p = &((*prevattributes_p)->u.l.next);
