@@ -1,9 +1,20 @@
+1. Basics
+    - edge hashing
+    - node edgelists
+    - edge delete
+    - node (+subtending edge) delete
+    - pretty printing (see also # ?? )
+    - gv format output
+    - layout generator - extract meta data on ports for containing layouts
+    - queries
+    - new main()
+    
 DONE 2. attribute merging
 
 DONE 3. need some kind of print_edge_name
-     - for compare and for ikea ...
-     - needs logical space between str elems, and between legs and disambig
-     -- maybe insert real: < > `
+    - for compare and for ikea ...
+    - needs logical space between str elems, and between legs and disambig
+      -- maybe insert real: < > `
 
 6. extend match patterns
 - currently ABC* matching only
