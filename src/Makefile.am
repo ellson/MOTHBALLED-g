@@ -27,7 +27,6 @@ noinst_HEADERS = \
     print.h \
     reduce.h \
     sameas.h \
-	sslhash.h \
     process.h \
     thread.h \
     token.h \
@@ -60,7 +59,6 @@ libg_process_C_la_SOURCES = \
     reduce.c \
     sameas.c \
     process.c \
-    sslhash.c \
     thread.c \
     token.c \
     tree.c \

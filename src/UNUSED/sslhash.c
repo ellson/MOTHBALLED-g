@@ -62,6 +62,8 @@ void sslhash_list(uint64_t *hash, elem_t *list)
 {
     EVP_MD_CTX *ctx;
 
+// FIXME - check available space for hash
+
 #ifndef HAVE_EVP_MD_CTX_NEW
     if ((ctx = malloc(sizeof(EVP_MD_CTX))) == NULL)
         FATAL("malloc()");
