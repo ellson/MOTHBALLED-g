@@ -163,7 +163,7 @@ C does not allow punctuation characters such as @, $, and % within identifiers. 
 mohd       zara    abc   move_name  a_123
 myname50   _temp   j     a23b9      retVal
 
-27a. If we want to defines IDENTIFIES exactly like C, then:
+27a. If we want to define IDENTIFIERS exactly like C, then:
    - reduce character set to match C
    - dissallow leading numeric 
 
@@ -295,4 +295,4 @@ PROBABLY NOT 42. Optimize out one pointer traversal by making a tree node
         - RESTful         -- incremental
         - stdin           -- incremental
 
-47. IKEA should use storaaeg compatible with AWS or Ceph Object Store.  A RESTful interface to objects.
+47. IKEA should use storage compatible with AWS or Ceph Object Store.  A RESTful interface to objects.
