@@ -8,6 +8,7 @@
 
 #include "thread.h"
 #include "container.h"
+#include "iter_print.h"
 #include "info.h"
 #include "process.h"
 

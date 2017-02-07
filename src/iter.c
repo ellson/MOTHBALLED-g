@@ -192,16 +192,17 @@ void skipiter(iter_t *iter)
                             iter->lnxstack[iter->lsp].psp = "\0\0=";
                             break;
                         case SIS:
-                            iter->lnxstack[iter->lsp].psp = "\0 \0";
+                            iter->lnxstack[iter->lsp].psp = "\0\0 ";
                             break;
                         case KID:
-                            iter->lnxstack[iter->lsp].psp = "\0/\0";
+                            iter->lnxstack[iter->lsp].psp = "\0\0/";
                             break;
                         default:
+                            iter->lnxstack[iter->lsp].psp = "\0\0 ";
                             break;
                     }
                     // emit space-push (2 chars)
-                    itersep(iter, 1, 2);
+                    itersep(iter, 2, 1);
                     iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
                     iter->lnxstack[iter->lsp].lnx = this->u.l.first;
                     break;
