@@ -14,24 +14,6 @@ static void itersep(iter_t *iter, int idx, int len)
 {
     iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+idx;
     iter->len = len;
-
-#if 0     
-    // FIXME - this breaks some compare()
-    // make sure we don't output NUL
-    // FIXME ugly!
-    if (len == 2) {
-        if (*(iter->cp+1) == '\0') {
-            iter->len--;
-        }
-    }
-    if (len) {
-        if (*(iter->cp) == '\0') {
-            iter->cp++;
-            iter->len--;
-        }
-        assert(len);
-    }
-#endif
 }
 
 /**
@@ -73,34 +55,34 @@ static void stepiter(iter_t *iter, elem_t *this)
             assert(iter->lsp < MAXNEST);
             switch ((state_t)this->state) {
                 case ACT:
-                    iter->lnxstack[iter->lsp].psp = "\0\n\0";
+                    iter->lnxstack[iter->lsp].psp = "\0\0";
                     break;
                 case EDGE:
-                    iter->lnxstack[iter->lsp].psp = ">><";
+                    iter->lnxstack[iter->lsp].psp = "><";
                     break;
                 case MUM:
-                    iter->lnxstack[iter->lsp].psp = "\0\0^";
+                    iter->lnxstack[iter->lsp].psp = "\0^";
                     break;
                 case SET:
 
                 case ENDPOINTSET:
-                    iter->lnxstack[iter->lsp].psp = ") (";
+                    iter->lnxstack[iter->lsp].psp = ")(";
                     break;
                 case ATTRID:
                     // FIXME - This is a hack! Probably the whole
                     //    psp spacing character scheme needs to be rethunk.
                     if (iter->intree) {
-                        iter->lnxstack[iter->lsp].psp = "\0\0 "; 
+                        iter->lnxstack[iter->lsp].psp = "\0 "; 
                     } else {
                         // suppress extra space before the attr=value list..
-                        iter->lnxstack[iter->lsp].psp = "\0\0\0"; 
+                        iter->lnxstack[iter->lsp].psp = "\0\0"; 
                     }
                     break;
                 default:
-                    iter->lnxstack[iter->lsp].psp = "\0 \0";
+                    iter->lnxstack[iter->lsp].psp = "\0\0";
                     break;
             }
-            itersep(iter, 2, 1);
+            itersep(iter, 1, 1);
             iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
             iter->lnxstack[iter->lsp].lnx = this->u.l.first;
         }
@@ -183,26 +165,25 @@ void skipiter(iter_t *iter)
                         // (non-homogenous lists) need to over-ride the
                         // pop_space_push of the preceeding elem
                         case ATTRIBUTES:
-                            iter->lnxstack[iter->lsp].psp = "]\0[";
+                            iter->lnxstack[iter->lsp].psp = "][";
                             break;
                         case DISAMBIG:
-                            iter->lnxstack[iter->lsp].psp = "\0\0`";
+                            iter->lnxstack[iter->lsp].psp = "\0`";
                             break;
                         case VALUE:
-                            iter->lnxstack[iter->lsp].psp = "\0\0=";
+                            iter->lnxstack[iter->lsp].psp = "\0=";
                             break;
-                        case SIS:
-                            iter->lnxstack[iter->lsp].psp = "\0\0 ";
-                            break;
+//                        case SIS:
+//                            iter->lnxstack[iter->lsp].psp = "\0 ";
+//                            break;
                         case KID:
-                            iter->lnxstack[iter->lsp].psp = "\0\0/";
+                            iter->lnxstack[iter->lsp].psp = "\0/";
                             break;
                         default:
-                            iter->lnxstack[iter->lsp].psp = "\0\0 ";
+                            iter->lnxstack[iter->lsp].psp = "\0 ";
                             break;
                     }
-                    // emit space-push (2 chars)
-                    itersep(iter, 2, 1);
+                    itersep(iter, 1, 1);
                     iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
                     iter->lnxstack[iter->lsp].lnx = this->u.l.first;
                     break;
