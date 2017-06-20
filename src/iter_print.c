@@ -24,7 +24,7 @@ static void bufputc(THREAD_t *THREAD, char c)
 }
 #endif
 
-size_t ikea_stdout_writer(const void *ptr, size_t size)
+static size_t ikea_stdout_writer(const void *ptr, size_t size)
 {
     return fwrite(ptr, size, 1, stdout);
 }
