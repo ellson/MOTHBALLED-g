@@ -7,6 +7,7 @@
 #include "thread.h"
 #include "iter_print.h"
 
+#if 0
 static void bufflush(THREAD_t *THREAD)
 {
     fwrite(THREAD->buf, THREAD->pos, 1, TOKEN()->out);
@@ -21,6 +22,7 @@ static void bufputc(THREAD_t *THREAD, char c)
         bufflush(THREAD);
     }
 }
+#endif
 
 size_t ikea_stdout_writer(const void *ptr, size_t size)
 {
@@ -40,6 +42,7 @@ void printg (THREAD_t *THREAD, elem_t *a)
 
     inititer(&ai, a, &ikea_stdout_writer);
     do {
+#if 0
         while (ai.len) {
             ai.len--;
             c = *ai.cp++;
@@ -47,9 +50,13 @@ void printg (THREAD_t *THREAD, elem_t *a)
                 bufputc(THREAD, c);
             }
         }
+#endif
         nextiter(&ai);
     } while (ai.len || ai.lsp);
+#if 0
     bufputc(THREAD, '\n');   // canonical form,  '\n' between ACTs
+#endif
+    ai.writer_fn("\n", 1);
 }
 
 /**
@@ -67,7 +74,9 @@ void printt(THREAD_t * THREAD, elem_t * p)
     if (p->u.t.right) {
         printt(THREAD, p->u.t.right);
     }
+#if 0
     bufflush(THREAD);
+#endif
 }
 
 static void ikea_flush(THREAD_t *THREAD)
@@ -97,6 +106,7 @@ static void ikea_printg (THREAD_t *THREAD, elem_t *a)
 
     inititer(&ai, a, &ikea_stdout_writer);
     do {
+#if 0
         while (ai.len) {
             ai.len--;
             c = *ai.cp++;
@@ -104,9 +114,13 @@ static void ikea_printg (THREAD_t *THREAD, elem_t *a)
                 ikea_putc(THREAD, c);
             }
         }
+#endif
         nextiter(&ai);
     } while (ai.len || ai.lsp);
+#if 0
     ikea_putc(THREAD, '\n');   // canonical form,  '\n' between ACTs
+#endif
+    ai.writer_fn("\n", 1);
 }
 
 /**

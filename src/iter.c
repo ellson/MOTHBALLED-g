@@ -240,6 +240,7 @@ void nextiter(iter_t *iter)
 {
     elem_t *this = iter->lnxstack[iter->lsp].lnx;
 
+    iter->writer_fn(iter->cp, iter->len);
     if (this) {
         stepiter(iter, this);
     } else {
