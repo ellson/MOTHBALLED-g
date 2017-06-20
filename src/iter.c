@@ -203,12 +203,13 @@ void skipiter(iter_t *iter)
  * @param iter - a struct containg the current state of the iterator
  * @param elem - the root elem of the list to be iterated
  */
-void inititer(iter_t *iter, elem_t *elem)
+void inititer(iter_t *iter, elem_t *elem, writer_fn_t writer_fn)
 {
     assert(iter);
     assert(elem);
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
+    iter->writer_fn = writer_fn;
     stepiter(iter, elem);
 }
 
@@ -219,12 +220,13 @@ void inititer(iter_t *iter, elem_t *elem)
  * @param iter - a struct containg the current state of the iterator
  * @param elem - the root elem of the list to be iterated
  */
-void inititer0(iter_t *iter, elem_t *elem)
+void inititer0(iter_t *iter, elem_t *elem, writer_fn_t writer_fn)
 {
     assert(iter);
     assert(elem);
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
+    iter->writer_fn = writer_fn;
     stepiter(iter, elem);
     iter->lnxstack[0].lnx = NULL;
 }

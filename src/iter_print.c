@@ -22,6 +22,11 @@ static void bufputc(THREAD_t *THREAD, char c)
     }
 }
 
+size_t ikea_stdout_writer(const void *ptr, size_t size)
+{
+    return fwrite(ptr, size, 1, stdout);
+}
+
 /**
  * printg - print the canonical g string representation of a list
  *
@@ -33,7 +38,7 @@ void printg (THREAD_t *THREAD, elem_t *a)
     iter_t ai = { 0 };
     char c;
 
-    inititer(&ai, a);
+    inititer(&ai, a, &ikea_stdout_writer);
     do {
         while (ai.len) {
             ai.len--;
@@ -90,7 +95,7 @@ static void ikea_printg (THREAD_t *THREAD, elem_t *a)
     iter_t ai = { 0 };
     char c;
 
-    inititer(&ai, a);
+    inititer(&ai, a, &ikea_stdout_writer);
     do {
         while (ai.len) {
             ai.len--;

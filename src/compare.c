@@ -23,8 +23,8 @@ int compare (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    inititer0(&ai, a);  // compare a and a's progeny
-    inititer0(&bi, b);  //    with b and b's progeny
+    inititer0(&ai, a, NULL);  // compare a and a's progeny
+    inititer0(&bi, b, NULL);  //    with b and b's progeny
                         // i.e. do not extend to siblings of a or b
     do {
         do { 
@@ -62,8 +62,8 @@ int match (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    inititer0(&ai, a);  // compare a and a's progeny
-    inititer0(&bi, b);  //    with b and b's progeny
+    inititer0(&ai, a, NULL);  // compare a and a's progeny
+    inititer0(&bi, b, NULL);  //    with b and b's progeny
                         // i.e. do not extend to siblings of a or b
     do {
         do { 
