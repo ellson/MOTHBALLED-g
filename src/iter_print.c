@@ -7,7 +7,7 @@
 #include "thread.h"
 #include "iter_print.h"
 
-#if 0
+#if 1
 static void bufflush(THREAD_t *THREAD)
 {
     fwrite(THREAD->buf, THREAD->pos, 1, TOKEN()->out);
@@ -42,7 +42,7 @@ void printg (THREAD_t *THREAD, elem_t *a)
 
     inititer(&ai, a, &ikea_stdout_writer);
     do {
-#if 0
+#if 1
         while (ai.len) {
             ai.len--;
             c = *ai.cp++;
@@ -53,7 +53,7 @@ void printg (THREAD_t *THREAD, elem_t *a)
 #endif
         nextiter(&ai);
     } while (ai.len || ai.lsp);
-#if 0
+#if 1
     bufputc(THREAD, '\n');   // canonical form,  '\n' between ACTs
 #endif
     ai.writer_fn("\n", 1);
@@ -74,7 +74,7 @@ void printt(THREAD_t * THREAD, elem_t * p)
     if (p->u.t.right) {
         printt(THREAD, p->u.t.right);
     }
-#if 0
+#if 1
     bufflush(THREAD);
 #endif
 }
@@ -106,7 +106,7 @@ static void ikea_printg (THREAD_t *THREAD, elem_t *a)
 
     inititer(&ai, a, &ikea_stdout_writer);
     do {
-#if 0
+#if 1
         while (ai.len) {
             ai.len--;
             c = *ai.cp++;
@@ -117,7 +117,7 @@ static void ikea_printg (THREAD_t *THREAD, elem_t *a)
 #endif
         nextiter(&ai);
     } while (ai.len || ai.lsp);
-#if 0
+#if 1
     ikea_putc(THREAD, '\n');   // canonical form,  '\n' between ACTs
 #endif
     ai.writer_fn("\n", 1);
