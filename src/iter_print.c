@@ -46,9 +46,7 @@ void printg (THREAD_t *THREAD, elem_t *a)
         while (ai.len) {
             ai.len--;
             c = *ai.cp++;
-            if (c) {
-                bufputc(THREAD, c);
-            }
+            bufputc(THREAD, c);
         }
 #endif
         nextiter(&ai);
@@ -112,9 +110,7 @@ static void ikea_printg (THREAD_t *THREAD, elem_t *a)
         while (ai.len) {
             ai.len--;
             c = *ai.cp++;
-            if (c) {
-                ikea_putc(THREAD, c);
-            }
+            ikea_putc(THREAD, c);
         }
 #endif
         nextiter(&ai);
