@@ -13,7 +13,12 @@
 static void itersep(iter_t *iter, int idx, int len)
 {
     iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+idx;
-    iter->len = len;
+    if (iter->cp) {
+        iter->len = len;
+    }
+    else {
+        iter->len = 0;  // suppress nulls when sep char not required
+    }
 }
 
 /**
