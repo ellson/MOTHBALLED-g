@@ -56,7 +56,9 @@ void printg (THREAD_t *THREAD, elem_t *a)
 #if 1
     bufputc(THREAD, '\n');   // canonical form,  '\n' between ACTs
 #endif
+#if 0
     ai.writer_fn("\n", 1);
+#endif
 }
 
 /**
@@ -120,7 +122,9 @@ static void ikea_printg (THREAD_t *THREAD, elem_t *a)
 #if 1
     ikea_putc(THREAD, '\n');   // canonical form,  '\n' between ACTs
 #endif
+#if 0
     ai.writer_fn("\n", 1);
+#endif
 }
 
 /**
