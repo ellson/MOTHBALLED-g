@@ -11,7 +11,7 @@
 #include "compare.h"
 
 /**
- * compare string value of lists: a and b (not extending to siblings)
+ * compare string value of lists: a and b (including sublists, but not sibling lists)
  *
  * @param a
  * @param b
@@ -47,7 +47,7 @@ int compare (elem_t *a, elem_t *b)
 }
 
 /**
- * match string value of lists: a and b (not extending to siblings)
+ * match string value of lists: a and b (including sublists, but not sibling lists)
  *
  * b may contain strings with trailing '*' which will
  * match any tail of the corresponding string in a
