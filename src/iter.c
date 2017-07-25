@@ -25,11 +25,8 @@ static void itersep(iter_t *iter, int idx, int len)
  * complete the iter state update for the new elem
  *
  * - Traversals up, down, or accross lists may contribute
- *   an extra character to be printed, or considered in comparisons or matches.
- *   The extra character depends on the state_t e.g. The '<' '>' that surround edges.
- *   A '\0' is used when there is no need for a character to be printed, but that
- *   there is still a separation of strings when comparing.
- *   e.g.  "abcdef\0ghi"  does not match  "abc\0defghi"
+ *   an extra character to be printed that depends on the state_t
+ *   e.g. The '<' '>' that surround edges.
  *
  * @param iter - a struct containg the current state of the iterator
  * @param this - the elem for this latest step
