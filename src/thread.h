@@ -43,7 +43,7 @@ struct thread_s {
     elem_t *identifiers;       // tree of identifiers    // FIXME - add mutex and move to PROCESS  ??
 
     ikea_box_t *ikea_box;      // box for container
-    char buf[1024];            // output buffering
+    unsigned char buf[1024];   // output buffering
     int pos;
     char contenthash[128];     // big enough for content hash
                                // checked by assert in ikea_box_open()

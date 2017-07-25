@@ -15,7 +15,7 @@ static void bufflush(THREAD_t *THREAD)
     THREAD->pos = 0;
 }
 
-static void bufputc(THREAD_t *THREAD, char c)
+static void bufputc(THREAD_t *THREAD, unsigned char c)
 {
     THREAD->buf[THREAD->pos++] = c;
     if (THREAD->pos >= sizeof(THREAD->buf)) {
@@ -38,7 +38,7 @@ static size_t ikea_stdout_writer(const void *ptr, size_t size)
 void printg (THREAD_t *THREAD, elem_t *a)
 {
     iter_t ai = { 0 };
-    char c;
+    unsigned char c;
 
     inititer(&ai, a, &ikea_stdout_writer);
     do {
