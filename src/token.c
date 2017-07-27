@@ -75,7 +75,7 @@ void token_error(TOKEN_t * TOKEN, char *message, state_t si)
 success_t token_more_in(TOKEN_t * TOKEN)
 {
     INBUF_t *INBUF = (INBUF_t *)TOKEN;
-    int size;
+    int size, avail;
 
     if (INBUF->inbuf) {        // if there is an existing active-inbuf
         if (TOKEN->in == &(INBUF->inbuf->end_of_buf)) {    // if it is full
@@ -134,10 +134,23 @@ if (TOKEN->membuf) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->membuf);
         assert(TOKEN->file);
     }
     // slurp in data from file stream
-    size = fread(TOKEN->in, 1, &(INBUF->inbuf->end_of_buf) - TOKEN->in, TOKEN->file);
-    TOKEN->in[size] = '\0';    // ensure terminated (we have an extras
-    //    character in inbuf for this )
-    TOKEN->insi = char2state[*TOKEN->in];
+    avail = &(INBUF->inbuf->end_of_buf) - TOKEN->in;
+    size = fread(TOKEN->in, 1, avail, TOKEN->file);
+
+    TOKEN->in[size] = '\0';    // ensure terminated (we have an extra
+                               //    character in inbuf for this )
+    if (size == 0) {
+        if (feof(TOKEN->file)) {
+            //TOKEN->insi = gEOF;  // not #defined yet, so retain old behaviour
+            TOKEN->insi = NLL;
+        }
+        else {
+            FATAL("fread()");
+        }
+    }
+    else {
+        TOKEN->insi = char2state[*TOKEN->in];
+    }
 
     TOKEN->stat_incharcount += size;
     return SUCCESS;
