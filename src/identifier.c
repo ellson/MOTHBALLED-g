@@ -46,39 +46,40 @@ static int token_identifier_fragment(TOKEN_t * TOKEN, elem_t * identifier)
         if (TOKEN->in_quote) {
             if (TOKEN->in_quote == 2) {    // character after BSL
                 TOKEN->in_quote = 1;
-                frag = TOKEN->in;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
-                elem = new_frag(LIST(), BSL, 1, frag);
                 slen++;
+                continue;
             } else if (TOKEN->insi == DQT) {
                 TOKEN->in_quote = 0;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
-                continue;
+                slen++;
+                elem = new_frag(LIST(), DQT, slen, frag);
             } else if (TOKEN->insi == BSL) {
                 TOKEN->in_quote = 2;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
-                TOKEN->has_bsl = BSL;
+                slen++;
                 continue;
             } else if (TOKEN->insi == NLL) {
                 break;
-            } else {
-                frag = TOKEN->in;
+            } else {  // TOKEN->in_quote == 1
                 len = 1;
-                while (1) {
-                    insi = char2state[*++(TOKEN->in)];
-                    if (insi == DQT || insi == BSL || insi == NLL) {
-                        break;
-                    }
+                while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
                     len++;
                 }
                 TOKEN->insi = insi;
-                elem = new_frag(LIST(), DQT, len, frag);
                 slen += len;
+                continue;
             }
         } else if (TOKEN->insi == DQT) {
             TOKEN->in_quote = 1;
-            TOKEN->quote_state = DQT;
-            TOKEN->insi = char2state[*++(TOKEN->in)];
+            TOKEN->quote_state = DQT;      // FIXME - is this needed?
+            frag = TOKEN->in;
+            len = 1;
+            while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
+                len++;
+            }
+            TOKEN->insi = insi;
+            slen += len;
             continue;
         } else
 #endif
