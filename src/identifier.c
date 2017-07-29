@@ -20,10 +20,10 @@
 // I wanted to turn QUOTING_IN_IDENTIFIERS off, to make it more C like, and to
 // enforce a cleaner coding style, IMHO.   Pragmatically though, if we want
 // to allow translations from other languages, like DOT or JSON, then we
-// will need to support quoting in identifiers.
+// may neeed to support quoting in identifiers.
 
 #ifndef QUOTING_IN_IDENTIFIERS
-#define QUOTING_IN_IDENTIFIERS 1
+#define QUOTING_IN_IDENTIFIERS 0
 #endif
 
 /**
@@ -72,7 +72,6 @@ static int token_identifier_fragment(TOKEN_t * TOKEN, elem_t * identifier)
             }
         } else if (TOKEN->insi == DQT) {
             TOKEN->in_quote = 1;
-            TOKEN->quote_state = DQT;      // FIXME - is this needed?
             frag = TOKEN->in;
             len = 1;
             while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
@@ -124,8 +123,6 @@ success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
     assert(identifier->refs > 0);
 
     TOKEN->has_ast = 0;
-    TOKEN->has_bsl = 0;
-    TOKEN->quote_state = ABC;
     int slen = token_identifier_fragment(TOKEN, identifier); // leading fragment
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {

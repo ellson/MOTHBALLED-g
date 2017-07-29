@@ -279,15 +279,14 @@ success_t token_whitespace(TOKEN_t * TOKEN)
  */
 void
 token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
-    // string must be short and not with special BSL fragments
+    // string must be short
     // ( AST is not special in this )
-    if (slen <= sizeof(((elem_t*)0)->u.s.str) && !TOKEN->has_bsl) {
+    if (slen <= sizeof(((elem_t*)0)->u.s.str)) {
         fraglist2shortstr(LIST(), slen, string);
         TOKEN->stat_instringshort++;
     } else {
         TOKEN->stat_instringlong++;
     }
-    string->state = TOKEN->quote_state;
 }
 
 /**

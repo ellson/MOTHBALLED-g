@@ -20,7 +20,10 @@
 /**
  * load VSTRING fragments
  *
- * Supports additonal quoting formats:
+ * Quoting formats:
+ *     "..."    strings                    " and \ in strings must be escaped with a \
+ 
+ * coming....
  *     <...>    XML, HTML, ...             unquoted < and > must be properly nested
  *     (...)    Lisp, Guile, Scheme, ...   unquoted ( and ) must be properly nested
  *     {...}    JSON, DOT, ...             unquoted { and } must be properly nested
@@ -39,44 +42,47 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *vstring)
 
     slen = 0;
     while (1) {
+#if 0
         if (TOKEN->quote_type != ABC) {
             // FIXME - extra quoting modes
-        } else if (TOKEN->in_quote) {
+        } else
+#endif
+        if (TOKEN->in_quote) {
             if (TOKEN->in_quote == 2) {    // character after BSL
                 TOKEN->in_quote = 1;
-                frag = TOKEN->in;
-                TOKEN->insi = char2vstate[*++(TOKEN->in)];
-                elem = new_frag(LIST(), BSL, 1, frag);
+                TOKEN->insi = char2state[*++(TOKEN->in)];
                 slen++;
+                continue;
             } else if (TOKEN->insi == DQT) {
                 TOKEN->in_quote = 0;
-                TOKEN->insi = char2vstate[*++(TOKEN->in)];
-                continue;
+                TOKEN->insi = char2state[*++(TOKEN->in)];
+                slen++;
+                elem = new_frag(LIST(), DQT, slen, frag);
             } else if (TOKEN->insi == BSL) {
                 TOKEN->in_quote = 2;
-                TOKEN->insi = char2vstate[*++(TOKEN->in)];
-                TOKEN->has_bsl = BSL;
+                TOKEN->insi = char2state[*++(TOKEN->in)];
+                slen++;
                 continue;
             } else if (TOKEN->insi == NLL) {
                 break;
-            } else {
-                frag = TOKEN->in;
+            } else {  // TOKEN->in_quote == 1
                 len = 1;
-                while (1) {
-                    insi = char2vstate[*++(TOKEN->in)];
-                    if (insi == DQT || insi == BSL || insi == NLL) {
-                        break;
-                    }
+                while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
                     len++;
                 }
                 TOKEN->insi = insi;
-                elem = new_frag(LIST(), DQT, len, frag);
                 slen += len;
+                continue;
             }
         } else if (TOKEN->insi == DQT) {
             TOKEN->in_quote = 1;
-            TOKEN->quote_state = DQT;
-            TOKEN->insi = char2vstate[*++(TOKEN->in)];
+            frag = TOKEN->in;
+            len = 1;
+            while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
+                len++;
+            }
+            TOKEN->insi = insi;
+            slen += len;
             continue;
         } else if (TOKEN->insi == ABC) {
             frag = TOKEN->in;
@@ -118,10 +124,7 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
     assert(vstring->type == (char)LISTELEM);
     assert(vstring->refs > 0);
     TOKEN->has_ast = 0;
-    TOKEN->has_bsl = 0;
 
-    TOKEN->quote_state = ABC;
-    TOKEN->quote_type = ABC;
     TOKEN->insi = char2vstate[*(TOKEN->in)]; // recheck the first char against expanded set
     if (TOKEN->insi != ABC) {
         if (TOKEN->insi == LPN || TOKEN->insi == LAN || TOKEN->insi == LBE || TOKEN->insi == LBR) {
