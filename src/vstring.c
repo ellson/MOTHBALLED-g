@@ -18,6 +18,116 @@
 #define LIST() ((LIST_t*)TOKEN)
 
 /**
+ * load unquoted VSTRING fragment(s)
+ *
+ * @param TOKEN context
+ * @param vstring
+ * @return length of vstring
+ */
+static int token_vstring_fragment_ABC(TOKEN_t * TOKEN, elem_t *vstring)
+{
+    unsigned char *frag;
+    state_t insi;
+    int slen, len;
+    elem_t *elem;
+
+    slen = 0;
+    while (1) {
+        if (TOKEN->insi == ABC) { // unquoted string fragment
+            frag = TOKEN->in;
+            len = 1;
+            while ((insi = char2vstate[*++(TOKEN->in)]) == ABC) {
+                len++;
+            }
+            TOKEN->insi = insi;
+            elem = new_frag(LIST(), ABC, len, frag);
+            slen += len;
+        // but '*' are still special  (maybe used as wild card in queries)
+        } else if (TOKEN->insi == AST) {
+            TOKEN->has_ast = AST;
+            TOKEN->elem_has_ast = AST;
+            frag = TOKEN->in;
+            while ((TOKEN->insi = char2vstate[*++(TOKEN->in)]) == AST) {
+            }    // extra '*' ignored
+            elem = new_frag(LIST(), AST, 1, frag);
+            slen++;
+        } else {
+            break;
+        }
+        append_transfer(vstring, elem);
+        TOKEN->stat_infragcount++;
+    }
+    return slen;
+}
+
+/**
+ * load DQT quoted VSTRING fragment(s)
+ *
+ * Quoting format:
+ *     "...\"...\\..." 
+ *
+ * @param TOKEN context
+ * @param vstring
+ * @return length of vstring
+ */
+static int token_vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
+{
+    unsigned char *frag;
+    state_t insi;
+    int slen, len;
+    elem_t *elem;
+
+    slen = 0;
+    while (1) {
+        switch (TOKEN->in_quote) {
+            case 0: // leading quote
+                if (TOKEN->insi == DQT) {  // end of quote
+                    TOKEN->in_quote = 1;
+                    frag = TOKEN->in;
+                    len = 1;
+                    TOKEN->insi = char2state[*++(TOKEN->in)];
+                    slen += len;
+                    continue;
+                } else {
+                    return slen;
+                }
+                break;
+            case 1: // inside quote
+                if (TOKEN->insi == DQT) {  // end of quote
+                    TOKEN->in_quote = 0;
+                    TOKEN->insi = char2state[*++(TOKEN->in)];
+                    slen++;
+                    elem = new_frag(LIST(), DQT, slen, frag);
+                    break;
+                } else if (TOKEN->insi == BSL) {  // escape next character
+                    TOKEN->in_quote = 2;
+                    TOKEN->insi = char2state[*++(TOKEN->in)];
+                    slen++;
+                    continue;
+                } else {  // simple string of ABC
+                    len = 1;
+                    while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
+                        len++;
+                    }
+                    TOKEN->insi = insi;
+                    slen += len;
+                    continue;
+                }
+                break;
+            case 2: // escaped character
+                TOKEN->in_quote = 1;
+                TOKEN->insi = char2state[*++(TOKEN->in)];
+                slen++;
+                continue;
+            default:
+                FATAL("shouldn't happen");
+        }
+        append_transfer(vstring, elem);
+        TOKEN->stat_infragcount++;
+    }
+}
+
+/**
  * load VSTRING fragments
  *
  * Quoting formats:
@@ -120,26 +230,26 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *vstring)
  */
 success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
 {
+    int slen = 0;
+
     assert(vstring);
     assert(vstring->type == (char)LISTELEM);
     assert(vstring->refs > 0);
     TOKEN->has_ast = 0;
 
     TOKEN->insi = char2vstate[*(TOKEN->in)];
-    TOKEN->quote_type = TOKEN->insi;
-    if (TOKEN->quote_type == DQT) {
-        TOKEN->quote_type = ABC;
-    }
-    TOKEN->quote_counter = 0;
-    if (TOKEN->quote_type != ABC
-            && TOKEN->quote_type != DQT
-            && TOKEN->quote_type != LPN
-            && TOKEN->quote_type != LAN
-            && TOKEN->quote_type != LBR ) {
+    switch (TOKEN->insi) {
+        case ABC:
+        case AST:
+            slen = token_vstring_fragment_ABC(TOKEN, vstring);
+            break;
+        case DQT:
+            slen = token_vstring_fragment_DQT(TOKEN, vstring);
+            break;
+        default:
             token_error(TOKEN, "Malformed VSTRING", TOKEN->insi);
     }
-    int slen = token_vstring_fragment(TOKEN, vstring);    // leading string
-    while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
+    while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace FIXME
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
