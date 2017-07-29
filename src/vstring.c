@@ -125,15 +125,18 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
     assert(vstring->refs > 0);
     TOKEN->has_ast = 0;
 
-    TOKEN->insi = char2vstate[*(TOKEN->in)]; // recheck the first char against expanded set
-    if (TOKEN->insi != ABC) {
-        if (TOKEN->insi == LPN || TOKEN->insi == LAN || TOKEN->insi == LBE || TOKEN->insi == LBR) {
-            // balanced paren quoting or binary quoting modes
-            TOKEN->quote_type = TOKEN->insi;
-            TOKEN->quote_counter = 0;
-        } else if ( ! (TOKEN->insi == DQT || TOKEN->insi == AST || TOKEN->insi == BSL)) {
+    TOKEN->insi = char2vstate[*(TOKEN->in)];
+    TOKEN->quote_type = TOKEN->insi;
+    if (TOKEN->quote_type == DQT) {
+        TOKEN->quote_type = ABC;
+    }
+    TOKEN->quote_counter = 0;
+    if (TOKEN->quote_type != ABC
+            && TOKEN->quote_type != DQT
+            && TOKEN->quote_type != LPN
+            && TOKEN->quote_type != LAN
+            && TOKEN->quote_type != LBR ) {
             token_error(TOKEN, "Malformed VSTRING", TOKEN->insi);
-        }
     }
     int slen = token_vstring_fragment(TOKEN, vstring);    // leading string
     while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
