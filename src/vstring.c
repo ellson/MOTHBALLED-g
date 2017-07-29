@@ -48,24 +48,24 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *vstring)
         } else
 #endif
         if (TOKEN->in_quote) {
-            if (TOKEN->in_quote == 2) {    // character after BSL
+            if (TOKEN->in_quote == 2) {    // character after escape
                 TOKEN->in_quote = 1;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
                 slen++;
                 continue;
-            } else if (TOKEN->insi == DQT) {
+            } else if (TOKEN->insi == DQT) {  // end of quote
                 TOKEN->in_quote = 0;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
                 slen++;
                 elem = new_frag(LIST(), DQT, slen, frag);
-            } else if (TOKEN->insi == BSL) {
+            } else if (TOKEN->insi == BSL) {  // escape next character
                 TOKEN->in_quote = 2;
                 TOKEN->insi = char2state[*++(TOKEN->in)];
                 slen++;
                 continue;
-            } else if (TOKEN->insi == NLL) {
+            } else if (TOKEN->insi == NLL) {  // FIXME - replace with proper EOF handling
                 break;
-            } else {  // TOKEN->in_quote == 1
+            } else {  // TOKEN->in_quote == 1   .. simple string of ABC
                 len = 1;
                 while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
                     len++;
@@ -74,17 +74,17 @@ static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *vstring)
                 slen += len;
                 continue;
             }
-        } else if (TOKEN->insi == DQT) {
+        } else if (TOKEN->insi == DQT) {  // beginning of quoted string
             TOKEN->in_quote = 1;
             frag = TOKEN->in;
             len = 1;
-            while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
+            while ((insi = char2state[*++(TOKEN->in)]) == ABC) {  // and leading simple string
                 len++;
             }
             TOKEN->insi = insi;
             slen += len;
             continue;
-        } else if (TOKEN->insi == ABC) {
+        } else if (TOKEN->insi == ABC) { // unquoted string fragment
             frag = TOKEN->in;
             len = 1;
             while ((insi = char2vstate[*++(TOKEN->in)]) == ABC) {
