@@ -24,7 +24,7 @@
  * @param vstring
  * @return length of vstring
  */
-static int token_vstring_fragment_ABC(TOKEN_t * TOKEN, elem_t *vstring)
+static int vstring_fragment_ABC(TOKEN_t * TOKEN, elem_t *vstring)
 {
     unsigned char *frag;
     state_t insi;
@@ -70,7 +70,7 @@ static int token_vstring_fragment_ABC(TOKEN_t * TOKEN, elem_t *vstring)
  * @param vstring
  * @return length of vstring
  */
-static int token_vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
+static int vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
 {
     unsigned char *frag;
     state_t insi;
@@ -88,10 +88,8 @@ static int token_vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
                     TOKEN->insi = char2state[*++(TOKEN->in)];
                     slen += len;
                     continue;
-                } else {
-                    return slen;
-                }
-                break;
+                } 
+                return slen;
             case 1: // inside quote
                 if (TOKEN->insi == DQT) {  // end of quote
                     TOKEN->in_quote = 0;
@@ -143,7 +141,7 @@ static int token_vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
  * @param vstring
  * @return length of vstring
  */
-static int token_vstring_fragment(TOKEN_t * TOKEN, elem_t *vstring)
+static int vstring_fragment(TOKEN_t * TOKEN, elem_t *vstring)
 {
     unsigned char *frag;
     state_t insi;
@@ -241,10 +239,10 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
     switch (TOKEN->insi) {
         case ABC:
         case AST:
-            slen = token_vstring_fragment_ABC(TOKEN, vstring);
+            slen = vstring_fragment_ABC(TOKEN, vstring);
             break;
         case DQT:
-            slen = token_vstring_fragment_DQT(TOKEN, vstring);
+            slen = vstring_fragment_DQT(TOKEN, vstring);
             break;
         default:
             token_error(TOKEN, "Malformed VSTRING", TOKEN->insi);
@@ -253,7 +251,7 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        int len = token_vstring_fragment(TOKEN, vstring);
+        int len = vstring_fragment(TOKEN, vstring);
         if (len == 0) {
             break;
         }
