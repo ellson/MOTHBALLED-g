@@ -7,6 +7,11 @@
 extern "C" {
 #endif
 
+// extra state_t for end-of-file condition
+#define gEOF 0xff
+// extra state_t for end-of-stream (stalled input) condition
+#define gEOS 0xfe
+
 struct token_s {
     LIST_t LIST;               // LIST context. Maybe cast from TOKEN
 

@@ -81,7 +81,7 @@ static int vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
     while (1) {
         switch (TOKEN->in_quote) {
             case 0: // leading quote
-                if (TOKEN->insi == DQT) {  // end of quote
+                if (TOKEN->insi == DQT) {  // leading quote
                     TOKEN->in_quote = 1;
                     frag = TOKEN->in;
                     len = 1;

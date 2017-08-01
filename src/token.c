@@ -145,7 +145,13 @@ if (TOKEN->membuf) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->membuf);
             TOKEN->insi = NLL;
         }
         else {
-            FATAL("fread()");
+            if (ferror(TOKEN->file)) {
+                FATAL("fread()");
+            }
+            else {
+                //TOKEN->insi = gEOS;  // not #defined yet, so retain old behaviour
+                TOKEN->insi = NLL;
+            }
         }
     }
     else {
