@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-// My guess is that INBUFIZE should match the average ACT size, so that
+// My guess is that INBUFSIZE should match the average ACT size, so that
 // inbufs get released roughly as ACTs are processed.
 // I could be wrong - it may need experimentation.
 //
@@ -18,15 +18,14 @@ extern "C" {
 // small inbufs have greater overhead ratio.
 
 // sizeof(inbufelem_t) = 1<<7  (128 bytes)
-// the contents size is sizeof(inbufelem_t) less the other bits  (~115 bytes)
-#define INBUFIZE ((1<<7) - sizeof(inbufelem_t*) - sizeof(int) - sizeof(char))
+// the contents size is sizeof(inbufelem_t) less the other bits  (~116 bytes)
+#define INBUFSIZE ((1<<7) - sizeof(inbufelem_t*) - sizeof(int))
 #define INBUFALLOCNUM 128
 
 struct inbufelem_s {
     inbufelem_t *nextinbuf;
     int refs;
-    unsigned char buf[INBUFIZE];
-    unsigned char end_of_buf;    // maintain a '\0' here 
+    unsigned char buf[INBUFSIZE];
 };
 
 struct inbuf_s {

@@ -78,7 +78,7 @@ success_t token_more_in(TOKEN_t * TOKEN)
     int size, avail;
 
     if (INBUF->inbuf) {        // if there is an existing active-inbuf
-        if (TOKEN->in == &(INBUF->inbuf->end_of_buf)) {    // if it is full
+        if (TOKEN->in == (unsigned char*)(INBUF->inbuf) + sizeof(inbufelem_t)) {    // if it is full
             if ((--(INBUF->inbuf->refs)) == 0) {    // dereference active-inbuf
                 free_inbuf(INBUF, INBUF->inbuf);    // free if no refs left
                          // can happen it held only framents that were ignore, or
@@ -120,13 +120,13 @@ success_t token_more_in(TOKEN_t * TOKEN)
             } else if (strcmp(TOKEN->filename, "-e") == 0) {
                 TOKEN->membuf = TOKEN->argv[0];
                 (*(TOKEN->pargc))--;
-if (TOKEN->membuf) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->membuf);
-                return FAIL;    // no more input available
+                if (TOKEN->membuf) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->membuf);
+                    return FAIL;    // no more input available
             } else {
                 if (! (TOKEN->file = fopen(TOKEN->filename, "rb")))
                     FATAL("fopen(\"%s\", \"rb\")", TOKEN->filename);
             }
-           TOKEN->linecount_at_start = TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount;
+            TOKEN->linecount_at_start = TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount;
             TOKEN->stat_infilecount++;
         } else {
             return FAIL;    // no more input available
@@ -134,7 +134,7 @@ if (TOKEN->membuf) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->membuf);
         assert(TOKEN->file);
     }
     // slurp in data from file stream
-    avail = &(INBUF->inbuf->end_of_buf) - TOKEN->in;
+    avail = (unsigned char*)(INBUF->inbuf) + sizeof(inbufelem_t) - TOKEN->in;
     size = fread(TOKEN->in, 1, avail, TOKEN->file);
     TOKEN->end = TOKEN->in + size;
 
@@ -172,7 +172,7 @@ if (TOKEN->membuf) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->membuf);
  * @return size of token
  */
 
-size_t scan_1 (TOKEN_t * TOKEN, state_t si)
+size_t token_1 (TOKEN_t * TOKEN, state_t si)
 {
     unsigned char *in = TOKEN->in;
     state_t ci;
@@ -203,7 +203,7 @@ size_t scan_1 (TOKEN_t * TOKEN, state_t si)
  * @return size of token
  */
 
-size_t scan_n (TOKEN_t * TOKEN, state_t si)
+size_t token_n (TOKEN_t * TOKEN, state_t si)
 {
     unsigned char *in = TOKEN->in;
     state_t ci;
@@ -275,10 +275,10 @@ static success_t token_comment(TOKEN_t * TOKEN)
  */
 static void token_whitespace_fragment(TOKEN_t * TOKEN)
 {
-    unsigned char *in;
+    unsigned char *in = TOKEN->in;
     state_t insi;
 
-    if ((in = TOKEN->in)) {
+    if (in != TOKEN->end) {
         unsigned char c = *in;
         insi = TOKEN->insi;
         while (insi == WS) {    // eat all whitespace
@@ -288,7 +288,8 @@ static void token_whitespace_fragment(TOKEN_t * TOKEN)
             if (c == '\r') {
                 TOKEN->stat_crcount++;
             }
-            if (++in == TOKEN->end) {
+            in++;
+            if (in == TOKEN->end) {
                 insi = END;
                 break;
             }

@@ -82,7 +82,7 @@ void info_process(THREAD_t * THREAD)
     Au("elempermalloc",         LISTALLOCNUM);
     Au("elemsize",              sizeof(elem_t));
     As("hostname",              PROCESS->hostname);  // FIXME - TMI ?
-    Au("inbufcapacity",         INBUFIZE);
+    Au("inbufcapacity",         INBUFSIZE);
     Au("inbufmallocsize",       INBUFALLOCNUM * sizeof(inbufelem_t));
     Au("inbufpermalloc",        INBUFALLOCNUM);
     Au("inbufsize",             sizeof(inbufelem_t));

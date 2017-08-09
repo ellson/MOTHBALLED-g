@@ -38,7 +38,6 @@ inbufelem_t * new_inbuf(INBUF_t *INBUF)
 
     inbuf->nextinbuf = NULL;
     inbuf->refs = 0;
-    inbuf->end_of_buf = '\0';    // parse() sees this null like an EOF
 
     INBUF->stat_inbufnow++;    // stats
     if (INBUF->stat_inbufnow > INBUF->stat_inbufmax) {

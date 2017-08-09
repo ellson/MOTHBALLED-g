@@ -84,19 +84,14 @@ static int token_identifier_fragment(TOKEN_t * TOKEN, elem_t * identifier)
 #endif
         if (TOKEN->insi == ABC) {
             frag = TOKEN->in;
-            len = 1;
-            while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
-                len++;
-            }
-            TOKEN->insi = insi;
+            len = token_n(TOKEN, ABC);
             elem = new_frag(LIST(), ABC, len, frag);
             slen += len;
         } else if (TOKEN->insi == AST) {
             TOKEN->has_ast = AST;
             TOKEN->elem_has_ast = AST;
             frag = TOKEN->in;
-            while ((TOKEN->insi = char2state[*++(TOKEN->in)]) == AST) {
-            }    // extra '*' ignored
+            len = token_n(TOKEN, AST);  // extra '*' ignored
             elem = new_frag(LIST(), AST, 1, frag);
             slen++;
         } else {
