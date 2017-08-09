@@ -48,7 +48,6 @@ RAN{3e}
 EQL{3d}
 DQT{22}
 OCT{23}
-END
 AST{2a}
 FSL{2f}
 CLN{3a}

@@ -337,7 +337,7 @@ for s in ${statelist[@]}; do
 done
 #( printf "\n\n"                                  ) >>${ifn}.ebnf
 ( printf "}\n\n"                                 ) >>${ifn}.gv
-( printf "} state_t;\n\n"                        ) >>${ifn}.enum
+( printf ",END = 255} state_t;\n\n"              ) >>${ifn}.enum
 ( printf "};\n\n"                                ) >>${ifn}.states
 ( printf "};\n\n"                                ) >>${ifn}.props
 ( printf "};\n\n"                                ) >>${ifn}.token

@@ -88,7 +88,8 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     if (si == TOKEN()->insi) {    // single character terminals matching
                                   //  state_machine expectation
         bi = TOKEN()->insi;
-        ei = token(TOKEN());
+        token_1(TOKEN(),si);
+        ei = TOKEN()->insi;
         goto done;
     }
 
