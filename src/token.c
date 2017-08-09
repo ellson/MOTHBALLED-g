@@ -96,12 +96,12 @@ success_t token_more_in(TOKEN_t * TOKEN)
         TOKEN->in = INBUF->inbuf->buf;
     }
     if (TOKEN->file) {        // if there is an existing active input file
-        if (TOKEN->insi == NLL && feof(TOKEN->file)) {    //    if it is at EOF
+        if (TOKEN->insi == END && feof(TOKEN->file)) {    //    if it is at EOF
             //   Although the grammar doesn't care, I decided that it would
             //   be more user-friendly to check that we are not in a quote string
             //   whenever EOF occurs.
             if (TOKEN->in_quote) {
-                token_error(TOKEN, "EOF in the middle of a quote string", NLL);
+                token_error(TOKEN, "EOF in the middle of a quote string", END);
             }
 // FIXME don't close stdin
 // FIXME - stall for more more input   (inotify events ?)
@@ -126,7 +126,7 @@ if (TOKEN->membuf) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->membuf);
                 if (! (TOKEN->file = fopen(TOKEN->filename, "rb")))
                     FATAL("fopen(\"%s\", \"rb\")", TOKEN->filename);
             }
-            TOKEN->linecount_at_start = TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount;
+           TOKEN->linecount_at_start = TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount;
             TOKEN->stat_infilecount++;
         } else {
             return FAIL;    // no more input available
@@ -136,21 +136,18 @@ if (TOKEN->membuf) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->membuf);
     // slurp in data from file stream
     avail = &(INBUF->inbuf->end_of_buf) - TOKEN->in;
     size = fread(TOKEN->in, 1, avail, TOKEN->file);
+    TOKEN->end = TOKEN->in + size;
 
-    TOKEN->in[size] = '\0';    // ensure terminated (we have an extra
-                               //    character in inbuf for this )
     if (size == 0) {
         if (feof(TOKEN->file)) {
-            //TOKEN->insi = gEOF;  // not #defined yet, so retain old behaviour
-            TOKEN->insi = NLL;
+            TOKEN->insi = END;
         }
         else {
             if (ferror(TOKEN->file)) {
                 FATAL("fread()");
             }
             else {
-                //TOKEN->insi = gEOS;  // not #defined yet, so retain old behaviour
-                TOKEN->insi = NLL;
+                TOKEN->insi = END;
             }
         }
     }
@@ -163,21 +160,92 @@ if (TOKEN->membuf) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->membuf);
 }
 
 /**
- * consume comment fagments
+ * scan input for a single character of the character state_t
+ *
+ * starts scanning at TOKEN->in 
+ * updates TOKEN->in to point to the next character after the accepted scan
+ * updates TOKEN->insi to contain the state_t of the next character
+ *
+ * @param TOKEN context
+ * @param si character class to be scanned for
+ *
+ * @return size of token
+ */
+
+size_t scan_1 (TOKEN_t * TOKEN, state_t si)
+{
+    unsigned char *in = TOKEN->in;
+    state_t ci;
+
+    if (in != TOKEN->end) {
+        ci = char2state[*in++];
+        if (ci != si) {
+            return 0;
+        }
+        TOKEN->insi = ci;
+        TOKEN->in = in;
+        return 1;
+    }
+    TOKEN->insi = END;
+    return 0;
+}
+
+/**
+ * scan input for multiple characters of the indicated state_t
+ *
+ * starts scanning at TOKEN->in 
+ * updates TOKEN->in to point to the next character after the accepted scan
+ * updates TOKEN->insi to contain the state_t of the next character
+ *
+ * @param TOKEN context
+ * @param si character class to be scanned for
+ *
+ * @return size of token
+ */
+
+size_t scan_n (TOKEN_t * TOKEN, state_t si)
+{
+    unsigned char *in = TOKEN->in;
+    state_t ci;
+    size_t sz = 0;
+
+    while (in != TOKEN->end) {
+        ci = char2state[*in++];
+        if (ci != si) {
+            TOKEN->insi = ci;
+            TOKEN->in = in;
+            return sz;
+        }
+        sz++;
+    }
+    TOKEN->insi = END;
+    TOKEN->in = in;
+    return sz;
+}
+
+/**
+ * consume comment fagments (all chars to EOL)
  *
  * @param TOKEN context
  */
 static void token_comment_fragment(TOKEN_t * TOKEN)
 {
-    unsigned char *in, c;
+    unsigned char *in, *end, c;
 
     in = TOKEN->in;
+    end = TOKEN->end;
     c = *in;
-    while (c != '\0' && c != '\n' && c != '\r') {
+    while (in != end && c != '\n' && c != '\r') {
         c = *++in;
     }
-    TOKEN->insi = char2state[c];
-    TOKEN->in = in;
+    if (in == end) {
+        TOKEN->insi = END;
+        TOKEN->in = end;
+    }
+    else {
+        TOKEN->insi = char2state[c];
+        TOKEN->in = in;
+    }
 }
 
 /**
@@ -190,7 +258,7 @@ static success_t token_comment(TOKEN_t * TOKEN)
 {
     success_t rc = SUCCESS;
     token_comment_fragment(TOKEN);      // eat comment
-    while (TOKEN->insi == NLL) {        // end_of_buffer, or EOF, during comment
+    while (TOKEN->insi == END) {        // end_of_buffer, or EOF, during comment
         rc = token_more_in(TOKEN);
         if (rc == FAIL) {
             break;                      // EOF
@@ -213,14 +281,18 @@ static void token_whitespace_fragment(TOKEN_t * TOKEN)
     if ((in = TOKEN->in)) {
         unsigned char c = *in;
         insi = TOKEN->insi;
-        while (insi == WS) {    // eat all leading whitespace
+        while (insi == WS) {    // eat all whitespace
             if (c == '\n') {
                 TOKEN->stat_lfcount++;
             }
             if (c == '\r') {
                 TOKEN->stat_crcount++;
             }
-            c = *++in;
+            if (++in == TOKEN->end) {
+                insi = END;
+                break;
+            }
+            c = *in;
             insi = char2state[c];
         }
         TOKEN->insi = insi;
@@ -238,7 +310,7 @@ static success_t token_non_comment(TOKEN_t * TOKEN)
 {
     success_t rc = SUCCESS;
     token_whitespace_fragment(TOKEN);     // eat whitespace
-    while (TOKEN->insi == NLL) {          // end_of_buffer, or EOF,
+    while (TOKEN->insi == END) {          // end_of_buffer, or EOF,
                                           //   during whitespace
         rc = token_more_in(TOKEN);
         if (rc == FAIL) {
@@ -305,3 +377,4 @@ state_t token(TOKEN_t * TOKEN)
 {
     return (TOKEN->insi = char2state[*++(TOKEN->in)]);
 }
+

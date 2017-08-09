@@ -59,7 +59,7 @@ static int token_identifier_fragment(TOKEN_t * TOKEN, elem_t * identifier)
                 TOKEN->insi = char2state[*++(TOKEN->in)];
                 slen++;
                 continue;
-            } else if (TOKEN->insi == NLL) {
+            } else if (TOKEN->insi == END) {
                 break;
             } else {  // TOKEN->in_quote == 1
                 len = 1;
@@ -124,7 +124,7 @@ success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
 
     TOKEN->has_ast = 0;
     int slen = token_identifier_fragment(TOKEN, identifier); // leading fragment
-    while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace
+    while (TOKEN->insi == END) {    // end_of_buffer, or EOF, during whitespace
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }

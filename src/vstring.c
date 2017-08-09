@@ -171,7 +171,7 @@ static int vstring_fragment(TOKEN_t * TOKEN, elem_t *vstring)
                 TOKEN->insi = char2state[*++(TOKEN->in)];
                 slen++;
                 continue;
-            } else if (TOKEN->insi == NLL) {  // FIXME - replace with proper EOF handling
+            } else if (TOKEN->insi == END) {
                 break;
             } else {  // TOKEN->in_quote == 1   .. simple string of ABC
                 len = 1;
@@ -247,7 +247,7 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
         default:
             token_error(TOKEN, "Malformed VSTRING", TOKEN->insi);
     }
-    while (TOKEN->insi == NLL) {    // end_of_buffer, or EOF, during whitespace FIXME
+    while (TOKEN->insi == END) {    // end_of_buffer, or EOF, during whitespace FIXME
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }

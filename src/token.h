@@ -21,6 +21,7 @@ struct token_s {
     FILE *out, *err;           // output files
 
     unsigned char *in;         // next character to be processed
+    unsigned char *end;        // one past the last character
     char *filename;            // name of file currently being processed,
                                //   or "-" for stdin
     FILE *file;                // file handle of file being processed
