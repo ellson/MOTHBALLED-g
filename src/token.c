@@ -78,7 +78,7 @@ success_t token_more_in(TOKEN_t * TOKEN)
     int size, avail;
 
     if (INBUF->inbuf) {        // if there is an existing active-inbuf
-        if (TOKEN->in == (unsigned char*)(INBUF->inbuf) + sizeof(inbufelem_t)) {    // if it is full
+        if (TOKEN->in == (INBUF->inbuf->buf + INBUFSIZE)) {    // if it is full
             if ((--(INBUF->inbuf->refs)) == 0) {    // dereference active-inbuf
                 free_inbuf(INBUF, INBUF->inbuf);    // free if no refs left
                          // can happen it held only framents that were ignore, or
@@ -134,7 +134,7 @@ success_t token_more_in(TOKEN_t * TOKEN)
         assert(TOKEN->file);
     }
     // slurp in data from file stream
-    avail = (unsigned char*)(INBUF->inbuf) + sizeof(inbufelem_t) - TOKEN->in;
+    avail = INBUF->inbuf->buf + INBUFSIZE - TOKEN->in;
     size = fread(TOKEN->in, 1, avail, TOKEN->file);
     TOKEN->end = TOKEN->in + size;
 
@@ -230,22 +230,23 @@ size_t token_n (TOKEN_t * TOKEN, state_t si)
  */
 static void token_comment_fragment(TOKEN_t * TOKEN)
 {
-    unsigned char *in, *end, c;
+    unsigned char *in = TOKEN->in;
+    unsigned char *end = TOKEN->end;
+    unsigned char c = *in;
 
-    in = TOKEN->in;
-    end = TOKEN->end;
-    c = *in;
-    while (in != end && c != '\n' && c != '\r') {
-        c = *++in;
+    while (in != end) {
+        c = *in++;
+        if (c == '\n' || c == '\r') {
+            break;
+        }
     }
     if (in == end) {
         TOKEN->insi = END;
-        TOKEN->in = end;
     }
     else {
         TOKEN->insi = char2state[c];
-        TOKEN->in = in;
     }
+    TOKEN->in = in;
 }
 
 /**
@@ -276,29 +277,27 @@ static success_t token_comment(TOKEN_t * TOKEN)
 static void token_whitespace_fragment(TOKEN_t * TOKEN)
 {
     unsigned char *in = TOKEN->in;
-    state_t insi;
+    unsigned char *end = TOKEN->end;
+    state_t insi = TOKEN->insi;
 
-    if (in != TOKEN->end) {
-        unsigned char c = *in;
-        insi = TOKEN->insi;
-        while (insi == WS) {    // eat all whitespace
-            if (c == '\n') {
-                TOKEN->stat_lfcount++;
-            }
-            if (c == '\r') {
-                TOKEN->stat_crcount++;
-            }
-            in++;
-            if (in == TOKEN->end) {
-                insi = END;
-                break;
-            }
-            c = *in;
-            insi = char2state[c];
+    while (in != end && insi == WS) {
+        unsigned char c = *in++;
+
+        if (c == '\n') {
+            TOKEN->stat_lfcount++;
         }
-        TOKEN->insi = insi;
-        TOKEN->in = in;
+        else if (c == '\r') {
+            TOKEN->stat_crcount++;
+        }
+        insi = char2state[c];
     }
+    if (in == end) {
+        TOKEN->insi = END;
+    }
+    else {
+        TOKEN->insi = insi;
+    }
+    TOKEN->in = in;
 }
 
 /**
