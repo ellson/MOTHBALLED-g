@@ -244,7 +244,7 @@ static void token_comment_fragment(TOKEN_t * TOKEN)
         TOKEN->insi = END;
     }
     else {
-        TOKEN->insi = char2state[c];
+        TOKEN->insi = char2state[*in];
     }
     TOKEN->in = in;
 }
@@ -280,22 +280,25 @@ static void token_whitespace_fragment(TOKEN_t * TOKEN)
     unsigned char *end = TOKEN->end;
     state_t insi = TOKEN->insi;
 
-    while (in != end && insi == WS) {
-        unsigned char c = *in++;
+    while (in != end) {
+        unsigned char c = *in;
 
+        if (char2state[c] != WS) {
+            break;
+        }
         if (c == '\n') {
             TOKEN->stat_lfcount++;
         }
         else if (c == '\r') {
             TOKEN->stat_crcount++;
         }
-        insi = char2state[c];
+        in++;
     }
     if (in == end) {
         TOKEN->insi = END;
     }
     else {
-        TOKEN->insi = insi;
+        TOKEN->insi = char2state[*in];
     }
     TOKEN->in = in;
 }
@@ -375,6 +378,9 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
  */
 state_t token(TOKEN_t * TOKEN)
 {
+    if (TOKEN->in == TOKEN->end) {
+        return (TOKEN->insi = END);
+    }
     return (TOKEN->insi = char2state[*++(TOKEN->in)]);
 }
 

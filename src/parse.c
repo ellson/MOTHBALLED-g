@@ -69,6 +69,7 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
                                   // (Note, first REP of a sequence *can* be preceeded
                                   // by WS, just not the rest of the REPs. )
         TOKEN()->in = nullstring; // fake it;
+        TOKEN()->end = nullstring;
         TOKEN()->insi = END;      // pretend last input was the EOF of a prior file.
     }
 
