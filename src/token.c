@@ -175,14 +175,13 @@ success_t token_more_in(TOKEN_t * TOKEN)
 size_t token_1 (TOKEN_t * TOKEN, state_t si)
 {
     unsigned char *in = TOKEN->in;
-    state_t ci;
 
+    if (si != TOKEN->insi) {
+        return 0;
+    }
+    in++;
     if (in != TOKEN->end) {
-        ci = char2state[*in++];
-        if (ci != si) {
-            return 0;
-        }
-        TOKEN->insi = ci;
+        TOKEN->insi = char2state[*in];
         TOKEN->in = in;
         return 1;
     }

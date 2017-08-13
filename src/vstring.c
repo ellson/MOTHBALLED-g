@@ -18,37 +18,63 @@
 #define LIST() ((LIST_t*)TOKEN)
 
 /**
+ * scan input for multiple characters of the indicated state_t
+ *
+ * starts scanning at TOKEN->in
+ * updates TOKEN->in to point to the next character after the accepted scan
+ * updates TOKEN->insi to contain the state_t of the next character
+ *
+ * @param TOKEN context
+ * @param si character class to be scanned for
+ *
+ * @return size of token
+ */
+size_t vstring_token_n (TOKEN_t * TOKEN, state_t si)
+{
+    unsigned char *in = TOKEN->in;
+    state_t ci;
+    size_t sz = 0;
+
+    while (in != TOKEN->end) {
+        ci = char2vstate[*in++];
+        if (ci != si) {
+            TOKEN->insi = ci;
+            TOKEN->in = in;
+            return sz;
+        }
+        sz++;
+    }
+    TOKEN->insi = END;
+    TOKEN->in = in;
+    return sz;
+}
+
+/**
  * load unquoted VSTRING fragment(s)
  *
  * @param TOKEN context
  * @param vstring
  * @return length of vstring
  */
+
 static int vstring_fragment_ABC(TOKEN_t * TOKEN, elem_t *vstring)
 {
     unsigned char *frag;
-    state_t insi;
     int slen, len;
     elem_t *elem;
 
     slen = 0;
     while (1) {
-        if (TOKEN->insi == ABC) { // unquoted string fragment
+        if (TOKEN->insi == ABC) {
             frag = TOKEN->in;
-            len = 1;
-            while ((insi = char2vstate[*++(TOKEN->in)]) == ABC) {
-                len++;
-            }
-            TOKEN->insi = insi;
+            len = vstring_token_n(TOKEN, ABC);
             elem = new_frag(LIST(), ABC, len, frag);
             slen += len;
-        // but '*' are still special  (maybe used as wild card in queries)
         } else if (TOKEN->insi == AST) {
             TOKEN->has_ast = AST;
             TOKEN->elem_has_ast = AST;
             frag = TOKEN->in;
-            while ((TOKEN->insi = char2vstate[*++(TOKEN->in)]) == AST) {
-            }    // extra '*' ignored
+            len = token_n(TOKEN, AST);  // extra '*' ignored
             elem = new_frag(LIST(), AST, 1, frag);
             slen++;
         } else {

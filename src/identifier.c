@@ -41,47 +41,6 @@ static int token_identifier_fragment(TOKEN_t * TOKEN, elem_t * identifier)
 
     slen = 0;
     while (1) {
-#if QUOTING_IN_IDENTIFIERS
-        state_t insi;
-        if (TOKEN->in_quote) {
-            if (TOKEN->in_quote == 2) {    // character after BSL
-                TOKEN->in_quote = 1;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
-                slen++;
-                continue;
-            } else if (TOKEN->insi == DQT) {
-                TOKEN->in_quote = 0;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
-                slen++;
-                elem = new_frag(LIST(), DQT, slen, frag);
-            } else if (TOKEN->insi == BSL) {
-                TOKEN->in_quote = 2;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
-                slen++;
-                continue;
-            } else if (TOKEN->insi == END) {
-                break;
-            } else {  // TOKEN->in_quote == 1
-                len = 1;
-                while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
-                    len++;
-                }
-                TOKEN->insi = insi;
-                slen += len;
-                continue;
-            }
-        } else if (TOKEN->insi == DQT) {
-            TOKEN->in_quote = 1;
-            frag = TOKEN->in;
-            len = 1;
-            while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
-                len++;
-            }
-            TOKEN->insi = insi;
-            slen += len;
-            continue;
-        } else
-#endif
         if (TOKEN->insi == ABC) {
             frag = TOKEN->in;
             len = token_n(TOKEN, ABC);
