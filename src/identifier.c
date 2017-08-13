@@ -36,13 +36,13 @@
 static int token_identifier_fragment(TOKEN_t * TOKEN, elem_t * identifier)
 {
     unsigned char *frag;
-    state_t insi;
     int slen, len;
     elem_t *elem;
 
     slen = 0;
     while (1) {
 #if QUOTING_IN_IDENTIFIERS
+        state_t insi;
         if (TOKEN->in_quote) {
             if (TOKEN->in_quote == 2) {    // character after BSL
                 TOKEN->in_quote = 1;

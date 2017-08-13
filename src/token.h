@@ -55,7 +55,6 @@ struct token_s {
 
 void token_error(TOKEN_t * TOKEN, char *message, state_t si);
 success_t token_whitespace(TOKEN_t * TOKEN);
-state_t token(TOKEN_t * TOKEN);
 size_t token_1(TOKEN_t * TOKEN, state_t si);
 size_t token_n(TOKEN_t * TOKEN, state_t si);
 success_t token_more_in(TOKEN_t *TOKEN);

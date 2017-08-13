@@ -278,7 +278,6 @@ static void token_whitespace_fragment(TOKEN_t * TOKEN)
 {
     unsigned char *in = TOKEN->in;
     unsigned char *end = TOKEN->end;
-    state_t insi = TOKEN->insi;
 
     while (in != end) {
         unsigned char c = *in;
@@ -369,18 +368,3 @@ token_pack_string(TOKEN_t *TOKEN, int slen, elem_t *string) {
         TOKEN->stat_instringlong++;
     }
 }
-
-/**
- * process single character tokens
- *
- * @param TOKEN context
- * @return the state of the character just read
- */
-state_t token(TOKEN_t * TOKEN)
-{
-    if (TOKEN->in == TOKEN->end) {
-        return (TOKEN->insi = END);
-    }
-    return (TOKEN->insi = char2state[*++(TOKEN->in)]);
-}
-

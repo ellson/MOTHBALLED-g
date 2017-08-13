@@ -57,7 +57,6 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     state_t ti, ni, ei;
     success_t rc;
     elem_t *branch, *newkey;
-    static unsigned char nullstring[] = { '\0' };
 
     rc = SUCCESS;
     branch = new_list(LIST(), si);
@@ -68,8 +67,8 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
         bi = WS;                  // pretend preceeded by WS to satisfy toplevel SREP or REP
                                   // (Note, first REP of a sequence *can* be preceeded
                                   // by WS, just not the rest of the REPs. )
-        TOKEN()->in = nullstring; // fake it;
-        TOKEN()->end = nullstring;
+        TOKEN()->in = NULL;       // fake it;
+        TOKEN()->end = NULL;
         TOKEN()->insi = END;      // pretend last input was the EOF of a prior file.
     }
 
@@ -80,9 +79,11 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
 
     ei = TOKEN()->insi;  // the char class that ended the last token
 
-    // Whitespace
-    if ((rc = token_whitespace(TOKEN())) == FAIL) {
-        goto done;                // EOF during whitespace
+    // Whitespace or comment (or new data needed)
+    if (ei == WS || ei == OCT || ei == END) {
+        if ((rc = token_whitespace(TOKEN())) == FAIL) {
+            goto done;                // EOF during whitespace
+        }
     }
 
     // Special character tokens
