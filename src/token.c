@@ -205,16 +205,17 @@ size_t token_1 (TOKEN_t * TOKEN, state_t si)
 size_t token_n (TOKEN_t * TOKEN, state_t si)
 {
     unsigned char *in = TOKEN->in;
-    state_t ci;
+    state_t insi;
     size_t sz = 0;
 
     while (in != TOKEN->end) {
-        ci = char2state[*in++];
-        if (ci != si) {
-            TOKEN->insi = ci;
+        insi = char2state[*in];
+        if (insi != si) {
+            TOKEN->insi = insi;
             TOKEN->in = in;
             return sz;
         }
+        in++;
         sz++;
     }
     TOKEN->insi = END;
