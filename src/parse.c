@@ -14,6 +14,8 @@
 
 static elem_t * merge_identifier(LIST_t *LIST, elem_t *identifier, elem_t *key);
 
+static void  token_1 (TOKEN_t * TOKEN, state_t si);
+
 /**
  * This parser recurses at two levels:
  *
@@ -320,5 +322,32 @@ static elem_t * merge_identifier(LIST_t *LIST, elem_t *identifier, elem_t *key)
     key->refs++;
     free_list(LIST, identifier);
     return key;
+}
+
+/**
+ * scan input for a single character of the character state_t
+ *
+ * starts scanning at TOKEN->in
+ * updates TOKEN->in to point to the next character after the accepted scan
+ * updates TOKEN->insi to contain the state_t of the next character
+ *
+ * @param TOKEN context
+ * @param si character class to be scanned for
+ */
+
+static void token_1 (TOKEN_t * TOKEN, state_t si)
+{
+    unsigned char *in = TOKEN->in;
+
+    if (si == TOKEN->insi) {
+        in++;
+        if (in != TOKEN->end) {
+            TOKEN->insi = char2state[*in];
+        }
+        else {
+            TOKEN->insi = END;
+        }
+        TOKEN->in = in;
+    }
 }
 
