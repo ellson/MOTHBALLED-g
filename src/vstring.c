@@ -127,9 +127,15 @@ static int vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
                     in_quote = 2;
                     slen++;
                 } else {  // simple string of ABC
-                    slen += vstring_token_n(TOKEN,ABC);
-                    in = TOKEN->in;
-                    insi = TOKEN->insi;
+                    while (insi == ABC) {
+                        slen++;
+                        in++;
+                        if (in == end) {
+                            goto done;
+                        }
+                        insi = char2vstate[*in];    // NB.  Not the same table as for identifiers
+                    }
+                    continue;
                 }
                 break;
             case 2: // escaped character
@@ -139,7 +145,8 @@ static int vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
             default:
                 FATAL("shouldn't happen");
         }
-        if (++in == end) {
+        in++;
+        if (in == end) {
             goto done;
         }
         insi = char2vstate[*in];
