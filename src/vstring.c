@@ -32,11 +32,12 @@
 size_t vstring_token_n (TOKEN_t * TOKEN, state_t si)
 {
     unsigned char *in = TOKEN->in;
+    unsigned char *end = TOKEN->end;
     state_t insi;
     size_t sz = 0;
 
-    while (in != TOKEN->end) {
-        insi = char2vstate[*in];
+    while (in != end) {
+        insi = char2vstate[*in];    // NB.  Not the same table as for identifiers
         if (insi != si) {
             TOKEN->insi = insi;
             TOKEN->in = in;
@@ -75,7 +76,7 @@ static int vstring_fragment_ABC(TOKEN_t * TOKEN, elem_t *vstring)
             TOKEN->has_ast = AST;
             TOKEN->elem_has_ast = AST;
             frag = TOKEN->in;
-            len = token_n(TOKEN, AST);  // extra '*' ignored
+            len = vstring_token_n(TOKEN, AST);  // extra '*' ignored
             elem = new_frag(LIST(), AST, 1, frag);
             slen++;
         } else {
@@ -100,57 +101,65 @@ static int vstring_fragment_ABC(TOKEN_t * TOKEN, elem_t *vstring)
 static int vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
 {
     unsigned char *frag;
-    state_t insi;
-    int slen, len;
-    elem_t *elem;
+    unsigned char *in = TOKEN->in;
+    unsigned char *end = TOKEN->end;
+    int in_quote = TOKEN->in_quote;
+    state_t insi = TOKEN->insi;
+    int slen = 0;
+    elem_t *elem = NULL;
 
-    slen = 0;
     while (1) {
-        switch (TOKEN->in_quote) {
+        switch (in_quote) {
             case 0: // leading quote
-                if (TOKEN->insi == DQT) {  // leading quote
-                    TOKEN->in_quote = 1;
-                    frag = TOKEN->in;
-                    len = 1;
-                    TOKEN->insi = char2state[*++(TOKEN->in)];
-                    slen += len;
-                    continue;
+                if (insi == DQT) {  // leading quote
+                    in_quote = 1;
+                    frag = in;
+                    slen = 1;
                 } 
-                return slen;
+                break;
             case 1: // inside quote
-                if (TOKEN->insi == DQT) {  // end of quote
-                    TOKEN->in_quote = 0;
-                    TOKEN->insi = char2state[*++(TOKEN->in)];
+                if (insi == DQT) {  // end of quote
+                    in_quote = 0;
                     slen++;
                     elem = new_frag(LIST(), DQT, slen, frag);
-                    break;
-                } else if (TOKEN->insi == BSL) {  // escape next character
-                    TOKEN->in_quote = 2;
-                    TOKEN->insi = char2state[*++(TOKEN->in)];
+                    goto done;
+                } else if (insi == BSL) {  // escape next character
+                    in_quote = 2;
                     slen++;
-                    continue;
                 } else {  // simple string of ABC
-                    len = 1;
-                    while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
-                        len++;
-                    }
-                    TOKEN->insi = insi;
-                    slen += len;
-                    continue;
+                    slen += vstring_token_n(TOKEN,ABC);
+                    in = TOKEN->in;
+                    insi = TOKEN->insi;
                 }
                 break;
             case 2: // escaped character
-                TOKEN->in_quote = 1;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
+                in_quote = 1;
                 slen++;
-                continue;
+                break;
             default:
                 FATAL("shouldn't happen");
         }
-        append_transfer(vstring, elem);
-        TOKEN->stat_infragcount++;
+        if (++in == end) {
+            goto done;
+        }
+        insi = char2vstate[*in];
     }
+done:
+    if (in == end) {
+        TOKEN->insi = END;
+    }
+    else {
+        TOKEN->insi = char2vstate[*in];
+    }
+    TOKEN->in = in;
+    TOKEN->in_quote = in_quote;
+    append_transfer(vstring, elem);
+    TOKEN->stat_infragcount++;
+    return slen;
 }
+
+
+#if 0
 
 /**
  * load VSTRING fragments
@@ -246,6 +255,8 @@ static int vstring_fragment(TOKEN_t * TOKEN, elem_t *vstring)
     return slen;
 }
 
+#endif
+
 /**
  * collect fragments to form a VSTRING token
  *
@@ -278,11 +289,11 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
         if ((token_more_in(TOKEN) == FAIL)) {
             break;    // EOF
         }
-        int len = vstring_fragment(TOKEN, vstring);
-        if (len == 0) {
-            break;
-        }
-        slen += len;
+//FIXME        int len = vstring_fragment(TOKEN, vstring);
+//        if (len == 0) {
+//            break;
+//        }
+//        slen += len;
     }
     if (slen > 0) {
         token_pack_string(TOKEN, slen, vstring); // may replace string with a shortstr elem
