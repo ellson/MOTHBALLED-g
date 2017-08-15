@@ -17,14 +17,40 @@
 
 #define LIST() ((LIST_t*)TOKEN)
 
-// I wanted to turn QUOTING_IN_IDENTIFIERS off, to make it more C like, and to
-// enforce a cleaner coding style, IMHO.   Pragmatically though, if we want
-// to allow translations from other languages, like DOT or JSON, then we
-// may neeed to support quoting in identifiers.
+/**
+ * scan input for multiple characters of the indicated state_t
+ *
+ * starts scanning at TOKEN->in
+ * updates TOKEN->in to point to the next character after the accepted scan
+ * updates TOKEN->insi to contain the state_t of the next character
+ *
+ * @param TOKEN context
+ * @param si character class to be scanned for
+ *
+ * @return size of token
+ */
 
-#ifndef QUOTING_IN_IDENTIFIERS
-#define QUOTING_IN_IDENTIFIERS 0
-#endif
+static size_t identifier_token_n (TOKEN_t * TOKEN, state_t si)
+{
+    unsigned char *in = TOKEN->in;
+    state_t insi;
+    size_t sz = 0;
+
+    while (in != TOKEN->end) {
+        insi = char2state[*in];
+        if (insi != si) {
+            TOKEN->insi = insi;
+            TOKEN->in = in;
+            return sz;
+        }
+        in++;
+        sz++;
+    }
+    TOKEN->insi = END;
+    TOKEN->in = in;
+    return sz;
+}
+
 
 /**
  * load IDENTIFIER fragments
@@ -36,21 +62,20 @@
 static int token_identifier_fragment(TOKEN_t * TOKEN, elem_t * identifier)
 {
     unsigned char *frag;
-    int slen, len;
+    int len, slen = 0;
     elem_t *elem;
 
-    slen = 0;
     while (1) {
         if (TOKEN->insi == ABC) {
             frag = TOKEN->in;
-            len = token_n(TOKEN, ABC);
+            len = identifier_token_n(TOKEN, ABC);
             elem = new_frag(LIST(), ABC, len, frag);
             slen += len;
         } else if (TOKEN->insi == AST) {
             TOKEN->has_ast = AST;
             TOKEN->elem_has_ast = AST;
             frag = TOKEN->in;
-            len = token_n(TOKEN, AST);  // extra '*' ignored
+            len = identifier_token_n(TOKEN, AST);  // extra '*' ignored
             elem = new_frag(LIST(), AST, 1, frag);
             slen++;
         } else {

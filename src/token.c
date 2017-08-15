@@ -160,40 +160,6 @@ success_t token_more_in(TOKEN_t * TOKEN)
 }
 
 /**
- * scan input for multiple characters of the indicated state_t
- *
- * starts scanning at TOKEN->in 
- * updates TOKEN->in to point to the next character after the accepted scan
- * updates TOKEN->insi to contain the state_t of the next character
- *
- * @param TOKEN context
- * @param si character class to be scanned for
- *
- * @return size of token
- */
-
-size_t token_n (TOKEN_t * TOKEN, state_t si)
-{
-    unsigned char *in = TOKEN->in;
-    state_t insi;
-    size_t sz = 0;
-
-    while (in != TOKEN->end) {
-        insi = char2state[*in];
-        if (insi != si) {
-            TOKEN->insi = insi;
-            TOKEN->in = in;
-            return sz;
-        }
-        in++;
-        sz++;
-    }
-    TOKEN->insi = END;
-    TOKEN->in = in;
-    return sz;
-}
-
-/**
  * consume comment fagments (all chars to EOL)
  *
  * @param TOKEN context
