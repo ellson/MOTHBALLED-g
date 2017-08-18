@@ -66,7 +66,7 @@
 # There is no CONTAINER for the top ACTIVITY, so its properties must be
 # provided by the external environment, such as from the command line.
 
-# The default VERB is to add non-existant, or to modify existant, object or objects.
+# The default VERB is to add non-existant, or to modify existent, object or objects.
 # A TLD (i.e, a '"') signals deletion of an object or objects.
 
        VERB ::= TLD
@@ -122,7 +122,7 @@
 # The namespace of the NODEID is the parent CONTAINER
 
 # Or a NODE can be EQL (i.e. '=') to indicate a "same as"
-# the corresponding NODE in an immediately preceeding ACT.
+# the corresponding NODE in an immediately preceding ACT.
 
          NODE ::= NODEID
                 | EQL
@@ -155,7 +155,7 @@
 # ancestor.  So "cousin" includes uncles and cousins and cousin's children.
 
 # Or an ENDPOINT can be EQL (i.e. '=') to indicate a "same as"
-# the corresponding ENDPOINT in an immediately preceeding ACT.
+# the corresponding ENDPOINT in an immediately preceding ACT.
 # So: 
 # 		<longname a>[x=y]
 # 		<longname b>[m=n]
@@ -195,7 +195,7 @@
 # Some examples:
 #
 #              sister
-#              brother/neice
+#              brother/niece
 #              ^/uncle
 #              ^/uncle/cousin
 #              ^/uncle/cousin/kid
@@ -222,47 +222,46 @@
 # of the parent EDGE by means of a 1-based index, left to right.
 #
 # In this example,  legs "b" and "c" are connected via "hub", but "a" is not connected.
-# Note that EDGE contents can be reused without knowlege of the connected-NODE names in the parent.
+# Note that EDGE contents can be reused without knowledge of the connected-NODE names in the parent.
 #
 #              <a b c> { < :2 hub > < :3 hub > }
 
-# The various IDs are all represented by STRINGs
+# The various IDs are all represented by IDENTIFIER strings
 
-       ATTRID ::= STRING
-       NODEID ::= STRING
-       PORTID ::= STRING
-     DISAMBID ::= STRING
+       ATTRID ::= IDENTIFIER
+       NODEID ::= IDENTIFIER
+       PORTID ::= IDENTIFIER
+     DISAMBID ::= IDENTIFIER
 
-# STRINGs, without quoting or escapes, can contain any characters
-# in the ABC class.  Also AST (in an unquoted portion of the STRING),
-# which when present means that the entire ACT is a pattern, which can be used to provide 
-# additional attributes or contents to future ACTs that match the pattern.
+# IDENTIFIERs are like C identifiers and can contain any characters
+# in the ABC class.
+
+# No quoting is permitted in IDENTIFIERs.
+
+# Example:
+#              card_deck [foo=bar]
+
+# An AST  may follow an identifier to mean that the entire ACT is a pattern.
+# This can be used to provide  additional attributes or contents to future ACTs that match the pattern.
 
 # Example:
 #              card_deck_* [shape=stackedcards]
 
-# FIXME - need more details on patterns
-
-# STRINGs can use various quoting and escape mechanisms to contain any
-# character without special meaning
-
-# FIXME - details of various quoting schemes
-
         VALUE ::= VSTRING
 
-# VSTRING are like STRING, but allow additional characters '/' '\' ':' '?'
-# which allows URLs and file paths as VALUES without quoting.  Also VSTRING supports
-# additional quoting mechanisms s
+# VSTRING are like IDENTIFIER, but allow additional characters '/' '\' ':' '?'
+# to allows URLs and file paths as VALUES without quoting.  Also VSTRING supports
+# additional quoting mechanisms 
 # FIXME - not yet implemented - will include HTML-like.
 
-# STRINGs and VSTRINGs can be arbitrary concatenations of double-quoted and unquoted substrings, e.g.
+# IDENTIFIERs and VSTRINGs can be arbitrary concatenations of double-quoted and unquoted substrings, e.g.
 #          abc" "def
 #          "abc"" "def
 #          "abc ""def"
 # are all equivalent to:
 #          "abc def"
 
-# non-special characters, can be used in STRINGs or VSTRINGs without quoting
+# non-special characters, can be used in IDENTIFIERs or VSTRINGs without quoting
           ABC ::= '!'|'$'|'%'|'&'|'''|'+'|','|'-'|'.'|'0'
                 | '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'@'
                 | 'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'
@@ -285,6 +284,7 @@
                 | '0xf4'|'0xf5'|'0xf6'|'0xf7'|'0xf8'|'0xf9'|'0xfa'|'0xfb'|'0xfc'|'0xfd'
                 | '0xfe'|'0xff'
 
+#FIXME this isn't accurate....
 # remaining characters are special and require some form of quoting in STRINGs
            WS ::= '0x09'|'0x0a'|'0x0d'|'0x20'
           LBR ::= '['
@@ -307,11 +307,10 @@
           CLN ::= ':'
           QRY ::= '?'
 
-# characters that require a binary-transparent quoting  (FIXME - not yet available)
-          BIN ::= '0x01'|'0x02'|'0x03'|'0x04'|'0x05'|'0x06'|'0x07'|'0x08'|'0x0b'|'0x0c'
-                | '0x0e'|'0x0f'|'0x10'|'0x11'|'0x12'|'0x13'|'0x14'|'0x15'|'0x16'|'0x17'
-                | '0x18'|'0x19'|'0x1a'|'0x1b'|'0x1c'|'0x1d'|'0x1e'|'0x1f'|'0x7f'
-          NLL ::= '0x00'
+# characters that require a binary-transparent quoting
+          BIN ::= '0x00'|'0x01'|'0x02'|'0x03'|'0x04'|'0x05'|'0x06'|'0x07'|'0x08'|'0x0b'
+                | '0x0c'|'0x0e'|'0x0f'|'0x10'|'0x11'|'0x12'|'0x13'|'0x14'|'0x15'|'0x16'
+                | '0x17'|'0x18'|'0x19'|'0x1a'|'0x1b'|'0x1c'|'0x1d'|'0x1e'|'0x1f'|'0x7f'
 
 # VSTRINGs have the same quoting rules as STRINGs except that the following additional characters
 # are not-special (i,e, like ABC) in unquoted portions of VSTRINGs.
@@ -319,14 +318,15 @@
           FSL ::= '/'
           CLN ::= ':'
           QRY ::= '?'
-# but note that BSL retains its special meaning as an escape character in any double-quoted portions of VSTRINGs.
+# but note that BSL retains its special meaning as an escape character in any double-quoted
+# portions of VSTRINGs.
 
 # characters that require '\' escape in double-quoted portions of strings
           DQT ::= '"'
           BSL ::= '\'
 
 
-# Any line beginning with an OCT (i.e. '#') , upto end-of-line
+# Any line beginning with an OCT (i.e. '#') , up to end-of-line
 # ('0x0a' and/or '0x0d') is treated as a comment string, and ignored.
 # If you wish to use cpp to process #include directives, for example,
 # then a line beginning with "#//" will be treated as a comment by cpp as well.

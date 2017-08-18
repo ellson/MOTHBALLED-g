@@ -42,7 +42,7 @@ struct token_s {
     int quote_counter;         // paren nesting level, or tranparent char count
 
     long linecount_at_start;   // line count when this file was opened.
-                               //   -- used to calulate line # within file
+                               //   -- used to calculate line # within file
 
     long stat_lfcount;         // various stats
     long stat_crcount;
