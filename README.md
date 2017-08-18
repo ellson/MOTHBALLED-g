@@ -95,7 +95,7 @@ instead ;-)
 
 Application goals:
 
-- To be able to use an inter-connected set of "g" deamons to support a dynamic distributed graph:
+- To be able to use an inter-connected set of "g" daemons to support a dynamic distributed graph:
 	- accepting updates from mutiple sources in different locations.
 	- interactively viewable from multiple locations.
 

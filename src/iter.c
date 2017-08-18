@@ -24,7 +24,7 @@ static void itersep(iter_t *iter, int idx, int len)
 /**
  * complete the iter state update for the new elem
  *
- * - Traversals up, down, or accross lists may contribute
+ * - Traversals up, down, or across lists may contribute
  *   an extra character to be printed that depends on the state_t
  *   e.g. The '<' '>' that surround edges.
  *
@@ -163,9 +163,9 @@ void skipiter(iter_t *iter)
                     break;
                 default:
                     switch ((state_t)this->state) {
-                        // elems that follow elems of a diferent state_t
+                        // elems that follow elems of a different state_t
                         // (non-homogenous lists) need to over-ride the
-                        // pop_space_push of the preceeding elem
+                        // pop_space_push of the preceding elem
                         case ATTRIBUTES:
                             iter->lnxstack[iter->lsp].psp = "][";
                             break;

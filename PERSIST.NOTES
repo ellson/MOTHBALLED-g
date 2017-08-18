@@ -50,7 +50,7 @@ close handle tempfile
 - if all the contenthash are in one directory,  then searching with readdir() can find
   the contenthash from the inode
         - expensive ... every close where a namehash already exists require and iteration of all
-		contents directory entries  (i.e. thru number of different containers)
+		contents directory entries  (i.e. through number of different containers)
 
 	-- minimize cost by using scandir()
      

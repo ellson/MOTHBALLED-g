@@ -403,7 +403,7 @@ success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
 /**
  * load VSTRING fragments
  *
- * FIXME - add support for additonal quoting formats:
+ * FIXME - add support for additional quoting formats:
  *     HTML-like.  < and > must be properly nested
  *            <....>
  *     Binary. "length" bytes are completely transparent after the ']'

@@ -64,8 +64,8 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     assert(nest >= 0);            // catch overflows
 
     if (! INBUF()->inbuf) {       // state_machine just started
-        bi = WS;                  // pretend preceeded by WS to satisfy toplevel SREP or REP
-                                  // (Note, first REP of a sequence *can* be preceeded
+        bi = WS;                  // pretend preceded by WS to satisfy toplevel SREP or REP
+                                  // (Note, first REP of a sequence *can* be preceded
                                   // by WS, just not the rest of the REPs. )
         TOKEN()->in = NULL;       // fake it;
         TOKEN()->end = NULL;

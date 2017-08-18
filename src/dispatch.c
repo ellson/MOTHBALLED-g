@@ -55,7 +55,7 @@ assemble_act(THREAD_t * THREAD, state_t verb, elem_t *elem, elem_t *disambig,
 
 /**
  * @param CONTAINER container context
- * @param act - input act, after whatever rewrites have happenned so far
+ * @param act - input act, after whatever rewrites have happened so far
  * @param verb - add, del, qry 
  * @param mum - will be needed
  * @return new list of ACTS

@@ -51,7 +51,7 @@
 ///////////////////////// rethink .. may be inconsistent with above
 
 // parser makes no assumption about existence or consistency of edges to nodes outside of the current host.
-// To be dealt with by a (any) external proces that does have visibility across all hosts refenced by an edge.
+// To be dealt with by a (any) external process that does have visibility across all hosts refenced by an edge.
 // (An "annealer")
 
 

@@ -22,7 +22,7 @@
  * Freeing an elem_t actually means returning to this list.
  *
  * @param LIST the top-level context in which all lists are managed
- * @return a new intialized elem_t
+ * @return a new initialized elem_t
  */
 static elem_t *new_elem_sub(LIST_t * LIST)
 {
@@ -62,7 +62,7 @@ static elem_t *new_elem_sub(LIST_t * LIST)
  *
  * @param LIST the top-level context in which all lists are managed
  * @param state a one character value stored with the elem, no internal meaning
- * @return a new intialized elem_t
+ * @return a new initialized elem_t
  */
 elem_t *new_list(LIST_t * LIST, char state)
 {
@@ -93,7 +93,7 @@ elem_t *new_list(LIST_t * LIST, char state)
  * @param state a one character value stored with the elem, no internal meaning
  * @param len fragment length
  * @param frag pointer to first character of contiguous fragment of len chars
- * @return a new intialized elem_t
+ * @return a new initialized elem_t
  */
 elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
 {
@@ -134,7 +134,7 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
  * @param LIST the top-level context in which all lists are managed
  * @param state a one character value stored with the elem, no internal meaning
  * @param str string to be stored in elem, max 12 chars on 32 bit machines
- * @return a new intialized elem_t
+ * @return a new initialized elem_t
  */
 elem_t * new_shortstr(LIST_t * LIST, char state, char * str)
 {
@@ -165,7 +165,7 @@ elem_t * new_shortstr(LIST_t * LIST, char state, char * str)
  *
  * @param LIST the top-level context in which all lists are managed
  * @param key a list containing (as some point) some frags wihich are the key
- * @return a new intialized elem_t
+ * @return a new initialized elem_t
  */
 elem_t *new_tree(LIST_t * LIST, elem_t *key)
 {
@@ -343,7 +343,7 @@ void free_tree(LIST_t *LIST, elem_t * p)
  *
  * @param LIST the top-level context in which all lists are managed
  * @param list a header to a list to be referenced
- * @return a new intialized elem_t which is now also a header of the referenced list
+ * @return a new initialized elem_t which is now also a header of the referenced list
  */
 elem_t *ref_list(LIST_t * LIST, elem_t * list)
 {
@@ -413,7 +413,7 @@ void append_addref(elem_t * list, elem_t * elem)
  *
  * @param LIST the top-level context in which all lists are managed
  * @param list header of the list to be shortened
- * @param elem the elem preceeding the elem to be removed (or NULL to remove 1st elem)
+ * @param elem the elem preceding the elem to be removed (or NULL to remove 1st elem)
  */
 void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
 {
