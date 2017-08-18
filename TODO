@@ -78,7 +78,7 @@ DONE 3. need some kind of print_edge_name
   - each g process may use all or any subset of the authorized access
     in its graph, (or graphs?)
 
-       (a polling strategy is implied for assymetric accees)
+       (a polling strategy is implied for asymetric accees)
   - actual connections are short RESTful connections over ssh.
 
     - no graph concept of read-only -  if the access is authorized
@@ -154,7 +154,7 @@ DONE 3. need some kind of print_edge_name
      named softlinks to content_hash containers.   Permit container reference
      in an attribute, e,g:
 	_ikea_catalog=TTL7400    or _ikea_container=2jmj7l5rSw0yVb_vlWAYkK_YBwk
-   - If using catalog entry, then prevent modification of contents. (or use git and controll pushes)
+   - If using catalog entry, then prevent modification of contents. (or use git and control pushes)
    - Consider keeping ikea_catalog contents in git for distribution
 
 25. Foreign renderings:
@@ -188,7 +188,7 @@ Should be able to insist that the first char after '=' is valid...   didn't work
 
 DONE 29. Rename "session"  to "process"  -- "session" is the persistent
      association across multiple process invocations,  possibly in
-     parrallel, and possibly with periods of innactivity.
+     parallel, and possibly with periods of innactivity.
 
 30. Reduce ABC set to a set sufficient for JSON/YAML/DOT compatibility.
 Suggest a subset of printing ASCII.  Quoting allowed (what char set in
@@ -202,7 +202,7 @@ quotes?)
          - that would be ugly - \f would be treated differently
            than \" or \\
            or maybe we should store those literally too?
-           '\' disables any special meaning of the folowing character,s
+           '\' disables any special meaning of the following character,s
            but the pair are passed through literally ???
            would apply inside and outside of quotes
 
