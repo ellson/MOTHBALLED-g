@@ -143,8 +143,9 @@ done:
     TOKEN->stat_infragcount++;
     return len;
 }
+
 /**
- * load LAN..RAN quoted VSTRING fragment(s)
+ * load LAN..RAN quoted VSTRING fragment(s)  
  *
  * Quoting format:
  *     <..<...>..> 
@@ -200,7 +201,138 @@ done:
     }
     TOKEN->in = in;
     TOKEN->quote_state = quote_state;
-    elem = new_frag(LIST(), DQT, len, frag);
+    elem = new_frag(LIST(), LAN, len, frag);
+    append_transfer(vstring, elem);
+    TOKEN->stat_infragcount++;
+    return len;
+}
+
+/**
+ * load LBR..RBR quoted VSTRING fragment(s)  
+ *
+ * Quoting format:
+ *     {..{..\}..\{..\\..}..} 
+ *
+ * @param TOKEN context
+ * @param vstring
+ * @return length of vstring
+ */
+static int vstring_fragment_LBR(TOKEN_t * TOKEN, elem_t *vstring)
+{
+    unsigned char *frag;
+    unsigned char *in = TOKEN->in;
+    unsigned char *end = TOKEN->end;
+    int quote_state = TOKEN->quote_state;
+    int len = 0;
+    elem_t *elem;
+
+    frag = in;
+    while (in != end) {
+        switch (quote_state) {
+            case 0: // leading LBR
+                TOKEN->quote_nest = 1;
+                quote_state = 1;
+                break;
+            case 1: // inside quote
+                if (*in == '}') {  // end of nested block
+                    if (--TOKEN->quote_nest <= 0) {
+                        TOKEN->quote_type = 0;
+                        quote_state = 0;
+                        len++;
+                        in++;
+                        goto done;
+                    }
+                    // else its the end of a nested block
+                }
+                else if (*in == '{') {  // beginning of nested block
+                    ++TOKEN->quote_nest;
+                }
+                // else its a character within the quotes
+                break;
+            default:
+                FATAL("shouldn't happen");
+        }
+        len++;
+        in++;
+    }
+done:
+    if (in == end) {
+        TOKEN->insi = END;
+    }
+    else {
+        TOKEN->insi = char2vstate[*in];
+    }
+    TOKEN->in = in;
+    TOKEN->quote_state = quote_state;
+    elem = new_frag(LIST(), LBR, len, frag);
+    append_transfer(vstring, elem);
+    TOKEN->stat_infragcount++;
+    return len;
+}
+
+/**
+ * load LPN..RPN quoted VSTRING fragment(s)  
+ *
+ * Quoting format:
+ *     (..(..\)..\(..\\..)..) 
+ *
+ * @param TOKEN context
+ * @param vstring
+ * @return length of vstring
+ */
+static int vstring_fragment_LPN(TOKEN_t * TOKEN, elem_t *vstring)
+{
+    unsigned char *frag;
+    unsigned char *in = TOKEN->in;
+    unsigned char *end = TOKEN->end;
+    int quote_state = TOKEN->quote_state;
+    int len = 0;
+    elem_t *elem;
+
+    frag = in;
+    while (in != end) {
+        switch (quote_state) {
+            case 0: // leading LPN
+                TOKEN->quote_nest = 1;
+                quote_state = 1;
+                break;
+            case 1: // inside quote
+                if (*in == ')') {  // end of nested block
+                    if (--TOKEN->quote_nest <= 0) {
+                        TOKEN->quote_type = 0;
+                        quote_state = 0;
+                        len++;
+                        in++;
+                        goto done;
+                    }
+                    // else its the end of a nested block
+                }
+                else if (*in == '(') {  // beginning of nested block
+                    ++TOKEN->quote_nest;
+                } else if (*in == '\\') {  // escape next character
+                    quote_state = 2;
+                }
+                // else its a character within the quotes
+                break;
+            case 2: // escaped character
+                quote_state = 1;
+                break;
+            default:
+                FATAL("shouldn't happen");
+        }
+        len++;
+        in++;
+    }
+done:
+    if (in == end) {
+        TOKEN->insi = END;
+    }
+    else {
+        TOKEN->insi = char2vstate[*in];
+    }
+    TOKEN->in = in;
+    TOKEN->quote_state = quote_state;
+    elem = new_frag(LIST(), LPN, len, frag);
     append_transfer(vstring, elem);
     TOKEN->stat_infragcount++;
     return len;
@@ -231,6 +363,12 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
             case LAN:
                 len = vstring_fragment_LAN(TOKEN, vstring);
                 break;  // break for switch
+            case LBR:
+                len = vstring_fragment_LBR(TOKEN, vstring);
+                break;  // break for switch
+            case LPN:
+                len = vstring_fragment_LPN(TOKEN, vstring);
+                break;  // break for switch
             default:
                 switch (TOKEN->insi) {
                     case END:
@@ -248,6 +386,14 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
                     case LAN:
                         TOKEN->quote_type = LAN;
                         len = vstring_fragment_LAN(TOKEN, vstring);
+                        break;  // break from switch
+                    case LBR:
+                        TOKEN->quote_type = LBR;
+                        len = vstring_fragment_LBR(TOKEN, vstring);
+                        break;  // break from switch
+                    case LPN:
+                        TOKEN->quote_type = LPN;
+                        len = vstring_fragment_LPN(TOKEN, vstring);
                         break;  // break from switch
                     case AST:
                         TOKEN->elem_has_ast = AST;
