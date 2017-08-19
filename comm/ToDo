@@ -1,0 +1,47 @@
+- need some obvious output!
+
+- interface cgraph
+
+    container - named-pipe - cgraph-daemon ... result-file-per-container...
+
+
+- view/query   read annotated output files....
+
+     -- query - maybe without layout
+
+     -- view - probably with layout
+
+
+
+
+- distrubuted edges:
+
+    A:                          B:
+
+    < a ~/B/b >   
+
+                    induces:     
+                                < ~/A/a b >
+
+        
+
+            - reconciler
+            - view
+            - query
+
+        ( anthing acting as ^ )
+
+            < A/a  B/b > 
+
+                - success
+                - fail   ....  how is failure dealt with?
+                    .. originator retains intent, state: incomplete
+                    -- recipient has no state change....
+
+                - partial completion?  (probably should be all or nothing)
+
+            All state must be in enpoint systems.
+
+            After reconciliation, view can be done without rereconcile,
+
+            
