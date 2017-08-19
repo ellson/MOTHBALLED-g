@@ -18,74 +18,69 @@
 #define LIST() ((LIST_t*)TOKEN)
 
 /**
- * scan input for multiple characters of the indicated state_t
- *
- * starts scanning at TOKEN->in
- * updates TOKEN->in to point to the next character after the accepted scan
- * updates TOKEN->insi to contain the state_t of the next character
+ * load VSTRING ABC fragments
  *
  * @param TOKEN context
- * @param si character class to be scanned for
- *
- * @return size of token
+ * @param vstring - list of frags constituting a vstring
+ * @return length of vstring
  */
-size_t vstring_token_n (TOKEN_t * TOKEN, state_t si)
+static int vstring_fragment_ABC(TOKEN_t * TOKEN, elem_t * vstring)
 {
     unsigned char *in = TOKEN->in;
     unsigned char *end = TOKEN->end;
     state_t insi;
-    size_t sz = 0;
+    unsigned char *frag;
+    int len = 0;
+    elem_t *elem;
 
+    frag = TOKEN->in;
     while (in != end) {
-        insi = char2vstate[*in];    // NB.  Not the same table as for identifiers
-        if (insi != si) {
+        insi = char2vstate[*in];
+        if (insi != ABC) {
             TOKEN->insi = insi;
-            TOKEN->in = in;
-            return sz;
+            goto done;
         }
         in++;
-        sz++;
+        len++;
     }
     TOKEN->insi = END;
+done:
     TOKEN->in = in;
-    return sz;
+    elem = new_frag(LIST(), ABC, len, frag);
+    append_transfer(vstring, elem);
+    TOKEN->stat_infragcount++;
+    return len;
 }
 
 /**
- * load unquoted VSTRING fragment(s)
+ * load VSTRING AST fragments
  *
  * @param TOKEN context
- * @param vstring
+ * @param vstring - list of frags constituting a vstring
  * @return length of vstring
  */
-
-static int vstring_fragment_ABC(TOKEN_t * TOKEN, elem_t *vstring)
+static int vstring_fragment_AST(TOKEN_t * TOKEN, elem_t * vstring)
 {
+    unsigned char *in = TOKEN->in;
+    unsigned char *end = TOKEN->end;
     unsigned char *frag;
-    int slen, len;
     elem_t *elem;
 
-    slen = 0;
-    while (1) {
-        if (TOKEN->insi == ABC) {
-            frag = TOKEN->in;
-            len = vstring_token_n(TOKEN, ABC);
-            elem = new_frag(LIST(), ABC, len, frag);
-            slen += len;
-        } else if (TOKEN->insi == AST) {
-            TOKEN->has_ast = AST;
-            TOKEN->elem_has_ast = AST;
-            frag = TOKEN->in;
-            len = vstring_token_n(TOKEN, AST);  // extra '*' ignored
-            elem = new_frag(LIST(), AST, 1, frag);
-            slen++;
-        } else {
-            break;
+    frag = TOKEN->in;
+    while (in != end) {
+        if (*in != '*') {
+            TOKEN->insi = char2vstate[*in];
+            goto done;
         }
-        append_transfer(vstring, elem);
-        TOKEN->stat_infragcount++;
+        in++;
     }
-    return slen;
+    TOKEN->insi = END;
+done:
+    TOKEN->in = in;
+    elem = new_frag(LIST(), AST, 1, frag);
+    append_transfer(vstring, elem);
+    TOKEN->stat_infragcount++;
+    return 1; // only interested in first AST
 }
 
 /**
@@ -165,107 +160,8 @@ done:
     return slen;
 }
 
-
-#if 0
-
 /**
- * load VSTRING fragments
- *
- * Quoting formats:
- *     "..."    strings                    " and \ in strings must be escaped with a \
- 
- * coming....
- *     <...>    XML, HTML, ...             unquoted < and > must be properly nested
- *     (...)    Lisp, Guile, Scheme, ...   unquoted ( and ) must be properly nested
- *     {...}    JSON, DOT, ...             unquoted { and } must be properly nested
- *     [nnn]... Binary.                    nnn bytes transparently after the ']'
- *
- * @param TOKEN context
- * @param vstring
- * @return length of vstring
- */
-static int vstring_fragment(TOKEN_t * TOKEN, elem_t *vstring)
-{
-    unsigned char *frag;
-    state_t insi;
-    int slen, len;
-    elem_t *elem;
-
-    slen = 0;
-    while (1) {
-#if 0
-        if (TOKEN->quote_type != ABC) {
-            // FIXME - extra quoting modes
-        } else
-#endif
-        if (TOKEN->in_quote) {
-            if (TOKEN->in_quote == 2) {    // character after escape
-                TOKEN->in_quote = 1;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
-                slen++;
-                continue;
-            } else if (TOKEN->insi == DQT) {  // end of quote
-                TOKEN->in_quote = 0;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
-                slen++;
-                elem = new_frag(LIST(), DQT, slen, frag);
-            } else if (TOKEN->insi == BSL) {  // escape next character
-                TOKEN->in_quote = 2;
-                TOKEN->insi = char2state[*++(TOKEN->in)];
-                slen++;
-                continue;
-            } else if (TOKEN->insi == END) {
-                break;
-            } else {  // TOKEN->in_quote == 1   .. simple string of ABC
-                len = 1;
-                while ((insi = char2state[*++(TOKEN->in)]) == ABC) {
-                    len++;
-                }
-                TOKEN->insi = insi;
-                slen += len;
-                continue;
-            }
-        } else if (TOKEN->insi == DQT) {  // beginning of quoted string
-            TOKEN->in_quote = 1;
-            frag = TOKEN->in;
-            len = 1;
-            while ((insi = char2state[*++(TOKEN->in)]) == ABC) {  // and leading simple string
-                len++;
-            }
-            TOKEN->insi = insi;
-            slen += len;
-            continue;
-        } else if (TOKEN->insi == ABC) { // unquoted string fragment
-            frag = TOKEN->in;
-            len = 1;
-            while ((insi = char2vstate[*++(TOKEN->in)]) == ABC) {
-                len++;
-            }
-            TOKEN->insi = insi;
-            elem = new_frag(LIST(), ABC, len, frag);
-            slen += len;
-        // but '*' are still special  (maybe used as wild card in queries)
-        } else if (TOKEN->insi == AST) {
-            TOKEN->has_ast = AST;
-            TOKEN->elem_has_ast = AST;
-            frag = TOKEN->in;
-            while ((TOKEN->insi = char2vstate[*++(TOKEN->in)]) == AST) {
-            }    // extra '*' ignored
-            elem = new_frag(LIST(), AST, 1, frag);
-            slen++;
-        } else {
-            break;
-        }
-        append_transfer(vstring, elem);
-        TOKEN->stat_infragcount++;
-    }
-    return slen;
-}
-
-#endif
-
-/**
- * collect fragments to form a VSTRING token
+ * collect fragments to form an VSTRING token
  *
  * @param TOKEN context
  * @param vstring
@@ -273,37 +169,46 @@ static int vstring_fragment(TOKEN_t * TOKEN, elem_t *vstring)
  */
 success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
 {
-    int slen = 0;
+    int len, slen=0;
 
     assert(vstring);
     assert(vstring->type == (char)LISTELEM);
     assert(vstring->refs > 0);
-    TOKEN->has_ast = 0;
 
-    TOKEN->insi = char2vstate[*(TOKEN->in)];
-    switch (TOKEN->insi) {
-        case ABC:
-        case AST:
-            slen = vstring_fragment_ABC(TOKEN, vstring);
-            break;
-        case DQT:
-            slen = vstring_fragment_DQT(TOKEN, vstring);
-            break;
-        default:
-            token_error(TOKEN, "Malformed VSTRING", TOKEN->insi);
-    }
-    while (TOKEN->insi == END) {    // end_of_buffer, or EOF, during whitespace FIXME
-        if ((token_more_in(TOKEN) == FAIL)) {
-            break;    // EOF
+    TOKEN->quote_type = 0;
+    do {
+        switch (TOKEN->quote_type) {
+            case DQT:
+                len = vstring_fragment_DQT(TOKEN, vstring);
+                break;  // break for switch
+            default:
+                switch (TOKEN->insi) {
+                    case END:
+                        if ((token_more_in(TOKEN) == FAIL)) {
+                            len = 0; // EOF
+                        }
+                        continue;  // continue while
+                    case ABC:
+                        len = vstring_fragment_ABC(TOKEN, vstring);
+                        break;  // break from switch
+                    case DQT:
+                        TOKEN->in_quote = DQT;
+                        len = vstring_fragment_DQT(TOKEN, vstring);
+                        break;  // break from switch
+                    case AST:
+                        TOKEN->elem_has_ast = AST;
+                        len = vstring_fragment_AST(TOKEN, vstring);
+                        break;  // break from switch
+                    default:
+                        len = 0;
+                }
         }
-//FIXME        int len = vstring_fragment(TOKEN, vstring);
-//        if (len == 0) {
-//            break;
-//        }
-//        slen += len;
-    }
+        slen += len;
+    } while (len);
+
     if (slen > 0) {
-        token_pack_string(TOKEN, slen, vstring); // may replace string with a shortstr elem
+        // maybe replace fraglist with a shortstr elem
+        token_pack_string(TOKEN, slen, vstring);
         return SUCCESS;
     }
     return FAIL;
