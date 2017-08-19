@@ -99,52 +99,35 @@ static int vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
     unsigned char *in = TOKEN->in;
     unsigned char *end = TOKEN->end;
     int in_quote = TOKEN->in_quote;
-    state_t insi = TOKEN->insi;
-    int slen = 0;
-    elem_t *elem = NULL;
+    int len = 0;
+    elem_t *elem;
 
-    while (1) {
+    frag = in;
+    while (in != end) {
         switch (in_quote) {
             case 0: // leading quote
-                if (insi == DQT) {  // leading quote
-                    in_quote = 1;
-                    frag = in;
-                    slen = 1;
-                } 
+                in_quote = 1;
                 break;
             case 1: // inside quote
-                if (insi == DQT) {  // end of quote
+                if (*in == '"') {  // end of quote
+                    TOKEN->quote_type = 0;
                     in_quote = 0;
-                    slen++;
-                    elem = new_frag(LIST(), DQT, slen, frag);
+                    len++;
+                    in++;
                     goto done;
-                } else if (insi == BSL) {  // escape next character
+                } else if (*in == '\\') {  // escape next character
                     in_quote = 2;
-                    slen++;
-                } else {  // simple string of ABC
-                    while (insi == ABC) {
-                        slen++;
-                        in++;
-                        if (in == end) {
-                            goto done;
-                        }
-                        insi = char2vstate[*in];    // NB.  Not the same table as for identifiers
-                    }
-                    continue;
                 }
+                // else its a character within the quotes
                 break;
             case 2: // escaped character
                 in_quote = 1;
-                slen++;
                 break;
             default:
                 FATAL("shouldn't happen");
         }
+        len++;
         in++;
-        if (in == end) {
-            goto done;
-        }
-        insi = char2vstate[*in];
     }
 done:
     if (in == end) {
@@ -155,9 +138,10 @@ done:
     }
     TOKEN->in = in;
     TOKEN->in_quote = in_quote;
+    elem = new_frag(LIST(), DQT, len, frag);
     append_transfer(vstring, elem);
     TOKEN->stat_infragcount++;
-    return slen;
+    return len;
 }
 
 /**
@@ -176,6 +160,7 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
     assert(vstring->refs > 0);
 
     TOKEN->quote_type = 0;
+    TOKEN->in_quote = 0;
     do {
         switch (TOKEN->quote_type) {
             case DQT:
@@ -192,7 +177,7 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
                         len = vstring_fragment_ABC(TOKEN, vstring);
                         break;  // break from switch
                     case DQT:
-                        TOKEN->in_quote = DQT;
+                        TOKEN->quote_type = DQT;
                         len = vstring_fragment_DQT(TOKEN, vstring);
                         break;  // break from switch
                     case AST:
