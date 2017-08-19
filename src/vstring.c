@@ -98,30 +98,30 @@ static int vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
     unsigned char *frag;
     unsigned char *in = TOKEN->in;
     unsigned char *end = TOKEN->end;
-    int in_quote = TOKEN->in_quote;
+    int quote_state = TOKEN->quote_state;
     int len = 0;
     elem_t *elem;
 
     frag = in;
     while (in != end) {
-        switch (in_quote) {
+        switch (quote_state) {
             case 0: // leading quote
-                in_quote = 1;
+                quote_state = 1;
                 break;
             case 1: // inside quote
                 if (*in == '"') {  // end of quote
                     TOKEN->quote_type = 0;
-                    in_quote = 0;
+                    quote_state = 0;
                     len++;
                     in++;
                     goto done;
                 } else if (*in == '\\') {  // escape next character
-                    in_quote = 2;
+                    quote_state = 2;
                 }
                 // else its a character within the quotes
                 break;
             case 2: // escaped character
-                in_quote = 1;
+                quote_state = 1;
                 break;
             default:
                 FATAL("shouldn't happen");
@@ -137,7 +137,69 @@ done:
         TOKEN->insi = char2vstate[*in];
     }
     TOKEN->in = in;
-    TOKEN->in_quote = in_quote;
+    TOKEN->quote_state = quote_state;
+    elem = new_frag(LIST(), DQT, len, frag);
+    append_transfer(vstring, elem);
+    TOKEN->stat_infragcount++;
+    return len;
+}
+/**
+ * load LAN..RAN quoted VSTRING fragment(s)
+ *
+ * Quoting format:
+ *     <..<...>..> 
+ *
+ * @param TOKEN context
+ * @param vstring
+ * @return length of vstring
+ */
+static int vstring_fragment_LAN(TOKEN_t * TOKEN, elem_t *vstring)
+{
+    unsigned char *frag;
+    unsigned char *in = TOKEN->in;
+    unsigned char *end = TOKEN->end;
+    int quote_state = TOKEN->quote_state;
+    int len = 0;
+    elem_t *elem;
+
+    frag = in;
+    while (in != end) {
+        switch (quote_state) {
+            case 0: // leading LAN
+                TOKEN->quote_nest = 1;
+                quote_state = 1;
+                break;
+            case 1: // inside quote
+                if (*in == '>') {  // end of nested block
+                    if (--TOKEN->quote_nest <= 0) {
+                        TOKEN->quote_type = 0;
+                        quote_state = 0;
+                        len++;
+                        in++;
+                        goto done;
+                    }
+                    // else its the end of a nested block
+                }
+                else if (*in == '<') {  // beginning of nested block
+                    ++TOKEN->quote_nest;
+                }
+                // else its a character within the quotes
+                break;
+            default:
+                FATAL("shouldn't happen");
+        }
+        len++;
+        in++;
+    }
+done:
+    if (in == end) {
+        TOKEN->insi = END;
+    }
+    else {
+        TOKEN->insi = char2vstate[*in];
+    }
+    TOKEN->in = in;
+    TOKEN->quote_state = quote_state;
     elem = new_frag(LIST(), DQT, len, frag);
     append_transfer(vstring, elem);
     TOKEN->stat_infragcount++;
@@ -160,11 +222,14 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
     assert(vstring->refs > 0);
 
     TOKEN->quote_type = 0;
-    TOKEN->in_quote = 0;
+    TOKEN->quote_state = 0;
     do {
         switch (TOKEN->quote_type) {
             case DQT:
                 len = vstring_fragment_DQT(TOKEN, vstring);
+                break;  // break for switch
+            case LAN:
+                len = vstring_fragment_LAN(TOKEN, vstring);
                 break;  // break for switch
             default:
                 switch (TOKEN->insi) {
@@ -179,6 +244,10 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
                     case DQT:
                         TOKEN->quote_type = DQT;
                         len = vstring_fragment_DQT(TOKEN, vstring);
+                        break;  // break from switch
+                    case LAN:
+                        TOKEN->quote_type = LAN;
+                        len = vstring_fragment_LAN(TOKEN, vstring);
                         break;  // break from switch
                     case AST:
                         TOKEN->elem_has_ast = AST;

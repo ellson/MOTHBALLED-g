@@ -32,13 +32,13 @@ struct token_s {
 
     state_t insi;              // state represented by last character read
     state_t state;             // last state entered
-    state_t quote_type;        // ABC, or LPN, LBE, LAN, LBR
     state_t elem_has_ast;      // flag set if an '*' is found in any elem
                                //   -- reset by parse(), so parse defines "elem"
-    int in_quote;              // 0 not in quotes
+    state_t quote_type;        // DQT, or LPN, LBE, LAN, LBR
+    int quote_state;           // 0 not in quotes
                                // 1 between DQT
                                // 2 char following BSL between DQT
-    int quote_counter;         // paren nesting level, or tranparent char count
+    int quote_nest;            // paren nesting level, or tranparent char count
 
     long linecount_at_start;   // line count when this file was opened.
                                //   -- used to calculate line # within file

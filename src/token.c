@@ -100,7 +100,7 @@ success_t token_more_in(TOKEN_t * TOKEN)
             //   Although the grammar doesn't care, I decided that it would
             //   be more user-friendly to check that we are not in a quote string
             //   whenever EOF occurs.
-            if (TOKEN->in_quote) {
+            if (TOKEN->quote_state) {
                 token_error(TOKEN, "EOF in the middle of a quote string", END);
             }
 // FIXME don't close stdin
