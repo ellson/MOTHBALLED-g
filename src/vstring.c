@@ -112,6 +112,12 @@ static int vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
                     case '\\':
                         quote_state = 2;
                         break;
+                    case '\n':
+                        TOKEN->stat_lfcount++;
+                        break;
+                    case '\r':
+                        TOKEN->stat_crcount++;
+                        break;
                 }
                 break;
             case 2: // escaped character
@@ -172,6 +178,12 @@ static int vstring_fragment_LAN(TOKEN_t * TOKEN, elem_t *vstring)
                     case '<':
                         ++TOKEN->quote_nest;
                         break;
+                    case '\n':
+                        TOKEN->stat_lfcount++;
+                        break;
+                    case '\r':
+                        TOKEN->stat_crcount++;
+                        break;
                 }
                 break;
             default:
@@ -217,21 +229,27 @@ static int vstring_fragment_LBE(TOKEN_t * TOKEN, elem_t *vstring)
                 break;
             case 1: // inside quote
                 switch (*in) {
-                case '}':
-                    if (--TOKEN->quote_nest <= 0) {
-                        TOKEN->quote_type = 0;
-                        quote_state = 0;
-                        len++;
-                        in++;
-                        goto done;
-                    }
-                    break;
-                case '{':
-                    ++TOKEN->quote_nest;
-                    break;
-                case '\\':
-                    quote_state = 2;
-                    break;
+                    case '}':
+                        if (--TOKEN->quote_nest <= 0) {
+                            TOKEN->quote_type = 0;
+                            quote_state = 0;
+                            len++;
+                            in++;
+                            goto done;
+                        }
+                        break;
+                    case '{':
+                        ++TOKEN->quote_nest;
+                        break;
+                    case '\\':
+                        quote_state = 2;
+                        break;
+                    case '\n':
+                        TOKEN->stat_lfcount++;
+                        break;
+                    case '\r':
+                        TOKEN->stat_crcount++;
+                        break;
                 }
                 break;
             default:
@@ -277,21 +295,27 @@ static int vstring_fragment_LPN(TOKEN_t * TOKEN, elem_t *vstring)
                 break;
             case 1: // inside quote
                 switch (*in) {
-                case ')':
-                    if (--TOKEN->quote_nest <= 0) {
-                        TOKEN->quote_type = 0;
-                        quote_state = 0;
-                        len++;
-                        in++;
-                        goto done;
-                    }
-                    break;
-                case '(':
-                    ++TOKEN->quote_nest;
-                    break;
-                case '\\':
-                    quote_state = 2;
-                    break;
+                    case ')':
+                        if (--TOKEN->quote_nest <= 0) {
+                            TOKEN->quote_type = 0;
+                            quote_state = 0;
+                            len++;
+                            in++;
+                            goto done;
+                        }
+                        break;
+                    case '(':
+                        ++TOKEN->quote_nest;
+                        break;
+                    case '\\':
+                        quote_state = 2;
+                        break;
+                    case '\n':
+                        TOKEN->stat_lfcount++;
+                        break;
+                    case '\r':
+                        TOKEN->stat_crcount++;
+                        break;
                 }
                 break;
             case 2: // escaped character
@@ -370,6 +394,14 @@ static int vstring_fragment_LBR(TOKEN_t * TOKEN, elem_t *vstring)
                     len++;
                     in++;
                     goto done;
+                }
+                switch (*in) {
+                    case '\n':
+                        TOKEN->stat_lfcount++;
+                        break;
+                    case '\r':
+                        TOKEN->stat_crcount++;
+                        break;
                 }
                 break;
             default:
