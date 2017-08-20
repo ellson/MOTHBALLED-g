@@ -6,4 +6,10 @@ abc [
     e="a\"bc"
     f="a\"bc"def
     g="a\"bc""def"
+    h=<a<b>c>
+#    i={a{b}c}
+    j=(a(b\(c)d)
+    k = <
+is this xml?
+>
 ]
