@@ -70,7 +70,6 @@ void info_process(THREAD_t * THREAD)
     // FIXME - add:
     //    - prog basename ?   ... TMI ?
     //    - prog packagename
-    //    - prog version
 
     // FIXME - Audit for security
     //          - don't provide too much info
@@ -94,6 +93,7 @@ void info_process(THREAD_t * THREAD)
     Au("starttime",             PROCESS->starttime);
     Au("uptime",                PROCESS->uptime);
     As("username",              PROCESS->username);  // FIXME - TMI ?
+    As("version",               PACKAGE_VERSION);
     Au("voidptrsize",           sizeof(void*));
     append_token   (THREAD, &pos, ']');
     assert(pos < buf+BUF_SIZE);
