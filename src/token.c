@@ -26,7 +26,9 @@
  */
 void token_error(TOKEN_t * TOKEN, char *message, state_t si)
 {
-    unsigned char *p, c;
+    unsigned char *in = TOKEN->in;
+    unsigned char *end = TOKEN->in;
+    unsigned char c;
     char *fn = "stdin", *q="\"";
 
 
@@ -55,8 +57,8 @@ void token_error(TOKEN_t * TOKEN, char *message, state_t si)
         (TOKEN->stat_lfcount ?
             TOKEN->stat_lfcount :
             TOKEN->stat_crcount) - TOKEN->linecount_at_start + 1);
-    p = TOKEN->in;
-    while ((c = *p++)) {
+    while (in != end) {
+        c = *in++;
         if (c == '\n' || c == '\r') {
             break;
         }

@@ -39,6 +39,7 @@ struct token_s {
                                // 1 between DQT
                                // 2 char following BSL between DQT
     int quote_nest;            // paren nesting level, or tranparent char count
+    int quote_length;          // length of transparent string
 
     long linecount_at_start;   // line count when this file was opened.
                                //   -- used to calculate line # within file
