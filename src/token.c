@@ -98,7 +98,7 @@ success_t token_more_in(TOKEN_t * TOKEN)
         TOKEN->in = INBUF->inbuf->buf;
     }
     if (TOKEN->file) {        // if there is an existing active input file
-        if (TOKEN->insi == END && feof(TOKEN->file)) {    //    if it is at EOF
+        if (TOKEN->in == TOKEN->end && feof(TOKEN->file)) {    //    if it is at EOF
             //   Although the grammar doesn't care, I decided that it would
             //   be more user-friendly to check that we are not in a quote string
             //   whenever EOF occurs.
@@ -140,21 +140,10 @@ success_t token_more_in(TOKEN_t * TOKEN)
     size = fread(TOKEN->in, 1, avail, TOKEN->file);
     TOKEN->end = TOKEN->in + size;
 
-    if (size == 0) {
-        if (feof(TOKEN->file)) {
-            TOKEN->insi = END;
+    if (size == 0 && ! feof(TOKEN->file)) {
+        if (ferror(TOKEN->file)) {
+            FATAL("fread()");
         }
-        else {
-            if (ferror(TOKEN->file)) {
-                FATAL("fread()");
-            }
-            else {
-                TOKEN->insi = END;
-            }
-        }
-    }
-    else {
-        TOKEN->insi = char2state[*TOKEN->in];
     }
 
     TOKEN->stat_incharcount += size;
@@ -178,12 +167,6 @@ static void token_comment_fragment(TOKEN_t * TOKEN)
             break;
         }
     }
-    if (in == end) {
-        TOKEN->insi = END;
-    }
-    else {
-        TOKEN->insi = char2state[*in];
-    }
     TOKEN->in = in;
 }
 
@@ -197,7 +180,7 @@ static success_t token_comment(TOKEN_t * TOKEN)
 {
     success_t rc = SUCCESS;
     token_comment_fragment(TOKEN);      // eat comment
-    while (TOKEN->insi == END) {        // end_of_buffer, or EOF, during comment
+    while (TOKEN->in == TOKEN->end) {    // end_of_buffer, or EOF, during comment
         rc = token_more_in(TOKEN);
         if (rc == FAIL) {
             break;                      // EOF
@@ -231,12 +214,6 @@ static void token_whitespace_fragment(TOKEN_t * TOKEN)
         }
         in++;
     }
-    if (in == end) {
-        TOKEN->insi = END;
-    }
-    else {
-        TOKEN->insi = char2state[*in];
-    }
     TOKEN->in = in;
 }
 
@@ -250,7 +227,7 @@ static success_t token_non_comment(TOKEN_t * TOKEN)
 {
     success_t rc = SUCCESS;
     token_whitespace_fragment(TOKEN);     // eat whitespace
-    while (TOKEN->insi == END) {          // end_of_buffer, or EOF,
+    while (TOKEN->in == TOKEN->end) {     // end_of_buffer, or EOF,
                                           //   during whitespace
         rc = token_more_in(TOKEN);
         if (rc == FAIL) {
@@ -272,18 +249,27 @@ success_t token_whitespace(TOKEN_t * TOKEN)
     success_t rc;
 
     rc = SUCCESS;
-    while (1) {
+    while (TOKEN->in != TOKEN->end) {
         if ((rc = token_non_comment(TOKEN)) == FAIL) {
             break;
         }
-        if (TOKEN->insi != OCT) {
+        if (TOKEN->in == TOKEN->end) {
             break;
         }
-        while (TOKEN->insi == OCT) {
+        if (*(TOKEN->in) != '#') {
+            break;
+        }
+        while (TOKEN->in != TOKEN->end && *(TOKEN->in) == '#') {
             if ((rc = token_comment(TOKEN)) == FAIL) {
                 break;
             }
         }
+    }
+    if (TOKEN->in == TOKEN->end) {
+        TOKEN->insi = END;
+    }
+    else {
+        TOKEN->insi = char2state[*(TOKEN->in)];
     }
     return rc;
 }
