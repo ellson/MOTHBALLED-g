@@ -28,23 +28,18 @@ static int identifier_fragment_ABC(TOKEN_t * TOKEN, elem_t * identifier)
 {
     unsigned char *in = TOKEN->in;
     unsigned char *end = TOKEN->end;
-    state_t insi;
     unsigned char *frag;
     int len = 0;
     elem_t *elem;
 
-    frag = TOKEN->in;
+    frag = in;
     while (in != end) {
-        insi = char2state[*in];
-        if (insi != ABC) {
-            TOKEN->insi = insi;
-            goto done;
+        if (char2state[*in] != ABC) {
+            break;
         }
         in++;
         len++;
     }
-    TOKEN->insi = END;
-done:
     TOKEN->in = in;
     elem = new_frag(LIST(), ABC, len, frag);
     append_transfer(identifier, elem);
@@ -66,16 +61,13 @@ static int identifier_fragment_AST(TOKEN_t * TOKEN, elem_t * identifier)
     unsigned char *frag;
     elem_t *elem;
 
-    frag = TOKEN->in;
+    frag = in;
     while (in != end) {
         if (*in != '*') {
-            TOKEN->insi = char2state[*in];
-            goto done;
+            break;
         }
         in++;
     }
-    TOKEN->insi = END;
-done:
     TOKEN->in = in;
     elem = new_frag(LIST(), AST, 1, frag);
     append_transfer(identifier, elem);
@@ -99,12 +91,12 @@ success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
     assert(identifier->refs > 0);
 
     do {
-        switch (TOKEN->insi) {
-            case END:
-                if ((token_more_in(TOKEN) == FAIL)) {
-                    len = 0; // EOF
-                }
-                continue;  // continue while
+        if (TOKEN->in == TOKEN->end) {
+            if ((token_more_in(TOKEN) == FAIL)) {
+                break;
+            }
+        }
+        switch (char2state[*(TOKEN->in)]) {
             case ABC:
                 len = identifier_fragment_ABC(TOKEN, identifier);
                 break;  // break from switch
@@ -118,10 +110,18 @@ success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
         slen += len;
     } while (len);
 
-    if (slen > 0) {
-        // maybe replace fraglist with a shortstr elem
-        token_pack_string(TOKEN, slen, identifier);
-        return SUCCESS;
+    if (TOKEN->in == TOKEN->end) {
+        TOKEN->insi = END;
     }
-    return FAIL;
+    else {
+        TOKEN->insi = char2state[*(TOKEN->in)];  // back to regular table
+    }
+
+    if (slen == 0) {
+        return FAIL;
+    }
+
+    // maybe replace fraglist with a shortstr elem
+    token_pack_string(TOKEN, slen, identifier);
+    return SUCCESS;
 }

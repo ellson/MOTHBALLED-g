@@ -28,23 +28,18 @@ static int vstring_fragment_ABC(TOKEN_t * TOKEN, elem_t * vstring)
 {
     unsigned char *in = TOKEN->in;
     unsigned char *end = TOKEN->end;
-    state_t insi;
     unsigned char *frag;
     int len = 0;
     elem_t *elem;
 
-    frag = TOKEN->in;
+    frag = in++;
     while (in != end) {
-        insi = char2vstate[*in];
-        if (insi != ABC) {
-            TOKEN->insi = insi;
-            goto done;
+        if (char2vstate[*in] != ABC) {
+            break;
         }
         in++;
         len++;
     }
-    TOKEN->insi = END;
-done:
     TOKEN->in = in;
     elem = new_frag(LIST(), ABC, len, frag);
     append_transfer(vstring, elem);
@@ -66,16 +61,13 @@ static int vstring_fragment_AST(TOKEN_t * TOKEN, elem_t * vstring)
     unsigned char *frag;
     elem_t *elem;
 
-    frag = TOKEN->in;
+    frag = in++;
     while (in != end) {
         if (*in != '*') {
-            TOKEN->insi = char2vstate[*in];
-            goto done;
+            break;
         }
         in++;
     }
-    TOKEN->insi = END;
-done:
     TOKEN->in = in;
     elem = new_frag(LIST(), AST, 1, frag);
     append_transfer(vstring, elem);
@@ -130,12 +122,6 @@ static int vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
         in++;
     }
 done:
-    if (in == end) {
-        TOKEN->insi = END;
-    }
-    else {
-        TOKEN->insi = char2vstate[*in];
-    }
     TOKEN->in = in;
     TOKEN->quote_state = quote_state;
     elem = new_frag(LIST(), DQT, len, frag);
@@ -193,12 +179,6 @@ static int vstring_fragment_LAN(TOKEN_t * TOKEN, elem_t *vstring)
         in++;
     }
 done:
-    if (in == end) {
-        TOKEN->insi = END;
-    }
-    else {
-        TOKEN->insi = char2vstate[*in];
-    }
     TOKEN->in = in;
     TOKEN->quote_state = quote_state;
     elem = new_frag(LIST(), LAN, len, frag);
@@ -256,12 +236,6 @@ static int vstring_fragment_LBR(TOKEN_t * TOKEN, elem_t *vstring)
         in++;
     }
 done:
-    if (in == end) {
-        TOKEN->insi = END;
-    }
-    else {
-        TOKEN->insi = char2vstate[*in];
-    }
     TOKEN->in = in;
     TOKEN->quote_state = quote_state;
     elem = new_frag(LIST(), LBR, len, frag);
@@ -324,12 +298,6 @@ static int vstring_fragment_LPN(TOKEN_t * TOKEN, elem_t *vstring)
         in++;
     }
 done:
-    if (in == end) {
-        TOKEN->insi = END;
-    }
-    else {
-        TOKEN->insi = char2vstate[*in];
-    }
     TOKEN->in = in;
     TOKEN->quote_state = quote_state;
     elem = new_frag(LIST(), LPN, len, frag);
@@ -356,6 +324,11 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
     TOKEN->quote_type = 0;
     TOKEN->quote_state = 0;
     do {
+        if (TOKEN->in == TOKEN->end) {
+            if ((token_more_in(TOKEN) == FAIL)) {
+                break;
+            }
+        }
         switch (TOKEN->quote_type) {
             case DQT:
                 len = vstring_fragment_DQT(TOKEN, vstring);
@@ -370,12 +343,7 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
                 len = vstring_fragment_LPN(TOKEN, vstring);
                 break;  // break for switch
             default:
-                switch (TOKEN->insi) {
-                    case END:
-                        if ((token_more_in(TOKEN) == FAIL)) {
-                            len = 0; // EOF
-                        }
-                        continue;  // continue while
+                switch (char2vstate[*(TOKEN->in)]) { // use VSTRING table for extended ABC set
                     case ABC:
                         len = vstring_fragment_ABC(TOKEN, vstring);
                         break;  // break from switch
@@ -406,10 +374,18 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
         slen += len;
     } while (len);
 
-    if (slen > 0) {
-        // maybe replace fraglist with a shortstr elem
-        token_pack_string(TOKEN, slen, vstring);
-        return SUCCESS;
+    if (TOKEN->in == TOKEN->end) {
+        TOKEN->insi = END;
     }
-    return FAIL;
+    else {
+        TOKEN->insi = char2state[*(TOKEN->in)];  // back to regular table
+    }
+
+    if (slen == 0) {
+        return FAIL;
+    }
+
+    // maybe replace fraglist with a shortstr elem
+    token_pack_string(TOKEN, slen, vstring);
+    return SUCCESS;
 }

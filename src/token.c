@@ -168,7 +168,7 @@ static void token_comment_fragment(TOKEN_t * TOKEN)
 {
     unsigned char *in = TOKEN->in;
     unsigned char *end = TOKEN->end;
-    unsigned char c = *in;
+    unsigned char c;
 
     while (in != end) {
         c = *in++;
