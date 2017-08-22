@@ -66,7 +66,6 @@ static void stepiter(iter_t *iter, elem_t *this)
                     iter->lnxstack[iter->lsp].psp = "^\0";
                     break;
                 case SET:
-
                 case ENDPOINTSET:
                     iter->lnxstack[iter->lsp].psp = "()";
                     break;
@@ -92,6 +91,7 @@ static void stepiter(iter_t *iter, elem_t *this)
     case TREEELEM:
         if (iter->tsp == 0) {
             iter->tsp++;
+            iter->len = 0;
             iter->tnxstack[iter->tsp].tnx = this;
             iter->tnxstack[iter->tsp].dir = 0;
             iter->intree = 0; // used to suppress extra space before the attr=value list..

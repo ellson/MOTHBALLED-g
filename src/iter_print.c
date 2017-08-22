@@ -7,24 +7,7 @@
 #include "thread.h"
 #include "iter_print.h"
 
-#if 1
-static void bufflush(THREAD_t *THREAD)
-{
-    fwrite(THREAD->buf, THREAD->pos, 1, TOKEN()->out);
-    // FIXME - error handling
-    THREAD->pos = 0;
-}
-
-static void bufputc(THREAD_t *THREAD, unsigned char c)
-{
-    THREAD->buf[THREAD->pos++] = c;
-    if (THREAD->pos >= sizeof(THREAD->buf)) {
-        bufflush(THREAD);
-    }
-}
-#endif
-
-static size_t ikea_stdout_writer(const void *ptr, size_t size)
+static size_t stdout_writer(const void *ptr, size_t size)
 {
     return fwrite(ptr, size, 1, stdout);
 }
@@ -38,27 +21,13 @@ static size_t ikea_stdout_writer(const void *ptr, size_t size)
 void printg (THREAD_t *THREAD, elem_t *a)
 {
     iter_t ai = { 0 };
-    unsigned char c;
 
-    inititer(&ai, a, &ikea_stdout_writer);
+    inititer(&ai, a, &stdout_writer);
     do {
-#if 1
-        while (ai.len) {
-            ai.len--;
-            c = *ai.cp++;
-            bufputc(THREAD, c);
-        }
-#else
         ai.writer_fn(ai.cp, ai.len);
-#endif
         nextiter(&ai);
     } while (ai.len || ai.lsp);
-#if 1
-    bufputc(THREAD, '\n');   // canonical form,  '\n' between ACTs
-#endif
-#if 0
     ai.writer_fn("\n", 1);
-#endif
 }
 
 /**
@@ -76,10 +45,10 @@ void printt(THREAD_t * THREAD, elem_t * p)
     if (p->u.t.right) {
         printt(THREAD, p->u.t.right);
     }
-#if 1
-    bufflush(THREAD);
-#endif
 }
+
+//  ------------------------ ikea bits ----------------
+//
 
 static void ikea_flush(THREAD_t *THREAD)
 {
@@ -104,23 +73,23 @@ static void ikea_putc(THREAD_t *THREAD, char c)
 static void ikea_printg (THREAD_t *THREAD, elem_t *a)
 {
     iter_t ai = { 0 };
-    char c;
 
-    inititer(&ai, a, &ikea_stdout_writer);
+    inititer(&ai, a, &stdout_writer);
     do {
 #if 1
         while (ai.len) {
+            unsigned char c = *ai.cp++;
             ai.len--;
-            c = *ai.cp++;
             ikea_putc(THREAD, c);
         }
+#else
+        ai.writer_fn("\n", 1);
 #endif
         nextiter(&ai);
     } while (ai.len || ai.lsp);
 #if 1
     ikea_putc(THREAD, '\n');   // canonical form,  '\n' between ACTs
-#endif
-#if 0
+#else
     ai.writer_fn("\n", 1);
 #endif
 }
