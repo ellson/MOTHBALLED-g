@@ -104,4 +104,4 @@ libg_process.3.pdf: $(srcdir)/libg_process.3
 #EXTRA_DIST = g.1 g.1.pdf libg_process.3 libg_process.3.pdf gacc.sh grammar.g
 EXTRA_DIST = gacc.sh grammar.g
 
-DISTCLEANFILES = g.1.pdf libg_process.3.pdf grammar.h grammar.c grammar.ebnf grammar.gv grammar.svg
+DISTCLEANFILES = *.la g.1.pdf libg_process.3.pdf grammar.h grammar.c grammar.ebnf grammar.gv grammar.svg
