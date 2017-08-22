@@ -110,6 +110,8 @@ DONE 3. need some kind of print_edge_name
       - cron - Aunt Cadence (with help from system cron?)
       - stats  - Aunt Sally (with tribute to my Sister ;-)
                 - also include version info.
+      - queries - Aunt Querida - node contain query sets which can be connected (edges) to various input and outputs
+      - patterns - Aunt Patricia - patterns
 
       - graph - no name (can register alias(es) with Nettie)
            -- nodes + attributes + edges?
