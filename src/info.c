@@ -166,8 +166,8 @@ void info_thread(THREAD_t * THREAD)
     Au("inbufmax",              INBUF()->stat_inbufmax);
     Au("inbufnow",              INBUF()->stat_inbufnow);
     Au("incharcount",           TOKEN()->stat_incharcount);
-    Au("infragcount",           TOKEN()->stat_infragcount);
     Au("infilecount",           TOKEN()->stat_infilecount);
+    Au("infragcount",           TOKEN()->stat_infragcount);
     Au("inlinecount",           lend + 1);
     Au("instringcount",         istr);
     As("instringshort",         percent);

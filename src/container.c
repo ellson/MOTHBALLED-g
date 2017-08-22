@@ -78,9 +78,10 @@ success_t container(THREAD_t * THREAD)
 
     // FIXME - move to Aunt Sally query
     if (THREAD->PROCESS->needstats) {
+        // in alpha-sorted order
+        info_container(&container);
         info_process(THREAD);
         info_thread(THREAD);
-        info_container(&container);
     }
 
     return rc;
