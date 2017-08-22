@@ -48,6 +48,8 @@ void printg (THREAD_t *THREAD, elem_t *a)
             c = *ai.cp++;
             bufputc(THREAD, c);
         }
+#else
+        ai.writer_fn(ai.cp, ai.len);
 #endif
         nextiter(&ai);
     } while (ai.len || ai.lsp);
