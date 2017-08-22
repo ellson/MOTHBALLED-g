@@ -19,7 +19,7 @@
  */
 int compare (elem_t *a, elem_t *b)
 {
-    int rc;
+    int rc = 0;
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
@@ -27,11 +27,11 @@ int compare (elem_t *a, elem_t *b)
     inititer0(&bi, b, NULL);  //    with b and b's progeny
                         // i.e. do not extend to siblings of a or b
     do {
-        do { 
+        while (ai.len && bi.len && rc == 0) {  // itersep may be zero length
             ai.len--;
             bi.len--;
             rc = (*ai.cp++) - (*bi.cp++);
-        } while (ai.len && bi.len && rc == 0);
+        }
         if (rc == 0) {
             // not a match while one is shorter than the other
             rc = ai.len - bi.len;
@@ -42,7 +42,7 @@ int compare (elem_t *a, elem_t *b)
         if (bi.len == 0) {
             nextiter(&bi);
         }
-    } while (ai.len && bi.len && rc == 0);
+    } while (rc == 0 && (ai.lsp || ai.len) && (bi.lsp || bi.len)); // quit after last stack level processed
     return rc;
 }
 
@@ -58,7 +58,7 @@ int compare (elem_t *a, elem_t *b)
  */
 int match (elem_t *a, elem_t *b)
 {
-    int rc;
+    int rc = 0;
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
@@ -66,7 +66,7 @@ int match (elem_t *a, elem_t *b)
     inititer0(&bi, b, NULL);  //    with b and b's progeny
                         // i.e. do not extend to siblings of a or b
     do {
-        do { 
+        while (ai.len && bi.len && rc == 0) {
             if (*bi.cp == '*') { 
                 //  "x..." matches "*"  where ai.len >= bi.len
                 rc = 0;
@@ -75,7 +75,7 @@ int match (elem_t *a, elem_t *b)
             ai.len--;
             bi.len--;
             rc = (*ai.cp++) - (*bi.cp++);
-        } while (ai.len && bi.len && rc == 0);
+        }
         if (rc == 0) {
             if (*bi.cp == '*') {
                 //  "x..." matches "*"  where ai.len >= bi.len
@@ -94,6 +94,6 @@ int match (elem_t *a, elem_t *b)
         if (bi.len == 0) {
             nextiter(&bi);
         }
-    } while (ai.len && bi.len && rc == 0);
+    } while (rc == 0 && (ai.lsp || ai.len) && (bi.lsp || bi.len)); // quit after last stack level processed
     return rc;
 }

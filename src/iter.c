@@ -13,7 +13,7 @@
 static void itersep(iter_t *iter, int idx, int len)
 {
     iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+idx;
-    if (iter->cp) {
+    if (iter->cp && *(iter->cp)) {
         iter->len = len;
     }
     else {
@@ -60,21 +60,21 @@ static void stepiter(iter_t *iter, elem_t *this)
                     iter->lnxstack[iter->lsp].psp = "\0\0";
                     break;
                 case EDGE:
-                    iter->lnxstack[iter->lsp].psp = "><";
+                    iter->lnxstack[iter->lsp].psp = "<>";
                     break;
                 case MUM:
-                    iter->lnxstack[iter->lsp].psp = "\0^";
+                    iter->lnxstack[iter->lsp].psp = "^\0";
                     break;
                 case SET:
 
                 case ENDPOINTSET:
-                    iter->lnxstack[iter->lsp].psp = ")(";
+                    iter->lnxstack[iter->lsp].psp = "()";
                     break;
                 case ATTRID:
                     // FIXME - This is a hack! Probably the whole
                     //    psp spacing character scheme needs to be rethunk.
                     if (iter->intree) {
-                        iter->lnxstack[iter->lsp].psp = "\0 "; 
+                        iter->lnxstack[iter->lsp].psp = " \0"; 
                     } else {
                         // suppress extra space before the attr=value list..
                         iter->lnxstack[iter->lsp].psp = "\0\0"; 
@@ -84,7 +84,7 @@ static void stepiter(iter_t *iter, elem_t *this)
                     iter->lnxstack[iter->lsp].psp = "\0\0";
                     break;
             }
-            itersep(iter, 1, 1);
+            itersep(iter, 0, 1);
             iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
             iter->lnxstack[iter->lsp].lnx = this->u.l.first;
         }
@@ -167,31 +167,31 @@ void skipiter(iter_t *iter)
                         // (non-homogenous lists) need to over-ride the
                         // pop_space_push of the preceding elem
                         case ATTRIBUTES:
-                            iter->lnxstack[iter->lsp].psp = "][";
+                            iter->lnxstack[iter->lsp].psp = "[]";
                             break;
                         case DISAMBIG:
-                            iter->lnxstack[iter->lsp].psp = "\0`";
+                            iter->lnxstack[iter->lsp].psp = "'\0";
                             break;
                         case VALUE:
-                            iter->lnxstack[iter->lsp].psp = "\0=";
+                            iter->lnxstack[iter->lsp].psp = "=\0";
                             break;
 //                        case SIS:
-//                            iter->lnxstack[iter->lsp].psp = "\0 ";
+//                            iter->lnxstack[iter->lsp].psp = " \0";
 //                            break;
                         case KID:
-                            iter->lnxstack[iter->lsp].psp = "\0/";
+                            iter->lnxstack[iter->lsp].psp = "/\0";
                             break;
                         default:
-                            iter->lnxstack[iter->lsp].psp = "\0 ";
+                            iter->lnxstack[iter->lsp].psp = " \0";
                             break;
                     }
-                    itersep(iter, 1, 1);
+                    itersep(iter, 0, 1);
                     iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
                     iter->lnxstack[iter->lsp].lnx = this->u.l.first;
                     break;
             }
         } else {
-            itersep(iter, 0, 1);
+            itersep(iter, 1, 1);
         }
     } else {
         itersep(iter, 0, 0);
@@ -212,6 +212,7 @@ void inititer(iter_t *iter, elem_t *elem, writer_fn_t writer_fn)
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
     iter->writer_fn = writer_fn;
+    iter->lsp = 0;
     stepiter(iter, elem);
 }
 
@@ -219,7 +220,7 @@ void inititer(iter_t *iter, elem_t *elem, writer_fn_t writer_fn)
  * initialize an iterator for traversing progeny only of elem
  *   (used in trees where elem and progeny are the key, and siblings are the value)
  *
- * @param iter - a struct containg the current state of the iterator
+ * @param iter - a struct containing the current state of the iterator
  * @param elem - the root elem of the list to be iterated
  */
 void inititer0(iter_t *iter, elem_t *elem, writer_fn_t writer_fn)
@@ -229,6 +230,7 @@ void inititer0(iter_t *iter, elem_t *elem, writer_fn_t writer_fn)
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
     iter->writer_fn = writer_fn;
+    iter->lsp = 0;
     stepiter(iter, elem);
     iter->lnxstack[0].lnx = NULL;
 }
@@ -236,7 +238,7 @@ void inititer0(iter_t *iter, elem_t *elem, writer_fn_t writer_fn)
 /**
  * move the iterator to the next elem in traversal order
  *
- * @param iter - a struct containg the current state of the iterator
+ * @param iter - a struct containing the current state of the iterator
  */
 void nextiter(iter_t *iter)
 {
