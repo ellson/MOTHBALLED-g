@@ -100,7 +100,7 @@ static void stepiter(iter_t *iter, elem_t *this)
                     break;
                 case ATTRID:
                     // FIXME - This is a hack! Probably the whole
-                    //    psp spacing character scheme needs to be rethunk.
+                    //    spacing character scheme needs to be rethunk.
                     if (iter->intree) {
                         setsep(iter, " ", NULL);
                     }
@@ -119,6 +119,9 @@ static void stepiter(iter_t *iter, elem_t *this)
         }
         break;
     case TREEELEM:
+        // FIXME - This is a hack! Probably the whole
+        //    spacing character scheme needs to be rethunk.
+        //    (why does iter->len need to be seroed here?)
         if (iter->tsp == 0) {
             iter->tsp++;
             iter->len = 0;
