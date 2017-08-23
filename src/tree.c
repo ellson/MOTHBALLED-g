@@ -9,7 +9,7 @@
 #include "inbuf.h"
 #include "list.h"
 #include "tree.h"
-#include "compare.h"
+#include "iter.h"
 
 /**
  * return the larger of two ints
