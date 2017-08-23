@@ -28,10 +28,9 @@ typedef struct {
     unsigned char *cp, intree;
 } iter_t;
 
-void inititer(iter_t *iter, elem_t *elem);
-void inititer_no_siblings(iter_t *iter, elem_t *elem);
-void nextiter(iter_t *iter);
-void skipiter(iter_t *iter);
+int compare(elem_t * a, elem_t * b);
+int match(elem_t * a, elem_t * b);
+void printt(THREAD_t * THREAD, elem_t * p);
 
 #ifdef __cplusplus
 }

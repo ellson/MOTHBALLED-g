@@ -8,6 +8,7 @@
 #include "inbuf.h"
 #include "list.h"
 #include "grammar.h"
+#include "thread.h"
 #include "iter.h"
 
 static void itersep(iter_t *iter, int idx, int len)
@@ -149,7 +150,7 @@ static void stepiter(iter_t *iter, elem_t *this)
  *
  * @param iter - a struct containing the current state of the iterator
  */
-void skipiter(iter_t *iter)
+static void skipiter(iter_t *iter)
 {
     elem_t *this;
 
@@ -204,7 +205,7 @@ void skipiter(iter_t *iter)
  * @param iter - a struct containg the current state of the iterator
  * @param elem - the root elem of the list to be iterated
  */
-void inititer(iter_t *iter, elem_t *elem)
+static void inititer(iter_t *iter, elem_t *elem)
 {
     assert(iter);
     assert(elem);
@@ -220,7 +221,7 @@ void inititer(iter_t *iter, elem_t *elem)
  * @param iter - a struct containing the current state of the iterator
  * @param elem - the root elem of the list to be iterated
  */
-void inititer_no_siblings(iter_t *iter, elem_t *elem)
+static void inititer_no_siblings(iter_t *iter, elem_t *elem)
 {
     assert(iter);
     assert(elem);
@@ -236,7 +237,7 @@ void inititer_no_siblings(iter_t *iter, elem_t *elem)
  *
  * @param iter - a struct containing the current state of the iterator
  */
-void nextiter(iter_t *iter)
+static void nextiter(iter_t *iter)
 {
     elem_t *this = iter->lnxstack[iter->lsp].lnx;
 
@@ -244,5 +245,128 @@ void nextiter(iter_t *iter)
         stepiter(iter, this);
     } else {
         skipiter(iter);
+    }
+}
+
+/**
+ * compare string value of lists: a and b (including sublists, but not sibling lists)
+ *
+ * @param a
+ * @param b
+ * @return result of ASCII comparison: <0, 0, >0
+ */
+int compare (elem_t *a, elem_t *b)
+{
+    int rc = 0;
+    iter_t ai = { 0 };
+    iter_t bi = { 0 };
+
+    inititer_no_siblings(&ai, a);  // compare a and a's progeny
+    inititer_no_siblings(&bi, b);  //    with b and b's progeny
+    do {
+        while (ai.len && bi.len && rc == 0) {  // itersep may be zero length
+            ai.len--;
+            bi.len--;
+            rc = (*ai.cp++) - (*bi.cp++);
+        }
+        if (rc == 0) {
+            // not a match while one is shorter than the other
+            rc = ai.len - bi.len;
+        }
+        if (ai.len == 0) {
+            nextiter(&ai);
+        }
+        if (bi.len == 0) {
+            nextiter(&bi);
+        }
+    } while (rc == 0 && (ai.lsp || ai.len) && (bi.lsp || bi.len)); // quit after last stack level processed
+    return rc;
+}
+
+/**
+ * match string value of lists: a and b (including sublists, but not sibling lists)
+ *
+ * b may contain strings with trailing '*' which will
+ * match any tail of the corresponding string in a
+ *
+ * @param a
+ * @param b (may contain '*')
+ * @return result of ASCII comparison: <0, 0, >0
+ */
+int match (elem_t *a, elem_t *b)
+{
+    int rc = 0;
+    iter_t ai = { 0 };
+    iter_t bi = { 0 };
+
+    inititer_no_siblings(&ai, a);  // compare a and a's progeny
+    inititer_no_siblings(&bi, b);  //    with b and b's progeny
+    do {
+        while (ai.len && bi.len && rc == 0) {
+            if (*bi.cp == '*') { 
+                //  "x..." matches "*"  where ai.len >= bi.len
+                rc = 0;
+                break;
+            } 
+            ai.len--;
+            bi.len--;
+            rc = (*ai.cp++) - (*bi.cp++);
+        }
+        if (rc == 0) {
+            if (*bi.cp == '*') {
+                //  "x..." matches "*"  where ai.len >= bi.len
+                //  also
+                //  "x" matches "x*"    where ai.len == bi.len - 1
+                skipiter(&ai);  // skip to next string 
+                skipiter(&bi);  // skip to next pattern
+            } else {
+                // not a match while one is shorter than the other
+                rc = ai.len - bi.len;
+            }
+        }
+        if (ai.len == 0) {
+            nextiter(&ai);
+        }
+        if (bi.len == 0) {
+            nextiter(&bi);
+        }
+    } while (rc == 0 && (ai.lsp || ai.len) && (bi.lsp || bi.len)); // quit after last stack level processed
+    return rc;
+}
+
+
+/**
+ * printg - print the canonical g string representation of a list
+ *
+ * @param THREAD context
+ * @param a - list to be printed
+ */
+static void printg (THREAD_t *THREAD, elem_t *a)
+{
+    iter_t ai = { 0 };
+    writer_fn_t writer_fn = THREAD->writer_fn;
+
+    inititer(&ai, a);
+    do {
+        writer_fn(THREAD, ai.cp, ai.len);
+        nextiter(&ai);
+    } while (ai.len || ai.lsp);
+    writer_fn(THREAD, (unsigned char*)"\n", 1);
+}
+
+/**
+ * print a tree from left to right.  i.e in insertion sort order
+ *
+ * @param THREAD context
+ * @param p the root of the tree
+ */
+void printt(THREAD_t * THREAD, elem_t * p)
+{
+    if (p->u.t.left) {
+        printt(THREAD, p->u.t.left);
+    }
+    printg(THREAD, p->u.t.key);
+    if (p->u.t.right) {
+        printt(THREAD, p->u.t.right);
     }
 }

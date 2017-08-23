@@ -9,7 +9,6 @@ include_HEADERS = \
     libg_process.h
 
 noinst_HEADERS = \
-    compare.h \
     container.h \
     dispatch.h \
     doact.h \
@@ -21,7 +20,6 @@ noinst_HEADERS = \
     inbuf.h \
     info.h \
     iter.h \
-    iter_print.h \
     list.h \
     parse.h \
     pattern.h \
@@ -40,7 +38,6 @@ lib_LTLIBRARIES = libg_process.la
 #pkgconfig_DATA = libg_process.pc
 
 libg_process_C_la_SOURCES = \
-    compare.c \
     container.c \
     dispatch.c \
     doact.c \
@@ -53,7 +50,6 @@ libg_process_C_la_SOURCES = \
     inbuf.c \
     info.c \
     iter.c \
-    iter_print.c \
     list.c \
     parse.c \
     pattern.c \
