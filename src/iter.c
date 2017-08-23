@@ -199,37 +199,33 @@ void skipiter(iter_t *iter)
 }
 
 /**
- * initialize an iterator for traversing progeny and siblings of elem
- *   ( used in printt() to print key and value )
+ * initialize an iterator for traversing elem, its progeny, and its siblings
  *
  * @param iter - a struct containg the current state of the iterator
  * @param elem - the root elem of the list to be iterated
  */
-void inititer(iter_t *iter, elem_t *elem, writer_fn_t writer_fn)
+void inititer(iter_t *iter, elem_t *elem)
 {
     assert(iter);
     assert(elem);
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
-    iter->writer_fn = writer_fn;
     iter->lsp = 0;
     stepiter(iter, elem);
 }
 
 /**
- * initialize an iterator for traversing progeny only of elem
- *   (used in trees where elem and progeny are the key, and siblings are the value)
+ * initialize an iterator for traversing elem and its progeny only (no siblings)
  *
  * @param iter - a struct containing the current state of the iterator
  * @param elem - the root elem of the list to be iterated
  */
-void inititer0(iter_t *iter, elem_t *elem, writer_fn_t writer_fn)
+void inititer_no_siblings(iter_t *iter, elem_t *elem)
 {
     assert(iter);
     assert(elem);
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
-    iter->writer_fn = writer_fn;
     iter->lsp = 0;
     stepiter(iter, elem);
     iter->lnxstack[0].lnx = NULL;

@@ -9,8 +9,6 @@ extern "C" {
 
 #define MAXNEST 20
 
-typedef size_t (*writer_fn_t)(const void *ptr, size_t size);
-
 typedef struct {
     elem_t *lnx;
     char *psp;
@@ -22,7 +20,6 @@ typedef struct {
 } tnx_t;
 
 typedef struct {
-    writer_fn_t writer_fn;
     lnx_t lnxstack[MAXNEST];
     tnx_t tnxstack[MAXNEST];
     uint16_t lsp;
@@ -31,8 +28,8 @@ typedef struct {
     unsigned char *cp, intree;
 } iter_t;
 
-void inititer(iter_t *iter, elem_t *elem, writer_fn_t writer_fn);
-void inititer0(iter_t *iter, elem_t *elem, writer_fn_t writer_fn);
+void inititer(iter_t *iter, elem_t *elem);
+void inititer_no_siblings(iter_t *iter, elem_t *elem);
 void nextiter(iter_t *iter);
 void skipiter(iter_t *iter);
 

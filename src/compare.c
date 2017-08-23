@@ -23,9 +23,8 @@ int compare (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    inititer0(&ai, a, NULL);  // compare a and a's progeny
-    inititer0(&bi, b, NULL);  //    with b and b's progeny
-                        // i.e. do not extend to siblings of a or b
+    inititer_no_siblings(&ai, a);  // compare a and a's progeny
+    inititer_no_siblings(&bi, b);  //    with b and b's progeny
     do {
         while (ai.len && bi.len && rc == 0) {  // itersep may be zero length
             ai.len--;
@@ -62,9 +61,8 @@ int match (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    inititer0(&ai, a, NULL);  // compare a and a's progeny
-    inititer0(&bi, b, NULL);  //    with b and b's progeny
-                        // i.e. do not extend to siblings of a or b
+    inititer_no_siblings(&ai, a);  // compare a and a's progeny
+    inititer_no_siblings(&bi, b);  //    with b and b's progeny
     do {
         while (ai.len && bi.len && rc == 0) {
             if (*bi.cp == '*') { 

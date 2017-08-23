@@ -12,6 +12,11 @@
 #include "info.h"
 #include "process.h"
 
+static size_t stdout_writer(const void *ptr, size_t size)
+{
+    return fwrite(ptr, size, 1, stdout);
+}
+
 /**
  * @param THREAD context   
  * @return success/fail
@@ -45,12 +50,17 @@ success_t container(THREAD_t * THREAD)
 
     if (container.nodes) {
         THREAD->ikea_box = ikea_box_open( THREAD->ikea_store, NULL);
+        THREAD->writer_fn = &stdout_writer;
         ikea_printt (THREAD, container.nodes);
+        THREAD->writer_fn = &stdout_writer;
         printt(THREAD, container.nodes);
         if (container.edges) {
+            THREAD->writer_fn = &stdout_writer;
             ikea_printt (THREAD, container.edges);
+            THREAD->writer_fn = &stdout_writer;
             printt(THREAD, container.edges);
         }
+        THREAD->writer_fn = &stdout_writer;
         ikea_box_close ( THREAD->ikea_box,
                 THREAD->contenthash, sizeof(THREAD->contenthash) );
     }

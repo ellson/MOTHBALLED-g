@@ -7,11 +7,6 @@
 #include "thread.h"
 #include "iter_print.h"
 
-static size_t stdout_writer(const void *ptr, size_t size)
-{
-    return fwrite(ptr, size, 1, stdout);
-}
-
 /**
  * printg - print the canonical g string representation of a list
  *
@@ -21,13 +16,14 @@ static size_t stdout_writer(const void *ptr, size_t size)
 void printg (THREAD_t *THREAD, elem_t *a)
 {
     iter_t ai = { 0 };
+    writer_fn_t writer_fn = THREAD->writer_fn;
 
-    inititer(&ai, a, &stdout_writer);
+    inititer(&ai, a);
     do {
-        ai.writer_fn(ai.cp, ai.len);
+        writer_fn(ai.cp, ai.len);
         nextiter(&ai);
     } while (ai.len || ai.lsp);
-    ai.writer_fn("\n", 1);
+    writer_fn("\n", 1);
 }
 
 /**
@@ -73,8 +69,11 @@ static void ikea_putc(THREAD_t *THREAD, char c)
 static void ikea_printg (THREAD_t *THREAD, elem_t *a)
 {
     iter_t ai = { 0 };
+#if 0
+    writer_fn_t writer_fn = THREAD->writer_fn;
+#endif
 
-    inititer(&ai, a, &stdout_writer);
+    inititer(&ai, a);
     do {
 #if 1
         while (ai.len) {
@@ -83,14 +82,14 @@ static void ikea_printg (THREAD_t *THREAD, elem_t *a)
             ikea_putc(THREAD, c);
         }
 #else
-        ai.writer_fn("\n", 1);
+        writer_fn("\n", 1);
 #endif
         nextiter(&ai);
     } while (ai.len || ai.lsp);
 #if 1
     ikea_putc(THREAD, '\n');   // canonical form,  '\n' between ACTs
 #else
-    ai.writer_fn("\n", 1);
+    writer_fn("\n", 1);
 #endif
 }
 
