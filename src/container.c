@@ -12,10 +12,35 @@
 #include "info.h"
 #include "process.h"
 
-static size_t stdout_writer(const void *ptr, size_t size)
+static size_t file_writer(THREAD_t *THREAD, unsigned char *cp, size_t len)
 {
-    return fwrite(ptr, size, 1, stdout);
+    return fwrite(cp, len, 1, THREAD->out);
 }
+
+static void ikea_flush(THREAD_t *THREAD)
+{
+    ikea_box_append(THREAD->ikea_box, THREAD->buf, THREAD->pos);
+    THREAD->pos = 0;
+}
+
+static void ikea_putc(THREAD_t *THREAD, unsigned char c)
+{
+    THREAD->buf[THREAD->pos++] = c;
+    if (THREAD->pos >= sizeof(THREAD->buf)) {
+        ikea_flush(THREAD);
+    }
+}
+
+static size_t ikea_writer(THREAD_t *THREAD, unsigned char *cp, size_t size)
+{
+    int len = size;
+
+    while (len--) {
+        ikea_putc(THREAD, *cp++);
+    }
+    return size;
+}
+
 
 /**
  * @param THREAD context   
@@ -47,20 +72,25 @@ success_t container(THREAD_t * THREAD)
         }
     }
 
-
+    // FIXME - write to stdout - should be based on a query
     if (container.nodes) {
-        THREAD->ikea_box = ikea_box_open( THREAD->ikea_store, NULL);
-        THREAD->writer_fn = &stdout_writer;
-        ikea_printt (THREAD, container.nodes);
-        THREAD->writer_fn = &stdout_writer;
+        THREAD->out = stdout;
+        THREAD->writer_fn = &file_writer;
         printt(THREAD, container.nodes);
         if (container.edges) {
-            THREAD->writer_fn = &stdout_writer;
-            ikea_printt (THREAD, container.edges);
-            THREAD->writer_fn = &stdout_writer;
             printt(THREAD, container.edges);
         }
-        THREAD->writer_fn = &stdout_writer;
+    }
+
+    // preserve in ikea storage
+    if (container.nodes) {
+        THREAD->ikea_box = ikea_box_open( THREAD->ikea_store, NULL);
+        THREAD->writer_fn = &ikea_writer;
+        printt(THREAD, container.nodes);
+        if (container.edges) {
+            printt(THREAD, container.edges);
+        }
+        ikea_flush(THREAD);
         ikea_box_close ( THREAD->ikea_box,
                 THREAD->contenthash, sizeof(THREAD->contenthash) );
     }

@@ -8,8 +8,6 @@ extern "C" {
 #endif
 
 void printt(THREAD_t * THREAD, elem_t * p);
-void printg(THREAD_t *THREAD, elem_t * a);
-void ikea_printt(THREAD_t * THREAD, elem_t * p);
 
 #ifdef __cplusplus
 }

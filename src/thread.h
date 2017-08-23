@@ -28,7 +28,7 @@ extern "C" {
 #define LIST() ((LIST_t*)THREAD)
 #define INBUF() ((INBUF_t*)THREAD)
 
-typedef size_t (*writer_fn_t)(const void *ptr, size_t size);
+typedef size_t (*writer_fn_t)(THREAD_t *THREAD, unsigned char *cp, size_t len);
 
 struct thread_s {
     TOKEN_t TOKEN;             // TOKEN context. May be cast from THREAD
@@ -46,6 +46,7 @@ struct thread_s {
     ikea_box_t *ikea_box;      // box for container
     unsigned char buf[1024];   // output buffering
     int pos;
+    FILE *out;                 // output file
     writer_fn_t writer_fn;     // output writer
     char contenthash[128];     // big enough for content hash
                                // checked by assert in ikea_box_open()
