@@ -12,30 +12,36 @@
 #include "thread.h"
 #include "iter.h"
 
-static void itersep(iter_t *iter, int idx, int len)
+static void begsep(iter_t *iter)
 {
-    char *cp;
-
-    if (len) {
-        if (idx) {
-            cp = iter->lnxstack[iter->lsp].endsep;
-        }
-        else {
-            cp = iter->lnxstack[iter->lsp].begsep;
-        }
-        if (cp && *cp) {
-            iter->len = strlen(cp);
-            iter->cp = (unsigned char*)cp;
-        }
-        else {
-            iter->len = 0;  // suppress nulls when sep char not required
-            iter->cp = NULL;
-        }
+    char *cp = iter->lnxstack[iter->lsp].begsep;
+    if (cp) {
+        iter->len = strlen(cp);
+        iter->cp = (unsigned char*)cp;
     }
     else {
-        iter->len = 0;
+        iter->len = 0;  // suppress nulls when sep char not required
         iter->cp = NULL;
     }
+}
+
+static void endsep(iter_t *iter)
+{
+    char *cp = iter->lnxstack[iter->lsp].endsep;
+    if (cp) {
+        iter->len = strlen(cp);
+        iter->cp = (unsigned char*)cp;
+    }
+    else {
+        iter->len = 0;  // suppress nulls when sep char not required
+        iter->cp = NULL;
+    }
+}
+
+static void nosep(iter_t *iter)
+{
+    iter->len = 0;
+    iter->cp = NULL;
 }
 
 static void setsep(iter_t *iter, char *beg, char *end)
@@ -107,7 +113,7 @@ static void stepiter(iter_t *iter, elem_t *this)
                     setsep(iter, NULL, NULL);
                     break;
             }
-            itersep(iter, 0, 1);
+            begsep(iter);
             iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
             iter->lnxstack[iter->lsp].lnx = this->u.l.first;
         }
@@ -209,16 +215,16 @@ static void skipiter(iter_t *iter)
                             setsep(iter, " ", NULL);
                             break;
                     }
-                    itersep(iter, 0, 1);
+                    begsep(iter);
                     iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
                     iter->lnxstack[iter->lsp].lnx = this->u.l.first;
                     break;
             }
         } else {
-            itersep(iter, 1, 1);
+            endsep(iter);
         }
     } else {
-        itersep(iter, 0, 0);
+        nosep(iter);
     }
 }
 
@@ -287,7 +293,7 @@ int compare (elem_t *a, elem_t *b)
     inititer_no_siblings(&ai, a);  // compare a and a's progeny
     inititer_no_siblings(&bi, b);  //    with b and b's progeny
     do {
-        while (ai.len && bi.len && rc == 0) {  // itersep may be zero length
+        while (ai.len && bi.len && rc == 0) {  // sep may be zero length
             ai.len--;
             bi.len--;
             rc = (*ai.cp++) - (*bi.cp++);
