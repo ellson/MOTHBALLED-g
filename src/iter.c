@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "types.h"
@@ -13,13 +14,34 @@
 
 static void itersep(iter_t *iter, int idx, int len)
 {
-    iter->cp = (unsigned char*)iter->lnxstack[iter->lsp].psp+idx;
-    if (iter->cp && *(iter->cp)) {
-        iter->len = len;
+    char *cp;
+
+    if (len) {
+        if (idx) {
+            cp = iter->lnxstack[iter->lsp].endsep;
+        }
+        else {
+            cp = iter->lnxstack[iter->lsp].begsep;
+        }
+        if (cp && *cp) {
+            iter->len = strlen(cp);
+            iter->cp = (unsigned char*)cp;
+        }
+        else {
+            iter->len = 0;  // suppress nulls when sep char not required
+            iter->cp = NULL;
+        }
     }
     else {
-        iter->len = 0;  // suppress nulls when sep char not required
+        iter->len = 0;
+        iter->cp = NULL;
     }
+}
+
+static void setsep(iter_t *iter, char *beg, char *end)
+{
+    iter->lnxstack[iter->lsp].begsep = beg;
+    iter->lnxstack[iter->lsp].endsep = end;
 }
 
 /**
@@ -58,30 +80,31 @@ static void stepiter(iter_t *iter, elem_t *this)
             assert(iter->lsp < MAXNEST);
             switch ((state_t)this->state) {
                 case ACT:
-                    iter->lnxstack[iter->lsp].psp = "\0\0";
+                    setsep(iter, NULL, NULL);
                     break;
                 case EDGE:
-                    iter->lnxstack[iter->lsp].psp = "<>";
+                    setsep(iter, "<", ">");
                     break;
                 case MUM:
-                    iter->lnxstack[iter->lsp].psp = "^\0";
+                    setsep(iter, "^", NULL);
                     break;
                 case SET:
                 case ENDPOINTSET:
-                    iter->lnxstack[iter->lsp].psp = "()";
+                    setsep(iter, "(", ")");
                     break;
                 case ATTRID:
                     // FIXME - This is a hack! Probably the whole
                     //    psp spacing character scheme needs to be rethunk.
                     if (iter->intree) {
-                        iter->lnxstack[iter->lsp].psp = " \0"; 
-                    } else {
+                        setsep(iter, " ", NULL);
+                    }
+                    else {
                         // suppress extra space before the attr=value list..
-                        iter->lnxstack[iter->lsp].psp = "\0\0"; 
+                        setsep(iter, NULL, NULL);
                     }
                     break;
                 default:
-                    iter->lnxstack[iter->lsp].psp = "\0\0";
+                    setsep(iter, NULL, NULL);
                     break;
             }
             itersep(iter, 0, 1);
@@ -168,22 +191,22 @@ static void skipiter(iter_t *iter)
                         // (non-homogenous lists) need to over-ride the
                         // pop_space_push of the preceding elem
                         case ATTRIBUTES:
-                            iter->lnxstack[iter->lsp].psp = "[]";
+                            setsep(iter, "[", "]");
                             break;
                         case DISAMBIG:
-                            iter->lnxstack[iter->lsp].psp = "'\0";
+                            setsep(iter, "'", NULL);
                             break;
                         case VALUE:
-                            iter->lnxstack[iter->lsp].psp = "=\0";
+                            setsep(iter, "=", NULL);
                             break;
 //                        case SIS:
-//                            iter->lnxstack[iter->lsp].psp = " \0";
+//                            setsep(iter, " ", NULL);
 //                            break;
                         case KID:
-                            iter->lnxstack[iter->lsp].psp = "/\0";
+                            setsep(iter, "/", NULL);
                             break;
                         default:
-                            iter->lnxstack[iter->lsp].psp = " \0";
+                            setsep(iter, " ", NULL);
                             break;
                     }
                     itersep(iter, 0, 1);

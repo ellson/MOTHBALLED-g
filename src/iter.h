@@ -11,7 +11,8 @@ extern "C" {
 
 typedef struct {
     elem_t *lnx;
-    char *psp;
+    char *begsep;
+    char *endsep;
 } lnx_t;
 
 typedef struct {
