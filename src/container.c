@@ -23,20 +23,15 @@ static void ikea_flush(THREAD_t *THREAD)
     THREAD->pos = 0;
 }
 
-static void ikea_putc(THREAD_t *THREAD, unsigned char c)
-{
-    THREAD->buf[THREAD->pos++] = c;
-    if (THREAD->pos >= sizeof(THREAD->buf)) {
-        ikea_flush(THREAD);
-    }
-}
-
 static size_t ikea_writer(THREAD_t *THREAD, unsigned char *cp, size_t size)
 {
     int len = size;
 
     while (len--) {
-        ikea_putc(THREAD, *cp++);
+        THREAD->buf[THREAD->pos++] = *cp++;
+        if (THREAD->pos >= sizeof(THREAD->buf)) {
+            ikea_flush(THREAD);
+        }
     }
     return size;
 }
