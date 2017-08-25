@@ -12,9 +12,25 @@
 #define MORE_REP(prop, ei) \
     ((prop & (REP | SREP)) && ei != RPN && ei != RAN && ei != RBR && ei != RBE)
 
-static elem_t * merge_identifier(LIST_t *LIST, elem_t *identifier, elem_t *key);
+/**
+ * Save new or duplicate identifier
+ * by updating the new to use the identical existing, and then freeing the duplicate
+ *
+ * @param LIST 
+ * @param identifier - the new, possibly duplicate, identifier 
+ * @param key    - the key with the oldest copy of the identifier
+ * @return       - the key with the oldest copy of the identifier
+ */
+static elem_t * merge_identifier(LIST_t *LIST, elem_t *identifier, elem_t *key)
+{
+    key->refs++;
+    free_list(LIST, identifier);
+    return key;
+}
 
 /**
+ * Parse an input stream.
+ *
  * This parser recurses at two levels:
  *
  *      input
@@ -310,19 +326,3 @@ done: // State exit processing
     return rc;
 }
 
-
-/**
- * save new or duplicate identifier
- * by updating the new to use the identical existing, and then freeing the duplicate
- *
- * @param LIST 
- * @param identifier - the new, possibly duplicate, identifier 
- * @param key    - the key with the oldest copy of the identifier
- * @return       - the key with the oldest copy of the identifier
- */
-static elem_t * merge_identifier(LIST_t *LIST, elem_t *identifier, elem_t *key)
-{
-    key->refs++;
-    free_list(LIST, identifier);
-    return key;
-}

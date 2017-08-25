@@ -11,11 +11,16 @@
 #include "info.h"
 #include "process.h"
 
+// FIXME - need a discipline with open_write(), write(), flush(), close_write() 
+//       - probably also: open_read(), read(), close_read()
+
+// FIXME - still need for discipline: file_open, file_flush, file_close()
 static size_t file_writer(THREAD_t *THREAD, unsigned char *cp, size_t len)
 {
     return fwrite(cp, len, 1, THREAD->out);
 }
 
+// FIXME - still need for discipline: ikea_open(), ikea_close()
 static void ikea_flush(THREAD_t *THREAD)
 {
     ikea_box_append(THREAD->ikea_box, THREAD->buf, THREAD->pos);

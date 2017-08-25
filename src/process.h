@@ -17,7 +17,7 @@ struct process_s {
     char needstats;            // flag set if -s on command line
 //
 
-    // infor collected by session();
+    // info collected by session();
     char *progname;
     char *username;
     char *hostname;          

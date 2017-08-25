@@ -15,7 +15,8 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     argv = &argv[optind];
     *pargc -= optind;
 
-    if (*pargc == 0) {    // No file args, or commandline acts,  default to stdin
+    if (*pargc == 0) {    // No file args, or commandline acts,
+                          //    default to stdin
         argv[0] = "-";
         *pargc = 1;
     }
