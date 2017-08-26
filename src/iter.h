@@ -20,8 +20,8 @@ typedef struct {
 } tnx_t;
 
 typedef struct {
-    lnx_t lnxstack[MAXNEST];
-    tnx_t tnxstack[MAXNEST];
+    lnx_t lstack[MAXNEST];
+    tnx_t tstack[MAXNEST];
     uint16_t lsp;
     uint16_t tsp;
     uint16_t len;

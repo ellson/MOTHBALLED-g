@@ -11,9 +11,15 @@
 #include "thread.h"
 #include "iter.h"
 
-static void begsep(iter_t *iter)
+static void sep(iter_t *iter, int idx)
 {
-    char *cp = iter->lnxstack[iter->lsp].sep;
+    char *cp = iter->lstack[iter->lsp].sep;
+    char pretty = *cp++;
+    if (pretty && !idx) {
+        // lead with " "
+        // follow with "\n\t"
+    }
+    cp += idx;
     if (*cp) {
         iter->len = 1;
         iter->cp = (unsigned char*)cp;
@@ -21,28 +27,6 @@ static void begsep(iter_t *iter)
     else {
         iter->len = 0;  // suppress nulls when sep char not required
     }
-}
-
-static void endsep(iter_t *iter)
-{
-    char *cp = iter->lnxstack[iter->lsp].sep+1;
-    if (*cp) {
-        iter->len = 1;
-        iter->cp = (unsigned char*)cp;
-    }
-    else {
-        iter->len = 0;  // suppress nulls when sep char not required
-    }
-}
-
-static void nosep(iter_t *iter)
-{
-    iter->len = 0;
-}
-
-static void setsep(iter_t *iter, char *sep)
-{
-    iter->lnxstack[iter->lsp].sep = sep;
 }
 
 /**
@@ -61,12 +45,12 @@ static void stepiter(iter_t *iter, elem_t *this)
 
     switch ((elemtype_t)this->type) {
     case FRAGELEM:
-        iter->lnxstack[iter->lsp].lnx = this->u.f.next;
+        iter->lstack[iter->lsp].lnx = this->u.f.next;
         iter->cp = this->u.f.frag;
         iter->len = this->len;
         break;
     case SHORTSTRELEM:
-        iter->lnxstack[iter->lsp].lnx = NULL;
+        iter->lstack[iter->lsp].lnx = NULL;
         iter->cp = this->u.s.str;
         iter->len = this->len;
         break;
@@ -74,43 +58,43 @@ static void stepiter(iter_t *iter, elem_t *this)
         if (this->u.l.first && (elemtype_t)this->u.l.first->type == FRAGELEM) {
             // align with SHORTSTRELEM
             this = this->u.l.first;
-            iter->lnxstack[iter->lsp].lnx = this->u.f.next;
+            iter->lstack[iter->lsp].lnx = this->u.f.next;
             iter->cp = this->u.f.frag;
             iter->len = this->len;
         } else {
             assert(iter->lsp < MAXNEST);
             switch ((state_t)this->state) {
                 case ACT:
-                    setsep(iter, "\0\0");
+                    iter->lstack[iter->lsp].sep = "\0\0\0";
                     break;
                 case EDGE:
-                    setsep(iter, "<>");
+                    iter->lstack[iter->lsp].sep = "\0<>";
                     break;
                 case MUM:
-                    setsep(iter, "^\0");
+                    iter->lstack[iter->lsp].sep = "\0^\0";
                     break;
                 case SET:
                 case ENDPOINTSET:
-                    setsep(iter, "()");
+                    iter->lstack[iter->lsp].sep = "\0()";
                     break;
                 case ATTRID:
                     // FIXME - This is a hack! Probably the whole
                     //    spacing character scheme needs to be rethunk.
                     if (iter->intree) {
-                        setsep(iter, " \0");
+                        iter->lstack[iter->lsp].sep = "\0 \0";
                     }
                     else {
                         // suppress extra space before the attr=value list..
-                        setsep(iter, "\0\0");
+                        iter->lstack[iter->lsp].sep = "\0\0\0";
                     }
                     break;
                 default:
-                    setsep(iter, "\0\0");
+                    iter->lstack[iter->lsp].sep = "\0\0\0";
                     break;
             }
-            begsep(iter);
-            iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
-            iter->lnxstack[iter->lsp].lnx = this->u.l.first;
+            sep(iter,0);
+            iter->lstack[iter->lsp++].lnx = this->u.l.next;
+            iter->lstack[iter->lsp].lnx = this->u.l.first;
         }
         break;
     case TREEELEM:
@@ -119,39 +103,39 @@ static void stepiter(iter_t *iter, elem_t *this)
         //    (why does iter->len need to be seroed here?)
         if (iter->tsp == 0) {
             iter->tsp++;
-            iter->tnxstack[iter->tsp].tnx = this;
-            iter->tnxstack[iter->tsp].dir = 0;
+            iter->tstack[iter->tsp].tnx = this;
+            iter->tstack[iter->tsp].dir = 0;
             iter->len = 0;
             iter->intree = 0; // used to suppress extra space before the attr=value list..
         } else {
             iter->intree = 1;
         }
         do {
-            if  (iter->tnxstack[iter->tsp].dir == 0) {
-                iter->tnxstack[iter->tsp].dir++;
-                next = iter->tnxstack[iter->tsp].tnx;
+            if  (iter->tstack[iter->tsp].dir == 0) {
+                iter->tstack[iter->tsp].dir++;
+                next = iter->tstack[iter->tsp].tnx;
                 if (next->u.t.left) {
                     iter->tsp++;
                     assert (iter->tsp < MAXNEST);
-                    iter->tnxstack[iter->tsp].tnx = next->u.t.left;
-                    iter->tnxstack[iter->tsp].dir = 0;
+                    iter->tstack[iter->tsp].tnx = next->u.t.left;
+                    iter->tstack[iter->tsp].dir = 0;
                     continue;
                 }
             }
-            if  (iter->tnxstack[iter->tsp].dir == 1) {
-                next = iter->tnxstack[iter->tsp].tnx;
-                iter->tnxstack[iter->tsp].dir++;
+            if  (iter->tstack[iter->tsp].dir == 1) {
+                next = iter->tstack[iter->tsp].tnx;
+                iter->tstack[iter->tsp].dir++;
                 first = next->u.t.key;
                 break;
             }
-            if (iter->tnxstack[iter->tsp].dir == 2) {
-                iter->tnxstack[iter->tsp].dir++;
-                next = iter->tnxstack[iter->tsp].tnx;
+            if (iter->tstack[iter->tsp].dir == 2) {
+                iter->tstack[iter->tsp].dir++;
+                next = iter->tstack[iter->tsp].tnx;
                 if (next->u.t.right) {
                     iter->tsp++;
                     assert (iter->tsp < MAXNEST);
-                    iter->tnxstack[iter->tsp].tnx = next->u.t.right;
-                    iter->tnxstack[iter->tsp].dir = 0;
+                    iter->tstack[iter->tsp].tnx = next->u.t.right;
+                    iter->tstack[iter->tsp].dir = 0;
                     continue;
                 }
             }
@@ -162,8 +146,8 @@ static void stepiter(iter_t *iter, elem_t *this)
                 break;
             }
         } while (1); 
-        iter->lnxstack[iter->lsp++].lnx = next;
-        iter->lnxstack[iter->lsp].lnx = first;
+        iter->lstack[iter->lsp++].lnx = next;
+        iter->lstack[iter->lsp].lnx = first;
         break;
     default:
         assert(0);
@@ -182,11 +166,11 @@ static void skipiter(iter_t *iter)
     elem_t *this;
 
     if (iter->lsp) {
-        this = iter->lnxstack[--iter->lsp].lnx;
+        this = iter->lstack[--iter->lsp].lnx;
         if (this) {
             switch ((elemtype_t)this->type) {
                 case TREEELEM:
-                    iter->cp = NULL;
+                    iter->len = 0;
                     break;
                 default:
                     switch ((state_t)this->state) {
@@ -194,34 +178,34 @@ static void skipiter(iter_t *iter)
                         // (non-homogenous lists) need to over-ride the
                         // pop_space_push of the preceding elem
                         case ATTRIBUTES:
-                            setsep(iter, "[]");
+                            iter->lstack[iter->lsp].sep = "\1[]";
                             break;
                         case DISAMBIG:
-                            setsep(iter, "'\0");
+                            iter->lstack[iter->lsp].sep = "\0'\0";
                             break;
                         case VALUE:
-                            setsep(iter, "=\0");
+                            iter->lstack[iter->lsp].sep = "\0=\0";
                             break;
 //                        case SIS:
-//                            setsep(iter, " \0");
+//                            iter->lstack[iter->lsp].sep = "\0 \0";
 //                            break;
                         case KID:
-                            setsep(iter, "/\0");
+                            iter->lstack[iter->lsp].sep = "\0/\0";
                             break;
                         default:
-                            setsep(iter, " \0");
+                            iter->lstack[iter->lsp].sep = "\0 \0";
                             break;
                     }
-                    begsep(iter);
-                    iter->lnxstack[iter->lsp++].lnx = this->u.l.next;
-                    iter->lnxstack[iter->lsp].lnx = this->u.l.first;
+                    sep(iter,0);
+                    iter->lstack[iter->lsp++].lnx = this->u.l.next;
+                    iter->lstack[iter->lsp].lnx = this->u.l.first;
                     break;
             }
         } else {
-            endsep(iter);
+            sep(iter,1);
         }
     } else {
-        nosep(iter);
+        iter->len = 0;
     }
 }
 
@@ -255,7 +239,7 @@ static void inititer_no_siblings(iter_t *iter, elem_t *elem)
         || (elemtype_t)elem->type == SHORTSTRELEM);
     iter->lsp = 0;
     stepiter(iter, elem);
-    iter->lnxstack[0].lnx = NULL;
+    iter->lstack[0].lnx = NULL;
 }
 
 /**
@@ -265,7 +249,7 @@ static void inititer_no_siblings(iter_t *iter, elem_t *elem)
  */
 static void nextiter(iter_t *iter)
 {
-    elem_t *this = iter->lnxstack[iter->lsp].lnx;
+    elem_t *this = iter->lstack[iter->lsp].lnx;
 
     if (this) {
         stepiter(iter, this);
@@ -339,7 +323,7 @@ int match (elem_t *a, elem_t *b)
             rc = (*ai.cp++) - (*bi.cp++);
         }
         if (rc == 0) {
-            if (*bi.cp == '*') {
+            if (ai.len && *bi.cp == '*') {
                 //  "x..." matches "*"  where ai.len >= bi.len
                 //  also
                 //  "x" matches "x*"    where ai.len == bi.len - 1
