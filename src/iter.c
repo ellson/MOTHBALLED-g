@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <string.h>
 #include <assert.h>
 
 #include "types.h"
@@ -14,40 +13,36 @@
 
 static void begsep(iter_t *iter)
 {
-    char *cp = iter->lnxstack[iter->lsp].begsep;
-    if (cp) {
-        iter->len = strlen(cp);
+    char *cp = iter->lnxstack[iter->lsp].sep;
+    if (*cp) {
+        iter->len = 1;
         iter->cp = (unsigned char*)cp;
     }
     else {
         iter->len = 0;  // suppress nulls when sep char not required
-        iter->cp = NULL;
     }
 }
 
 static void endsep(iter_t *iter)
 {
-    char *cp = iter->lnxstack[iter->lsp].endsep;
-    if (cp) {
-        iter->len = strlen(cp);
+    char *cp = iter->lnxstack[iter->lsp].sep+1;
+    if (*cp) {
+        iter->len = 1;
         iter->cp = (unsigned char*)cp;
     }
     else {
         iter->len = 0;  // suppress nulls when sep char not required
-        iter->cp = NULL;
     }
 }
 
 static void nosep(iter_t *iter)
 {
     iter->len = 0;
-    iter->cp = NULL;
 }
 
-static void setsep(iter_t *iter, char *beg, char *end)
+static void setsep(iter_t *iter, char *sep)
 {
-    iter->lnxstack[iter->lsp].begsep = beg;
-    iter->lnxstack[iter->lsp].endsep = end;
+    iter->lnxstack[iter->lsp].sep = sep;
 }
 
 /**
@@ -86,31 +81,31 @@ static void stepiter(iter_t *iter, elem_t *this)
             assert(iter->lsp < MAXNEST);
             switch ((state_t)this->state) {
                 case ACT:
-                    setsep(iter, NULL, NULL);
+                    setsep(iter, "\0\0");
                     break;
                 case EDGE:
-                    setsep(iter, "<", ">");
+                    setsep(iter, "<>");
                     break;
                 case MUM:
-                    setsep(iter, "^", NULL);
+                    setsep(iter, "^\0");
                     break;
                 case SET:
                 case ENDPOINTSET:
-                    setsep(iter, "(", ")");
+                    setsep(iter, "()");
                     break;
                 case ATTRID:
                     // FIXME - This is a hack! Probably the whole
                     //    spacing character scheme needs to be rethunk.
                     if (iter->intree) {
-                        setsep(iter, " ", NULL);
+                        setsep(iter, " \0");
                     }
                     else {
                         // suppress extra space before the attr=value list..
-                        setsep(iter, NULL, NULL);
+                        setsep(iter, "\0\0");
                     }
                     break;
                 default:
-                    setsep(iter, NULL, NULL);
+                    setsep(iter, "\0\0");
                     break;
             }
             begsep(iter);
@@ -124,9 +119,9 @@ static void stepiter(iter_t *iter, elem_t *this)
         //    (why does iter->len need to be seroed here?)
         if (iter->tsp == 0) {
             iter->tsp++;
-            iter->len = 0;
             iter->tnxstack[iter->tsp].tnx = this;
             iter->tnxstack[iter->tsp].dir = 0;
+            iter->len = 0;
             iter->intree = 0; // used to suppress extra space before the attr=value list..
         } else {
             iter->intree = 1;
@@ -192,7 +187,6 @@ static void skipiter(iter_t *iter)
             switch ((elemtype_t)this->type) {
                 case TREEELEM:
                     iter->cp = NULL;
-                    iter->len = 0;
                     break;
                 default:
                     switch ((state_t)this->state) {
@@ -200,22 +194,22 @@ static void skipiter(iter_t *iter)
                         // (non-homogenous lists) need to over-ride the
                         // pop_space_push of the preceding elem
                         case ATTRIBUTES:
-                            setsep(iter, "[", "]");
+                            setsep(iter, "[]");
                             break;
                         case DISAMBIG:
-                            setsep(iter, "'", NULL);
+                            setsep(iter, "'\0");
                             break;
                         case VALUE:
-                            setsep(iter, "=", NULL);
+                            setsep(iter, "=\0");
                             break;
 //                        case SIS:
-//                            setsep(iter, " ", NULL);
+//                            setsep(iter, " \0");
 //                            break;
                         case KID:
-                            setsep(iter, "/", NULL);
+                            setsep(iter, "/\0");
                             break;
                         default:
-                            setsep(iter, " ", NULL);
+                            setsep(iter, " \0");
                             break;
                     }
                     begsep(iter);
