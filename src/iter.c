@@ -17,10 +17,10 @@ char *sep_ACT[4]        = { "" , "" , "" , ""  };
 char *sep_EDGE[4]       = { "<", ">", "<", ">" };
 char *sep_MUM[4]        = { "^", "" , "^", ""  };
 char *sep_SET[4]        = { "(", ")", "(", ")" };
-char *sep_intree[4]     = { " ", "" , " ", ""  };
+char *sep_intree[4]     = { " ", "" , "\n\t", ""  };
 char *sep_begtree[4]    = { "" , "" , "" , ""  };
 char *sep_step[4]       = { "" , "" , "" , ""  };
-char *sep_ATTRIBUTES[4] = { "[", "]", " [\n", "\n]\n" };
+char *sep_ATTRIBUTES[4] = { "[", "]", " [\n\t", "\n]" };
 char *sep_DISAMBIG[4]   = { "'", "" , "'", ""  };
 char *sep_VALUE[4]      = { "=", "" , "=", ""  };
 char *sep_SIS[4]        = { " ", "" , " ", ""  };
@@ -29,14 +29,14 @@ char *sep_skip[4]       = { " ", "" , " ", ""  };
 
 static void sep(iter_t *iter, int idx)
 {
-    char *cp = iter->lstack[iter->lsp].sep[idx];
-    if (*cp) {
+    char *cp = iter->lstack[iter->lsp].sep[idx + iter->pretty];
+//    if (*cp) {
         iter->len = strlen(cp);
         iter->cp = (unsigned char*)cp;
-    }
-    else {
-        iter->len = 0;  // suppress nulls when sep char not required
-    }
+//    }
+//    else {
+//        iter->len = 0;  // suppress nulls when sep char not required
+//    }
 }
 
 /**
@@ -225,13 +225,14 @@ static void skipiter(iter_t *iter)
  * @param iter - a struct containg the current state of the iterator
  * @param elem - the root elem of the list to be iterated
  */
-static void inititer(iter_t *iter, elem_t *elem)
+static void inititer(iter_t *iter, elem_t *elem, int pretty)
 {
     assert(iter);
     assert(elem);
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
     iter->lsp = 0;
+    iter->pretty = pretty?2:0;;
     stepiter(iter, elem);
 }
 
@@ -241,13 +242,14 @@ static void inititer(iter_t *iter, elem_t *elem)
  * @param iter - a struct containing the current state of the iterator
  * @param elem - the root elem of the list to be iterated
  */
-static void inititer_no_siblings(iter_t *iter, elem_t *elem)
+static void inititer_no_siblings(iter_t *iter, elem_t *elem, int pretty)
 {
     assert(iter);
     assert(elem);
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
     iter->lsp = 0;
+    iter->pretty = pretty?2:0;;
     stepiter(iter, elem);
     iter->lstack[0].lnx = NULL;
 }
@@ -281,8 +283,8 @@ int compare (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    inititer_no_siblings(&ai, a);  // compare a and a's progeny
-    inititer_no_siblings(&bi, b);  //    with b and b's progeny
+    inititer_no_siblings(&ai, a, 0);  // compare a and a's progeny
+    inititer_no_siblings(&bi, b, 0);  //    with b and b's progeny
     do {
         while (ai.len && bi.len && rc == 0) {  // sep may be zero length
             ai.len--;
@@ -319,8 +321,8 @@ int match (elem_t *a, elem_t *b)
     iter_t ai = { 0 };
     iter_t bi = { 0 };
 
-    inititer_no_siblings(&ai, a);  // compare a and a's progeny
-    inititer_no_siblings(&bi, b);  //    with b and b's progeny
+    inititer_no_siblings(&ai, a, 0);  // compare a and a's progeny
+    inititer_no_siblings(&bi, b, 0);  //    with b and b's progeny
     do {
         while (ai.len && bi.len && rc == 0) {
             if (*bi.cp == '*') { 
@@ -366,7 +368,7 @@ static void printg (THREAD_t *THREAD, elem_t *a)
     iter_t ai = { 0 };
     writer_fn_t writer_fn = THREAD->writer_fn;
 
-    inititer(&ai, a);
+    inititer(&ai, a, THREAD->pretty);
     do {
         writer_fn(THREAD, ai.cp, ai.len);
         nextiter(&ai);

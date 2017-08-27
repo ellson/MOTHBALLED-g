@@ -25,6 +25,7 @@ typedef struct {
     uint16_t lsp;
     uint16_t tsp;
     uint16_t len;
+    int pretty;  // 0 = minimal spacing, 2 = pretty spacing 
     unsigned char *cp, intree;
 } iter_t;
 
