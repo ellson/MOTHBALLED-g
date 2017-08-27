@@ -13,30 +13,25 @@
 #include "iter.h"
 
 // separator strings:       minimal     pretty
-char *sep_ACT[4]        = { "" , "" , "" , ""  };
-char *sep_EDGE[4]       = { "<", ">", "<", ">" };
-char *sep_MUM[4]        = { "^", "" , "^", ""  };
-char *sep_SET[4]        = { "(", ")", "(", ")" };
-char *sep_intree[4]     = { " ", "" , "\n  ", ""  };
-char *sep_begtree[4]    = { "" , "" , "" , ""  };
-char *sep_step[4]       = { "" , "" , "" , ""  };
-char *sep_ATTRIBUTES[4] = { "[", "]", " [\n  ", "\n]" };
-char *sep_DISAMBIG[4]   = { "'", "" , "'", ""  };
-char *sep_VALUE[4]      = { "=", "" , " = ", ""  };
-char *sep_SIS[4]        = { " ", "" , " ", ""  };
-char *sep_KID[4]        = { "/", "" , "/", ""  };
-char *sep_skip[4]       = { " ", "" , " ", ""  };
+char *sep_ACT[4]        = { "" , "" ,   "" , ""  };
+char *sep_EDGE[4]       = { "<", ">",   "<", ">" };
+char *sep_MUM[4]        = { "^", "" ,   "^", ""  };
+char *sep_SET[4]        = { "(", ")",   "(", ")" };
+char *sep_intree[4]     = { " ", "" ,   "\n  ", ""  };
+char *sep_begtree[4]    = { "" , "" ,   "" , ""  };
+char *sep_step[4]       = { "" , "" ,   "" , ""  };
+char *sep_ATTRIBUTES[4] = { "[", "]",   " [\n  ", "\n]" };
+char *sep_DISAMBIG[4]   = { "'", "" ,   "'", ""  };
+char *sep_VALUE[4]      = { "=", "" ,   " = ", ""  };
+char *sep_SIS[4]        = { " ", "" ,   " ", ""  };
+char *sep_KID[4]        = { "/", "" ,   "/", ""  };
+char *sep_skip[4]       = { " ", "" ,   " ", ""  };
 
 static void sep(iter_t *iter, int idx)
 {
     char *cp = iter->lstack[iter->lsp].sep[idx + iter->pretty];
-//    if (*cp) {
-        iter->len = strlen(cp);
-        iter->cp = (unsigned char*)cp;
-//    }
-//    else {
-//        iter->len = 0;  // suppress nulls when sep char not required
-//    }
+    iter->len = strlen(cp);
+    iter->cp = (unsigned char*)cp;
 }
 
 /**
@@ -232,7 +227,7 @@ static void inititer(iter_t *iter, elem_t *elem, int pretty)
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
     iter->lsp = 0;
-    iter->pretty = pretty?2:0;;
+    iter->pretty = pretty?2:0; // iter->pretty must be 9 or 2
     stepiter(iter, elem);
 }
 
@@ -249,7 +244,7 @@ static void inititer_no_siblings(iter_t *iter, elem_t *elem, int pretty)
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
     iter->lsp = 0;
-    iter->pretty = pretty?2:0;;
+    iter->pretty = pretty?2:0; // iter->pretty must be 9 or 2
     stepiter(iter, elem);
     iter->lstack[0].lnx = NULL;
 }
