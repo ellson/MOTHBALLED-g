@@ -103,14 +103,11 @@ static void stepiter(iter_t *iter, elem_t *this)
         }
         break;
     case TREEELEM:
-        // FIXME - This is a hack! Probably the whole
-        //    spacing character scheme needs to be rethunk.
-        //    (why does iter->len need to be seroed here?)
         if (iter->tsp == 0) {
             iter->tsp++;
             iter->tstack[iter->tsp].tnx = this;
             iter->tstack[iter->tsp].dir = 0;
-            iter->len = 0;
+            iter->len = 0;    // this suppresses a second '[' 
             iter->intree = 0; // used to suppress extra space before the attr=value list..
         } else {
             iter->intree = 1;
