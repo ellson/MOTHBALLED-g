@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #include "types.h"
@@ -11,17 +12,26 @@
 #include "thread.h"
 #include "iter.h"
 
+// separator strings:       minimal     pretty
+char *sep_ACT[4]        = { "" , "" , "" , ""  };
+char *sep_EDGE[4]       = { "<", ">", "<", ">" };
+char *sep_MUM[4]        = { "^", "" , "^", ""  };
+char *sep_SET[4]        = { "(", ")", "(", ")" };
+char *sep_intree[4]     = { " ", "" , " ", ""  };
+char *sep_begtree[4]    = { "" , "" , "" , ""  };
+char *sep_step[4]       = { "" , "" , "" , ""  };
+char *sep_ATTRIBUTES[4] = { "[", "]", " [\n", "\n]\n" };
+char *sep_DISAMBIG[4]   = { "'", "" , "'", ""  };
+char *sep_VALUE[4]      = { "=", "" , "=", ""  };
+char *sep_SIS[4]        = { " ", "" , " ", ""  };
+char *sep_KID[4]        = { "/", "" , "/", ""  };
+char *sep_skip[4]       = { " ", "" , " ", ""  };
+
 static void sep(iter_t *iter, int idx)
 {
-    char *cp = iter->lstack[iter->lsp].sep;
-    char pretty = *cp++;
-    if (pretty && !idx) {
-        // lead with " "
-        // follow with "\n\t"
-    }
-    cp += idx;
+    char *cp = iter->lstack[iter->lsp].sep[idx];
     if (*cp) {
-        iter->len = 1;
+        iter->len = strlen(cp);
         iter->cp = (unsigned char*)cp;
     }
     else {
@@ -65,31 +75,31 @@ static void stepiter(iter_t *iter, elem_t *this)
             assert(iter->lsp < MAXNEST);
             switch ((state_t)this->state) {
                 case ACT:
-                    iter->lstack[iter->lsp].sep = "\0\0\0";
+                    iter->lstack[iter->lsp].sep = sep_ACT;
                     break;
                 case EDGE:
-                    iter->lstack[iter->lsp].sep = "\0<>";
+                    iter->lstack[iter->lsp].sep = sep_EDGE;
                     break;
                 case MUM:
-                    iter->lstack[iter->lsp].sep = "\0^\0";
+                    iter->lstack[iter->lsp].sep = sep_MUM;
                     break;
                 case SET:
                 case ENDPOINTSET:
-                    iter->lstack[iter->lsp].sep = "\0()";
+                    iter->lstack[iter->lsp].sep = sep_SET;
                     break;
                 case ATTRID:
                     // FIXME - This is a hack! Probably the whole
                     //    spacing character scheme needs to be rethunk.
                     if (iter->intree) {
-                        iter->lstack[iter->lsp].sep = "\0 \0";
+                        iter->lstack[iter->lsp].sep = sep_intree;
                     }
                     else {
                         // suppress extra space before the attr=value list..
-                        iter->lstack[iter->lsp].sep = "\0\0\0";
+                        iter->lstack[iter->lsp].sep = sep_begtree;
                     }
                     break;
                 default:
-                    iter->lstack[iter->lsp].sep = "\0\0\0";
+                    iter->lstack[iter->lsp].sep = sep_step;
                     break;
             }
             sep(iter,0);
@@ -178,22 +188,22 @@ static void skipiter(iter_t *iter)
                         // (non-homogenous lists) need to over-ride the
                         // pop_space_push of the preceding elem
                         case ATTRIBUTES:
-                            iter->lstack[iter->lsp].sep = "\1[]";
+                            iter->lstack[iter->lsp].sep = sep_ATTRIBUTES;
                             break;
                         case DISAMBIG:
-                            iter->lstack[iter->lsp].sep = "\0'\0";
+                            iter->lstack[iter->lsp].sep = sep_DISAMBIG;
                             break;
                         case VALUE:
-                            iter->lstack[iter->lsp].sep = "\0=\0";
+                            iter->lstack[iter->lsp].sep = sep_VALUE;
                             break;
-//                        case SIS:
-//                            iter->lstack[iter->lsp].sep = "\0 \0";
-//                            break;
+//                      case SIS:
+//                          iter->lstack[iter->lsp].sep = sep_SIS;
+//                          break;
                         case KID:
-                            iter->lstack[iter->lsp].sep = "\0/\0";
+                            iter->lstack[iter->lsp].sep = sep_KID;
                             break;
                         default:
-                            iter->lstack[iter->lsp].sep = "\0 \0";
+                            iter->lstack[iter->lsp].sep = sep_skip;
                             break;
                     }
                     sep(iter,0);
