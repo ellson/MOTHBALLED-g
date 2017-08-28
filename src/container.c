@@ -51,6 +51,10 @@ success_t container(THREAD_t * THREAD)
     elem_t *root;
     success_t rc;
 
+// FIXME need to maintain the pathname of the container.
+//      pathname and content hash need to be stored in ikea
+//      when opening a container, initialize with content from ikea
+
     root = new_list(LIST(), ACTIVITY);
 
     container.THREAD = THREAD;
