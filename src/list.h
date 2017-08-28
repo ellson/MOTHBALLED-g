@@ -17,9 +17,9 @@ typedef enum {
 struct elem_s { 
     union {
         struct {
-            elem_t *next;        // next elem in parent's list
-            elem_t *first;       // first elem in this list (or NULL)
-            elem_t *last;        // last elem in this list (or NULL)
+            elem_t *next;        // next elem in parent's list (next sibling)
+            elem_t *first;       // first elem in this list (kid) (or NULL)
+            elem_t *last;        // last elem in this list (last kid) (or NULL)
         } l;
         struct {
             elem_t *next;        // next frag in fraglist list
