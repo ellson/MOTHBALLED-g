@@ -16,6 +16,7 @@
 #include "print.h"
 
 #define LIST() ((LIST_t*)TOKEN)
+#define INBUF() ((INBUF_t*)TOKEN)
 
 /**
  * report an error during parsing with context info.
@@ -76,26 +77,25 @@ void token_error(TOKEN_t * TOKEN, char *message, state_t si)
  */
 success_t token_more_in(TOKEN_t * TOKEN)
 {
-    INBUF_t *INBUF = (INBUF_t *)TOKEN;
     int size, avail;
 
-    if (INBUF->inbuf) {        // if there is an existing active-inbuf
-        if (TOKEN->in == (INBUF->inbuf->buf + INBUFSIZE)) {    // if it is full
-            if ((--(INBUF->inbuf->refs)) == 0) {    // dereference active-inbuf
-                free_inbuf(INBUF, INBUF->inbuf);    // free if no refs left
+    if (INBUF()->inbuf) {        // if there is an existing active-inbuf
+        if (TOKEN->in == (INBUF()->inbuf->buf + INBUFSIZE)) {    // if it is full
+            if ((--(INBUF()->inbuf->refs)) == 0) {    // dereference active-inbuf
+                free_inbuf(INBUF(), INBUF()->inbuf);    // free if no refs left
                          // can happen it held only framents that were ignore, or
                          // which were copied out into SHORTSTRELEM
             }
-            INBUF->inbuf = new_inbuf(INBUF);    // get new
-            assert(INBUF->inbuf);
-            INBUF->inbuf->refs = 1;    // add active-inbuf reference
-            TOKEN->in = INBUF->inbuf->buf;    // point to beginning of buffer
+            INBUF()->inbuf = new_inbuf(INBUF());    // get new
+            assert(INBUF()->inbuf);
+            INBUF()->inbuf->refs = 1;    // add active-inbuf reference
+            TOKEN->in = INBUF()->inbuf->buf;    // point to beginning of buffer
         }
     } else {        // no inbuf, implies just starting
-        INBUF->inbuf = new_inbuf(INBUF);    // get new
-        assert(INBUF->inbuf);
-        INBUF->inbuf->refs = 1;    // add active-inbuf reference
-        TOKEN->in = INBUF->inbuf->buf;
+        INBUF()->inbuf = new_inbuf(INBUF());    // get new
+        assert(INBUF()->inbuf);
+        INBUF()->inbuf->refs = 1;    // add active-inbuf reference
+        TOKEN->in = INBUF()->inbuf->buf;
     }
     if (TOKEN->file) {        // if there is an existing active input file
         if (TOKEN->in == TOKEN->end && feof(TOKEN->file)) {    //    if it is at EOF
@@ -136,7 +136,7 @@ success_t token_more_in(TOKEN_t * TOKEN)
         assert(TOKEN->file);
     }
     // slurp in data from file stream
-    avail = INBUF->inbuf->buf + INBUFSIZE - TOKEN->in;
+    avail = INBUF()->inbuf->buf + INBUFSIZE - TOKEN->in;
     size = fread(TOKEN->in, 1, avail, TOKEN->file);
     TOKEN->end = TOKEN->in + size;
 

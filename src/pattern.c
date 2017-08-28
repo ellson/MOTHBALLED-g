@@ -9,6 +9,12 @@
 #include "thread.h"
 #include "pattern.h"
 
+
+// FIXME - currently patterns apply to future node or edges.
+//       - this should be changed to apply to existing nodes or edges.
+
+// For example:    a* { c [d=e] }
+
 /*
  * A pattern is an ACT in which one or more IDENTIFIERs contain an AST ('*')
  * The AST is a wild-card that matches any substring of zero or more 
