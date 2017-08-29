@@ -28,7 +28,17 @@ extern "C" {
 #define LIST() ((LIST_t*)THREAD)
 #define INBUF() ((INBUF_t*)THREAD)
 
-typedef size_t (*writer_fn_t)(THREAD_t *THREAD, unsigned char *cp, size_t len);
+typedef success_t (*out_open_fn_t)(THREAD_t *THREAD);
+typedef size_t (*out_write_fn_t)(THREAD_t *THREAD, unsigned char *cp, size_t len);
+typedef void (*out_flush_fn_t)(THREAD_t *THREAD);
+typedef success_t (*out_close_fn_t)(THREAD_t *THREAD);
+
+typedef struct {
+    out_open_fn_t out_open_fn;
+    out_write_fn_t out_write_fn;
+    out_flush_fn_t out_flush_fn;
+    out_close_fn_t out_close_fn;
+} out_disc_t;
 
 struct thread_s {
     TOKEN_t TOKEN;             // TOKEN context. May be cast from THREAD
@@ -43,11 +53,12 @@ struct thread_s {
  
     elem_t *identifiers;       // tree of identifiers    // FIXME - add mutex and move to PROCESS  ??
 
-    ikea_box_t *ikea_box;      // box for container
     unsigned char buf[1024];   // output buffering
     int pos;
-    FILE *out;                 // output file
-    writer_fn_t writer_fn;     // output writer
+
+    void *out;                 // output FILE* or ikea_box_t*
+    out_disc_t *out_disc;
+
     char contenthash[128];     // big enough for content hash
                                // checked by assert in ikea_box_open()
     int pretty;                // 0 = mimimal sseparators,  !0 = pretty spacing separators

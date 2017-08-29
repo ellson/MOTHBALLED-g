@@ -367,14 +367,14 @@ int match (elem_t *a, elem_t *b)
 static void printg (THREAD_t *THREAD, elem_t *a)
 {
     iter_t ai = { 0 };
-    writer_fn_t writer_fn = THREAD->writer_fn;
+    out_write_fn_t out_write_fn = THREAD->out_disc->out_write_fn;
 
     inititer(&ai, a, THREAD->pretty);
     do {
-        writer_fn(THREAD, ai.cp, ai.len);
+        out_write_fn(THREAD, ai.cp, ai.len);
         nextiter(&ai);
     } while (ai.len || ai.lsp);
-    writer_fn(THREAD, (unsigned char*)"\n", 1);
+    out_write_fn(THREAD, (unsigned char*)"\n", 1);
 }
 
 /**

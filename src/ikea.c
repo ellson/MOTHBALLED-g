@@ -67,6 +67,7 @@ struct ikea_box_s {
 };
 
 // forward b64 mapping table (6-bits of data to 7-bit ASCII)
+//   - the encoding is suitable for use as filenames.
 const static char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+_";
 
 #if 0  //unused
