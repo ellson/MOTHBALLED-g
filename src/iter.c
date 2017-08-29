@@ -349,6 +349,15 @@ int match (elem_t *a, elem_t *b)
 }
 
 
+// FIXME - printg needs option to print _contenhash (for ikea strorage)
+//           or to expand it (canonical output)
+
+// FIXME - need an option (or separate filter) to print in .gv format.
+//            will need edges with other than 2-legs to be expanded
+//            with a point-node.
+
+// FIXME - maybe additional filtering for .gv
+
 /**
  * printg - print the canonical g string representation of a list
  *
