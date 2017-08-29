@@ -28,10 +28,10 @@ extern "C" {
 #define LIST() ((LIST_t*)THREAD)
 #define INBUF() ((INBUF_t*)THREAD)
 
-typedef success_t (*out_open_fn_t)(THREAD_t *THREAD);
+typedef void* (*out_open_fn_t)(void *descriptor, char *mode);
 typedef size_t (*out_write_fn_t)(THREAD_t *THREAD, unsigned char *cp, size_t len);
 typedef void (*out_flush_fn_t)(THREAD_t *THREAD);
-typedef success_t (*out_close_fn_t)(THREAD_t *THREAD);
+typedef void (*out_close_fn_t)(THREAD_t *THREAD);
 
 typedef struct {
     out_open_fn_t out_open_fn;

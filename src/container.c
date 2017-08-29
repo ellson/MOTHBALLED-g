@@ -11,18 +11,72 @@
 #include "info.h"
 #include "process.h"
 
-static size_t file_writer(THREAD_t *THREAD, unsigned char *cp, size_t len)
-{
+//===================================
+
+static void* stdout_open(void *descriptor, char *mode) {
+    return stdout;
+}
+
+static size_t stdout_write(THREAD_t *THREAD, unsigned char *cp, size_t len) {
+    return fwrite(cp, len, 1, stdout);
+}
+
+static void stdout_flush(THREAD_t *THREAD) {
+    return;
+}
+
+static void stdout_close(THREAD_t *THREAD) {
+    return;
+}
+
+// discipline for writing to stdout
+static out_disc_t stdout_disc = {
+    &stdout_open,
+    &stdout_write,
+    &stdout_flush,
+    &stdout_close
+};
+
+//===================================
+
+#if 0  // not used yet
+static void* file_open(void *descriptor, char *mode) {
+    return fopen((char*)(descriptor), mode);
+}
+
+static size_t file_write(THREAD_t *THREAD, unsigned char *cp, size_t len) {
     return fwrite(cp, len, 1, (FILE*)(THREAD->out));
 }
 
-static void ikea_flush(THREAD_t *THREAD)
-{
+static void file_flush(THREAD_t *THREAD) {
+    fflush((FILE*)(THREAD->out));
+}
+
+static void file_close(THREAD_t *THREAD) {
+    fclose((FILE*)(THREAD->out));
+}
+
+// discipline for writing to a file
+static out_disc_t file_disc = {
+    &file_open,
+    &file_write,
+    &file_flush,
+    &file_close
+};
+#endif
+
+//===================================
+
+static void* ikea_open(void* descriptor, char *mode) {
+    return ikea_box_open( (ikea_store_t*)descriptor, mode);
+}
+
+static void ikea_flush(THREAD_t *THREAD) {
     ikea_box_append((ikea_box_t*)(THREAD->out), THREAD->buf, THREAD->pos);
     THREAD->pos = 0;
 }
 
-static size_t ikea_writer(THREAD_t *THREAD, unsigned char *cp, size_t size)
+static size_t ikea_write(THREAD_t *THREAD, unsigned char *cp, size_t size)
 {
     int len = size;
 
@@ -35,21 +89,22 @@ static size_t ikea_writer(THREAD_t *THREAD, unsigned char *cp, size_t size)
     return size;
 }
 
-// discipline for writing to stdout
-static out_disc_t stdout_disc = {
-    NULL,                 // open
-    &file_writer,         // write
-    NULL,                 // flush
-    NULL                  // close
-};
+static void ikea_close(THREAD_t *THREAD) {
+    ikea_box_close ( (ikea_box_t*)(THREAD->out),
+            THREAD->contenthash,
+            sizeof(THREAD->contenthash) );
+}
+
 
 // discipline for writing to ikea
 static out_disc_t ikea_disc = {
-NULL, //    &ikea_box_open,       // open
-    &ikea_writer,         // write
-    &ikea_flush,          // flush
-NULL  //    &ikea_box_close       // close
+    &ikea_open,
+    &ikea_write,
+    &ikea_flush,
+    &ikea_close 
 };
+
+//===================================
 
 /**
  * @param THREAD context   
@@ -92,28 +147,27 @@ success_t container(THREAD_t * THREAD)
 
     // FIXME - write to stdout - should be based on a query
     if (container.nodes) {
-        THREAD->out = stdout;
         THREAD->out_disc = &stdout_disc;
-
+        THREAD->out = THREAD->out_disc->out_open_fn( NULL, NULL );
         printt(THREAD, container.nodes);
         if (container.edges) {
             printt(THREAD, container.edges);
         }
+        THREAD->out_disc->out_flush_fn(THREAD);
+        THREAD->out_disc->out_close_fn(THREAD);
     }
 
     // preserve in ikea storage
     if (container.nodes) {
         THREAD->out_disc = &ikea_disc;
-
-        THREAD->out = ikea_box_open( THREAD->ikea_store, NULL);
+        THREAD->out = THREAD->out_disc->out_open_fn( THREAD->ikea_store, NULL);
         printt(THREAD, container.nodes);
         if (container.edges) {
             printt(THREAD, container.edges);
         }
-        ikea_flush(THREAD);
-        ikea_box_close ( (ikea_box_t*)(THREAD->out),
-            THREAD->contenthash, sizeof(THREAD->contenthash) );
-      }
+        THREAD->out_disc->out_flush_fn(THREAD);
+        THREAD->out_disc->out_close_fn(THREAD);
+    }
 
 //    if (container.node_patterns) {
 //        ikea_box_append(ikea_box, data, data_len)

@@ -121,7 +121,7 @@ static void base64(unsigned char *ip, size_t ic, char *op, size_t oc)
 /**
  * open a container
  */
-ikea_box_t *ikea_box_open( ikea_store_t * ikea_store, const char *appends_content )
+ikea_box_t* ikea_box_open( ikea_store_t * ikea_store, const char *appends_content )
 {
     ikea_box_t *ikea_box;
     int fd;
