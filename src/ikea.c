@@ -174,7 +174,7 @@ void ikea_box_close(ikea_box_t* ikea_box, char *contenthash, int contenthashsz)
 
     unsigned char digest[EVP_MAX_MD_SIZE];  // contenthash digest 
     unsigned int digest_len = sizeof(digest); 
-    char contentpathname[sizeof(tempdir_template) +1 +sizeof(contenthash) +1];
+    char contentpathname[sizeof(tempdir_template) +1 +sizeof(contenthash) +2 +1];
     ikea_store_t * ikea_store = ikea_box->ikea_store;
 
     if (fclose(ikea_box->fh))
@@ -188,6 +188,7 @@ void ikea_box_close(ikea_box_t* ikea_box, char *contenthash, int contenthashsz)
     strcpy(contentpathname, ikea_store->tempdir);
     strcat(contentpathname, "/");
     strcat(contentpathname, contenthash);
+    strcat(contentpathname, ".g");
 
     // rename the file
     if ((rename(ikea_box->tempfile, contentpathname)) == -1)
