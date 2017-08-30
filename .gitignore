@@ -32,4 +32,4 @@ src/.deps/
 src/.libs/
 Doxyfile
 doxygen/
-rendering/
+testdiff/

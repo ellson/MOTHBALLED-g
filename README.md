@@ -4,7 +4,7 @@ Goals:
 
 Its predecessor/mentor language, "DOT" is an amazingly concise language for
 describing graphs.  "g" is my attempt at adding some extra capabilities,
-while maintaing an equivalent conciseness.
+while maintaining an equivalent conciseness.
 
 The goals of the "g" language are to:
 
@@ -15,9 +15,10 @@ The goals of the "g" language are to:
    to 100% replace DOT.
 
 1. Incremental graph creation, and modification.
-   The graphviz tools (dot, neato, fdp, ...) are file oriented
+   The graphviz tools (dot, neato, fdp, ...) are file oriented and
    batch processed.
-   - g allows for parallel ssource streams, multi-threaded processing,
+
+   - g allows for parallel source streams, multi-threaded processing,
        and distrubuted graphs.
 
 2. Rethink of Subgraphs.
@@ -27,18 +28,17 @@ The goals of the "g" language are to:
    1. to describe sets of objects to attach attributes to.
 	- g retains this capability through sets of objects and through patterns
 
-   2. To describe a set of node endpoint to an edge.
+   2. to describe a set of node endpoint to an edge.
 	- g retains this capabiliy with sets of objects
 
-   3. To describe clusters
+   3. to describe clusters
 	- g hopes to replace the concept of clusters with the use of containment.
         -- any NODE in g can have a contained graph
-	    -- any EDGE in g can have a contained graph
-              (DOT has no similar concept).
+	-- any EDGE in g can have a contained graph (DOT has no similar concept).
 
 3. Rethink of Meta objects:  "node" and "edge" in DOT.
-  - g offers sets to attrubutes that are common to the set members.
-  - g offers patterns to specify meta-object and class-like objects
+  - g offers sets of node or edges to provide attrubutes that are common to the set.
+  - g offers patterns to set common attributes in class-like sets of objects
 
 4. Support "netlists"  - DOT supports edges only with two ends.
   - g offers EDGEs with: one, two, three or more ends (LEGs).
@@ -47,20 +47,22 @@ The goals of the "g" language are to:
      (e.g. a node representing a deck of playing cards.)
   - g offers "disambiguation" of "non-strict" NODEs and EDGEs
 
-6. Minimize the use of special characters that need quoting or escaping
-in strings, and particularly in strings representing VALUES..
+6. Minimize the use of special characters that need quoting or escaping in value strings.
   - g has relaxed quoting in value strings, permitting without quotes:
       -- signed/unsigned int/float numbers
       -- URL strings
       -- Unix and DOS file paths
       -- user@host email addresses
+      -- telephone numbers (with - separators)
+      -- IP addresses
   - g has special quoting modes for:
       -- JSON  (balanced '{' '}' outside of quoting or escapes))
       -- XML/HTML  (balanced '<' '>' outside of quoting or escapes)
-      -- Binary    ( length + content )
+      -- LISP  (balanced '(' ')' outside of quoting or escapes)
+      -- Binary    ( '['length']'content )
    
 7. Preservation of ordering on ends in edges. DOT preserves tail--head
-   - g preserves the ordering of LEGs is preseverved
+   - g preserves the ordering of LEGs is preserved
 
 8. Preservation of input order.  g fails on this goal.
    - g does *not* preserve input order
@@ -88,7 +90,7 @@ in strings, and particularly in strings representing VALUES..
 
 Whats in a name:
 
-I like "g" as the name for this minimalist graph description language.s
+I like "g" as the name for this minimalist graph description language.
 If "g" collides with something else, then perhaps we can call it "je"
 instead ;-)
 

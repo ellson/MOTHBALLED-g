@@ -110,7 +110,8 @@ DONE 3. need some kind of print_edge_name
       - cron - Aunt Cadence (with help from system cron?)
       - stats  - Aunt Sally (with tribute to my Sister ;-)
                 - also include version info.
-      - queries - Aunt Querida - node contain query sets which can be connected (edges) to various input and outputs
+      - queries - Aunt Querida - node contain query sets which can be
+                connected (edges) to various input and outputs
       - patterns - Aunt Patricia - patterns
 
       - graph - no name (can register alias(es) with Nettie)
@@ -157,6 +158,8 @@ DONE 3. need some kind of print_edge_name
      in an attribute, e,g:
 	_ikea_catalog=TTL7400    or _ikea_container=2jmj7l5rSw0yVb_vlWAYkK_YBwk
    - If using catalog entry, then prevent modification of contents. (or use git and control pushes)
+
+24b. GIT repo ?
    - Consider keeping ikea_catalog contents in git for distribution
 
 25. Foreign renderings:
@@ -180,13 +183,14 @@ myname50   _temp   j     a23b9      retVal
    - reduce character set to match C
    - dissallow leading numeric 
 
-27b. - reserve identifiers beginnong with '_' for internal use:
+27b. - reserve identifiers beginning with '_' for internal use:
     - _contenthash
     - _nodeedges
 
-28.  BUG    a[a=<b>]
-The '<' is not allowed in VSTRING,  somehow it gets interpreted as an EDGE <b>
-Should be able to insist that the first char after '=' is valid...   didn't work, maybe brain has stopped working
+FIXED 28.  BUG    a[a=<b>]
+     The '<' is not allowed in VSTRING,  somehow it gets interpreted as an EDGE <b>
+     Should be able to insist that the first char after '=' is valid... 
+     didn't work, maybe brain has stopped working
 
 DONE 29. Rename "session"  to "process"  -- "session" is the persistent
      association across multiple process invocations,  possibly in
@@ -309,3 +313,5 @@ PROBABLY NOT 42. Optimize out one pointer traversal by making a tree node
         - stdin           -- incremental
 
 47. IKEA should use storage compatible with AWS or Ceph Object Store.  A RESTful interface to objects.
+
+50. Need man page
