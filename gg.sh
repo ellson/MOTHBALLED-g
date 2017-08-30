@@ -19,7 +19,6 @@ for g in *; do
         echo -n " $j.svg $j.png" >>Makefile
     done
     echo "" >>Makefile
-    g2gv $g
 done
 
 cat <<EOF >>Makefile
@@ -33,8 +32,8 @@ cat <<EOF >>Makefile
 .gv.svg:
  dot -Tsvg \$< >\$@
 
-#.g.gv:
-# g2gv \$< >\$@ 
+.g.gv:
+ ../g2gv.sh \$< >\$@ 
 EOF
 
 sed 's/^ /\t/' <Makefile >Makefile_t && mv -f Makefile_t Makefile
