@@ -226,6 +226,7 @@ static void skipiter(iter_t *iter)
  *
  * @param iter - a struct containg the current state of the iterator
  * @param elem - the root elem of the list to be iterated
+ * @param pretty - 0 minimum (canonical) spacing, 1 to print attributes on their own line
  */
 static void inititer(iter_t *iter, elem_t *elem, int pretty)
 {
@@ -234,7 +235,7 @@ static void inititer(iter_t *iter, elem_t *elem, int pretty)
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
     iter->lsp = 0;
-    iter->pretty = pretty?2:0; // iter->pretty must be 9 or 2
+    iter->pretty = pretty?2:0; // iter->pretty must be 0 or 2
     stepiter(iter, elem);
 }
 
@@ -243,6 +244,7 @@ static void inititer(iter_t *iter, elem_t *elem, int pretty)
  *
  * @param iter - a struct containing the current state of the iterator
  * @param elem - the root elem of the list to be iterated
+ * @param pretty - 0 minimum (canonical) spacing, 1 to print attributes on their own line
  */
 static void inititer_no_siblings(iter_t *iter, elem_t *elem, int pretty)
 {
@@ -251,7 +253,7 @@ static void inititer_no_siblings(iter_t *iter, elem_t *elem, int pretty)
     assert((elemtype_t)elem->type == LISTELEM
         || (elemtype_t)elem->type == SHORTSTRELEM);
     iter->lsp = 0;
-    iter->pretty = pretty?2:0; // iter->pretty must be 9 or 2
+    iter->pretty = pretty?2:0; // iter->pretty must be 0 or 2
     stepiter(iter, elem);
     iter->lstack[0].lnx = NULL;
 }
