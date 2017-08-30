@@ -19,7 +19,7 @@ g $* >/dev/null
 # prepare diretory for the rendering
 mkdir -p ~/public_html/g
 rm -rf ~/public_html/g/*
-DIR=`pwd`
+DIR=$(pwd)
 cd ~/public_html/g
 zcat $DIR/g_snapshot.tgz | tar xf -
 
@@ -65,7 +65,7 @@ cat <<EOF >>Makefile
  dot -Tsvg \$< >\$@
 
 .g.gv:
- $DIR/g2gv.sh \$< >\$@ 
+ g2gv.sh \$< >\$@ 
 EOF
 
 # why is it so hard to put required tabs in the Makefile ?

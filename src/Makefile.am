@@ -81,6 +81,8 @@ libg_process_la_LIBADD = $(libg_process_C_la_LIBADD)
 #man_MANS = libg_process.3 g.1
 #pdf_DATA = libg_process.3.pdf g.1.pdf
 
+bin_SCRIPTS = gg.sh g2gv.sh
+
 bin_PROGRAMS = g g_static
 
 BUILT_SOURCES = grammar.h grammar.c
