@@ -1,4 +1,14 @@
 #!/bin/bash
+
+#########################################################################
+# Copyright (c) 2017 AT&T Intellectual Property
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Eclipse Public License v1.0
+# which accompanies this distribution, and is available at
+# http://www.eclipse.org/legal/epl-v10.html
+#
+# Contributors: John Ellson <john.ellson@gmail.com>
+#########################################################################
         
 if test $# -lt 1; then
     echo "Usage: $0 <grammar spec in g>" >&2
@@ -158,8 +168,10 @@ g_term() {
     sm_term
 }
 
+# remove all empty and comment lines and
 # add newline before all interesting tokens, and a space after
-sed '{s/</\n< /g;s/>/\n>/g;s/\[/\n \[ /g;s/\]/\n \]/g;s/{/\n { /g;s/}/\n }/g}' $ifn >${ifn}.s
+grep -v '^$' $ifn | grep -v '^#' | \
+sed '{s/</\n< /g;s/>/\n>/g;s/\[/\n \[ /g;s/\]/\n \]/g;s/{/\n { /g;s/}/\n }/g}' >${ifn}.s
 
 while read op rest; do
     if test "$op" = ""; then continue; fi
