@@ -259,7 +259,7 @@ success_t token_whitespace(TOKEN_t * TOKEN)
     success_t rc;
 
     rc = SUCCESS;
-    while (TOKEN->in != TOKEN->end) {
+    do {
         if ((rc = token_non_comment(TOKEN)) == FAIL) {
             break;
         }
@@ -274,7 +274,7 @@ success_t token_whitespace(TOKEN_t * TOKEN)
                 break;
             }
         }
-    }
+    } while (TOKEN->in != TOKEN->end);
     if (TOKEN->in == TOKEN->end) {
         TOKEN->insi = END;
     }
