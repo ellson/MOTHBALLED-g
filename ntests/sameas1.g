@@ -1,0 +1,5 @@
+# sameas 
+
+#out:a
+
+a =
