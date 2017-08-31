@@ -401,8 +401,8 @@ static int vstring_fragment_LBR(TOKEN_t * TOKEN, elem_t *vstring)
                 if (quote_length-- == 0) {
                     quote_state = 0;
                     TOKEN->quote_type = 0;
-                    len++;
-                    in++;
+//                    len++;
+//                    in++;
                     goto done;
                 }
                 switch (*in) {
