@@ -31,12 +31,12 @@ static void intr(int s)
 
 int main(int argc, char *argv[])
 {
-    int opt, optnum, needstats = 0;
+    int opt, optnum, flags = 0;
     char *acts = NULL;
 
     signal(SIGINT, intr);
 
-    while ((opt = getopt(argc, argv, "d::se:")) != -1) {
+    while ((opt = getopt(argc, argv, "d::pse:")) != -1) {
         if (optarg)
             optnum = atoi(optarg);
         else
@@ -60,7 +60,10 @@ int main(int argc, char *argv[])
 
             break;
         case 's':    // stats
-            needstats = 1;
+            flags |= 1;
+            break;
+        case 'p':    // pretty output
+            flags |= 2;
             break;
         case 'e':    // eval    - leave in arglist
             acts = optarg;
@@ -73,12 +76,10 @@ int main(int argc, char *argv[])
     }
 
     // create the top-level context for processing the inputs
-    process(&argc, argv, optind, needstats);
+    process(&argc, argv, optind, flags);
 
     exit(EXIT_SUCCESS);
 }
-
-
 
 
 /**

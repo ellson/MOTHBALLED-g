@@ -71,7 +71,6 @@ struct thread_s {
 
     char contenthash[128];     // big enough for content hash
                                // checked by assert in ikea_box_open()
-    int pretty;                // 0 = mimimal sseparators,  !0 = pretty spacing separators
 
     // stats
     long stat_inactcount;

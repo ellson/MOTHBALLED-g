@@ -1,7 +1,5 @@
 # empty attributes
 
-#out:a [
-#out:  b
-#out:]
+#out:a[b]
 
 a [b]

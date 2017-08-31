@@ -14,7 +14,7 @@
 #     visible at http://localhost/~<user>/g/top.svg
 
 # run g on the input graph, the result is in g_snapshot.tgz
-g $* >/dev/null
+g -p $* >/dev/null
 
 # prepare directory for the rendering
 mkdir -p ~/public_html/g

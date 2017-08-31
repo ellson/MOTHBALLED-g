@@ -30,8 +30,8 @@ struct process_s {
     THREAD_t *THREAD;          // THREADs in this PROCESS
 
 // FIXME - replace with a properly formed QRY
-    char needstats;            // flag set if -s on command line
-//
+    int flags;       // 1 if -s,  2 if -p
+
     GOM_t MUM;       // Primary, in-memory graph  (one of the sisters, never explicitly named)
     GOM_t SALLY;     // Aunt Sally,    Statistics  
     GOM_t GUDRUN;    // Aunt Gudrun,   Grammar  (devine knowledge)

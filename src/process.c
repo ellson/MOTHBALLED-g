@@ -40,7 +40,7 @@
 // public include
 #include "libg_process.h"
 
-void process(int *pargc, char *argv[], int optind, char needstats)
+void process(int *pargc, char *argv[], int optind, int flags)
 {
     PROCESS_t process;
     struct passwd *pw;
@@ -89,7 +89,7 @@ void process(int *pargc, char *argv[], int optind, char needstats)
     process.osname = unamebuf.sysname;
     process.osrelease = unamebuf.release;
     process.osmachine = unamebuf.machine;
-    process.needstats = needstats;
+    process.flags = flags;
 
     // run a THREAD to process the input
     process.THREAD = thread(&process, pargc, argv, optind);

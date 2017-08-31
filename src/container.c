@@ -143,8 +143,6 @@ success_t container(THREAD_t * THREAD)
     }
     container.stat_containercount++;    // number of containers in this container
 
-    THREAD->pretty = 1;
-
     if ((rc = parse(&container, root, 0, SREP, 0, 0, END)) == FAIL) {
         if (TOKEN()->insi == END) {    // EOF is OK
             rc = SUCCESS;
@@ -153,8 +151,6 @@ success_t container(THREAD_t * THREAD)
         }
     }
     
-
-
     // FIXME - write to stdout - should be based on a query
     if (container.nodes) {
         THREAD->out_disc = &stdout_disc;
@@ -201,7 +197,7 @@ success_t container(THREAD_t * THREAD)
 //E();
 
     // FIXME - move to Aunt Sally query
-    if (THREAD->PROCESS->needstats) {
+    if (THREAD->PROCESS->flags & 1) {
         // in alpha-sorted order
         info_container(&container);
         info_process(THREAD);

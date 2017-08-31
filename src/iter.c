@@ -381,7 +381,7 @@ static void printg (THREAD_t *THREAD, elem_t *a)
     iter_t ai = { 0 };
     out_write_fn_t out_write_fn = THREAD->out_disc->out_write_fn;
 
-    inititer(&ai, a, THREAD->pretty);
+    inititer(&ai, a, THREAD->PROCESS->flags & 2);
     do {
         out_write_fn(THREAD, ai.cp, ai.len);
         nextiter(&ai);
