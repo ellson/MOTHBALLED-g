@@ -13,10 +13,10 @@
 # render a .g graph to ~/public_html/g/top.svg
 #     visible at http://localhost/~<user>/g/top.svg
 
-# run g on the input graph,  result is in g_snapshot.tgz
+# run g on the input graph, the result is in g_snapshot.tgz
 g $* >/dev/null
 
-# prepare diretory for the rendering
+# prepare directory for the rendering
 mkdir -p ~/public_html/g
 rm -rf ~/public_html/g/*
 DIR=$(pwd)
@@ -42,7 +42,7 @@ done
 sort -u is_content >is_content_t
 sort -u is_contained >is_contained_t
 diff is_content_t is_contained_t | while read dif top; do 
-    if test "$dif" == '<'; then
+    if test "$dif" = '<'; then
 	cat <<EOF >>Makefile
 top.svg: $top.svg
  ln $top.svg top.svg
@@ -59,10 +59,10 @@ cat <<EOF >>Makefile
 .SUFFIXES: .g .gv .png .svg
 
 .gv.png:
- dot -Tpng \$< >\$@
+ fdp -Tpng \$< >\$@
 
 .gv.svg:
- dot -Tsvg \$< >\$@
+ fdp -Tsvg \$< >\$@
 
 .g.gv:
  g2gv.sh \$< >\$@ 
