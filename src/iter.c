@@ -31,7 +31,7 @@ char *sep_intree[4]     = { " ", "" ,   "\n  ", ""  };
 char *sep_begtree[4]    = { "" , "" ,   "" , ""  };
 char *sep_step[4]       = { "" , "" ,   "" , ""  };
 char *sep_ATTRIBUTES[4] = { "[", "]",   " [\n  ", "\n]" };
-char *sep_DISAMBIG[4]   = { "'", "" ,   "'", ""  };
+char *sep_DISAMBIG[4]   = { "`", "" ,   "`", ""  };
 char *sep_VALUE[4]      = { "=", "" ,   " = ", ""  };
 char *sep_SIS[4]        = { " ", "" ,   " ", ""  };
 char *sep_KID[4]        = { "/", "" ,   "/", ""  };
