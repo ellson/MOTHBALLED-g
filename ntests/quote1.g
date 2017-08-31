@@ -1,5 +1,5 @@
 # quoted value - DQT
 
-#out:a[b="cde"]
+#out:a[b="cd e"]
 
-a[b="cde"]
+a[b="cd e"]
