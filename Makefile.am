@@ -35,17 +35,9 @@ check:
 spellcheck:
 	codespell -d -q 3 --skip="*.po,*.ts"
 
-.PHONY: ntest
-ntest:
-	-for t in ntests/*g; do ./ntest.sh $$t; done
-
 .PHONY: test
 test:
-	-for f in tests/*g; do ./testdiff.sh src/g $$f; done
-
-.PHONY: testref
-testref:
-	-for f in tests/*g; do ./testref.sh src/g $$f; done
+	-for t in tests/*g; do ./dotest.sh $$t; done
 
 EXTRA_DIST = g.spec g.spec.in autogen.sh
 

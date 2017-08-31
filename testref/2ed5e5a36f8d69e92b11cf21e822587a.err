@@ -1,2 +1,0 @@
-Error: EOF in the middle of a quote string NLL
-      in "tests/eof_inquote.badg" line: 1 just before: ""

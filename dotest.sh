@@ -14,40 +14,40 @@
 # Run a test of g with a given test file.  The test file
 #  indicated the expected output in special comments:
 
-src/g $1 >ntest_out 2>ntest_err
-echo "$?" >ntest_rc
+src/g $1 >test_out 2>test_err
+echo "$?" >test_rc
 
-grep '^#rc:' $1 >ntest_t
+grep '^#rc:' $1 >test_t
 if test $? -eq 0; then
-    sed -e 's/^#rc://' <ntest_t >ntest_expected_rc
+    sed -e 's/^#rc://' <test_t >test_expected_rc
 else
-    echo "0" >ntest_expected_rc
+    echo "0" >test_expected_rc
 fi
-cmp ntest_expected_rc ntest_rc
+cmp test_expected_rc test_rc
 if test $? -ne 0; then
     echo "$1 - rc differs from expected"
 fi
 
-grep '^#out:' $1 >ntest_t
+grep '^#out:' $1 >test_t
 if test $? -eq 0; then
-    sed -e 's/^#out://' <ntest_t >ntest_expected_out
+    sed -e 's/^#out://' <test_t >test_expected_out
 else
-    rm -f ntest_expected_out
-    touch ntest_expected_out
+    rm -f test_expected_out
+    touch test_expected_out
 fi
-cmp ntest_expected_out ntest_out
+cmp test_expected_out test_out
 if test $? -ne 0; then
     echo "$1 - stdout differs from expected"
 fi
 
-grep '^#err:' $1 >ntest_t
+grep '^#err:' $1 >test_t
 if test $? -eq 0; then
-    sed -e 's/^#err://' <ntest_t >ntest_expected_err
+    sed -e 's/^#err://' <test_t >test_expected_err
 else
-    rm -f ntest_expected_err
-    touch ntest_expected_err
+    rm -f test_expected_err
+    touch test_expected_err
 fi
-cmp ntest_expected_err ntest_err
+cmp test_expected_err test_err
 if test $? -ne 0; then
     echo "$1 - stderr differs from expected"
 fi
