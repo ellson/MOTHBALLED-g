@@ -262,7 +262,9 @@ elem_t * patterns(CONTAINER_t *CONTAINER, elem_t *act)
         if (!newattributes) {
             newattributes = new_list(LIST(), ATTRIBUTES);
         }
-        append_addref(newattributes, attributes->u.l.first);
+        if (attributes->u.l.first) { // elide [] 
+            append_addref(newattributes, attributes->u.l.first);
+        }
     }
     if (newattributes) {
         append_transfer(newact, newattributes);

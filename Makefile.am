@@ -35,6 +35,10 @@ check:
 spellcheck:
 	codespell -d -q 3 --skip="*.po,*.ts"
 
+.PHONY: ntest
+ntest:
+	-for t in ntests/*g; do ./ntest.sh $$t; done
+
 .PHONY: test
 test:
 	-for f in tests/*g; do ./testdiff.sh src/g $$f; done
