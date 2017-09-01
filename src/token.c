@@ -129,22 +129,30 @@ success_t token_more_in(TOKEN_t * TOKEN)
             if (strcmp(TOKEN->filename, "-") == 0) {
                 TOKEN->file = stdin;
                 *(TOKEN->pargc) = 0;    // No files after stdin
+#if 0
+// FIXME - delete
             } else if (strcmp(TOKEN->filename, "-e") == 0) {
                 TOKEN->membuf = TOKEN->argv[0];
                 (*(TOKEN->pargc))--;
                 if (TOKEN->membuf) fprintf(stderr, "NOT YET WORKING:  %s\n", TOKEN->membuf);
                     return FAIL;    // no more input available
+#endif
             } else {
                 if (! (TOKEN->file = fopen(TOKEN->filename, "rb")))
                     FATAL("fopen(\"%s\", \"rb\")", TOKEN->filename);
             }
             TOKEN->linecount_at_start = TOKEN->stat_lfcount ? TOKEN->stat_lfcount : TOKEN->stat_crcount;
             TOKEN->stat_infilecount++;
+        } else if (TOKEN->acts) {
+// FIXME - how to get string into input ???
+            fprintf(stderr,"process command line\n");
         } else {
             return FAIL;    // no more input available
         }
+// FIXME - assert(TOKEN->file || TOKEN->acts);
         assert(TOKEN->file);
     }
+// FIXME  -- or slurp in data from acts
     // slurp in data from file stream
     avail = INBUF()->inbuf->buf + INBUFSIZE - TOKEN->in;
     size = fread(TOKEN->in, 1, avail, TOKEN->file);

@@ -29,6 +29,7 @@ struct token_s {
     int *pargc;                // remaining filenames from command line
     char **argv;
     FILE *out, *err;           // output files
+    char *acts;                // g snippet from command line
 
     unsigned char *in;         // next character to be processed
     unsigned char *end;        // one past the last character

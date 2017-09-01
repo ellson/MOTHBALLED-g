@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
     signal(SIGINT, intr);
 
-    while ((opt = getopt(argc, argv, "d::pcse:")) != -1) {
+    while ((opt = getopt(argc, argv, "d::pcsg:")) != -1) {
         if (optarg)
             optnum = atoi(optarg);
         else
@@ -68,18 +68,22 @@ int main(int argc, char *argv[])
         case 'c':    // expand contents
             flags |= 4;
             break;
-        case 'e':    // eval    - leave in arglist
+        case 'g':    // eval g acts from command line
+                     // evaluated after all named files, 
+                     // but before explicit '-'
+                     // no implicit stdin processing if -g present
+            flags |= 8;
             acts = optarg;
             break;
         default:
-            fprintf(stderr,"Usage: %s [-d[01] [-s] [-p] [-c] [-e acts] [files] [-]\n", argv[0]);
+            fprintf(stderr,"Usage: %s [-d[01] [-s] [-p] [-c] [files] [-g acts] [-]\n", argv[0]);
             exit(EXIT_FAILURE);
             break;
         }
     }
 
     // create the top-level context for processing the inputs
-    process(&argc, argv, optind, flags);
+    process(&argc, argv, optind, flags, acts);
 
     exit(EXIT_SUCCESS);
 }

@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 // process.c
-void process(int *pargc, char *argv[], int optind, int flags);
+void process(int *pargc, char *argv[], int optind, int flags, char *acts);
 
 // emit.c
 int select_emitter(char *name);

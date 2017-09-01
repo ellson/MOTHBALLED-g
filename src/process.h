@@ -24,7 +24,8 @@ struct process_s {
     THREAD_t *THREAD;          // THREADs in this PROCESS
 
 // FIXME - use enumeration
-    int flags;       // -s = 1, -p = 2, -c = 4
+    int flags;       // -s = 1, -p = 2, -c = 4, -g = 8
+    char *acts;      // g snippet from command line
 
     // info collected by session();
     char *progname;
