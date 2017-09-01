@@ -20,21 +20,11 @@ extern "C" {
 #define TEN9 1000000000
 #define TEN3 1000
 
-// Graph Object Model
-typedef struct {
-    elem_t *nodes;    // tree of nodes (sorted, unique)
-    elem_t *edges;    // tree of edges (sorted, unique)
-} GOM_t;
-
 struct process_s {
     THREAD_t *THREAD;          // THREADs in this PROCESS
 
-// FIXME - replace with a properly formed QRY
-    int flags;       // 1 if -s,  2 if -p
-
-    GOM_t MUM;       // Primary, in-memory graph  (one of the sisters, never explicitly named)
-    GOM_t SALLY;     // Aunt Sally,    Statistics  
-    GOM_t GUDRUN;    // Aunt Gudrun,   Grammar  (devine knowledge)
+// FIXME - use enumeration
+    int flags;       // -s = 1, -p = 2, -c = 4
 
     // info collected by session();
     char *progname;
