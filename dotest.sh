@@ -14,17 +14,22 @@
 # Run a test of g with a given test file.  The test file
 #  indicated the expected output in special comments:
 
-src/g $1 >test_out 2>test_err
-echo "$?" >test_rc
-
+grep '^#opt:' $1 >test_t
+if test $? -eq 0; then
+    OPT=$( sed -e 's/^#opt://' <test_t )
+else
+    OPT=""
+fi
 grep '^#rc:' $1 >test_t
 if test $? -eq 0; then
-    sed -e 's/^#rc://' <test_t >test_expected_rc
+    RC=$( sed -e 's/^#rc://' <test_t )
 else
-    echo "0" >test_expected_rc
+    RC=0
 fi
-cmp test_expected_rc test_rc
-if test $? -ne 0; then
+
+src/g $OPT $1 >test_out 2>test_err
+
+if test $? -ne $RC; then
     echo "$1 - rc differs from expected"
 fi
 
