@@ -1,5 +1,5 @@
 # unquoted value - DOS file path
 
-#out:a[b=C:\home\lucky\file]
+#out:a[b=C:\dos\path\file]
 
-a[b=C:\home\lucky\file]
+a[b=C:\dos\path\file]
