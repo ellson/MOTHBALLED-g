@@ -151,16 +151,24 @@ success_t container(THREAD_t * THREAD)
         }
     }
     
-    // FIXME - write to stdout - should be based on a query
-    if (container.nodes) {
-        THREAD->out_disc = &stdout_disc;
-        THREAD->out = THREAD->out_disc->out_open_fn( NULL, NULL );
-        printt(THREAD, container.nodes);
-        if (container.edges) {
-            printt(THREAD, container.edges);
+    // write to stdout
+    if (THREAD->stat_containdepth == 1) {
+        if (container.nodes) {
+            THREAD->out_disc = &stdout_disc;
+            THREAD->out = THREAD->out_disc->out_open_fn( NULL, NULL );
+            printt(THREAD, container.nodes);
+            if (container.edges) {
+                printt(THREAD, container.edges);
+            }
+            THREAD->out_disc->out_flush_fn(THREAD);
+            THREAD->out_disc->out_close_fn(THREAD);
         }
-        THREAD->out_disc->out_flush_fn(THREAD);
-        THREAD->out_disc->out_close_fn(THREAD);
+    }
+    else {
+        if (THREAD->PROCESS->flags & 4) {
+            // FIXME
+            fprintf(stderr, "printing of expanded content is not yet implemented\n");
+        }
     }
 
     // preserve in ikea storage

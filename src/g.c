@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
     signal(SIGINT, intr);
 
-    while ((opt = getopt(argc, argv, "d::pse:")) != -1) {
+    while ((opt = getopt(argc, argv, "d::pcse:")) != -1) {
         if (optarg)
             optnum = atoi(optarg);
         else
@@ -65,11 +65,14 @@ int main(int argc, char *argv[])
         case 'p':    // pretty output
             flags |= 2;
             break;
+        case 'c':    // expand contents
+            flags |= 4;
+            break;
         case 'e':    // eval    - leave in arglist
             acts = optarg;
             break;
         default:
-            fprintf(stderr,"Usage: %s [-d[01] [-s] [-e acts] [files] [-]\n", argv[0]);
+            fprintf(stderr,"Usage: %s [-d[01] [-s] [-p] [-c] [-e acts] [files] [-]\n", argv[0]);
             exit(EXIT_FAILURE);
             break;
         }
