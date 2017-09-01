@@ -1,0 +1,6 @@
+# identifiers - quotes not permitted
+
+#rc:1
+#err:
+
+a"b
