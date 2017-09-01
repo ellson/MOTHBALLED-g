@@ -1,5 +1,5 @@
 # unquoted value - simple string
 
-#out:a[b=abcABC123]
+#out:a[b=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!$%&'+,-.|_=*\/:;?^~`]
 
-a[b=abcABC123]
+a[b=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!$%&'+,-.|_=*\/:;?^~`]
