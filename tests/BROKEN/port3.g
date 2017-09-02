@@ -1,9 +1,6 @@
-# ports on SIS and KID
-#  Currently fails on "Ahh, cute kid." debug message
+# port on own container
 
 #out:a
-#out:b
-#out:c
-#out:<a:p c>
+#out:<:p a>
 
-<a:p/b:p c>
+<:p a>
