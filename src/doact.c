@@ -52,6 +52,8 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     assert(act);
     assert(act->u.l.first);    // minimmaly, an ACT must have a SUBJECT
 
+//P(act);
+
     CONTAINER->stat_inactcount++;
     THREAD->stat_inactcount++;
 

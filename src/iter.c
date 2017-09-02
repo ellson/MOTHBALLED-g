@@ -22,20 +22,21 @@
 #include "thread.h"
 #include "iter.h"
 
-// separator strings:       minimal     pretty
-char *sep_ACT[4]        = { "" , "" ,   "" , ""  };
-char *sep_EDGE[4]       = { "<", ">",   "<", ">" };
-char *sep_MUM[4]        = { "^", "" ,   "^", ""  };
-char *sep_SET[4]        = { "(", ")",   "(", ")" };
-char *sep_intree[4]     = { " ", "" ,   "\n  ", ""  };
-char *sep_begtree[4]    = { "" , "" ,   "" , ""  };
-char *sep_step[4]       = { "" , "" ,   "" , ""  };
-char *sep_ATTRIBUTES[4] = { "[", "]",   " [\n  ", "\n]" };
-char *sep_DISAMBIG[4]   = { "`", "" ,   "`", ""  };
-char *sep_VALUE[4]      = { "=", "" ,   " = ", ""  };
-char *sep_SIS[4]        = { " ", "" ,   " ", ""  };
-char *sep_KID[4]        = { "/", "" ,   "/", ""  };
-char *sep_skip[4]       = { " ", "" ,   " ", ""  };
+// separator strings:       minimal   pretty
+char *sep_begtree[4]    = { "","",    "",""     };
+char *sep_intree[4]     = { " ","",   "\n  ","" };
+char *sep_skip[4]       = { " ","",   " ",""    };
+char *sep_step[4]       = { "","",    "",""     };
+char *sep_ACT[4]        = { "","",    "",""     };
+char *sep_ATTRIBUTES[4] = { "[","]",  " [\n  ","\n]" };
+char *sep_DISAMBIG[4]   = { "`","",   "`",""    };
+char *sep_EDGE[4]       = { "<",">",  "<",">"   };
+char *sep_KID[4]        = { "/","",   "/",""    };
+char *sep_MUM[4]        = { "^","",   "^",""    };
+char *sep_PORT[4]       = { ":","",   ":",""    };
+char *sep_SET[4]        = { "(",")",  "(",")"   };
+char *sep_SIS[4]        = { " ","",   " ",""    };
+char *sep_VALUE[4]      = { "=","",   " = ",""  };
 
 static void sep(iter_t *iter, int idx)
 {
@@ -203,6 +204,9 @@ static void skipiter(iter_t *iter)
 //                          break;
                         case KID:
                             iter->lstack[iter->lsp].sep = sep_KID;
+                            break;
+                        case PORT:
+                            iter->lstack[iter->lsp].sep = sep_PORT;
                             break;
                         default:
                             iter->lstack[iter->lsp].sep = sep_skip;

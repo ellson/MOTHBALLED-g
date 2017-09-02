@@ -269,8 +269,6 @@ done: // State exit processing
         // drop tokens with no chain, but retain subtree
         case FAMILY:
         case RELATIVE:
-        case PORT:
-        case NODEREF:
         case NOUNS:
         case NODES:
         case EDGES:
@@ -279,9 +277,9 @@ done: // State exit processing
         case ENDPOINT:
             append_addref(root, branch->u.l.first);
             break;
-
-        // FIXME   keep one copy of child identifier itself
-        // FIXME   then drop token with no chain, but retain subtree
+        case PORT:
+            append_addref(root, branch);
+            break;
         case NODEID:
         case PORTID:
         case DISAMBID:

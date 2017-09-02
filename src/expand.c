@@ -67,10 +67,12 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                 while(ep) {
                     switch ((state_t)ep->state) {
                         case SIS:
-                            // add NODEID to node list
-                            np = ref_list(LIST(), ep);
+                            // add NODEID (w.o. PORT) to node list
+                            np = ref_list(LIST(), ep->u.l.first);
                             np->state = NODE;
                             append_transfer(nodes, np);
+
+                            // add NODEID (w PORT) to leg list
                             np = ref_list(LIST(), ep);
                             np->state = NODE;
                             append_transfer(leg, np);
