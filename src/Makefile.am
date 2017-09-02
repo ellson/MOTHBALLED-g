@@ -40,6 +40,7 @@ noinst_HEADERS = \
     thread.h \
     token.h \
     tree.h \
+    tuple.h \
     types.h \
     vstring.h
 
@@ -70,6 +71,7 @@ libg_process_C_la_SOURCES = \
     thread.c \
     token.c \
     tree.c \
+    tuple.c \
     vstring.c
 
 libg_process_C_la_LIBADD =
