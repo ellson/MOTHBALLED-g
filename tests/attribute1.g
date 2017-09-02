@@ -1,4 +1,4 @@
-# empty attributes
+# empty value attributes
 
 #out:a[b]
 

@@ -1,6 +1,0 @@
-# 1a)  line number wrong - line number of EOF instead of the beginning of the broken token?
-# 1b) what does "ACTIVITY" mean in the error message?  Should probably be "VSTRING"
-# 1c) ' while processing "" '  not very useful
-# 1d) something else going wrong - results are different with these comments present
-#            try:  grep -v '^#' eof_inquote.badg.1bug | g
-abc [a="b

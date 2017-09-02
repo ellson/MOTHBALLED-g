@@ -1,0 +1,8 @@
+# subjects must be all edges, or all nodes
+#    error not reported
+#    see also syntax[2345].badg
+
+#rc:1
+#err:
+
+(a <b c>)

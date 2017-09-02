@@ -1,0 +1,10 @@
+# EOG in DQT vstring
+#   why ACTIVITY ?
+#   why "" ?
+#   is line number correct ?
+
+#rc:1
+#err:Error: EOF in the middle of a quote string ACTIVITY
+#err:       from "tests/BROKEN/syntax4.badg" line: 4 while processing: ""
+
+abc [a="b

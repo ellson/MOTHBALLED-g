@@ -1,0 +1,9 @@
+# subjects must be all edges, or all nodes
+#    error somehow suppressed by preceding node x
+#    related: syntax[2345].badg
+
+#rc:1
+#err:
+
+x
+(a <b c>)
