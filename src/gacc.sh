@@ -245,13 +245,25 @@ for s in ${statelist[@]}; do
         agaws=0
         nprops=0
         for p in $prop; do
+
+##DEPRECATED support for 1-or-more
+#            case $p in
+#            ALT)  ((alts++));;
+#            OPT)  ((ord|=1));;
+#            REP)  ((ord|=2));;
+#            SREP) ((ord|=2)); ws='_';;
+#            *) ;;
+#            esac
+
+# all REPs are 0-or-more,  so set OPT bit 
             case $p in
             ALT)  ((alts++));;
             OPT)  ((ord|=1));;
-            REP)  ((ord|=2));;
-            SREP) ((ord|=2)); ws='_';;
+            REP)  ((ord|=3));;
+            SREP) ((ord|=3)); ws='_';;
             *) ;;
             esac
+
             pcnt=0
             for q in ${!PROPS[@]}; do
                 if test "$p" = "$q"; then
@@ -261,7 +273,7 @@ for s in ${statelist[@]}; do
             done
         done
         case $ord in
-        0 ) ordc="";; 
+        0 ) ordc="";;
         1 ) ordc="?";; 
         2 ) ordc="+"; echo "deprecated use of '1-or-more' repetitions" >&2;; 
         3 ) ordc="*";; 

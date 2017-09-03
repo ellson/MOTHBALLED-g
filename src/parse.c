@@ -203,11 +203,12 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
                     }
                 }
                 rc = SUCCESS;           // OPTs always successful
-            } else {                    // else not OPTional, at least one is mandatory
+            } else {                    // else not OPTional, one is mandatory
                 if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                     break;
                 }
 #if 0
+// DEPRECATED support for 1-or-more
                 while (MORE_REP(nprop, ei)) {
                     if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                         break;
