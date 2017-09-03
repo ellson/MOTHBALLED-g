@@ -22,17 +22,17 @@ rpm: dist
 doxygen:
 	doxygen
 
-.PHONY: check
-check:
-	cppcheck --enable=all -I. src/*.[ch] >/dev/null
+.PHONY: cppcheck
+cppcheck:
+	cppcheck --enable=all --suppress=missingIncludeSystem -I. src/*.[ch] >/dev/null
 
 
 # codespell is a python script:
 #      https://github.com/lucasdemarchi/codespell
 # install on Fedora26 with:
 #      pip install codespell
-.PHONY: spellcheck
-spellcheck:
+.PHONY: codespell
+codespell:
 	codespell -d -q 3 --skip="*.po,*.ts"
 
 .PHONY: test
