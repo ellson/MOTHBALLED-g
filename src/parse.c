@@ -274,11 +274,7 @@ done: // State exit processing
         case EDGES:
         case NODENOUN:
         case EDGENOUN:
-        case ENDPOINT:
             append_addref(root, branch->u.l.first);
-            break;
-        case PORT:
-            append_addref(root, branch);
             break;
         case NODEID:
         case PORTID:
@@ -319,6 +315,7 @@ done: // State exit processing
         case SCN:  // terminal
             break;
 
+        case PORT:
         case SET:
         case ENDPOINTSET:
         default:

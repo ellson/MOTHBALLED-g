@@ -65,15 +65,16 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                 // and resolve parent/child issues
                 ep = refepset->u.l.first;
                 while(ep) {
-                    switch ((state_t)ep->state) {
+                    elem_t *eep = ep->u.l.first;
+                    switch ((state_t)eep->state) {
                         case SIS:
                             // add NODEID (w.o. PORT) to node list
-                            np = ref_list(LIST(), ep->u.l.first);
+                            np = ref_list(LIST(), eep->u.l.first);
                             np->state = NODE;
                             append_transfer(nodes, np);
 
                             // add NODEID (w PORT) to leg list
-                            np = ref_list(LIST(), ep);
+                            np = ref_list(LIST(), eep);
                             np->state = NODE;
                             append_transfer(leg, np);
                             break;
@@ -87,8 +88,14 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                             free_list(LIST(), refepset);
                             goto doneleg;
                             break;
+                        case PORT:
+                            // add PORT to leg list
+                            np = ref_list(LIST(), eep);
+                            np->state = NODE;
+                            append_transfer(leg, np);
+                            break;
                         default:
-                            S((state_t)ep->state);
+                            S((state_t)eep->state);
                             assert(0);  // should never get here
                             break;
                     }

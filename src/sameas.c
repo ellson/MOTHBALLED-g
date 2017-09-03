@@ -115,6 +115,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t *target, elem_t * replacement)
             case SET:
             case EDGE:
             case LEG:
+            case ENDPOINT:
             case ENDPOINTSET:
                 // need to recurse further for potential SAMEAS
                 // doesn't matter if old is shorter
