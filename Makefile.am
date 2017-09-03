@@ -18,6 +18,10 @@ SUBDIRS = src
 rpm: dist
 	rpmbuild -ta g-@VERSION@.tar.gz
 
+.PHONY: rpmlint
+rpmlint: dist
+	rpmlint .
+
 .PHONY: doxygen
 doxygen:
 	doxygen
@@ -25,7 +29,6 @@ doxygen:
 .PHONY: cppcheck
 cppcheck:
 	cppcheck --enable=all --suppress=missingIncludeSystem -I. src/*.[ch] >/dev/null
-
 
 # codespell is a python script:
 #      https://github.com/lucasdemarchi/codespell

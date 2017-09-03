@@ -4,19 +4,14 @@ Name:    g
 Summary: Graph Tool
 Version: @VERSION@
 
-%define truerelease 1
-%{?distroagnostic: %define release %{truerelease}}
-%{!?distroagnostic: %define release %{truerelease}%{?dist}}
-
-Release: %{?release}
+Release: 1
 Group:   Applications/Multimedia
 License: EPL
 Source0: g-@VERSION@.tar.gz
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires: zlib-devel libtar-devel
-#BuildRequires: graphviz-devel
+BuildRequires: zlib-devel libtar-devel openssl-devel
 BuildRequires: bash doxygen graphviz-nox
 
 #-- main g rpm ------------------------------------------------
@@ -50,8 +45,6 @@ This package contains development files for g.
 %{_includedir}/libg_process.h
 %{_libdir}/libg_process.so
 %{_libdir}/libg_process.a
-#{_mandir}/man3/libg_process.3.*
-#{_libdir}/pkgconfig/libg_process.pc
 
 #-- building --------------------------------------------------
 
@@ -73,8 +66,6 @@ make DESTDIR=%{buildroot} \
         pkgconfigdir=%{_libdir}/pkgconfig \
         install
 find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
-#cp -a %{buildroot}%{_datadir}/%{name}/doc __doc
-#rm -rf %{buildroot}%{_datadir}/%{name}/doc
 
 %check
 
