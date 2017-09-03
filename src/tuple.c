@@ -28,7 +28,9 @@
  * In g, everything is an elem_t,  but we lose the benerfit of compile-time structs.
  * This function attempts to document and enforce the structure of tuples.
  *
- * @param the type of the returned elem_t
+ * @param LIST context for list functions
+ * @param type of the returned elem_t
+ * @param count of fields
  * @param ... some: struct{state_t; elem_t*;}   The last elem must be {0}
  * @return an elem containing the specified field elems
  *
