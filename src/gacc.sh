@@ -199,12 +199,14 @@ Meta grammar:
     '|' separates alternates, otherwise the tokens are sequential
     '_' indicates that a non-ABC character must separate elements (e.g. WS)
     '?' indicates that the token is optional
-    '+' indicates that the token is to be repeated 1 or more times
     '*' indicates that the token is to be repeated 0 or more times
 
 Grammar:
 
 EOF
+
+# DEPRECATED
+#    '+' indicates that the token is to be repeated 1 or more times
 
 ( printf "strict digraph { ordering=out\n"       )  >${ifn}.gv
 ( printf "typedef enum {\n"                      )  >${ifn}.enum
@@ -261,7 +263,7 @@ for s in ${statelist[@]}; do
         case $ord in
         0 ) ordc="";; 
         1 ) ordc="?";; 
-        2 ) ordc="+";; 
+        2 ) ordc="+"; echo "deprecated use of '1-or-more' repetitions" >&2;; 
         3 ) ordc="*";; 
         esac
         ( printf " %s%s%s" "$ws" "$next" "$ordc" ) >>${ifn}.ebnf

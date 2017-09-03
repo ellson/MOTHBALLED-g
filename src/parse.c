@@ -207,12 +207,14 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
                 if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                     break;
                 }
+#if 0
                 while (MORE_REP(nprop, ei)) {
                     if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                         break;
                     }
                 }
                 rc = SUCCESS;           // OPTs always successful
+#endif
             }
         }
         ti++;        // next ALT (if not yet satisfied), or next sequence item
