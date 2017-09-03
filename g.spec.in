@@ -15,7 +15,8 @@ Source0: g-@VERSION@.tar.gz
 
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires: zlib-devel libtar-devel graphviz-devel
+BuildRequires: zlib-devel libtar-devel
+#BuildRequires: graphviz-devel
 BuildRequires: bash doxygen graphviz-nox
 
 #-- main g rpm ------------------------------------------------
@@ -29,6 +30,8 @@ A language for describing graphs,  and a tool to parse the language and render t
 %endif
 %doc COPYING AUTHORS ChangeLog NEWS README
 %{_bindir}/g
+%{_bindir}/gg.sh
+%{_bindir}/g2gv.sh
 %exclude %{_bindir}/g_static
 %{_libdir}/libg_process.so.*
 
@@ -47,8 +50,8 @@ This package contains development files for g.
 %{_includedir}/libg_process.h
 %{_libdir}/libg_process.so
 %{_libdir}/libg_process.a
-#%{_mandir}/man3/libje.3.*
-#%{_libdir}/pkgconfig/libje.pc
+#{_mandir}/man3/libg_process.3.*
+#{_libdir}/pkgconfig/libg_process.pc
 
 #-- building --------------------------------------------------
 

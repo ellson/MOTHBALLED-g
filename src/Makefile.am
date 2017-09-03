@@ -112,6 +112,6 @@ libg_process.3.pdf: $(srcdir)/libg_process.3
 	    - $(GROFF) -Tps -man $(srcdir)/libg_process.3 | $(PS2PDF) - - >libg_process.3.pdf
 
 #EXTRA_DIST = g.1 g.1.pdf libg_process.3 libg_process.3.pdf gacc.sh grammar.g
-EXTRA_DIST = gacc.sh grammar.g
+EXTRA_DIST = gacc.sh grammar.g gg.sh g2gv.sh
 
 DISTCLEANFILES = *.la g.1.pdf libg_process.3.pdf grammar.h grammar.c grammar.ebnf grammar.gv grammar.svg
