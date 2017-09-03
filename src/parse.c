@@ -253,6 +253,7 @@ done: // State exit processing
             append_addref(root, branch);    // retain
             break;
         case NODE:
+        case PORT:
             CONTAINER->has_node = NODE;     // flag if SUBJECT contains NODE(s)
             append_addref(root, branch);    // retain
             break;
@@ -315,7 +316,6 @@ done: // State exit processing
         case SCN:  // terminal
             break;
 
-        case PORT:
         case SET:
         case ENDPOINTSET:
         default:

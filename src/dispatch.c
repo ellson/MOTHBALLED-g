@@ -175,6 +175,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
                         dispatch_r(CONTAINER, object, disambig, attributes, nodes, edges);
                         break;
                     case NODE:
+                    case PORT:
                         new = ref_list(LIST(), object);
                         append_transfer(nodes, new);
                         break;
@@ -195,6 +196,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
                 append_transfer(attributes, new);
                 break;
             case NODE:
+            case PORT:
                 new = ref_list(LIST(), elem);
                 append_transfer(nodes, new);
                 break;
