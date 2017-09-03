@@ -248,6 +248,9 @@ assemble_act(THREAD_t * THREAD, state_t verb, elem_t *elem, elem_t *disambig, el
         case NODE:
             noun = new_list(LIST(), NODE);
             break;
+        case PORT:
+            noun = new_list(LIST(), PORT);
+            break;
         case EDGE:
             noun = new_list(LIST(), EDGE);
             break;

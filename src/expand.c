@@ -66,38 +66,46 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                 ep = refepset->u.l.first;
                 while(ep) {
                     elem_t *eep = ep->u.l.first;
-                    switch ((state_t)eep->state) {
-                        case SIS:
-                            // add NODEID (w.o. PORT) to node list
-                            np = ref_list(LIST(), eep->u.l.first);
-                            np->state = NODE;
-                            append_transfer(nodes, np);
-
-                            // add NODEID (w PORT) to leg list
-                            np = ref_list(LIST(), eep);
-                            np->state = NODE;
-                            append_transfer(leg, np);
-                            break;
-                        case KID:
-                            // FIXME - induce KIDs in this node's container
-                            fprintf(stdout, "Ahh, cute kid.\n");
-                            break;
-                        case MUM:
-                            // FIXME - route to ancestors
-                            fprintf(stdout, "One for you, Mum.\n");
-                            free_list(LIST(), refepset);
-                            goto doneleg;
-                            break;
-                        case PORT:
-                            // add PORT to leg list
-                            np = ref_list(LIST(), eep);
-                            np->state = NODE;
-                            append_transfer(leg, np);
-                            break;
-                        default:
-                            S((state_t)eep->state);
-                            assert(0);  // should never get here
-                            break;
+                    while(eep) {
+                        switch ((state_t)eep->state) {
+                            case SIS:
+                                // add NODEID (w.o. PORT) to node list
+                                np = ref_list(LIST(), eep->u.l.first);
+                                np->state = NODE;
+                                append_transfer(nodes, np);
+    
+                                // add NODEID (w PORT) to leg list
+                                np = ref_list(LIST(), eep);
+                                np->state = NODE;
+                                append_transfer(leg, np);
+                                break;
+                            case KID:
+                                // FIXME - induce KIDs in this node's container
+                                fprintf(stdout, "Ahh, cute kid.\n");
+                                break;
+                            case MUM:
+                                // FIXME - route to ancestors
+                                fprintf(stdout, "One for you, Mum.\n");
+                                free_list(LIST(), refepset);
+                                goto doneleg;
+                                break;
+                            case PORT:
+                                // add container PORT to node list
+                                np = ref_list(LIST(), eep);
+                                np->state = PORT;
+                                append_transfer(nodes, np);
+    
+                                // add PORT to leg list
+                                np = ref_list(LIST(), eep);
+                                np->state = PORT;
+                                append_transfer(leg, np);
+                                break;
+                            default:
+                                S((state_t)eep->state);
+                                assert(0);  // should never get here
+                                break;
+                        }
+                        eep = eep->u.l.next;
                     }
                     ep = ep->u.l.next;
                 }

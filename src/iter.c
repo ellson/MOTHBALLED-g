@@ -89,6 +89,9 @@ static void stepiter(iter_t *iter, elem_t *this)
                 case MUM:
                     iter->lstack[iter->lsp].sep = sep_MUM;
                     break;
+                case PORT:
+                    iter->lstack[iter->lsp].sep = sep_PORT;
+                    break;
                 case SET:
                 case ENDPOINTSET:
                     iter->lstack[iter->lsp].sep = sep_SET;

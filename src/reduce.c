@@ -151,6 +151,7 @@ void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
     }
     switch ((state_t)subject->u.l.first->state) {
     case NODE:
+    case PORT:
         if (!verb) {
             CONTAINER->nodes = insert_item(LIST(), CONTAINER->nodes,
                     newact->u.l.first, merge_attributes, NULL); 
