@@ -260,25 +260,26 @@ assemble_act(THREAD_t * THREAD, state_t verb, elem_t *elem, elem_t *disambig, el
             S((state_t)elem->state);
             assert(0);
     }
-    append_addref(noun, elem->u.l.first);
-    subject = new_list(LIST(), SUBJECT);
-    append_transfer(subject, noun);
-    append_transfer(act, subject);
-
-    // disambig - make part of subject  
-    if (disambig && disambig->u.l.first) {
-        new = new_list(LIST(), DISAMBIG);
-        append_addref(new, disambig->u.l.first);
-        append_transfer(act, new);
+    if (elem->u.l.first) {
+        append_addref(noun, elem->u.l.first);
+        subject = new_list(LIST(), SUBJECT);
+        append_transfer(subject, noun);
+        append_transfer(act, subject);
+    
+        // disambig - make part of subject  
+        if (disambig && disambig->u.l.first) {
+            new = new_list(LIST(), DISAMBIG);
+            append_addref(new, disambig->u.l.first);
+            append_transfer(act, new);
+        }
+    
+        // attributes
+        if (attributes && attributes->u.l.first) {
+            new = ref_list(LIST(), attributes->u.l.first);
+            append_transfer(act, new);
+        }
+    
+        // no container ever because contents are handled in a parse_nest_r() recursion.
     }
-
-    // attributes
-    if (attributes && attributes->u.l.first) {
-        new = ref_list(LIST(), attributes->u.l.first);
-        append_transfer(act, new);
-    }
-
-    // no container ever because contents are handled in a parse_nest_r() recursion.
-
     return act;
 }

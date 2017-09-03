@@ -100,8 +100,7 @@ static elem_t * merge_attributes(LIST_t *LIST, elem_t *subject, elem_t *key)
 // update a GOM with a act with a single node or edge as the subject
 //
 // if the node or edge does not exist, then it is simply added with its attributes.
-//
-// if it does exist,  the the new attributes are meeged with the old, updating the old node or edge.
+// if it does exist, then the new attributes are merged with the old, updating the old node or edge.
 //
 void reduce(CONTAINER_t * CONTAINER, elem_t *act, state_t verb)
 {
