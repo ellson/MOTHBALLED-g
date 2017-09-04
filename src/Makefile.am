@@ -28,6 +28,7 @@ noinst_HEADERS = \
     identifier.h \
     ikea.h \
     inbuf.h \
+    input.h \
     info.h \
     iter.h \
     list.h \
@@ -59,6 +60,7 @@ libg_process_C_la_SOURCES = \
     identifier.c \
     ikea.c \
     inbuf.c \
+    input.c \
     info.c \
     iter.c \
     list.c \

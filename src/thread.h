@@ -21,6 +21,7 @@ extern "C" {
 #include "fatal.h"
 #include "inbuf.h"
 #include "list.h"
+#include "input.h"
 #include "grammar.h"
 #include "token.h"
 #include "identifier.h"
@@ -35,6 +36,7 @@ extern "C" {
 #include "info.h"
 
 #define TOKEN() ((TOKEN_t*)THREAD)
+#define INPUT() ((INPUT_t*)THREAD)
 #define LIST() ((LIST_t*)THREAD)
 #define INBUF() ((INBUF_t*)THREAD)
 

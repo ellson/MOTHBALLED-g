@@ -93,8 +93,8 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
         bi = WS;                  // pretend preceded by WS to satisfy toplevel SREP or REP
                                   // (Note, first REP of a sequence *can* be preceded
                                   // by WS, just not the rest of the REPs. )
-        TOKEN()->in = NULL;       // fake it;
-        TOKEN()->end = NULL;
+        INPUT()->in = NULL;       // fake it;
+        INPUT()->end = NULL;
         TOKEN()->insi = END;      // pretend last input was the EOF of a prior file.
     }
 
@@ -106,8 +106,8 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     ei = TOKEN()->insi;  // the char class that ended the last token
 
     if (prop & REQNOWS) {
-        if (TOKEN()->in == TOKEN()->end) {
-            if ((token_more_in(TOKEN()) == FAIL)) {
+        if (INPUT()->in == INPUT()->end) {
+            if ((input(INPUT()) == FAIL)) {
                 goto done; // EOF 
             }
         }
@@ -125,8 +125,8 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     if (si == TOKEN()->insi) {    // single character terminals matching
                                   //  state_machine expectation
         bi = si;
-        if (++(TOKEN()->in) != TOKEN()->end) {
-            TOKEN()->insi = char2state[*(TOKEN()->in)];
+        if (++(INPUT()->in) != INPUT()->end) {
+            TOKEN()->insi = char2state[*(INPUT()->in)];
         }
         else {
             TOKEN()->insi = END;
