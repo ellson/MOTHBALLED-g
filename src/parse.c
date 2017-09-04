@@ -194,11 +194,13 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
             // we failed an ALT so continue iteration to try next ALT
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
-            if (nprop & OPT) {          // OPTional
+            if (nprop & (OPT | REP | SREP) ) {          // OPTional
                 if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) == SUCCESS) {
-                    while (MORE_REP(nprop, ei)) {
-                        if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
-                            break;
+                    if (nprop & ( REP | SREP) ) {          // OPTional
+                        while (MORE_REP(nprop, ei)) {
+                            if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
+                                break;
+                            }
                         }
                     }
                 }

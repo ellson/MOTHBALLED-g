@@ -261,6 +261,7 @@ for s in ${statelist[@]}; do
             OPT)  ((ord|=1));;
             REP)  ((ord|=3));;
             SREP) ((ord|=3)); ws='_';;
+            WS)    ws='_';;
             *) ;;
             esac
 
