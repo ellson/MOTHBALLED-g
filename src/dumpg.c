@@ -77,14 +77,13 @@ static void print_prop(unsigned char prop)
 {
     int inlist;
 
-    if (prop & (ALT | OPT | REP | REQWS | REQNOWS)) {
+    if (prop & (ALT | OPT | REP | NWS)) {
         inlist = 0;
         fprintf(OUT, "%s", styleLBR);
         print_attr(prop & ALT, "ALT", &inlist);
         print_attr(prop & OPT, "OPT", &inlist);
         print_attr(prop & REP, "REP", &inlist);
-        print_attr(prop & REQWS, "REQWS", &inlist);
-        print_attr(prop & REQNOWS, "REQNOWS", &inlist);
+        print_attr(prop & NWS, "NWS", &inlist);
         fprintf(OUT, "%s", styleRBR);
     }
 }

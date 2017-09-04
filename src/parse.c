@@ -105,11 +105,12 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
 
     ei = TOKEN()->insi;  // the char class that ended the last token
 
-    if (prop & REQNOWS) {
+    if (prop & NWS) {
         if (IO()->in == IO()->end) {
             if ((input(IO()) == FAIL)) {
                 goto done; // EOF 
             }
+            TOKEN()->insi = char2state[*(IO()->in)];
         }
     }
     else {

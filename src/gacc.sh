@@ -199,8 +199,7 @@ Meta grammar:
     '|' separates alternates, otherwise the tokens are sequential
     '?' indicates that the token is optional
     '*' indicates that the token is to be repeated 0 or more times
-    '+' indicates that a non-ABC character must separate elements (e.g. WS)
-    '-' indicates that WS character must *not* separate elements
+    '-' preceding token indicates that WS must *not* separate the token
 
 Grammar:
 
@@ -249,8 +248,7 @@ for s in ${statelist[@]}; do
             ALT)     ((alts++));;
             OPT)     ((ord|=1));;
             REP)     ((ord|=2));;
-            REQWS)   ws='+';;
-            REQNOWS) ws='-';;
+            NWS)     ws='-';;
             *) ;;
             esac
 
