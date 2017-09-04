@@ -20,7 +20,7 @@
 #include "doact.h"
 
 #define MORE_REP(prop, ei) \
-    ((prop & (REP | SREP)) && ei != RPN && ei != RAN && ei != RBR && ei != RBE)
+    ((prop & REP) && ei != RPN && ei != RAN && ei != RBR && ei != RBE)
 
 /**
  * Save new or duplicate identifier
@@ -194,9 +194,9 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
             // we failed an ALT so continue iteration to try next ALT
         } else {                        // else it is a sequence (or the last ALT, same thing)
             repc = 0;
-            if (nprop & (OPT | REP | SREP) ) {          // OPTional
+            if (nprop & (OPT | REP) ) {          // OPTional
                 if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) == SUCCESS) {
-                    if (nprop & ( REP | SREP) ) {          // OPTional
+                    if (nprop & REP) {           // REPetition
                         while (MORE_REP(nprop, ei)) {
                             if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                                 break;

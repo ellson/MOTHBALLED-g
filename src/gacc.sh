@@ -257,11 +257,12 @@ for s in ${statelist[@]}; do
 
 # all REPs are 0-or-more,  so set OPT bit 
             case $p in
-            ALT)  ((alts++));;
-            OPT)  ((ord|=1));;
-            REP)  ((ord|=3));;
-            SREP) ((ord|=3)); ws='_';;
-            WS)    ws='_';;
+            ALT)     ((alts++));;
+            OPT)     ((ord|=1));;
+            REP)     ((ord|=3));;
+            SREP)    ((ord|=3)); ws='_';;
+            REQWS)   ws='+';;
+            REQNOWS) ws='-';;
             *) ;;
             esac
 

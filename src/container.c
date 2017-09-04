@@ -143,7 +143,7 @@ success_t container(THREAD_t * THREAD)
     }
     container.stat_containercount++;    // number of containers in this container
 
-    if ((rc = parse(&container, root, 0, SREP, 0, 0, END)) == FAIL) {
+    if ((rc = parse(&container, root, 0, REQWS|REP, 0, 0, END)) == FAIL) {
         if (TOKEN()->insi == END) {    // EOF is OK
             rc = SUCCESS;
         } else {
