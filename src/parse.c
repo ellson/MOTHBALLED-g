@@ -105,15 +105,21 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
 
     ei = TOKEN()->insi;  // the char class that ended the last token
 
-//    if (prop & REQNOWS) {
-// FIXME - what if insi--END ?   Need to slurp data separate from WS processing
+    if (prop & REQNOWS) {
+        if (TOKEN()->in == TOKEN()->end) {
+            if ((token_more_in(TOKEN()) == FAIL)) {
+                goto done; // EOF 
+            }
+        }
+    }
+    else {
         // Whitespace or comment (or new data needed)
         if (ei == WS || ei == OCT || ei == END) {
             if ((rc = token_whitespace(TOKEN())) == FAIL) {
                 goto done;                // EOF during whitespace
             }
         }
-//    }
+    }
 
     // Special character tokens
     if (si == TOKEN()->insi) {    // single character terminals matching

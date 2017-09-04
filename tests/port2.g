@@ -1,7 +1,7 @@
 # port on own container
 
-#out:a
+#out:b
 #out::p
-#out:<:p a>
+#out:<:p b>
 
-<:p a>
+<:p b>
