@@ -197,16 +197,14 @@ cat >${ifn}.ebnf <<EOF
 Meta grammar:
 
     '|' separates alternates, otherwise the tokens are sequential
-    '_' indicates that a non-ABC character must separate elements (e.g. WS)
     '?' indicates that the token is optional
     '*' indicates that the token is to be repeated 0 or more times
+    '+' indicates that a non-ABC character must separate elements (e.g. WS)
+    '-' indicates that WS character must *not* separate elements
 
 Grammar:
 
 EOF
-
-# DEPRECATED
-#    '+' indicates that the token is to be repeated 1 or more times
 
 ( printf "strict digraph { ordering=out\n"       )  >${ifn}.gv
 ( printf "typedef enum {\n"                      )  >${ifn}.enum
@@ -246,21 +244,11 @@ for s in ${statelist[@]}; do
         nprops=0
         for p in $prop; do
 
-##DEPRECATED support for 1-or-more
-#            case $p in
-#            ALT)  ((alts++));;
-#            OPT)  ((ord|=1));;
-#            REP)  ((ord|=2));;
-#            SREP) ((ord|=2)); ws='_';;
-#            *) ;;
-#            esac
-
 # all REPs are 0-or-more,  so set OPT bit 
             case $p in
             ALT)     ((alts++));;
             OPT)     ((ord|=1));;
-            REP)     ((ord|=3));;
-            SREP)    ((ord|=3)); ws='_';;
+            REP)     ((ord|=2));;
             REQWS)   ws='+';;
             REQNOWS) ws='-';;
             *) ;;
@@ -277,8 +265,7 @@ for s in ${statelist[@]}; do
         case $ord in
         0 ) ordc="";;
         1 ) ordc="?";; 
-        2 ) ordc="+"; echo "deprecated use of '1-or-more' repetitions" >&2;; 
-        3 ) ordc="*";; 
+        2 ) ordc="*";; 
         esac
         ( printf " %s%s%s" "$ws" "$next" "$ordc" ) >>${ifn}.ebnf
         ( printf "    \"%s\" -> \"%s\" [label=\"%s%s\"]\n" "$s" "$next" "$ws" "$ordc" ) >>${ifn}.gv

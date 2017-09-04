@@ -105,12 +105,15 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
 
     ei = TOKEN()->insi;  // the char class that ended the last token
 
-    // Whitespace or comment (or new data needed)
-    if (ei == WS || ei == OCT || ei == END) {
-        if ((rc = token_whitespace(TOKEN())) == FAIL) {
-            goto done;                // EOF during whitespace
+//    if (prop & REQNOWS) {
+// FIXME - what if insi--END ?   Need to slurp data separate from WS processing
+        // Whitespace or comment (or new data needed)
+        if (ei == WS || ei == OCT || ei == END) {
+            if ((rc = token_whitespace(TOKEN())) == FAIL) {
+                goto done;                // EOF during whitespace
+            }
         }
-    }
+//    }
 
     // Special character tokens
     if (si == TOKEN()->insi) {    // single character terminals matching
@@ -209,15 +212,6 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
                 if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
                     break;
                 }
-#if 0
-// DEPRECATED support for 1-or-more
-                while (MORE_REP(nprop, ei)) {
-                    if ((rc = parse(CONTAINER, branch, ni, nprop, nest, repc++, bi)) != SUCCESS) {
-                        break;
-                    }
-                }
-                rc = SUCCESS;           // OPTs always successful
-#endif
             }
         }
         ti++;        // next ALT (if not yet satisfied), or next sequence item
