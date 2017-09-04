@@ -118,7 +118,7 @@ static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
 
 static void print_tree(THREAD_t * THREAD, elem_t * p, int *cnt, int indent)
  {
-    FILE *chan = TOKEN()->out;
+    FILE *chan = IO()->out;
     char *sep = &(THREAD->sep);
     elem_t *key;
     int ind;
@@ -174,7 +174,7 @@ static void print_tree(THREAD_t * THREAD, elem_t * p, int *cnt, int indent)
  */
 void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
 {
-    FILE *chan = TOKEN()->out;
+    FILE *chan = IO()->out;
     char *sep = &(THREAD->sep);
 
     if (elem) {

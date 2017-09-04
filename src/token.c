@@ -21,12 +21,12 @@
 #include "fatal.h"
 #include "inbuf.h"
 #include "list.h"
-#include "input.h"
+#include "io.h"
 #include "grammar.h"
 #include "token.h"
 #include "print.h"
 
-#define INPUT() ((INPUT_t*)TOKEN)
+#define IO() ((IO_t*)TOKEN)
 #define LIST() ((LIST_t*)TOKEN)
 #define INBUF() ((INBUF_t*)TOKEN)
 
@@ -39,8 +39,8 @@
  */
 void token_error(TOKEN_t * TOKEN, char *message, state_t si)
 {
-    unsigned char *in = INPUT()->in;
-    unsigned char *end = INPUT()->in;
+    unsigned char *in = IO()->in;
+    unsigned char *end = IO()->in;
     char *fn = "stdin", *q="\"";
 
 
@@ -57,26 +57,26 @@ void token_error(TOKEN_t * TOKEN, char *message, state_t si)
 //
 // need THREAD context.  answer, error attributes are the thread context.  Sync query might be just "?"
 //
-    if (strcmp(INPUT()->filename, "-")) {
-        fn = INPUT()->filename;
+    if (strcmp(IO()->filename, "-")) {
+        fn = IO()->filename;
     } else {
         q = "";
     }
-    fprintf(TOKEN->err, "Error: %s ", message);
-    print_len_frag(TOKEN->err, NAMEP(si));
-    fprintf(TOKEN->err, "\n       from %s%s%s line: %ld while processing: \"",
+    fprintf(IO()->err, "Error: %s ", message);
+    print_len_frag(IO()->err, NAMEP(si));
+    fprintf(IO()->err, "\n       from %s%s%s line: %ld while processing: \"",
         q,fn,q,
-        (INPUT()->stat_lfcount ?
-            INPUT()->stat_lfcount :
-            INPUT()->stat_crcount) - INPUT()->linecount_at_start + 1);
+        (IO()->stat_lfcount ?
+            IO()->stat_lfcount :
+            IO()->stat_crcount) - IO()->linecount_at_start + 1);
     while (in != end) {
         unsigned char c = *in++;
         if (c == '\n' || c == '\r') {
             break;
         }
-        putc(c, TOKEN->err);
+        putc(c, IO()->err);
     }
-    fprintf(TOKEN->err, "\"\n");
+    fprintf(IO()->err, "\"\n");
     exit(EXIT_FAILURE);
 }
 
@@ -87,8 +87,8 @@ void token_error(TOKEN_t * TOKEN, char *message, state_t si)
  */
 static void token_comment_fragment(TOKEN_t * TOKEN)
 {
-    unsigned char *in = INPUT()->in;
-    unsigned char *end = INPUT()->end;
+    unsigned char *in = IO()->in;
+    unsigned char *end = IO()->end;
 
     while (in != end) {
         unsigned char c = *in++;
@@ -96,7 +96,7 @@ static void token_comment_fragment(TOKEN_t * TOKEN)
             break;
         }
     }
-    INPUT()->in = in;
+    IO()->in = in;
 }
 
 /**
@@ -109,8 +109,8 @@ static success_t token_comment(TOKEN_t * TOKEN)
 {
     success_t rc = SUCCESS;
     token_comment_fragment(TOKEN);      // eat comment
-    while (INPUT()->in == INPUT()->end) {    // end_of_buffer, or EOF, during comment
-        rc = input(INPUT());
+    while (IO()->in == IO()->end) {    // end_of_buffer, or EOF, during comment
+        rc = input(IO());
         if (rc == FAIL) {
             break;                      // EOF
         }
@@ -126,8 +126,8 @@ static success_t token_comment(TOKEN_t * TOKEN)
  */
 static void token_whitespace_fragment(TOKEN_t * TOKEN)
 {
-    unsigned char *in = INPUT()->in;
-    unsigned char *end = INPUT()->end;
+    unsigned char *in = IO()->in;
+    unsigned char *end = IO()->end;
 
     while (in != end) {
         unsigned char c = *in;
@@ -136,14 +136,14 @@ static void token_whitespace_fragment(TOKEN_t * TOKEN)
             break;
         }
         if (c == '\n') {
-            INPUT()->stat_lfcount++;
+            IO()->stat_lfcount++;
         }
         else if (c == '\r') {
-            INPUT()->stat_crcount++;
+            IO()->stat_crcount++;
         }
         in++;
     }
-    INPUT()->in = in;
+    IO()->in = in;
 }
 
 /**
@@ -156,9 +156,9 @@ static success_t token_non_comment(TOKEN_t * TOKEN)
 {
     success_t rc = SUCCESS;
     token_whitespace_fragment(TOKEN);     // eat whitespace
-    while (INPUT()->in == INPUT()->end) {     // end_of_buffer, or EOF,
+    while (IO()->in == IO()->end) {     // end_of_buffer, or EOF,
                                           //   during whitespace
-        rc = input(INPUT());
+        rc = input(IO());
         if (rc == FAIL) {
             break;                        // EOF
         }
@@ -182,23 +182,23 @@ success_t token_whitespace(TOKEN_t * TOKEN)
         if ((rc = token_non_comment(TOKEN)) == FAIL) {
             break;
         }
-        if (INPUT()->in == INPUT()->end) {
+        if (IO()->in == IO()->end) {
             break;
         }
-        if (*(INPUT()->in) != '#') {
+        if (*(IO()->in) != '#') {
             break;
         }
-        while (INPUT()->in != INPUT()->end && *(INPUT()->in) == '#') {
+        while (IO()->in != IO()->end && *(IO()->in) == '#') {
             if ((rc = token_comment(TOKEN)) == FAIL) {
                 break;
             }
         }
-    } while (INPUT()->in != INPUT()->end);
-    if (INPUT()->in == INPUT()->end) {
+    } while (IO()->in != IO()->end);
+    if (IO()->in == IO()->end) {
         TOKEN->insi = END;
     }
     else {
-        TOKEN->insi = char2state[*(INPUT()->in)];
+        TOKEN->insi = char2state[*(IO()->in)];
     }
     return rc;
 }

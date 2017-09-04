@@ -32,11 +32,11 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     }
 
     thread.PROCESS = PROCESS;
-    thread.TOKEN.out = stdout;
-    thread.TOKEN.err = stderr;
-    thread.TOKEN.INPUT.pargc = pargc;
-    thread.TOKEN.INPUT.argv = argv;
-    thread.TOKEN.INPUT.acts = PROCESS->acts;
+    thread.TOKEN.IO.out = stdout;
+    thread.TOKEN.IO.err = stderr;
+    thread.TOKEN.IO.pargc = pargc;
+    thread.TOKEN.IO.argv = argv;
+    thread.TOKEN.IO.acts = PROCESS->acts;
     thread.ikea_store = ikea_store_open( NULL );
 
 // FIXME - fork() here ??

@@ -21,12 +21,12 @@
 #include "fatal.h"
 #include "inbuf.h"
 #include "list.h"
-#include "input.h"
+#include "io.h"
 #include "grammar.h"
 #include "token.h"
 #include "print.h"
 
-#define INPUT() ((INPUT_t*)TOKEN)
+#define IO() ((IO_t*)TOKEN)
 #define LIST() ((LIST_t*)TOKEN)
 
 /**
@@ -38,8 +38,8 @@
  */
 static int vstring_fragment_ABC(TOKEN_t * TOKEN, elem_t * vstring)
 {
-    unsigned char *in = INPUT()->in;
-    unsigned char *end = INPUT()->end;
+    unsigned char *in = IO()->in;
+    unsigned char *end = IO()->end;
     unsigned char *frag;
     int len;
     elem_t *elem;
@@ -53,7 +53,7 @@ static int vstring_fragment_ABC(TOKEN_t * TOKEN, elem_t * vstring)
         in++;
         len++;
     }
-    INPUT()->in = in;
+    IO()->in = in;
     elem = new_frag(LIST(), ABC, len, frag);
     append_transfer(vstring, elem);
     TOKEN->stat_infragcount++;
@@ -69,8 +69,8 @@ static int vstring_fragment_ABC(TOKEN_t * TOKEN, elem_t * vstring)
  */
 static int vstring_fragment_AST(TOKEN_t * TOKEN, elem_t * vstring)
 {
-    unsigned char *in = INPUT()->in;
-    unsigned char *end = INPUT()->end;
+    unsigned char *in = IO()->in;
+    unsigned char *end = IO()->end;
     unsigned char *frag;
     elem_t *elem;
 
@@ -81,7 +81,7 @@ static int vstring_fragment_AST(TOKEN_t * TOKEN, elem_t * vstring)
         }
         in++;
     }
-    INPUT()->in = in;
+    IO()->in = in;
     elem = new_frag(LIST(), AST, 1, frag);
     append_transfer(vstring, elem);
     TOKEN->stat_infragcount++;
@@ -101,8 +101,8 @@ static int vstring_fragment_AST(TOKEN_t * TOKEN, elem_t * vstring)
 static int vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
 {
     unsigned char *frag;
-    unsigned char *in = INPUT()->in;
-    unsigned char *end = INPUT()->end;
+    unsigned char *in = IO()->in;
+    unsigned char *end = IO()->end;
     int quote_state = TOKEN->quote_state;
     int len = 0;
     elem_t *elem;
@@ -125,10 +125,10 @@ static int vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
                         quote_state = 2;
                         break;
                     case '\n':
-                        INPUT()->stat_lfcount++;
+                        IO()->stat_lfcount++;
                         break;
                     case '\r':
-                        INPUT()->stat_crcount++;
+                        IO()->stat_crcount++;
                         break;
                 }
                 break;
@@ -142,7 +142,7 @@ static int vstring_fragment_DQT(TOKEN_t * TOKEN, elem_t *vstring)
         in++;
     }
 done:
-    INPUT()->in = in;
+    IO()->in = in;
     TOKEN->quote_state = quote_state;
     elem = new_frag(LIST(), DQT, len, frag);
     append_transfer(vstring, elem);
@@ -163,8 +163,8 @@ done:
 static int vstring_fragment_LAN(TOKEN_t * TOKEN, elem_t *vstring)
 {
     unsigned char *frag;
-    unsigned char *in = INPUT()->in;
-    unsigned char *end = INPUT()->end;
+    unsigned char *in = IO()->in;
+    unsigned char *end = IO()->end;
     int quote_state = TOKEN->quote_state;
     int len = 0;
     elem_t *elem;
@@ -191,10 +191,10 @@ static int vstring_fragment_LAN(TOKEN_t * TOKEN, elem_t *vstring)
                         ++TOKEN->quote_nest;
                         break;
                     case '\n':
-                        INPUT()->stat_lfcount++;
+                        IO()->stat_lfcount++;
                         break;
                     case '\r':
-                        INPUT()->stat_crcount++;
+                        IO()->stat_crcount++;
                         break;
                 }
                 break;
@@ -205,7 +205,7 @@ static int vstring_fragment_LAN(TOKEN_t * TOKEN, elem_t *vstring)
         in++;
     }
 done:
-    INPUT()->in = in;
+    IO()->in = in;
     TOKEN->quote_state = quote_state;
     elem = new_frag(LIST(), LAN, len, frag);
     append_transfer(vstring, elem);
@@ -226,8 +226,8 @@ done:
 static int vstring_fragment_LBE(TOKEN_t * TOKEN, elem_t *vstring)
 {
     unsigned char *frag;
-    unsigned char *in = INPUT()->in;
-    unsigned char *end = INPUT()->end;
+    unsigned char *in = IO()->in;
+    unsigned char *end = IO()->end;
     int quote_state = TOKEN->quote_state;
     int len = 0;
     elem_t *elem;
@@ -257,10 +257,10 @@ static int vstring_fragment_LBE(TOKEN_t * TOKEN, elem_t *vstring)
                         quote_state = 2;
                         break;
                     case '\n':
-                        INPUT()->stat_lfcount++;
+                        IO()->stat_lfcount++;
                         break;
                     case '\r':
-                        INPUT()->stat_crcount++;
+                        IO()->stat_crcount++;
                         break;
                 }
                 break;
@@ -271,7 +271,7 @@ static int vstring_fragment_LBE(TOKEN_t * TOKEN, elem_t *vstring)
         in++;
     }
 done:
-    INPUT()->in = in;
+    IO()->in = in;
     TOKEN->quote_state = quote_state;
     elem = new_frag(LIST(), LBE, len, frag);
     append_transfer(vstring, elem);
@@ -292,8 +292,8 @@ done:
 static int vstring_fragment_LPN(TOKEN_t * TOKEN, elem_t *vstring)
 {
     unsigned char *frag;
-    unsigned char *in = INPUT()->in;
-    unsigned char *end = INPUT()->end;
+    unsigned char *in = IO()->in;
+    unsigned char *end = IO()->end;
     int quote_state = TOKEN->quote_state;
     int len = 0;
     elem_t *elem;
@@ -323,10 +323,10 @@ static int vstring_fragment_LPN(TOKEN_t * TOKEN, elem_t *vstring)
                         quote_state = 2;
                         break;
                     case '\n':
-                        INPUT()->stat_lfcount++;
+                        IO()->stat_lfcount++;
                         break;
                     case '\r':
-                        INPUT()->stat_crcount++;
+                        IO()->stat_crcount++;
                         break;
                 }
                 break;
@@ -340,7 +340,7 @@ static int vstring_fragment_LPN(TOKEN_t * TOKEN, elem_t *vstring)
         in++;
     }
 done:
-    INPUT()->in = in;
+    IO()->in = in;
     TOKEN->quote_state = quote_state;
     elem = new_frag(LIST(), LPN, len, frag);
     append_transfer(vstring, elem);
@@ -363,8 +363,8 @@ done:
 static int vstring_fragment_LBR(TOKEN_t * TOKEN, elem_t *vstring)
 {
     unsigned char *frag;
-    unsigned char *in = INPUT()->in;
-    unsigned char *end = INPUT()->end;
+    unsigned char *in = IO()->in;
+    unsigned char *end = IO()->end;
     unsigned char c;
     int quote_state = TOKEN->quote_state;
     int quote_length = TOKEN->quote_length;
@@ -409,10 +409,10 @@ static int vstring_fragment_LBR(TOKEN_t * TOKEN, elem_t *vstring)
                 }
                 switch (*in) {
                     case '\n':
-                        INPUT()->stat_lfcount++;
+                        IO()->stat_lfcount++;
                         break;
                     case '\r':
-                        INPUT()->stat_crcount++;
+                        IO()->stat_crcount++;
                         break;
                 }
                 break;
@@ -423,7 +423,7 @@ static int vstring_fragment_LBR(TOKEN_t * TOKEN, elem_t *vstring)
         in++;
     }
 done:
-    INPUT()->in = in;
+    IO()->in = in;
     TOKEN->quote_state = quote_state;
     TOKEN->quote_length = quote_length;
     elem = new_frag(LIST(), LBR, len, frag);
@@ -450,8 +450,8 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
     TOKEN->quote_type = 0;
     TOKEN->quote_state = 0;
     do {
-        if (INPUT()->in == INPUT()->end) {
-            if ((input(INPUT()) == FAIL)) {
+        if (IO()->in == IO()->end) {
+            if ((input(IO()) == FAIL)) {
                 break;
             }
         }
@@ -472,7 +472,7 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
                 len = vstring_fragment_LBR(TOKEN, vstring);
                 break;
             default: // else its a new quote
-                switch (char2vstate[*(INPUT()->in)]) { // use VSTRING table for extended ABC set
+                switch (char2vstate[*(IO()->in)]) { // use VSTRING table for extended ABC set
                     case ABC:
                         len = vstring_fragment_ABC(TOKEN, vstring);
                         break;
@@ -507,11 +507,11 @@ success_t token_vstring(TOKEN_t * TOKEN, elem_t *vstring)
         slen += len;
     } while (len);
 
-    if (INPUT()->in == INPUT()->end) {
+    if (IO()->in == IO()->end) {
         TOKEN->insi = END;
     }
     else {
-        TOKEN->insi = char2state[*(INPUT()->in)];  // back to regular table
+        TOKEN->insi = char2state[*(IO()->in)];  // back to regular table
     }
 
     if (slen == 0) {

@@ -149,7 +149,7 @@ void info_thread(THREAD_t * THREAD)
 
     itot = INBUF()->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbufelem_t);
     etot = LIST()->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
-    lend = (INPUT()->stat_lfcount ? INPUT()->stat_lfcount : INPUT()->stat_crcount);
+    lend = (IO()->stat_lfcount ? IO()->stat_lfcount : IO()->stat_crcount);
     istr = TOKEN()->stat_instringshort + TOKEN()->stat_instringlong; 
     sprintf(percent,"%lu%%", (long)(TOKEN()->stat_instringshort * 100)/ istr);
   
@@ -160,7 +160,7 @@ void info_thread(THREAD_t * THREAD)
     THREAD->sep = '\0';
     append_string  (THREAD, &pos, "thread");
     append_token   (THREAD, &pos, '[');
-    Au("charpersecond",         INPUT()->stat_incharcount+TEN9/runtime);
+    Au("charpersecond",         IO()->stat_incharcount+TEN9/runtime);
     Au("containdepth",          THREAD->stat_containdepth);
     Au("containdepthmax",       THREAD->stat_containdepthmax);
     Au("elemmalloccount",       LIST()->stat_elemmalloc);
@@ -175,8 +175,8 @@ void info_thread(THREAD_t * THREAD)
     Au("inbufmalloctotal",      itot);
     Au("inbufmax",              INBUF()->stat_inbufmax);
     Au("inbufnow",              INBUF()->stat_inbufnow);
-    Au("incharcount",           INPUT()->stat_incharcount);
-    Au("infilecount",           INPUT()->stat_infilecount);
+    Au("incharcount",           IO()->stat_incharcount);
+    Au("infilecount",           IO()->stat_infilecount);
     Au("infragcount",           TOKEN()->stat_infragcount);
     Au("inlinecount",           lend + 1);
     Au("instringcount",         istr);

@@ -19,11 +19,11 @@ extern "C" {
 
 typedef struct process_s PROCESS_t;       // session.h
 
-// THREAD_t TOKEN_t INPUT_t LIST_t INBUF_t are inter-castable
+// THREAD_t TOKEN_t IO_t LIST_t INBUF_t are inter-castable
 //   from since all 5 structs share the same start
 typedef struct thread_s THREAD_t;         // thread.h
 typedef struct token_s TOKEN_t;           // token.h
-typedef struct input_s INPUT_t;           // input.h
+typedef struct io_s IO_t;           // input.h
 typedef struct list_s LIST_t;             // list.h
 typedef struct inbuf_s INBUF_t;           // inbuf.h
 

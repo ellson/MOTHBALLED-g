@@ -21,12 +21,12 @@
 #include "fatal.h"
 #include "inbuf.h"
 #include "list.h"
-#include "input.h"
+#include "io.h"
 #include "grammar.h"
 #include "token.h"
 #include "print.h"
 
-#define INPUT() ((INPUT_t*)TOKEN)
+#define IO() ((IO_t*)TOKEN)
 #define LIST() ((LIST_t*)TOKEN)
 
 /**
@@ -38,8 +38,8 @@
  */
 static int identifier_fragment_ABC(TOKEN_t * TOKEN, elem_t * identifier)
 {
-    unsigned char *in = INPUT()->in;
-    unsigned char *end = INPUT()->end;
+    unsigned char *in = IO()->in;
+    unsigned char *end = IO()->end;
     unsigned char *frag;
     int len = 0;
     elem_t *elem;
@@ -52,7 +52,7 @@ static int identifier_fragment_ABC(TOKEN_t * TOKEN, elem_t * identifier)
         in++;
         len++;
     }
-    INPUT()->in = in;
+    IO()->in = in;
     elem = new_frag(LIST(), ABC, len, frag);
     append_transfer(identifier, elem);
     TOKEN->stat_infragcount++;
@@ -68,8 +68,8 @@ static int identifier_fragment_ABC(TOKEN_t * TOKEN, elem_t * identifier)
  */
 static int identifier_fragment_AST(TOKEN_t * TOKEN, elem_t * identifier)
 {
-    unsigned char *in = INPUT()->in;
-    unsigned char *end = INPUT()->end;
+    unsigned char *in = IO()->in;
+    unsigned char *end = IO()->end;
     unsigned char *frag;
     elem_t *elem;
 
@@ -80,7 +80,7 @@ static int identifier_fragment_AST(TOKEN_t * TOKEN, elem_t * identifier)
         }
         in++;
     }
-    INPUT()->in = in;
+    IO()->in = in;
     elem = new_frag(LIST(), AST, 1, frag);
     append_transfer(identifier, elem);
     TOKEN->stat_infragcount++;
@@ -103,12 +103,12 @@ success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
     assert(identifier->refs > 0);
 
     do {
-        if (INPUT()->in == INPUT()->end) {
-            if ((input(INPUT()) == FAIL)) {
+        if (IO()->in == IO()->end) {
+            if ((input(IO()) == FAIL)) {
                 break;
             }
         }
-        switch (char2state[*(INPUT()->in)]) {
+        switch (char2state[*(IO()->in)]) {
             case ABC:
                 len = identifier_fragment_ABC(TOKEN, identifier);
                 break;  // break from switch
@@ -122,11 +122,11 @@ success_t token_identifier(TOKEN_t * TOKEN, elem_t *identifier)
         slen += len;
     } while (len);
 
-    if (INPUT()->in == INPUT()->end) {
+    if (IO()->in == IO()->end) {
         TOKEN->insi = END;
     }
     else {
-        TOKEN->insi = char2state[*(INPUT()->in)];  // back to regular table
+        TOKEN->insi = char2state[*(IO()->in)];  // back to regular table
     }
 
     if (slen == 0) {

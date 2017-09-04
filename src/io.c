@@ -20,23 +20,23 @@
 #include "fatal.h"
 #include "inbuf.h"
 #include "list.h"
-#include "input.h"
+#include "io.h"
 
-#define INBUF() ((INBUF_t*)INPUT)
-#define LIST() ((LIST_t*)INPUT)
+#define INBUF() ((INBUF_t*)IO)
+#define LIST() ((LIST_t*)IO)
 
 /**
  * fill buffers from input files
  *
- * @param INPUT context
+ * @param IO context
  * @return success/fail
  */
-success_t input(INPUT_t * INPUT)
+success_t input(IO_t * IO)
 {
     int size, avail;
 
     if (INBUF()->inbuf) {        // if there is an existing active-inbuf
-        if (INPUT->in == (INBUF()->inbuf->buf + INBUFSIZE)) {    // if it is full
+        if (IO->in == (INBUF()->inbuf->buf + INBUFSIZE)) {    // if it is full
             if ((--(INBUF()->inbuf->refs)) == 0) {    // dereference active-inbuf
                 free_inbuf(INBUF(), INBUF()->inbuf);    // free if no refs left
                          // can happen it held only framents that were ignore, or
@@ -45,66 +45,66 @@ success_t input(INPUT_t * INPUT)
             INBUF()->inbuf = new_inbuf(INBUF());    // get new
             assert(INBUF()->inbuf);
             INBUF()->inbuf->refs = 1;    // add active-inbuf reference
-            INPUT->in = INBUF()->inbuf->buf;    // point to beginning of buffer
+            IO->in = INBUF()->inbuf->buf;    // point to beginning of buffer
         }
     } else {        // no inbuf, implies just starting
         INBUF()->inbuf = new_inbuf(INBUF());    // get new
         assert(INBUF()->inbuf);
         INBUF()->inbuf->refs = 1;    // add active-inbuf reference
-        INPUT->in = INBUF()->inbuf->buf;
+        IO->in = INBUF()->inbuf->buf;
     }
-    if (INPUT->file) {        // if there is an existing active input file
-        if (INPUT->in == INPUT->end && feof(INPUT->file)) {    //    if it is at EOF
-            if (INPUT->file != stdin) {
-                fclose(INPUT->file);    // then close it and indicate no active input file
+    if (IO->file) {        // if there is an existing active input file
+        if (IO->in == IO->end && feof(IO->file)) {    //    if it is at EOF
+            if (IO->file != stdin) {
+                fclose(IO->file);    // then close it and indicate no active input file
             }
-            INPUT->file = NULL;
+            IO->file = NULL;
         }
     }
-    if (!INPUT->file) {        // if there is no active input file
-        if (*(INPUT->pargc) > 0) {    //   then try to open the next file
-            INPUT->filename = INPUT->argv[0];
-            (*(INPUT->pargc))--;
-            INPUT->argv = &(INPUT->argv[1]);
-            if (strcmp(INPUT->filename, "-") == 0) {
-                INPUT->file = stdin;
-                *(INPUT->pargc) = 0;    // No files after stdin
+    if (!IO->file) {        // if there is no active input file
+        if (*(IO->pargc) > 0) {    //   then try to open the next file
+            IO->filename = IO->argv[0];
+            (*(IO->pargc))--;
+            IO->argv = &(IO->argv[1]);
+            if (strcmp(IO->filename, "-") == 0) {
+                IO->file = stdin;
+                *(IO->pargc) = 0;    // No files after stdin
 #if 0
 // FIXME - delete
-            } else if (strcmp(INPUT->filename, "-e") == 0) {
-                INPUT->membuf = INPUT->argv[0];
-                (*(INPUT->pargc))--;
-                if (INPUT->membuf) fprintf(stderr, "NOT YET WORKING:  %s\n", INPUT->membuf);
+            } else if (strcmp(IO->filename, "-e") == 0) {
+                IO->membuf = IO->argv[0];
+                (*(IO->pargc))--;
+                if (IO->membuf) fprintf(stderr, "NOT YET WORKING:  %s\n", IO->membuf);
                     return FAIL;    // no more input available
 #endif
             } else {
-                if (! (INPUT->file = fopen(INPUT->filename, "rb"))) {
-                    FATAL("fopen(\"%s\", \"rb\")", INPUT->filename);
+                if (! (IO->file = fopen(IO->filename, "rb"))) {
+                    FATAL("fopen(\"%s\", \"rb\")", IO->filename);
                 }
             }
-            INPUT->linecount_at_start = INPUT->stat_lfcount ? INPUT->stat_lfcount : INPUT->stat_crcount;
-            INPUT->stat_infilecount++;
-        } else if (INPUT->acts) {
+            IO->linecount_at_start = IO->stat_lfcount ? IO->stat_lfcount : IO->stat_crcount;
+            IO->stat_infilecount++;
+        } else if (IO->acts) {
 // FIXME - how to get string into input ???
             fprintf(stderr,"process command line\n");
         } else {
             return FAIL;    // no more input available
         }
-// FIXME - assert(INPUT->file || INPUT->acts);
-        assert(INPUT->file);
+// FIXME - assert(IO->file || IO->acts);
+        assert(IO->file);
     }
 // FIXME  -- or slurp in data from acts
     // slurp in data from file stream
-    avail = INBUF()->inbuf->buf + INBUFSIZE - INPUT->in;
-    size = fread(INPUT->in, 1, avail, INPUT->file);
-    INPUT->end = INPUT->in + size;
+    avail = INBUF()->inbuf->buf + INBUFSIZE - IO->in;
+    size = fread(IO->in, 1, avail, IO->file);
+    IO->end = IO->in + size;
 
-    if (size == 0 && ! feof(INPUT->file)) {
-        if (ferror(INPUT->file)) {
+    if (size == 0 && ! feof(IO->file)) {
+        if (ferror(IO->file)) {
             FATAL("fread()");
         }
     }
 
-    INPUT->stat_incharcount += size;
+    IO->stat_incharcount += size;
     return SUCCESS;
 }

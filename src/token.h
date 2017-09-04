@@ -18,9 +18,7 @@ extern "C" {
 #endif
 
 struct token_s {
-    INPUT_t INPUT;             // INPUT context. Maybe cast from TOKEN
-
-    FILE *out, *err;           // output files
+    IO_t IO;                   // IO context. Maybe cast from TOKEN
 
     state_t insi;              // state represented by last character read
     state_t state;             // last state entered

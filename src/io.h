@@ -10,20 +10,22 @@
  * Contributors: John Ellson <john.ellson@gmail.com>
  *************************************************************************/
 
-#ifndef INPUT_H
-#define INPUT_H
+#ifndef IO_H
+#define IO_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct input_s {
+struct io_s {
     LIST_t LIST;               // LIST context. Maybe cast from TOKEN
 
     // FIXME - Why do we have these ?  Why not leave in PROCESS ?
     int *pargc;                // remaining filenames from command line
     char **argv;
     char *acts;                // g snippet from command line
+
+    FILE *out, *err;           // output files
 
     unsigned char *in;         // next character to be processed
     unsigned char *end;        // one past the last character
@@ -43,7 +45,7 @@ struct input_s {
     long stat_infilecount;
 };
 
-success_t input(INPUT_t *INPUT);
+success_t input(IO_t *IO);
 
 #ifdef __cplusplus
 }
