@@ -17,6 +17,7 @@
 #include <assert.h>
 
 #include "thread.h"
+#include "tuple.h"
 #include "rewrite.h"
 
 /** 
@@ -31,6 +32,12 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *subject, *attributes, *disambig, *disambid = NULL;
     elem_t *newact, *newsubject, *newattributes;
+
+#if 0
+    elem_t *newact2;
+    state_t schema[] = {SUBJECT, DISAMBIG, ATTRIBUTES};
+    size_t schema_sz = sizeof(schema)/sizeof(schema[0]);
+#endif
  
     assert(act);
     subject = act->u.l.first;
@@ -67,6 +74,7 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
     }
     THREAD->contenthash[0] = '\0';
 
+
     // Now we are going to build a rewritten ACT tree, with references
     // to various bits from the parser's tree,  but no changes to it.
     //
@@ -98,5 +106,14 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
     if (newattributes) {
         append_transfer(newact, newattributes);
     }
+
+
+#if 0
+    newact2 = tuple(LIST(), ACT, schema, schema_sz, subject, disambig, attributes);
+P(newact2);
+    free_list(LIST(), newact2);
+P(newact);
+#endif
+
     return newact;
 }

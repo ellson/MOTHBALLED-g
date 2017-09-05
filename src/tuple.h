@@ -17,9 +17,7 @@
 extern "C" {
 #endif
 
-typedef struct {state_t type; elem_t* elem;} field_t;
-
-elem_t * tuple(LIST_t* LIST, state_t type, size_t count, ...);
+elem_t * tuple(LIST_t *LIST, state_t type, state_t schema[], size_t count, ...);
 
 #ifdef __cplusplus
 }

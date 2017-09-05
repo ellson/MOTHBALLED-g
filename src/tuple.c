@@ -25,27 +25,29 @@
 /**
  * Create a new elem_t containing a tuple of elem_t
  *
- * In g, everything is an elem_t,  but we lose the benerfit of compile-time structs.
+ * In g, everything is an elem_t,  but we lose the benefit of compile-time structs.
  * This function attempts to document and enforce the structure of tuples.
  *
  * @param LIST context for list functions
  * @param type of the returned elem_t
+ * @param schema of types of size count
  * @param count of fields
- * @param ... some: struct{state_t; elem_t*;}   The last elem must be {0}
+ * @param ... elem_t*
  * @return an elem containing the specified field elems
  *
  */
-elem_t * tuple(LIST_t *LIST, state_t type, size_t count, ...)
+elem_t * tuple(LIST_t *LIST, state_t type, state_t schema[], size_t count, ...)
 {
     va_list args;
-    field_t field;
     elem_t *tuple = new_list(LIST, type);
 
     va_start(args, count);
-    while (count--) {
-        field = va_arg(args, field_t);
-        assert(field.type == (state_t)(field.elem->type));
-        append_addref(tuple, field.elem);
+    for (int i = 0; i < count; i++) {
+        elem_t *field = va_arg(args, elem_t*);
+        if (field) { // allow fields to be null - is this what we want??
+            assert(schema[i] == (state_t)(field->state));
+            append_addref(tuple, field);
+        }
     }
     va_end(args);
 
