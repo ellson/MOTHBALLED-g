@@ -29,20 +29,19 @@
  * This function attempts to document and enforce the structure of tuples.
  *
  * @param LIST context for list functions
- * @param state of the returned elem_t
- * @param schema of state_t
+ * @param schema, where schema[0] is the state_t for the resulting tuple
  * @param count of fields
  * @param ... elem_t*
  * @return an elem containing the specified field elems
  *
  */
-elem_t * tuple(LIST_t *LIST, state_t state, state_t schema[], size_t count, ...)
+elem_t * tuple(LIST_t *LIST, state_t schema[], size_t count, ...)
 {
     va_list args;
-    elem_t *tuple = new_list(LIST, state);
+    elem_t *tuple = new_list(LIST, schema[0]);
 
     va_start(args, count);
-    for (int i = 0; i < count; i++) {
+    for (int i = 1; i < count; i++) {
         elem_t *field = va_arg(args, elem_t*);
         if (field) { // allow fields to be null - is this what we want??
             assert(schema[i] == (state_t)(field->state));

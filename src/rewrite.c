@@ -31,7 +31,7 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *subject, *attributes, *disambig, *disambid = NULL;
-    elem_t *newact, *newsubject, *newdisambig = NULL, *newattributes = NULL;
+    elem_t *newact, *newsubject, *newdisambig = NULL, *newattr = NULL, *newattributes = NULL;
 
     assert(act);
     subject = act->u.l.first;
@@ -45,33 +45,34 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
         disambig = NULL;
     }
 
-    if (THREAD->contenthash[0]) {
-        elem_t *newattr, *newattrid, *newvalue, *newidentifier, *newvstring;
-        // Build newattributes for "_contenthash=xxxxx"
-        // FIXME - need a litle-language to simplify
-        //     these constructions
+    if (THREAD->contenthash[0]) { // Build newattr for "_contenthash=xxxxx"
+        elem_t *newattrid, *newvalue, *newidentifier, *newvstring;
 
         newidentifier = new_shortstr(LIST(), ABC, "_contenthash");
-        newattrid = new_list(LIST(), ATTRID);
-        append_transfer(newattrid, newidentifier);
-
         newvstring = new_shortstr(LIST(), ABC, THREAD->contenthash);
-        newvalue = new_list(LIST(), VALUE);
-        append_transfer(newvalue, newvstring);
 
-        newattr = new_list(LIST(), ATTR);
-        append_transfer(newattr, newattrid);
-        append_transfer(newattr, newvalue);
+        state_t ATTRID_schema[] = {ATTRID, ABC};
+        newattrid = TUPLE(ATTRID_schema, newidentifier);
 
+        state_t VALUE_schema[] = {VALUE, ABC};
+        newvalue = TUPLE(VALUE_schema, newvstring);
+
+        state_t ATTR_schema[] = {ATTR, ATTRID, VALUE};
+        newattr = TUPLE(ATTR_schema, newattrid, newvalue);
+
+#if 1
+// FIXME - can't we do this below now?
         if (attributes) { // append to existing attibutes
             append_transfer(attributes, newattr);
         } else {
-            newattributes = new_list(LIST(), ATTRIBUTES);
-            append_transfer(newattributes, newattr);
+            state_t ATTRIBUTES_schema[] = {ATTRIBUTES, ATTR};
+            newattributes = TUPLE(ATTRIBUTES_schema, newattr);
+
             append_transfer(act, newattributes);
         }
+#endif
+        THREAD->contenthash[0] = '\0';
     }
-    THREAD->contenthash[0] = '\0';
     newattributes = NULL;
 
 
@@ -89,8 +90,8 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
         append_addref(newdisambig, disambid);
     }
 
-    // append current attr, if any, after pattern_match so that
-    // attr from patterns can be over-ridden
+    // append current attr, if any, after template_match so that
+    // attr from templates can be over-ridden
     if (attributes) {
         if (!newattributes) {
             newattributes = new_list(LIST(), ATTRIBUTES);
@@ -100,10 +101,8 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
         }
     }
 
-    {
-        state_t schema[] = {SUBJECT, DISAMBIG, ATTRIBUTES};
-        newact = TUPLE(ACT, schema, newsubject, newdisambig, newattributes);
-    }
+    state_t ACT_schema[] = {ACT, SUBJECT, DISAMBIG, ATTRIBUTES};
+    newact = TUPLE(ACT_schema, newsubject, newdisambig, newattributes);
 
     return newact;
 }

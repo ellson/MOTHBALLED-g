@@ -17,9 +17,9 @@
 extern "C" {
 #endif
 
-elem_t * tuple(LIST_t *LIST, state_t state, state_t schema[], size_t count, ...);
+elem_t * tuple(LIST_t *LIST, state_t schema[], size_t count, ...);
 
-#define TUPLE(state, schema, ...) tuple(LIST(), state, schema, (sizeof(schema)/sizeof(schema[0])), __VA_ARGS__);
+#define TUPLE(schema, ...) tuple(LIST(), schema, (sizeof(schema)/sizeof(schema[0])), __VA_ARGS__);
 
 #ifdef __cplusplus
 }
