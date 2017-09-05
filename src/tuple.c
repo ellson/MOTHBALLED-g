@@ -29,24 +29,24 @@
  * This function attempts to document and enforce the structure of tuples.
  *
  * @param LIST context for list functions
- * @param type of the returned elem_t
- * @param schema of types of size count
+ * @param state of the returned elem_t
+ * @param schema of state_t
  * @param count of fields
  * @param ... elem_t*
  * @return an elem containing the specified field elems
  *
  */
-elem_t * tuple(LIST_t *LIST, state_t type, state_t schema[], size_t count, ...)
+elem_t * tuple(LIST_t *LIST, state_t state, state_t schema[], size_t count, ...)
 {
     va_list args;
-    elem_t *tuple = new_list(LIST, type);
+    elem_t *tuple = new_list(LIST, state);
 
     va_start(args, count);
     for (int i = 0; i < count; i++) {
         elem_t *field = va_arg(args, elem_t*);
         if (field) { // allow fields to be null - is this what we want??
             assert(schema[i] == (state_t)(field->state));
-            append_addref(tuple, field);
+            append_transfer(tuple, field);
         }
     }
     va_end(args);

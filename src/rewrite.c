@@ -31,14 +31,8 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
     elem_t *subject, *attributes, *disambig, *disambid = NULL;
-    elem_t *newact, *newsubject, *newattributes;
+    elem_t *newact, *newsubject, *newdisambig = NULL, *newattributes = NULL;
 
-#if 0
-    elem_t *newact2;
-    state_t schema[] = {SUBJECT, DISAMBIG, ATTRIBUTES};
-    size_t schema_sz = sizeof(schema)/sizeof(schema[0]);
-#endif
- 
     assert(act);
     subject = act->u.l.first;
     assert(subject);                // minimaly, an ACT must have a SUBJECT
@@ -50,20 +44,25 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
         attributes = disambig;   // wasn't disambig
         disambig = NULL;
     }
+
     if (THREAD->contenthash[0]) {
-        elem_t *newattr, *newattrid, *newvalue, *newident;
+        elem_t *newattr, *newattrid, *newvalue, *newidentifier, *newvstring;
         // Build newattributes for "_contenthash=xxxxx"
         // FIXME - need a litle-language to simplify
         //     these constructions
-        newattr = new_list(LIST(), ATTR);
+
+        newidentifier = new_shortstr(LIST(), ABC, "_contenthash");
         newattrid = new_list(LIST(), ATTRID);
-        append_transfer(newattr, newattrid);
-        newident = new_shortstr(LIST(), ABC, "_contenthash");
-        append_transfer(newattrid, newident);
+        append_transfer(newattrid, newidentifier);
+
+        newvstring = new_shortstr(LIST(), ABC, THREAD->contenthash);
         newvalue = new_list(LIST(), VALUE);
+        append_transfer(newvalue, newvstring);
+
+        newattr = new_list(LIST(), ATTR);
+        append_transfer(newattr, newattrid);
         append_transfer(newattr, newvalue);
-        newident = new_shortstr(LIST(), ABC, THREAD->contenthash);
-        append_transfer(newvalue, newident);
+
         if (attributes) { // append to existing attibutes
             append_transfer(attributes, newattr);
         } else {
@@ -73,6 +72,7 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
         }
     }
     THREAD->contenthash[0] = '\0';
+    newattributes = NULL;
 
 
     // Now we are going to build a rewritten ACT tree, with references
@@ -80,19 +80,15 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
     //
     // In particular,  we must use fresh ACT, SUBJECT, DISAMBIG, ATTRIBUTE lists.
 
-    newact = new_list(LIST(), ACT);
     newsubject = new_list(LIST(), SUBJECT);
     append_addref(newsubject, subject->u.l.first);
-    append_transfer(newact, newsubject);
 
     // append disambig, if any
     if (disambig) {
-        elem_t *newdisambig = new_list(LIST(), DISAMBIG);
+        newdisambig = new_list(LIST(), DISAMBIG);
         append_addref(newdisambig, disambid);
-        append_transfer(newact, newdisambig);
     }
 
-    newattributes = NULL;
     // append current attr, if any, after pattern_match so that
     // attr from patterns can be over-ridden
     if (attributes) {
@@ -103,17 +99,11 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
             append_addref(newattributes, attributes->u.l.first);
         }
     }
-    if (newattributes) {
-        append_transfer(newact, newattributes);
+
+    {
+        state_t schema[] = {SUBJECT, DISAMBIG, ATTRIBUTES};
+        newact = TUPLE(ACT, schema, newsubject, newdisambig, newattributes);
     }
-
-
-#if 0
-    newact2 = tuple(LIST(), ACT, schema, schema_sz, subject, disambig, attributes);
-P(newact2);
-    free_list(LIST(), newact2);
-P(newact);
-#endif
 
     return newact;
 }
