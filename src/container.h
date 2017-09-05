@@ -29,8 +29,6 @@ struct container_s {      // CONTAINER context
     state_t has_edge;     // flag set if EDHE occurred in SUBJECT
 
     elem_t *previous;     // previous ACT for sameas
-    elem_t *node_patterns;// complete ACTs where the NODE SUBJECT contains an "*"
-    elem_t *edge_patterns;// complete ACTs where the EDGE SUBJECT contains an "*"
     elem_t *nodes;        // tree of unique NODEs
     elem_t *edges;        // tree of unique EDGEs
 
@@ -38,10 +36,6 @@ struct container_s {      // CONTAINER context
     long stat_containercount;
     long stat_inactcount;
     long stat_sameas;
-    long stat_patternnodecount;
-    long stat_patternedgecount;
-    long stat_nonpatternactcount;
-    long stat_patternmatches;
     long stat_outactcount;
 };
 
