@@ -409,17 +409,6 @@ Extra grammar:
     NB. The single-quote character ''' is not special, and has no quoting
     behavior in this grammar.
 
-Patterns:
-
-    If there is an unquoted '*' in any string in a SUBJECT, then the entire
-    SUBJECT is considered a pattern, and its ACT a pattern_act.  Patterns
-    are used to add ATTRIBUTES and CONTAINER to any future ACT whose SUBJECT
-    matches the pattern. The AST matches any character sequence.
-    
-    Additionally, in queries and deletessd (VERB = QRY or TLD), an
-    unquoted '*' in a VSTRING will further constrain the operation
-    to NODES or EDGES with VALUES that match.
-
 EOF
 ##############################################
 # assemble output files

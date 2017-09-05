@@ -29,7 +29,7 @@ assemble_act(THREAD_t * THREAD, state_t verb, elem_t *elem, elem_t *disambig,
 
 
 /*
- * Processes an ACT after sameas and pattern substitutions.
+ * Processes an ACT after sameas  substitution
  *
  * FIXME - description needs updating
  *
@@ -38,9 +38,7 @@ assemble_act(THREAD_t * THREAD, state_t verb, elem_t *elem, elem_t *disambig,
  *       - promote ENDPOINTS to common ancestor
  *           - extract NODES from EDGES for node induction
  *               - dispatch NODES (VERB NODE ATTRIBUTES CONTAINER)
- *                   - if add or delete and CONTAINER is from pattern, copy content before modifying (COW)
  *           - dispatch EDGE  (VERB EDGE ATTRIBUTES CONTAINER)
- *               - if add or delete and CONTAINER is from pattern, copy content before modifying (COW)
  *
  * VERBs (add), delete, query
  *

@@ -17,7 +17,7 @@
 #include <assert.h>
 
 #include "thread.h"
-#include "pattern.h"
+#include "rewrite.h"
 #include "dispatch.h"
 #include "reduce.h"
 #include "sameas.h"
@@ -62,6 +62,9 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     // be a substituted sameas.)
     sameas(CONTAINER, act);
 
+#if 0
+// FIXME - this might come back someday as a kind of template, but it needs a new verb
+
     // store pattern acts, or apply patterns to non-pattern acts
     //
     // patterns() also adds "_contenthash" (if any) to
@@ -70,6 +73,10 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
         return SUCCESS;   // new pattern stored, or removed (if no attributes).
     }
     // NB ACTs that are QRY or TLD may still have AST in SUBJECT
+#endif
+
+    // rewite act with add _containerhash attribute
+    act = rewrite(CONTAINER, act);
  
     // dispatch events for the ACT just finished
     //   the result is multiple simple acts -- hence activity

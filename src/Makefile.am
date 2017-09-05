@@ -33,9 +33,9 @@ noinst_HEADERS = \
     iter.h \
     list.h \
     parse.h \
-    pattern.h \
     print.h \
     reduce.h \
+    rewrite.h \
     sameas.h \
     process.h \
     thread.h \
@@ -65,9 +65,9 @@ libg_process_C_la_SOURCES = \
     iter.c \
     list.c \
     parse.c \
-    pattern.c \
     print.c \
     reduce.c \
+	rewrite.c \
     sameas.c \
     process.c \
     thread.c \

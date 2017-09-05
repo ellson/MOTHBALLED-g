@@ -209,10 +209,6 @@ void info_container(CONTAINER_t * CONTAINER)
     append_token   (THREAD, &pos, '[');
     Au("containercount",        CONTAINER->stat_containercount);
     Au("inactcount",            CONTAINER->stat_inactcount);
-    Au("inactedgepatterns",     CONTAINER->stat_patternedgecount);
-    Au("inactnodepatterns",     CONTAINER->stat_patternnodecount);
-    Au("inactnonpatterns",      CONTAINER->stat_nonpatternactcount);
-    Au("inactpatternmatches",   CONTAINER->stat_patternmatches);
 // FIXME - also need e.g.: dominactcount 
 //         to gather the merged count
 // FIXME - also need e.g.: threadoutactcount

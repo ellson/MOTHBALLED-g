@@ -21,9 +21,6 @@ extern "C" {
 // inbufs get released roughly as ACTs are processed.
 // I could be wrong - it may need experimentation.
 //
-// patterns will hold inbufs for a long lime,  so inbufs
-// shouldn't be much bigger than the average pattern.
-//
 // small inbufs cause greater fragmentation of strings
 // small inbufs have greater overhead ratio.
 

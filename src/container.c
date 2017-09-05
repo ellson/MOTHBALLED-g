@@ -183,24 +183,12 @@ success_t container(THREAD_t * THREAD)
         THREAD->out_disc->out_close_fn(THREAD);
     }
 
-//    if (container.node_patterns) {
-//        ikea_box_append(ikea_box, data, data_len)
-//        printt(THREAD, container.edges);
-//    }
-//    if (container.edge_patterns) {
-//        ikea_box_append(ikea_box, data, data_len)
-//        printt(THREAD, container.edges);
-//    }
-
-
     THREAD->stat_containdepth--;
 
     free_list(LIST(), root);
     free_list(LIST(), container.previous);
     free_tree(LIST(), container.nodes);
     free_tree(LIST(), container.edges);
-    free_tree(LIST(), container.node_patterns);
-    free_tree(LIST(), container.edge_patterns);
 // Some elem's are retained by the attrid tree
 //E();
 
