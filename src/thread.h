@@ -40,18 +40,6 @@ extern "C" {
 #define LIST() ((LIST_t*)THREAD)
 #define INBUF() ((INBUF_t*)THREAD)
 
-typedef void* (*out_open_fn_t)(void *descriptor, char *mode);
-typedef size_t (*out_write_fn_t)(THREAD_t *THREAD, unsigned char *cp, size_t len);
-typedef void (*out_flush_fn_t)(THREAD_t *THREAD);
-typedef void (*out_close_fn_t)(THREAD_t *THREAD);
-
-typedef struct {
-    out_open_fn_t out_open_fn;
-    out_write_fn_t out_write_fn;
-    out_flush_fn_t out_flush_fn;
-    out_close_fn_t out_close_fn;
-} out_disc_t;
-
 struct thread_s {
     TOKEN_t TOKEN;             // TOKEN context. May be cast from THREAD
     PROCESS_t *PROCESS;        // The PROCESS that started this THREAD
