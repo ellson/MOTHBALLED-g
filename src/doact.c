@@ -75,8 +75,13 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     // NB ACTs that are QRY or TLD may still have AST in SUBJECT
 #endif
 
+#if 1
     // rewite act with add _containerhash attribute
     act = rewrite(CONTAINER, act);
+#else
+    // FIXME - if we want to process _contenthash later, all we need here is this:
+    act->refs++;
+#endif
  
     // dispatch events for the ACT just finished
     //   the result is multiple simple acts -- hence activity
