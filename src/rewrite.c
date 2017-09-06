@@ -60,21 +60,8 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
         state_t ATTR_schema[] = {ATTR, ATTRID, VALUE};
         newattr = TUPLE(ATTR_schema, newattrid, newvalue);
 
-#if 1
-// FIXME - can't we do this below now?
-        if (attributes) { // append to existing attibutes
-            append_transfer(attributes, newattr);
-        } else {
-            state_t ATTRIBUTES_schema[] = {ATTRIBUTES, ATTR};
-            newattributes = TUPLE(ATTRIBUTES_schema, newattr);
-
-            append_transfer(act, newattributes);
-        }
-#endif
         THREAD->contenthash[0] = '\0';
     }
-    newattributes = NULL;
-
 
     // Now we are going to build a rewritten ACT tree, with references
     // to various bits from the parser's tree,  but no changes to it.
@@ -84,21 +71,22 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
     newsubject = new_list(LIST(), SUBJECT);
     append_addref(newsubject, subject->u.l.first);
 
-    // append disambig, if any
     if (disambig) {
         newdisambig = new_list(LIST(), DISAMBIG);
         append_addref(newdisambig, disambid);
     }
 
-    // append current attr, if any, after template_match so that
-    // attr from templates can be over-ridden
     if (attributes) {
-        if (!newattributes) {
-            newattributes = new_list(LIST(), ATTRIBUTES);
-        }
+        newattributes = new_list(LIST(), ATTRIBUTES);
         if (attributes->u.l.first) { // elide [] 
             append_addref(newattributes, attributes->u.l.first);
         }
+    }
+    if (newattr) {
+        if (! newattributes) {
+            newattributes = new_list(LIST(), ATTRIBUTES);
+        }
+        append_transfer(newattributes, newattr);
     }
 
     state_t ACT_schema[] = {ACT, SUBJECT, DISAMBIG, ATTRIBUTES};
