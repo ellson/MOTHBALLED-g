@@ -76,10 +76,10 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
 #endif
 
 #if 1
-    // rewite act with add _containerhash attribute
+    // rewrite act with added  _contenthash  attribute
     act = rewrite(CONTAINER, act);
 #else
-    // FIXME - if we want to process _contenthash later, all we need here is this:
+    // FIXME - if we want to process  _contenthash  later, all we need here is this:
     act->refs++;
 #endif
  
