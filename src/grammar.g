@@ -9,7 +9,7 @@
 #########################################################################
 
 <ACTIVITY ACT>[REP]
-<ACT VERB>[OPT]<= SUBJECT><= DISAMBIG>[OPT]<= ATTRIBUTES>[OPT]<= CONTENTS>[OPT]<= TERMINAL>[OPT]
+<ACT VERB>[OPT]<= SUBJECT><= DISAMBIG>[OPT]<= ATTRIBUTES>[REP]<= CONTENTS>[OPT]<= TERMINAL>[OPT]
 <VERB TLD>[ALT]<= QRY>
 <SUBJECT SAMEAS>[ALT]<= NODENOUN>[ALT]<= EDGENOUN>[ALT]<= SET>
 <SET LPN><= NOUNS><= RPN>

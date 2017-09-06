@@ -76,16 +76,16 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
         append_addref(newdisambig, disambid);
     }
 
-    if (attributes) {
+    if (attributes || newattr) {
         newattributes = new_list(LIST(), ATTRIBUTES);
+    }
+    while (attributes) {
         if (attributes->u.l.first) { // elide [] 
             append_addref(newattributes, attributes->u.l.first);
         }
+        attributes = attributes->u.l.next;
     }
     if (newattr) {
-        if (! newattributes) {
-            newattributes = new_list(LIST(), ATTRIBUTES);
-        }
         append_transfer(newattributes, newattr);
     }
 
