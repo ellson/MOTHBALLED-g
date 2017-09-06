@@ -79,7 +79,9 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
     if (attributes || newattr) {
         newattributes = new_list(LIST(), ATTRIBUTES);
     }
-    while (attributes) {
+    while (attributes) {  // This would support a grammar of multiple [] atribute blocks
+                          // The current grammar only allows 0 or 1.
+                          // The code is fine either way.
         if (attributes->u.l.first) { // elide [] 
             append_addref(newattributes, attributes->u.l.first);
         }
