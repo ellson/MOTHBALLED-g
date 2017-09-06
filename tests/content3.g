@@ -1,5 +1,5 @@
 # container - unexpanded
 
-#out:a[b _contenthash=iebJjZ]
+#out:a[_contenthash=K2b9Jh b]
 
 a[b]{c}
