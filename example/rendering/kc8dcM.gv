@@ -1,0 +1,7 @@
+graph{node [shape=box]
+a [
+  label=<<table border="0"><tr><td border="0">\N</td></tr><tr><td border="0" href="L+n3ye.svg"><img src="L+n3ye.png"/></td></tr></table>>
+]
+z
+a--z
+}
