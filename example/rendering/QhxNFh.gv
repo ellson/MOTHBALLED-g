@@ -1,9 +1,0 @@
-graph{node [shape=box]
-c
-d
-e
-f
-g
-e81d77 [shape=point label=""];c--e81d77 [dir=none];e81d77--{d e}
-f--g
-}
