@@ -77,11 +77,16 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                             pp = legp->u.l.next;
                             if (pp) {
                                 if ((state_t)pp->state == PORT) {
+                                    // port naming convention may provide enough info to compute end coordinate.
+                                    //   also need bb of node in this container level
                                     pp = ref_list(LIST(), ep);
                                     append_transfer(leg, pp);
                                 }
                                 else if ((state_t)pp->state == KID) {
                                     fprintf(stdout, "Ahh, cute kid.\n");
+                                    // need help from content system to compute end coordinate
+                                    //   need bb of node in all container level
+                                    //   need scaling of each container
                                     pp = ref_list(LIST(), ep);
                                     append_transfer(leg, pp);
                                 }
@@ -94,7 +99,9 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                             }
                             break;
                         case MUM:
-                            // FIXME - route to ancestors
+                            // FIXME - route to ancestors and cousins
+                            // I think that drawng edges between cousins must be done by an ancestor that contains both (al) ends.
+                            // If there are three ends, but only one to a cousin, do we draw the other two and a hub?
                             fprintf(stdout, "One for you, Mum.\n");
                             free_list(LIST(), refepset);
                             goto doneleg;
@@ -106,9 +113,9 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                             append_transfer(nodes, np);
     
                             // add PORT to leg list
-                            np = ref_list(LIST(), legp);
-                            np->state = PORT;
-                            append_transfer(leg, np);
+                            pp = ref_list(LIST(), legp);
+                            pp->state = PORT;
+                            append_transfer(leg, pp);
                             break;
                         default:
                             S((state_t)legp->state);

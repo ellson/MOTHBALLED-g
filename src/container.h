@@ -26,7 +26,7 @@ struct container_s {      // CONTAINER context
     state_t has_sameas;   // flag set if '=' occurred in SUBJECT
     state_t has_mum;      // flag set if '^' occurred in SUBJECT
     state_t has_node;     // flag set if NODE occurred in SUBJECT
-    state_t has_edge;     // flag set if EDHE occurred in SUBJECT
+    state_t has_edge;     // flag set if EDGE occurred in SUBJECT
 
     elem_t *previous;     // previous ACT for sameas
     elem_t *nodes;        // tree of unique NODEs

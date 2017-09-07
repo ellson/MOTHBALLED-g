@@ -137,50 +137,50 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     }
 
     switch (si) {
-    case ACTIVITY:         // Recursion into Contained activity
-        if (nest != 1) {   // if not top-level of containment
+        case ACTIVITY:         // Recursion into Contained activity
+            if (nest != 1) {   // if not top-level of containment
 // FIXME - this is ugly using nest like this 
 //    (its almost accidental that nest != 1)
-            // recursively process contained ACTIVITY in to its own root
-            //    this leaves THREAD->contenthash
-            //    which is taken by reduce()
-            rc = container(THREAD);
-            bi = TOKEN()->insi; // The char class that terminates the ACTIVITY
+                // recursively process contained ACTIVITY in to its own root
+                //    this leaves THREAD->contenthash
+                //    which is taken by reduce()
+                rc = container(THREAD);
+                bi = TOKEN()->insi; // The char class that terminates the ACTIVITY
+                goto done;
+            }
+            break;
+
+        case IDENTIFIER:
+            rc = token_identifier(TOKEN(), branch);
+            bi = TOKEN()->insi;  // the char class that terminates the IDENTIFIER
             goto done;
-        }
-        break;
+            break;
 
-    case IDENTIFIER:
-        rc = token_identifier(TOKEN(), branch);
-        bi = TOKEN()->insi;  // the char class that terminates the IDENTIFIER
-        goto done;
-        break;
+        case VSTRING:                 // Value Strings
+            rc = token_vstring(TOKEN(), branch);
+            bi = TOKEN()->insi;  // the char class that terminates the VSTRING
+            goto done;
+            break;
 
-    case VSTRING:                 // Value Strings
-        rc = token_vstring(TOKEN(), branch);
-        bi = TOKEN()->insi;  // the char class that terminates the VSTRING
-        goto done;
-        break;
+        // the remainder of the switch() is just state initialization
+        case ACT:
+            CONTAINER->verb = 0;        // default "add"
+            break;
+        case SUBJECT:
+            TOKEN()->elem_has_ast = 0;  // reset flag for '*' found anywhere in elem
+            CONTAINER->subj_has_ast = 0;// reset flag for '*' found anywhere in SUBJECT
+            CONTAINER->has_sameas = 0;  // reset flag for '=' found anywhere in SUBJECT
+            CONTAINER->has_mum = 0;     // reset flag for MUM found anywhere in SUBJECT
+            CONTAINER->has_node = 0;    // reset flag for NODE found anywhere in SUBJECT
+            CONTAINER->has_edge = 0;    // reset flag for EDGE found anywhere in SUBJECT
+            break;
+        case ATTRIBUTES:
+            TOKEN()->elem_has_ast = 0;  // reset flag for '*' found anywhere in elem
+            CONTAINER->attr_has_ast = 0;// reset flag for '*' found anywhere in ATTRIBUTES
+            break;
 
-    // the remainder of the switch() is just state initialization
-    case ACT:
-        CONTAINER->verb = 0;        // default "add"
-        break;
-    case SUBJECT:
-        TOKEN()->elem_has_ast = 0;  // reset flag for '*' found anywhere in elem
-        CONTAINER->subj_has_ast = 0;// reset flag for '*' found anywhere in SUBJECT
-        CONTAINER->has_sameas = 0;  // reset flag for '=' found anywhere in SUBJECT
-        CONTAINER->has_mum = 0;     // reset flag for MUM found anywhere in SUBJECT
-        CONTAINER->has_node = 0;    // reset flag for NODE found anywhere in SUBJECT
-        CONTAINER->has_edge = 0;    // reset flag for EDGE found anywhere in SUBJECT
-        break;
-    case ATTRIBUTES:
-        TOKEN()->elem_has_ast = 0;  // reset flag for '*' found anywhere in elem
-        CONTAINER->attr_has_ast = 0;// reset flag for '*' found anywhere in ATTRIBUTES
-        break;
-
-    default:
-        break;
+        default:
+            break;
     }
 
     // If it wasn't a terminal state, then use the state_machine to
@@ -227,108 +227,122 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
 done: // State exit processing
     if (rc == SUCCESS) {
         switch (si) {
-
-        case ACT:  // ACT is complete, process it
-            rc = doact(CONTAINER, branch);
-            // this is the top recursion
-            // no more need for this branch
-            // don't bother appending to root
-            break;
-
-        // collect flag and drop token
-        case VERB: 
-            CONTAINER->verb = branch->u.l.first->state;  // QRY or TLD
-            break;
-
-        // collect flag and retain token (and any chain)
-        case SUBJECT:
-            CONTAINER->subj_has_ast = TOKEN()->elem_has_ast;
-            TOKEN()->elem_has_ast = 0;      // reset at token level for attr_has_ast
-            append_addref(root, branch);    // retain
-            break;
-        case ATTRIBUTES:
-            CONTAINER->attr_has_ast = TOKEN()->elem_has_ast;
-            append_addref(root, branch);    // retain
-            break;
-        case SAMEAS:
-            CONTAINER->has_sameas = SAMEAS; // flag if SUBJECT contains SAMEAS token(s)
-            append_addref(root, branch);    // retain
-            break;
-        case MUM:
-            CONTAINER->has_mum = MUM;       // flag if SUBJECT contains MUM token{s)
-            append_addref(root, branch);    // retain
-            break;
-        case NODE:
-        case PORT:
-            CONTAINER->has_node = NODE;     // flag if SUBJECT contains NODE(s)
-            append_addref(root, branch);    // retain
-            break;
-        case EDGE:
-            CONTAINER->has_edge = EDGE;     // flag if SUBJECT contains EDGE(s)
-            append_addref(root, branch);    // retain
-            break;
-
-        // drop two tokens, but retain any chain
-        case VALASSIGN: // ignore VALASSIGN EQL, but keep VALUE
-            append_addref(root, branch->u.l.first->u.l.next);
-            break;
-
-        // drop tokens with no chain, but retain subtree
-        case FAMILY:
-        case RELATIVE:
-        case NOUNS:
-        case NODES:
-        case EDGES:
-        case NODENOUN:
-        case EDGENOUN:
-            append_addref(root, branch->u.l.first);
-            break;
-        case NODEID:
-        case PORTID:
-        case DISAMBID:
-            THREAD->identifiers = insert_item(LIST(), THREAD->identifiers,
-                branch->u.l.first, merge_identifier, &newkey);
-            branch->u.l.first = newkey;
-            append_addref(root, branch); 
-            break;
-
-        case ATTRID:  // it is followed by VALUE
-            THREAD->identifiers = insert_item(LIST(), THREAD->identifiers, 
-                branch->u.l.first, merge_identifier, &newkey);
-            branch->u.l.first = newkey;
-            append_addref(root, branch); 
-            break;
-
-        // drop all CONTENTS as these are processed separately
-        case CONTENTS:
-        // drop explicit TERMINAL
-        case TERMINAL:
-        // drop single character tokens
-        case LBR:  // bracketing ATTRs
-        case RBR:
-        case LAN:  // bracketing LEGs
-        case RAN:
-        case LPN:  // for SETs or ENDPOINTSETs
-        case RPN:
-        case TIC:  // prefixing DISAMBID
-        case HAT:  // indicating MUM
-        case FSL:  // prefixing KID
-        case CLN:  // prefixing PORT
-        case SCN:  // terminal
-            break;
-
-        case SET:
-        case ENDPOINTSET:
-        default:
-            // everything else is appended to parent's branch
-            append_addref(root, branch);
-            break;
+            case ACT:  // ACT is complete, process it
+                rc = doact(CONTAINER, branch);
+                // this is the top recursion
+                // no more need for this branch
+                // don't bother appending to root
+                break;
+    
+            // collect flag and drop token
+            case VERB: 
+                CONTAINER->verb = branch->u.l.first->state;  // QRY or TLD
+                break;
+    
+            // collect flag and retain token (and any chain)
+            case SUBJECT:
+                CONTAINER->subj_has_ast = TOKEN()->elem_has_ast;
+                TOKEN()->elem_has_ast = 0;      // reset at token level for attr_has_ast
+                append_addref(root, branch);    // retain
+                break;
+            case ATTRIBUTES:
+                CONTAINER->attr_has_ast = TOKEN()->elem_has_ast;
+                append_addref(root, branch);    // retain
+                break;
+            case SAMEAS:
+                CONTAINER->has_sameas = SAMEAS; // flag if SUBJECT contains SAMEAS token(s)
+                append_addref(root, branch);    // retain
+                break;
+            case MUM:
+                CONTAINER->has_mum = MUM;       // flag if SUBJECT contains MUM token(s)
+                append_addref(root, branch);    // retain
+                break;
+            case NODE:
+            case PORT:
+                CONTAINER->has_node = NODE;     // flag if SUBJECT contains NODE(s)
+                append_addref(root, branch);    // retain
+                break;
+            case EDGE:
+                CONTAINER->has_edge = EDGE;     // flag if SUBJECT contains EDGE(s)
+                append_addref(root, branch);    // retain
+                break;
+    
+            // drop two tokens, but retain any chain
+            case VALASSIGN: // ignore VALASSIGN EQL, but keep VALUE
+                append_addref(root, branch->u.l.first->u.l.next);
+                break;
+    
+            // drop tokens with no chain, but retain subtree
+            case FAMILY:
+            case RELATIVE:
+            case NOUNS:
+            case NODES:
+            case EDGES:
+            case NODENOUN:
+            case EDGENOUN:
+                append_addref(root, branch->u.l.first);
+                break;
+            case NODEID:
+            case PORTID:
+            case DISAMBID:
+            case ATTRID:
+                THREAD->identifiers = insert_item(LIST(), THREAD->identifiers, 
+                    branch->u.l.first, merge_identifier, &newkey);
+                branch->u.l.first = newkey;
+                append_addref(root, branch); 
+                break;
+    
+            case CONTENTS: // drop all CONTENTS as these are processed separately
+            case TERMINAL: // drop explicit TERMINAL
+                           // drop single character tokens
+            case LBR:      // bracketing ATTRs
+            case RBR:
+            case LAN:      // bracketing LEGs
+            case RAN:
+            case LPN:      // for SETs or ENDPOINTSETs
+            case RPN:
+            case TIC:      // prefixing DISAMBID
+            case HAT:      // indicating MUM
+            case FSL:      // prefixing KID
+            case CLN:      // prefixing PORT
+            case SCN:      // terminal
+                break;
+    
+            case ACTIVITY:
+            case SET:
+            case ENDPOINTSET:
+            case LEG:
+            case ENDPOINT:
+            case SIS:
+            case KID:
+            case DISAMBIG:
+            case ATTR:
+            case VALUE:
+            case IDENTIFIER:
+            case VSTRING:
+            case BIN:
+            case ABC:
+            case WS:
+            case LBE:
+            case RBE:
+            case EQL:
+            case DQT:
+            case OCT:
+            case AST:
+            case QRY:
+            case BSL:
+            case TLD:
+            case END:
+                // FIXME - some of these must be droppable?
+                // everything else is appended to parent's branch
+                append_addref(root, branch);
+                break;
         }
     }
     free_list(LIST(), branch);
     nest--;
     assert(nest >= 0);
-
+    
     return rc;
 }
-
+    
