@@ -22,7 +22,7 @@ AC_PREREQ([2.69])
 #   g_version_commit
 m4_include(./version.m4)
 
-AC_INIT([g], [g_version_major().g_version_minor().g_version_micro()], [john.ellson@comcast.net])
+AC_INIT([g], [g_version_major().g_version_minor().g_version_micro()], [john.ellson@gmail.com])
 
 G_VERSION_MAJOR=g_version_major()
 G_VERSION_MINOR=g_version_minor()

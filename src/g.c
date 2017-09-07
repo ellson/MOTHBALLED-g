@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include "libg_process.h"
+#include "libg.h"
 
 // if interrupted we try to gracefully snapshot the current state 
 static void intr(int s)

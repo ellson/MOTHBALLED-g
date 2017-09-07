@@ -55,14 +55,14 @@ The goals of the "g" language are to:
       -- user@host email addresses
       -- telephone numbers (with - separators)
       -- IP addresses
-  - g has special quoting modes for:
-      -- JSON  (balanced '{' '}' outside of quoting or escapes))
-      -- XML/HTML  (balanced '<' '>' outside of quoting or escapes)
-      -- LISP  (balanced '(' ')' outside of quoting or escapes)
-      -- Binary    ( '['length']'content )
+  - g has special quoting modes that should allow scripts in various languages in attribute values:
+      -- balanced '{' '}'   for, e.g. JSON
+      -- balanced '<' '>'   for, e.g. XML, or HTML
+      -- balanced '(' ')'   for, e.g. LISP, or Scheme 
+      -- '[' length ']' binary_of_length_bytes       for, well, anything
    
 7. Preservation of ordering on ends in edges. DOT preserves tail--head
-   - g preserves the ordering of LEGs is preserved
+   - g preserves the ordering of LEGs
 
 8. Preservation of input order.  g fails on this goal.
    - g does *not* preserve input order

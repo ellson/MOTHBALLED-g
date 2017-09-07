@@ -16,7 +16,7 @@ pdfdir = $(pkgdatadir)/doc/pdf
 pkgconfigdir = $(libdir)/pkgconfig
 
 include_HEADERS = \
-    libg_process.h
+    libg.h
 
 noinst_HEADERS = \
     container.h \
@@ -45,11 +45,11 @@ noinst_HEADERS = \
     types.h \
     vstring.h
 
-noinst_LTLIBRARIES = libg_process_C.la
-lib_LTLIBRARIES = libg_process.la
-#pkgconfig_DATA = libg_process.pc
+noinst_LTLIBRARIES = libg_C.la
+lib_LTLIBRARIES = libg.la
+#pkgconfig_DATA = libg.pc
 
-libg_process_C_la_SOURCES = \
+libg_C_la_SOURCES = \
     container.c \
     dispatch.c \
     doact.c \
@@ -76,14 +76,14 @@ libg_process_C_la_SOURCES = \
     tuple.c \
     vstring.c
 
-libg_process_C_la_LIBADD =
+libg_C_la_LIBADD =
 
-libg_process_la_LDFLAGS = -version-info $(LIBG_PROCESS_VERSION) -no-undefined
-libg_process_la_SOURCES = $(libg_process_C_la_SOURCES)
-libg_process_la_LIBADD = $(libg_process_C_la_LIBADD) 
+libg_la_LDFLAGS = -version-info $(LIBG_PROCESS_VERSION) -no-undefined
+libg_la_SOURCES = $(libg_C_la_SOURCES)
+libg_la_LIBADD = $(libg_C_la_LIBADD) 
 
-#man_MANS = libg_process.3 g.1
-#pdf_DATA = libg_process.3.pdf g.1.pdf
+#man_MANS = libg.3 g.1
+#pdf_DATA = libg.3.pdf g.1.pdf
 
 bin_SCRIPTS = gg.sh g2gv.sh
 
@@ -93,11 +93,11 @@ BUILT_SOURCES = grammar.h grammar.c
 
 g_SOURCES = g.c
 g_CPPFLAGS = 
-g_LDADD = libg_process.la @LIBS@
+g_LDADD = libg.la @LIBS@
 
 g_static_SOURCES = g.c
 g_static_CPPFLAGS = 
-g_static_LDADD = libg_process_C.la @LIBS@
+g_static_LDADD = libg_C.la @LIBS@
 
 grammar.c: grammar.h
 
@@ -110,10 +110,10 @@ grammar.svg: grammar.gv
 g.1.pdf: $(srcdir)/g.1
 	    - $(GROFF) -Tps -man $(srcdir)/g.1 | $(PS2PDF) - - >g.1.pdf
 
-libg_process.3.pdf: $(srcdir)/libg_process.3
-	    - $(GROFF) -Tps -man $(srcdir)/libg_process.3 | $(PS2PDF) - - >libg_process.3.pdf
+libg.3.pdf: $(srcdir)/libg.3
+	    - $(GROFF) -Tps -man $(srcdir)/libg.3 | $(PS2PDF) - - >libg.3.pdf
 
-#EXTRA_DIST = g.1 g.1.pdf libg_process.3 libg_process.3.pdf gacc.sh grammar.g
+#EXTRA_DIST = g.1 g.1.pdf libg.3 libg.3.pdf gacc.sh grammar.g
 EXTRA_DIST = gacc.sh grammar.g gg.sh g2gv.sh
 
-DISTCLEANFILES = *.la g.1.pdf libg_process.3.pdf grammar.h grammar.c grammar.ebnf grammar.gv grammar.svg
+DISTCLEANFILES = *.la g.1.pdf libg.3.pdf grammar.h grammar.c grammar.ebnf grammar.gv grammar.svg

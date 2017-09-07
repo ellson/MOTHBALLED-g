@@ -38,7 +38,7 @@
 #include "process.h"
 //
 // public include
-#include "libg_process.h"
+#include "libg.h"
 
 void process(int *pargc, char *argv[], int optind, int flags, char *acts)
 {

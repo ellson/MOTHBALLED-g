@@ -3,19 +3,11 @@
     - node edgelists
     - edge delete
     - node (+subtending edge) delete
-    - pretty printing (see also # ?? )
     - gv format output
     - layout generator - extract meta data on ports for containing layouts
     - queries
     - new main()
     
-DONE 2. attribute merging
-
-DONE 3. need some kind of print_edge_name
-    - for compare and for ikea ...
-    - needs logical space between str elems, and between legs and disambig
-      -- maybe insert real: < > `
-
 6. extend match patterns
 - currently ABC* matching only
 - would be nice to have support for: *ABC   and ABC*XYZ
@@ -85,7 +77,8 @@ DONE 3. need some kind of print_edge_name
     (symmetric or asymetric) then both sides see the same distributed graph
 
 
-14. g_pretty with opt for degrees of expansion and indentation
+
+PARTIALLY DONE: 14. g_pretty with opt for degrees of expansion and indentation
     -  see notes in g.c for a command syntax that includes this..
     -  need gprint(LIST, elem)   to support printing of lists with
        degrees of spacing friendliness:
@@ -99,7 +92,8 @@ DONE 3. need some kind of print_edge_name
                       - fancy and complicated -- maybe drop
         -- 4 shell friendly (all backeting chars on their own lines)
 
-14a. Command line option graph:  see notes in g.c
+
+MAYBE NOT: 14a. Command line option graph:  see notes in g.c
      -- use .g/default.g or /etc/g/deafult.g  for a default command line
 
 16. Meta graphs:
@@ -112,7 +106,9 @@ DONE 3. need some kind of print_edge_name
                 - also include version info.
       - queries - Aunt Querida - node contain query sets which can be
                 connected (edges) to various input and outputs
-      - patterns - Aunt Patricia - patterns
+
+NO:      - patterns - Aunt Patricia - patterns
+Would be "templates" now,   but would need new vern.  Probably not that useful.
 
       - graph - no name (can register alias(es) with Nettie)
            -- nodes + attributes + edges?
@@ -125,20 +121,20 @@ DONE 3. need some kind of print_edge_name
 
 18. Distinct stats nodes for stats from:  INBUF, LIST, TOKEN, THREAD, CONTAINER, SESSION, IKEA
 
+18a (also 16)  States as a proper g graph, internally, so can use standard output printers
+
 20. Error recovery ( something less than FATAL on input errors )
 
     - needs independent error recovery per input stream.
       -- QRY  (ask Dottie) - gets ACT number of QRY, and id to match QRY itself
       --- report last good ACT by ACT number
 
+20a.  Error messages from FATAL dont seem to be very accurate.
+20b.  Need basename if command in error messages for logging.
+
             
 21. need EDGE trees per NODE to support navigational queries
-
-22. additional VSTRING quoting modes:
-    <...>        <> must be balanced  XML/HTML/SVG
-    (...)        () must be balanced  LISP/SCHEME/GUILE
-    {...}        {} must be balanced  JSON/YAML/DOT
-    [length].... length bytes immediately following ']'  Binary
+21a.  Probably use edge namehash ... node and edge srtuctures identical in form, and flippable?
 
 23. alternate DOM mode - GOM or DOM
     - GOM - merges dupes and does not preserve order, provides a
@@ -160,7 +156,8 @@ DONE 3. need some kind of print_edge_name
    - If using catalog entry, then prevent modification of contents. (or use git and control pushes)
 
 24b. GIT repo ?
-   - Consider keeping ikea_catalog contents in git for distribution
+   - Consider keeping ikea_catalog contents in a local git repo.
+   - Is a graph evolution history a useful feature?
 
 25. Foreign renderings:
    - can we use foreign svg renderings ? - e.g.
@@ -169,9 +166,9 @@ DONE 3. need some kind of print_edge_name
         http://www.tutorsglobe.com/homework-help/electrical-engneering/ttl-logic-gate-series-74148.aspx
    - would need to edit to make individual components clickable
    
-26. configure options to enable/disable rewriters:  sameas, patterns, expand, reduce, dom/gom
+26. configure options e.g to enable/disable rewriters:  sameas, patterns, expand, reduce, dom/gom
 
-27.  change STRING to IDENTIFIER   and document like for C:
+27.  Document IDENTIFIER  like for C:
 A C identifier is a name used to identify a variable, function, or any other user-defined item. An identifier starts with a letter A to Z, a to z, or an underscore '_' followed by zero or more letters, underscores, and digits (0 to 9).
 
 C does not allow punctuation characters such as @, $, and % within identifiers. C is a case-sensitive programming language. Thus, Manpower and manpower are two different identifiers in C. Here are some examples of acceptable identifiers −
@@ -185,23 +182,10 @@ myname50   _temp   j     a23b9      retVal
 
 27b. - reserve identifiers beginning with '_' for internal use:
     - _contenthash
-    - _nodeedges
+    - _namehash
 
-FIXED 28.  BUG    a[a=<b>]
-     The '<' is not allowed in VSTRING,  somehow it gets interpreted as an EDGE <b>
-     Should be able to insist that the first char after '=' is valid... 
-     didn't work, maybe brain has stopped working
-
-DONE 29. Rename "session"  to "process"  -- "session" is the persistent
-     association across multiple process invocations,  possibly in
-     parallel, and possibly with periods of innactivity.
-
-30. Reduce ABC set to a set sufficient for JSON/YAML/DOT compatibility.
-Suggest a subset of printing ASCII.  Quoting allowed (what char set in
-quotes?)
-    - see IDENTIFIER vs VSTRING
-
-31. - consider support for additional escape chars in quote stings,  like C's   \t\v\n\f
+30. - consider support for additional escape chars in quote stings,  like C's   \t\v\n\f
+    - conside support for macros like dot's \N \E \G
     - consider support for arbtrary hex code excapes \x12 
          - maybe nothing to do,  just carry the escape sequence
            through literally
@@ -213,17 +197,15 @@ quotes?)
            would apply inside and outside of quotes
 
 31. option to provide small graphs on the command line.  e.g.
-	g -e '(* b *)[x=y] (a x c)'
-    single quote needed to prevent shell interaction
+	g -g '(* b *)[x=y] {a x c}'
+    bash quoting needed to prevent shell interaction
 
-32. Optimizations
-  - pattern.c - search less than the whole pattern tree for matches
-
-33. Use specialcase pattern '*<>' to match all edges
+33. Use specialcase pattern '<>' to match all edges
        - distinct from '<*>' which matches all edges with one leg
        - distinct from '* ' which matches all nodes
+       - distinct from '' which matches the entire graph
 
-34. incremental updates from files ...
+NOT SURE: 34. incremental updates from files ...
         - parse and store a g file as one act/line,  but without any
           modification to ordering or duplication.
         - if new, then process every act
@@ -232,7 +214,7 @@ quotes?)
              - generate add for new lines or updates.
                    - reset any attributes missing from new - not quite!
 
-35. conceptually encode input files as:
+NOT SURE: 35. conceptually encode input files as:
         -f"filename_or_path"`sequencenumber
     where
         -f              = class of object
@@ -240,13 +222,13 @@ quotes?)
         `sequencenumber = disambig for tracking resuse
 
 36. Instead of supporting -K and -T options directly
-    perhaps suppot the command, e.g.
+    perhaps support the command, e.g.
                -C "gv" "dot -Kfdp -Tgv -Tsvg -O"
     then cache all output files with the contenthash of the .g
 
     Might be a more general facility for, e.g. document processors.
 
-37. json2g, g2.json ??   xml2g, g2xml ??
+37. json2g, g2json ??   xml2g, g2xml ??
 
 38. Need edgelist per node to support node deletion.  Deleting a node
     has to delete all dependent edges.
@@ -254,8 +236,10 @@ quotes?)
     .. but was does that query look likes?
            EDGE patterns
 
-		?*<>     - matches all edges
+		?<>      - matches all edges
 		?<* *>   - matches all 2 leg edges
+
+NOT SURE:
 
 		?n*<>    - matches all edges with n* in any leg
 		?n*<* n> - matches all edges with n* in leg2
@@ -276,16 +260,7 @@ quotes?)
 
                ?* <> * <> * ... ;
 
-39. Stash all identifier strings  (e.g.  NODEID get used muliple tims in document mode )
-
-40. Strip out NODEID, ATTRID, DISAMBIG as they are all just IDENTIFIERs
-
-41. Extend CONTAINER->attrid into CONTAINER->identifier  tree for all identifiers
-
-PROBABLY NOT 42. Optimize out one pointer traversal by making a tree node
-    castable to an elem_t.
-    -- tree elems will be ~double size.  Probably need a separate freelist.
-      
+      (<a b><c d)
 43. Compute hubhash for edges iff .gv is one of the outputs.
     -- also useful for edgelist on nodes ???
 

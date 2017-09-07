@@ -28,7 +28,7 @@ A language for describing graphs,  and a tool to parse the language and render t
 %{_bindir}/gg.sh
 %{_bindir}/g2gv.sh
 %exclude %{_bindir}/g_static
-%{_libdir}/libg_process.so.*
+%{_libdir}/libg.so.*
 
 %package devel
 Group:          Development/Libraries
@@ -42,9 +42,9 @@ This package contains development files for g.
 
 %files devel
 %defattr(-,root,root,-)
-%{_includedir}/libg_process.h
-%{_libdir}/libg_process.so
-%{_libdir}/libg_process.a
+%{_includedir}/libg.h
+%{_libdir}/libg.so
+%{_libdir}/libg.a
 
 #-- building --------------------------------------------------
 
@@ -75,5 +75,5 @@ rm -rf %{buildroot}
 #-- changelog --------------------------------------------------
 
 %changelog
-* Wed Sep 09 2015 John Ellson <john.ellson@comcast.net>
+* Wed Sep 09 2017 John Ellson <john.ellson@gmail.com>
 - release g-0.1
