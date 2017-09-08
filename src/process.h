@@ -20,12 +20,17 @@ extern "C" {
 #define TEN9 1000000000
 #define TEN3 1000
 
+#define DUMMY_LOCK()
+#define DUMMY_UNLOCK()
+
 struct process_s {
     THREAD_t *THREAD;          // THREADs in this PROCESS
 
 // FIXME - use enumeration
     int flags;       // -s = 1, -p = 2, -c = 4, -g = 8
     char *acts;      // g snippet from command line
+
+    elem_t *identifiers;       // tree of identifiers  - requires mutex when accessing from threads
 
     // info collected by session();
     char *progname;

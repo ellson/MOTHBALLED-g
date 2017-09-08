@@ -42,7 +42,7 @@
 
 void process(int *pargc, char *argv[], int optind, int flags, char *acts)
 {
-    PROCESS_t process;
+    PROCESS_t process = { 0 };
     struct passwd *pw;
     struct utsname unamebuf;
     uid_t uid;

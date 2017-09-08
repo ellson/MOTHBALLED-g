@@ -78,6 +78,7 @@ static elem_t * merge_identifier(LIST_t *LIST, elem_t *identifier, elem_t *key)
 success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char prop, int nest, int repc, state_t bi)
 {
     THREAD_t * THREAD = CONTAINER->THREAD;
+    PROCESS_t * PROCESS = THREAD->PROCESS;
     unsigned char nprop;
     char so;        // offset to next state, signed
     state_t ti, ni, ei;
@@ -286,8 +287,10 @@ done: // State exit processing
             case PORTID:
             case DISAMBID:
             case ATTRID:
-                THREAD->identifiers = insert_item(LIST(), THREAD->identifiers, 
+                DUMMY_LOCK();
+                PROCESS->identifiers = insert_item(LIST(), PROCESS->identifiers, 
                     branch->u.l.first, merge_identifier, &newkey);
+                DUMMY_UNLOCK();
                 branch->u.l.first = newkey;
                 append_addref(root, branch); 
                 break;
@@ -308,6 +311,9 @@ done: // State exit processing
             case SCN:      // terminal
                 break;
     
+#if 0
+//no need to work so hard
+
             case ACTIVITY:
             case SET:
             case ENDPOINTSET:
@@ -334,6 +340,9 @@ done: // State exit processing
             case TLD:
             case END:
                 // FIXME - some of these must be droppable?
+#else
+            default:
+#endif
                 // everything else is appended to parent's branch
                 append_addref(root, branch);
                 break;

@@ -51,8 +51,6 @@ struct thread_s {
                                // the next character is a token which
                                // implicitly separates.)
  
-    elem_t *identifiers;       // tree of identifiers    // FIXME - add mutex and move to PROCESS  ??
-
     unsigned char buf[1024];   // output buffering
     int pos;
 

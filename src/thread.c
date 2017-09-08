@@ -46,7 +46,8 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     ikea_store_snapshot(thread.ikea_store);
     ikea_store_close(thread.ikea_store);
 
-    free_tree(LIST(), thread.identifiers);
+// FIXME - do this only if we are the last thread exiting ...
+    free_tree(LIST(), PROCESS->identifiers);
 
     if (LIST()->stat_elemnow != 0) {
         E();
