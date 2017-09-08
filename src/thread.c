@@ -37,14 +37,14 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     thread.TOKEN.IO.pargc = pargc;
     thread.TOKEN.IO.argv = argv;
     thread.TOKEN.IO.acts = PROCESS->acts;
-    thread.TOKEN.IO.ikea_store = ikea_store_open( NULL );
+    thread.TOKEN.IO.ikea_store = ikea_store_open( NULL ); // FIXME - belongs in process?
 
 // FIXME - fork() here ??
     // run until completion
     (void)container(&thread);
 
-    ikea_store_snapshot(thread.TOKEN.IO.ikea_store);
-    ikea_store_close(thread.TOKEN.IO.ikea_store);
+    ikea_store_snapshot(thread.TOKEN.IO.ikea_store);   // FIXME - belongs in process?
+    ikea_store_close(thread.TOKEN.IO.ikea_store);      // FIXME - belongs in process?
 
 // FIXME - do this only if we are the last thread exiting ...
     free_tree(LIST(), PROCESS->identifiers);

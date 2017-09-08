@@ -179,6 +179,9 @@ void ikea_box_append(ikea_box_t* ikea_box, const unsigned char *data, size_t dat
         FATAL("EVP_DigestUpdate()");
 }
 
+
+// FIXME - probably just ikea_box_close needs LOCKs becase of the rename operation.
+
 void ikea_box_close(ikea_box_t* ikea_box, char *contenthash, int contenthashsz) 
 {
     assert(contenthashsz >= (((EVP_MAX_MD_SIZE+1)*8/6)+1));   // =87, last time I checked
@@ -570,6 +573,8 @@ static void ikea_close(IO_t *IO) {
             sizeof(IO->contenthash) );
 }
 
+// FIXME - require locks when writing a box that  maybe read or modified by other threads.
+// FIXME - probably just ikea_box_close needs LOCKs becase of the rename operation.
 
 // discipline for writing to ikea
 out_disc_t ikea_disc = {
