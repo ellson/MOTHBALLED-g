@@ -13,108 +13,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
-#include <assert.h>
 
 #include "thread.h"
 #include "container.h"
 #include "info.h"
 #include "process.h"
-
-//===================================
-
-static void* stdout_open(void *descriptor, char *mode) {
-    return stdout;
-}
-
-static size_t stdout_write(THREAD_t *THREAD, unsigned char *cp, size_t len) {
-    return fwrite(cp, len, 1, stdout);
-}
-
-static void stdout_flush(THREAD_t *THREAD) {
-    return;
-}
-
-static void stdout_close(THREAD_t *THREAD) {
-    return;
-}
-
-// discipline for writing to stdout
-static out_disc_t stdout_disc = {
-    &stdout_open,
-    &stdout_write,
-    &stdout_flush,
-    &stdout_close
-};
-
-//===================================
-
-#if 0  // not used yet
-static void* file_open(void *descriptor, char *mode) {
-    return fopen((char*)(descriptor), mode);
-}
-
-static size_t file_write(THREAD_t *THREAD, unsigned char *cp, size_t len) {
-    return fwrite(cp, len, 1, (FILE*)(THREAD->out));
-}
-
-static void file_flush(THREAD_t *THREAD) {
-    fflush((FILE*)(THREAD->out));
-}
-
-static void file_close(THREAD_t *THREAD) {
-    fclose((FILE*)(THREAD->out));
-}
-
-// discipline for writing to a file
-static out_disc_t file_disc = {
-    &file_open,
-    &file_write,
-    &file_flush,
-    &file_close
-};
-#endif
-
-//===================================
-
-static void* ikea_open(void* descriptor, char *mode) {
-    return ikea_box_open( (ikea_store_t*)descriptor, mode);
-}
-
-static void ikea_flush(THREAD_t *THREAD) {
-    ikea_box_append((ikea_box_t*)(THREAD->out), THREAD->buf, THREAD->pos);
-    THREAD->pos = 0;
-}
-
-static size_t ikea_write(THREAD_t *THREAD, unsigned char *cp, size_t size)
-{
-    int len = size;
-
-    while (len--) {
-        THREAD->buf[THREAD->pos++] = *cp++;
-        if (THREAD->pos >= sizeof(THREAD->buf)) {
-            ikea_flush(THREAD);
-        }
-    }
-    return size;
-}
-
-static void ikea_close(THREAD_t *THREAD) {
-    ikea_box_close ( (ikea_box_t*)(THREAD->out),
-            THREAD->contenthash,
-            sizeof(THREAD->contenthash) );
-}
-
-
-// discipline for writing to ikea
-static out_disc_t ikea_disc = {
-    &ikea_open,
-    &ikea_write,
-    &ikea_flush,
-    &ikea_close 
-};
-
-//===================================
 
 /**
  * @param THREAD context   
@@ -154,14 +57,15 @@ success_t container(THREAD_t * THREAD)
     // write to stdout
     if (THREAD->stat_containdepth == 1) {
         if (container.nodes) {
-            THREAD->out_disc = &stdout_disc;
-            THREAD->out = THREAD->out_disc->out_open_fn( NULL, NULL );
-            printt(THREAD, container.nodes);
+            IO()->flags = THREAD->PROCESS->flags;
+            IO()->out_disc = &stdout_disc;
+            IO()->out_chan = IO()->out_disc->out_open_fn( NULL, NULL );
+            printt(IO(), container.nodes);
             if (container.edges) {
-                printt(THREAD, container.edges);
+                printt(IO(), container.edges);
             }
-            THREAD->out_disc->out_flush_fn(THREAD);
-            THREAD->out_disc->out_close_fn(THREAD);
+            IO()->out_disc->out_flush_fn(IO());
+            IO()->out_disc->out_close_fn(IO());
         }
     }
     else {
@@ -173,14 +77,14 @@ success_t container(THREAD_t * THREAD)
 
     // preserve in ikea storage
     if (container.nodes) {
-        THREAD->out_disc = &ikea_disc;
-        THREAD->out = THREAD->out_disc->out_open_fn( THREAD->ikea_store, NULL);
-        printt(THREAD, container.nodes);
+        IO()->out_disc = &ikea_disc;
+        IO()->out_chan = IO()->out_disc->out_open_fn( IO()->ikea_store, NULL);
+        printt(IO(), container.nodes);
         if (container.edges) {
-            printt(THREAD, container.edges);
+            printt(IO(), container.edges);
         }
-        THREAD->out_disc->out_flush_fn(THREAD);
-        THREAD->out_disc->out_close_fn(THREAD);
+        IO()->out_disc->out_flush_fn(IO());
+        IO()->out_disc->out_close_fn(IO());
     }
 
     THREAD->stat_containdepth--;

@@ -25,6 +25,19 @@ struct io_s {
     char **argv;
     char *acts;                // g snippet from command line
 
+    ikea_store_t *ikea_store;  // persistency
+
+    int flags;
+
+    unsigned char buf[1024];   // output buffering
+    int pos;
+
+    void *out_chan;                 // output FILE* or ikea_box_t*
+    out_disc_t *out_disc;
+
+    char contenthash[128];     // big enough for content hash
+                               // checked by assert in ikea_box_open()
+
     FILE *out, *err;           // output files
 
     unsigned char *in;         // next character to be processed
@@ -46,6 +59,9 @@ struct io_s {
 };
 
 success_t input(IO_t *IO);
+
+out_disc_t stdout_disc;
+out_disc_t file_disc;
 
 #ifdef __cplusplus
 }

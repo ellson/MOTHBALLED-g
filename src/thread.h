@@ -43,7 +43,7 @@ extern "C" {
 struct thread_s {
     TOKEN_t TOKEN;             // TOKEN context. May be cast from THREAD
     PROCESS_t *PROCESS;        // The PROCESS that started this THREAD
-    ikea_store_t *ikea_store;  // persistency
+
     int style;                 // degree of friendliness in print outputs
     char sep;                  // the next separator
                                // (either 0, or ' ' if following a IDENTIFIER or VSTRING that
@@ -51,15 +51,6 @@ struct thread_s {
                                // the next character is a token which
                                // implicitly separates.)
  
-    unsigned char buf[1024];   // output buffering
-    int pos;
-
-    void *out;                 // output FILE* or ikea_box_t*
-    out_disc_t *out_disc;
-
-    char contenthash[128];     // big enough for content hash
-                               // checked by assert in ikea_box_open()
-
     // stats
     long stat_inactcount;
     long stat_containdepth;      

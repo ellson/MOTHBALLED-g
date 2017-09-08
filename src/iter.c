@@ -18,8 +18,8 @@
 #include "types.h"
 #include "inbuf.h"
 #include "list.h"
+#include "io.h"
 #include "grammar.h"
-#include "thread.h"
 #include "iter.h"
 
 // separator strings:       minimal   pretty
@@ -380,35 +380,35 @@ int match (elem_t *a, elem_t *b)
 /**
  * printg - print the canonical g string representation of a list
  *
- * @param THREAD context
+ * @param IO context
  * @param a - list to be printed
  */
-static void printg (THREAD_t *THREAD, elem_t *a)
+static void printg (IO_t *IO, elem_t *a)
 {
     iter_t ai = { 0 };
-    out_write_fn_t out_write_fn = THREAD->out_disc->out_write_fn;
+    out_write_fn_t out_write_fn = IO->out_disc->out_write_fn;
 
-    inititer(&ai, a, THREAD->PROCESS->flags & 2);
+    inititer(&ai, a, IO->flags & 2);
     do {
-        out_write_fn(THREAD, ai.cp, ai.len);
+        out_write_fn(IO, ai.cp, ai.len);
         nextiter(&ai);
     } while (ai.len || ai.lsp);
-    out_write_fn(THREAD, (unsigned char*)"\n", 1);
+    out_write_fn(IO, (unsigned char*)"\n", 1);
 }
 
 /**
  * print a tree from left to right.  i.e in insertion sort order
  *
- * @param THREAD context
+ * @param IO context
  * @param p the root of the tree
  */
-void printt(THREAD_t * THREAD, elem_t * p)
+void printt(IO_t * IO, elem_t * p)
 {
     if (p->u.t.left) {
-        printt(THREAD, p->u.t.left);
+        printt(IO, p->u.t.left);
     }
-    printg(THREAD, p->u.t.key);
+    printg(IO, p->u.t.key);
     if (p->u.t.right) {
-        printt(THREAD, p->u.t.right);
+        printt(IO, p->u.t.right);
     }
 }

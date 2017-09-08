@@ -37,6 +37,7 @@
 #include "fatal.h"
 #include "inbuf.h"
 #include "list.h"
+#include "io.h"
 #include "ikea.h"
 
 /**
@@ -538,3 +539,42 @@ void sslhash_list(uint64_t *hash, elem_t *list)
     if ((EVP_DigestFinal_ex(ctx, digest, &digest_len)) != 1)
         FATAL("EVP_DigestFinal_ex()");
 }
+
+//===================================
+
+static void* ikea_open(void* descriptor, char *mode) {
+    return ikea_box_open( (ikea_store_t*)descriptor, mode);
+}
+
+static void ikea_flush(IO_t *IO) {
+    ikea_box_append((ikea_box_t*)(IO->out_chan), IO->buf, IO->pos);
+    IO->pos = 0;
+}
+
+static size_t ikea_write(IO_t *IO, unsigned char *cp, size_t size)
+{
+    int len = size;
+
+    while (len--) {
+        IO->buf[IO->pos++] = *cp++;
+        if (IO->pos >= sizeof(IO->buf)) {
+            ikea_flush(IO);
+        }
+    }
+    return size;
+}
+
+static void ikea_close(IO_t *IO) {
+    ikea_box_close ( (ikea_box_t*)(IO->out_chan),
+            IO->contenthash,
+            sizeof(IO->contenthash) );
+}
+
+
+// discipline for writing to ikea
+out_disc_t ikea_disc = {
+    &ikea_open,
+    &ikea_write,
+    &ikea_flush,
+    &ikea_close
+};

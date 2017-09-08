@@ -108,3 +108,57 @@ success_t input(IO_t * IO)
     IO->stat_incharcount += size;
     return SUCCESS;
 }
+
+//===================================
+
+static void* stdout_open(void *descriptor, char *mode) {
+    return stdout;
+}
+
+static size_t stdout_write(IO_t *IO, unsigned char *cp, size_t len) {
+    return fwrite(cp, len, 1, stdout);
+}
+
+static void stdout_flush(IO_t *IO) {
+    return;
+}
+
+static void stdout_close(IO_t *IO) {
+    return;
+}
+
+// discipline for writing to stdout
+out_disc_t stdout_disc = {
+    &stdout_open,
+    &stdout_write,
+    &stdout_flush,
+    &stdout_close
+};
+
+//===================================
+
+static void* file_open(void *descriptor, char *mode) {
+    return fopen((char*)(descriptor), mode);
+}
+
+static size_t file_write(IO_t *IO, unsigned char *cp, size_t len) {
+    return fwrite(cp, len, 1, (FILE*)(IO->out_chan));
+}
+
+static void file_flush(IO_t *IO) {
+    fflush((FILE*)(IO->out_chan));
+}
+
+static void file_close(IO_t *IO) {
+    fclose((FILE*)(IO->out_chan));
+}
+
+// discipline for writing to a file
+out_disc_t file_disc = {
+    &file_open,
+    &file_write,
+    &file_flush,
+    &file_close
+};
+
+

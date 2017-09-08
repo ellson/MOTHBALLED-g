@@ -45,11 +45,11 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
         disambig = NULL;
     }
 
-    if (THREAD->contenthash[0]) { // Build newattr for "_contenthash=xxxxx"
+    if (IO()->contenthash[0]) { // Build newattr for "_contenthash=xxxxx"
         elem_t *newattrid, *newvalue, *newidentifier, *newvstring;
 
         newidentifier = new_shortstr(LIST(), ABC, "_contenthash");
-        newvstring = new_shortstr(LIST(), ABC, THREAD->contenthash);
+        newvstring = new_shortstr(LIST(), ABC, IO()->contenthash);
 
         state_t ATTRID_schema[] = {ATTRID, ABC};
         newattrid = TUPLE(ATTRID_schema, newidentifier);
@@ -60,7 +60,7 @@ elem_t * rewrite(CONTAINER_t *CONTAINER, elem_t *act)
         state_t ATTR_schema[] = {ATTR, ATTRID, VALUE};
         newattr = TUPLE(ATTR_schema, newattrid, newvalue);
 
-        THREAD->contenthash[0] = '\0';
+        IO()->contenthash[0] = '\0';
     }
 
     // Now we are going to build a rewritten ACT tree, with references

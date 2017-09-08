@@ -36,9 +36,9 @@ typedef struct ikea_store_s ikea_store_t; // ikea.h
 typedef struct ikea_box_s ikea_box_t;     // ikea.h
 
 typedef void* (*out_open_fn_t)(void *descriptor, char *mode);
-typedef size_t (*out_write_fn_t)(THREAD_t *THREAD, unsigned char *cp, size_t len);
-typedef void (*out_flush_fn_t)(THREAD_t *THREAD);
-typedef void (*out_close_fn_t)(THREAD_t *THREAD);
+typedef size_t (*out_write_fn_t)(IO_t *IO, unsigned char *cp, size_t len);
+typedef void (*out_flush_fn_t)(IO_t *IO);
+typedef void (*out_close_fn_t)(IO_t *IO);
 
 typedef struct {
     out_open_fn_t out_open_fn;

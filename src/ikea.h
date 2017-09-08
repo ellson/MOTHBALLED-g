@@ -28,6 +28,8 @@ void ikea_box_close( ikea_box_t* ikea_box, char *contenthash, int contenthashsz 
 
 void sslhash_list(uint64_t *hash, elem_t *list);
 
+out_disc_t ikea_disc;
+
 #ifdef __cplusplus
 }
 #endif
