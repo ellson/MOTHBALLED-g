@@ -41,7 +41,9 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
 
 // FIXME - fork() here ??
     // run until completion
-    (void)container(&thread);
+    elem_t *content = container(&thread);
+//P(content);
+    free_list(LIST(), content);
 
     ikea_store_snapshot(thread.TOKEN.IO.ikea_store);   // FIXME - belongs in process?
     ikea_store_close(thread.TOKEN.IO.ikea_store);      // FIXME - belongs in process?

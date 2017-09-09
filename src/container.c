@@ -34,12 +34,12 @@ static void subject_tree2acts(LIST_t *LIST, elem_t *activity, elem_t * p)
 
 /**
  * @param THREAD context   
- * @return success/fail
+ * @return content
  */
-success_t container(THREAD_t * THREAD)
+elem_t * container(THREAD_t * THREAD)
 {
     CONTAINER_t container = { 0 };
-    elem_t *root;
+    elem_t *root, *content = NULL;
     success_t rc;
 
 
@@ -67,14 +67,13 @@ success_t container(THREAD_t * THREAD)
         }
     }
 
-    elem_t * content = new_list(LIST(), ACTIVITY);
+    content = new_list(LIST(), ACTIVITY);
     if (container.nodes) {
         subject_tree2acts(LIST(), content, container.nodes);
         if (container.edges) {
             subject_tree2acts(LIST(), content, container.edges);
         }
     }
-//P(content);
     
     // write to stdout
     if (THREAD->stat_containdepth == 1) {
@@ -108,8 +107,6 @@ success_t container(THREAD_t * THREAD)
         }
     }
 
-    free_list(LIST(), content);
-
     // preserve in ikea storage
     if (container.nodes) {
         IO()->out_disc = &ikea_disc;
@@ -128,6 +125,7 @@ success_t container(THREAD_t * THREAD)
     free_list(LIST(), container.previous);
     free_tree(LIST(), container.nodes);
     free_tree(LIST(), container.edges);
+
 // Some elem's are retained by the attrid tree
 //E();
 
@@ -139,5 +137,5 @@ success_t container(THREAD_t * THREAD)
         info_thread(THREAD);
     }
 
-    return rc;
+    return content;
 }

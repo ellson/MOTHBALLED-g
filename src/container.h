@@ -39,7 +39,7 @@ struct container_s {      // CONTAINER context
     long stat_outactcount;
 };
 
-success_t container(THREAD_t *THREAD);
+elem_t * container(THREAD_t *THREAD);
 
 #ifdef __cplusplus
 }
