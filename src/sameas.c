@@ -68,7 +68,6 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t *target, elem_t * replacement)
     while (target) {
         si = (state_t) target->state;
         switch (si) {
-            case NODE:
             case SIS:
             case MUM:
             case KID:
@@ -115,6 +114,7 @@ sameas_r(CONTAINER_t * CONTAINER, elem_t *target, elem_t * replacement)
             case SET:
             case EDGE:
             case LEG:
+            case NODE:
             case ENDPOINT:
             case ENDPOINTSET:
                 // need to recurse further for potential SAMEAS
