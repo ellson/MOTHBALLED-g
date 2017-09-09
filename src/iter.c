@@ -27,8 +27,7 @@ char *sep_begtree[4]    = { "","",    "",""     };
 char *sep_intree[4]     = { " ","",   "\n  ","" };
 char *sep_skip[4]       = { " ","",   " ",""    };
 char *sep_step[4]       = { "","",    "",""     };
-char *sep_ACTIVITY[4]   = { "","\n",  "","\n"   };
-char *sep_ACT[4]        = { " ","",   "\n",""    };
+char *sep_ACT[4]        = { " ","\n", "\n","\n" };
 char *sep_ATTRIBUTES[4] = { "[","]",  " [\n  ","\n]" };
 char *sep_DISAMBIG[4]   = { "`","",   "`",""    };
 char *sep_EDGE[4]       = { "<",">",  "<",">"   };
@@ -81,9 +80,6 @@ static void stepiter(iter_t *iter, elem_t *this)
         } else {
             assert(iter->lsp < MAXNEST);
             switch ((state_t)this->state) {
-                case ACTIVITY:
-                    iter->lstack[iter->lsp].sep = sep_ACTIVITY;
-                    break;
                 case ACT:
                     iter->lstack[iter->lsp].sep = sep_ACT;
                     break;
