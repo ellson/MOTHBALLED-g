@@ -44,15 +44,28 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     elem_t *content = container(&thread);
 //P(content);
 
-#ifdef NEWPRINT
     // write to stdout
-    IO()->flags = THREAD->PROCESS->flags;
-    IO()->out_disc = &stdout_disc;
-    IO()->out_chan = IO()->out_disc->out_open_fn( NULL, NULL );
-    printg(IO(), content);
-    IO()->out_disc->out_flush_fn(IO());
-    IO()->out_disc->out_close_fn(IO());
-#endif
+    elem_t *nodes = content->u.l.first;
+    elem_t *edges = nodes->u.l.next;
+    elem_t *tree = nodes->u.l.first;
+    if (tree) {
+        IO()->flags = THREAD->PROCESS->flags;
+        IO()->out_disc = &stdout_disc;
+        IO()->out_chan = IO()->out_disc->out_open_fn( NULL, NULL );
+        printt(IO(), tree);
+        free_tree(LIST(), tree);
+        nodes->u.l.first = NULL;
+
+        tree = edges->u.l.first;
+        if (tree) {
+            printt(IO(), tree);
+            free_tree(LIST(), tree);
+            edges->u.l.first = NULL;
+        }
+
+        IO()->out_disc->out_flush_fn(IO());
+        IO()->out_disc->out_close_fn(IO());
+    }
 
     free_list(LIST(), content);
 

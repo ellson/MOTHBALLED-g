@@ -19,19 +19,6 @@
 #include "info.h"
 #include "process.h"
 
-static void subject_tree2acts(LIST_t *LIST, elem_t *activity, elem_t * p)
-{
-    if (p->u.t.left) {
-        subject_tree2acts(LIST, activity, p->u.t.left);
-    }
-    elem_t *act = new_list(LIST, ACT);
-    append_addref(act, p->u.t.key);
-    append_transfer(activity, act);
-    if (p->u.t.right) {
-        subject_tree2acts(LIST, activity, p->u.t.right);
-    }
-}
-
 /**
  * @param THREAD context   
  * @return content
@@ -39,7 +26,7 @@ static void subject_tree2acts(LIST_t *LIST, elem_t *activity, elem_t * p)
 elem_t * container(THREAD_t * THREAD)
 {
     CONTAINER_t container = { 0 };
-    elem_t *root, *content = NULL;
+    elem_t *root, *content = NULL, *nodes = NULL, *edges = NULL;
     success_t rc;
 
 
@@ -67,37 +54,6 @@ elem_t * container(THREAD_t * THREAD)
         }
     }
 
-    content = new_list(LIST(), ACTIVITY);
-    if (container.nodes) {
-        subject_tree2acts(LIST(), content, container.nodes);
-        if (container.edges) {
-            subject_tree2acts(LIST(), content, container.edges);
-        }
-    }
-    
-#ifndef NEWPRINT
-    // write to stdout
-    if (THREAD->stat_containdepth == 1) {
-        if (container.nodes) {
-            IO()->flags = THREAD->PROCESS->flags;
-            IO()->out_disc = &stdout_disc;
-            IO()->out_chan = IO()->out_disc->out_open_fn( NULL, NULL );
-            printt(IO(), container.nodes);
-            if (container.edges) {
-                printt(IO(), container.edges);
-            }
-            IO()->out_disc->out_flush_fn(IO());
-            IO()->out_disc->out_close_fn(IO());
-        }
-    }
-    else {
-        if (THREAD->PROCESS->flags & 8) {
-            // FIXME
-            fprintf(stderr, "printing of expanded content is not yet implemented\n");
-        }
-    }
-#endif
-
     // preserve in ikea storage
     if (container.nodes) {
         IO()->out_disc = &ikea_disc;
@@ -112,10 +68,20 @@ elem_t * container(THREAD_t * THREAD)
 
     THREAD->stat_containdepth--;
 
+    content = new_list(LIST(), ACTIVITY);
+    nodes = new_list(LIST(), NODES);
+    edges = new_list(LIST(), EDGES);
+    if (container.nodes) {
+        append_transfer(nodes, container.nodes);
+        if (container.edges) {
+            append_transfer(edges, container.edges);
+        }
+    }
+    append_transfer(content, nodes);
+    append_transfer(content, edges);
+
     free_list(LIST(), root);
     free_list(LIST(), container.previous);
-    free_tree(LIST(), container.nodes);
-    free_tree(LIST(), container.edges);
 
 // Some elem's are retained by the attrid tree
 //E();
