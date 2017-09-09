@@ -19,6 +19,19 @@
 #include "info.h"
 #include "process.h"
 
+static void subject_tree2acts(LIST_t *LIST, elem_t *activity, elem_t * p)
+{
+    if (p->u.t.left) {
+        subject_tree2acts(LIST, activity, p->u.t.left);
+    }
+    elem_t *act = new_list(LIST, ACT);
+    append_addref(act, p->u.t.key);
+    append_transfer(activity, act);
+    if (p->u.t.right) {
+        subject_tree2acts(LIST, activity, p->u.t.right);
+    }
+}
+
 /**
  * @param THREAD context   
  * @return success/fail
@@ -53,27 +66,49 @@ success_t container(THREAD_t * THREAD)
             token_error(TOKEN(), "Parse error near token:", TOKEN()->insi);
         }
     }
+
+    elem_t * content = new_list(LIST(), ACTIVITY);
+    if (container.nodes) {
+        subject_tree2acts(LIST(), content, container.nodes);
+        if (container.edges) {
+            subject_tree2acts(LIST(), content, container.edges);
+        }
+    }
+//P(content);
     
     // write to stdout
     if (THREAD->stat_containdepth == 1) {
+#define OLD 1
+#ifdef OLD
         if (container.nodes) {
+#endif
             IO()->flags = THREAD->PROCESS->flags;
             IO()->out_disc = &stdout_disc;
             IO()->out_chan = IO()->out_disc->out_open_fn( NULL, NULL );
+#ifdef OLD
             printt(IO(), container.nodes);
             if (container.edges) {
                 printt(IO(), container.edges);
             }
+
+#else
+            printg(IO(), content);
+#endif
+
             IO()->out_disc->out_flush_fn(IO());
             IO()->out_disc->out_close_fn(IO());
+#ifdef OLD
         }
+#endif
     }
     else {
-        if (THREAD->PROCESS->flags & 4) {
+        if (THREAD->PROCESS->flags & 8) {
             // FIXME
             fprintf(stderr, "printing of expanded content is not yet implemented\n");
         }
     }
+
+    free_list(LIST(), content);
 
     // preserve in ikea storage
     if (container.nodes) {
@@ -97,7 +132,7 @@ success_t container(THREAD_t * THREAD)
 //E();
 
     // FIXME - move to Aunt Sally query
-    if (THREAD->PROCESS->flags & 1) {
+    if (THREAD->PROCESS->flags & 4) {
         // in alpha-sorted order
         info_container(&container);
         info_process(THREAD);

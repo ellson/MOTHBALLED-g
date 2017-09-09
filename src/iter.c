@@ -27,6 +27,7 @@ char *sep_begtree[4]    = { "","",    "",""     };
 char *sep_intree[4]     = { " ","",   "\n  ","" };
 char *sep_skip[4]       = { " ","",   " ",""    };
 char *sep_step[4]       = { "","",    "",""     };
+char *sep_ACTIVITY[4]   = { "","\n",  "","\n"   };
 char *sep_ACT[4]        = { "","",    "",""     };
 char *sep_ATTRIBUTES[4] = { "[","]",  " [\n  ","\n]" };
 char *sep_DISAMBIG[4]   = { "`","",   "`",""    };
@@ -80,6 +81,9 @@ static void stepiter(iter_t *iter, elem_t *this)
         } else {
             assert(iter->lsp < MAXNEST);
             switch ((state_t)this->state) {
+                case ACTIVITY:
+                    iter->lstack[iter->lsp].sep = sep_ACTIVITY;
+                    break;
                 case ACT:
                     iter->lstack[iter->lsp].sep = sep_ACT;
                     break;
@@ -383,12 +387,12 @@ int match (elem_t *a, elem_t *b)
  * @param IO context
  * @param a - list to be printed
  */
-static void printg (IO_t *IO, elem_t *a)
+void printg (IO_t *IO, elem_t *a)
 {
     iter_t ai = { 0 };
     out_write_fn_t out_write_fn = IO->out_disc->out_write_fn;
 
-    inititer(&ai, a, IO->flags & 2);
+    inititer(&ai, a, IO->flags & 3);
     do {
         out_write_fn(IO, ai.cp, ai.len);
         nextiter(&ai);

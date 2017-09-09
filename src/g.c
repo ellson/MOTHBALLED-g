@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
     signal(SIGINT, intr);
 
-    while ((opt = getopt(argc, argv, "d::pacsg:")) != -1) {
+    while ((opt = getopt(argc, argv, "d::p::acsg:")) != -1) {
         if (optarg)
             optnum = atoi(optarg);
         else
@@ -57,26 +57,25 @@ int main(int argc, char *argv[])
                 exit(EXIT_FAILURE);
                 break;
             }
-
+            break;
+        case 'p':   // pretty output
+            flags |= optnum & 3;
             break;
         case 's':    // stats
-            flags |= 1;
-            break;
-        case 'p':    // pretty output
-            flags |= 2;
+            flags |= 4;
             break;
         case 'c':    // expand contents
-            flags |= 4;
+            flags |= 8;
             break;
         case 'g':    // eval g acts from command line
                      // evaluated after all named files, 
                      // but before explicit '-'
                      // no implicit stdin processing if -g present
-            flags |= 8;
+            flags |= 16;
             acts = optarg;
             break;
         case 'a':    // debugging - show ACT after parsing
-            flags |= 16;
+            flags |= 32;
             break;
         default:
             fprintf(stderr,"Usage: %s [-d[012] [-s] [-p] [-c] [files] [-g acts] [-]\n", argv[0]);

@@ -52,7 +52,7 @@ success_t doact(CONTAINER_t *CONTAINER, elem_t *act)
     assert(act);
     assert(act->u.l.first);    // minimmaly, an ACT must have a SUBJECT
 
-    if (THREAD->PROCESS->flags & 16) {
+    if (THREAD->PROCESS->flags & 32) {
         P(act);
     }
 

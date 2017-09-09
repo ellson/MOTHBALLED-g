@@ -42,6 +42,7 @@ typedef struct {
 int compare(elem_t * a, elem_t * b);
 int match(elem_t * a, elem_t * b);
 void printt(IO_t * IO, elem_t * p);
+void printg(IO_t * IO, elem_t * p);
 
 #ifdef __cplusplus
 }

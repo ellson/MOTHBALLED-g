@@ -1,6 +1,6 @@
 # pretty printing
 
-#opt:-p
+#opt:-p1
 #out:a [
 #out:  b = c
 #out:]
