@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
     signal(SIGINT, intr);
 
-    while ((opt = getopt(argc, argv, "d::pcsg:")) != -1) {
+    while ((opt = getopt(argc, argv, "d::pacsg:")) != -1) {
         if (optarg)
             optnum = atoi(optarg);
         else
@@ -75,8 +75,11 @@ int main(int argc, char *argv[])
             flags |= 8;
             acts = optarg;
             break;
+        case 'a':    // debugging - show ACT after parsing
+            flags |= 16;
+            break;
         default:
-            fprintf(stderr,"Usage: %s [-d[01] [-s] [-p] [-c] [files] [-g acts] [-]\n", argv[0]);
+            fprintf(stderr,"Usage: %s [-d[012] [-s] [-p] [-c] [files] [-g acts] [-]\n", argv[0]);
             exit(EXIT_FAILURE);
             break;
         }
