@@ -28,7 +28,7 @@ char *sep_intree[4]     = { " ","",   "\n  ","" };
 char *sep_skip[4]       = { " ","",   " ",""    };
 char *sep_step[4]       = { "","",    "",""     };
 char *sep_ACTIVITY[4]   = { "","\n",  "","\n"   };
-char *sep_ACT[4]        = { "","",    "",""     };
+char *sep_ACT[4]        = { " ","",   "\n",""    };
 char *sep_ATTRIBUTES[4] = { "[","]",  " [\n  ","\n]" };
 char *sep_DISAMBIG[4]   = { "`","",   "`",""    };
 char *sep_EDGE[4]       = { "<",">",  "<",">"   };
@@ -197,6 +197,9 @@ static void skipiter(iter_t *iter)
                         // elems that follow elems of a different state_t
                         // (non-homogenous lists) need to over-ride the
                         // pop_space_push of the preceding elem
+                        case ACT:
+                            iter->lstack[iter->lsp].sep = sep_ACT;
+                            break;
                         case ATTRIBUTES:
                             iter->lstack[iter->lsp].sep = sep_ATTRIBUTES;
                             break;
@@ -397,7 +400,9 @@ void printg (IO_t *IO, elem_t *a)
         out_write_fn(IO, ai.cp, ai.len);
         nextiter(&ai);
     } while (ai.len || ai.lsp);
+#ifndef NEWPRINT
     out_write_fn(IO, (unsigned char*)"\n", 1);
+#endif
 }
 
 /**

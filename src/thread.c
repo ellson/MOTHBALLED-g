@@ -43,6 +43,17 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     // run until completion
     elem_t *content = container(&thread);
 //P(content);
+
+#ifdef NEWPRINT
+    // write to stdout
+    IO()->flags = THREAD->PROCESS->flags;
+    IO()->out_disc = &stdout_disc;
+    IO()->out_chan = IO()->out_disc->out_open_fn( NULL, NULL );
+    printg(IO(), content);
+    IO()->out_disc->out_flush_fn(IO());
+    IO()->out_disc->out_close_fn(IO());
+#endif
+
     free_list(LIST(), content);
 
     ikea_store_snapshot(thread.TOKEN.IO.ikea_store);   // FIXME - belongs in process?

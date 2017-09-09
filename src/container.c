@@ -75,30 +75,20 @@ elem_t * container(THREAD_t * THREAD)
         }
     }
     
+#ifndef NEWPRINT
     // write to stdout
     if (THREAD->stat_containdepth == 1) {
-#define OLD 1
-#ifdef OLD
         if (container.nodes) {
-#endif
             IO()->flags = THREAD->PROCESS->flags;
             IO()->out_disc = &stdout_disc;
             IO()->out_chan = IO()->out_disc->out_open_fn( NULL, NULL );
-#ifdef OLD
             printt(IO(), container.nodes);
             if (container.edges) {
                 printt(IO(), container.edges);
             }
-
-#else
-            printg(IO(), content);
-#endif
-
             IO()->out_disc->out_flush_fn(IO());
             IO()->out_disc->out_close_fn(IO());
-#ifdef OLD
         }
-#endif
     }
     else {
         if (THREAD->PROCESS->flags & 8) {
@@ -106,6 +96,7 @@ elem_t * container(THREAD_t * THREAD)
             fprintf(stderr, "printing of expanded content is not yet implemented\n");
         }
     }
+#endif
 
     // preserve in ikea storage
     if (container.nodes) {
