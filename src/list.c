@@ -392,6 +392,7 @@ void append_transfer(elem_t * list, elem_t * elem)
     assert(list->type == (char)LISTELEM);
     assert(elem->refs > 0);
     if (list->u.l.first) {
+        assert((elemtype_t)list->u.l.first->type != TREEELEM);  // TREE elems have no next pointer
         list->u.l.last->u.l.next = elem;
     } else {
         list->u.l.first = elem;
