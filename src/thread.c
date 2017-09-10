@@ -45,28 +45,21 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
 //P(content);
 
     // write to stdout
-    elem_t *nodes = content->u.l.first;
-    elem_t *edges = nodes->u.l.next;
-    elem_t *tree = nodes->u.l.first;
-    if (tree) {
+    elem_t *elem = content->u.l.first;
+    elem_t *nodes = elem->u.l.first;
+    if (nodes) {
+        elem_t *edges = elem->u.l.next->u.l.first;
+
         IO()->flags = THREAD->PROCESS->flags;
         IO()->out_disc = &stdout_disc;
         IO()->out_chan = IO()->out_disc->out_open_fn( NULL, NULL );
-        printt(IO(), tree);
-        free_tree(LIST(), tree);
-        nodes->u.l.first = NULL;
-
-        tree = edges->u.l.first;
-        if (tree) {
-            printt(IO(), tree);
-            free_tree(LIST(), tree);
-            edges->u.l.first = NULL;
+        printt(IO(), nodes);
+        if (edges) {
+            printt(IO(), edges);
         }
-
         IO()->out_disc->out_flush_fn(IO());
         IO()->out_disc->out_close_fn(IO());
     }
-
     free_list(LIST(), content);
 
     ikea_store_snapshot(thread.TOKEN.IO.ikea_store);   // FIXME - belongs in process?
