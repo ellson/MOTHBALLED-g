@@ -37,20 +37,20 @@ success_t input(IO_t * IO)
 
     if (INBUF()->inbuf) {        // if there is an existing active-inbuf
         if (IO->in == (INBUF()->inbuf->buf + INBUFSIZE)) {    // if it is full
-            if ((--(INBUF()->inbuf->refs)) == 0) {    // dereference active-inbuf
+            if ((--(INBUF()->inbuf->u.refs)) == 0) {    // dereference active-inbuf
                 free_inbuf(INBUF(), INBUF()->inbuf);    // free if no refs left
                          // can happen it held only framents that were ignore, or
                          // which were copied out into SHORTSTRELEM
             }
             INBUF()->inbuf = new_inbuf(INBUF());    // get new
             assert(INBUF()->inbuf);
-            INBUF()->inbuf->refs = 1;    // add active-inbuf reference
+            INBUF()->inbuf->u.refs = 1;    // add active-inbuf reference
             IO->in = INBUF()->inbuf->buf;    // point to beginning of buffer
         }
     } else {        // no inbuf, implies just starting
         INBUF()->inbuf = new_inbuf(INBUF());    // get new
         assert(INBUF()->inbuf);
-        INBUF()->inbuf->refs = 1;    // add active-inbuf reference
+        INBUF()->inbuf->u.refs = 1;    // add active-inbuf reference
         IO->in = INBUF()->inbuf->buf;
     }
     if (IO->file) {        // if there is an existing active input file

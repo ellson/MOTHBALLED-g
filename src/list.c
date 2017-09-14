@@ -110,7 +110,7 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
     elem_t *elem;
 
     assert(INBUF()->inbuf);
-    assert(INBUF()->inbuf->refs >= 0);
+    assert(INBUF()->inbuf->u.refs >= 0);
     assert(frag);
     assert(len > 0);
 
@@ -126,7 +126,7 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
     elem->refs = 1;         // initial ref count
     elem->height = 0;       // notused
 
-    INBUF()->inbuf->refs++;   // increment reference count in inbuf.
+    INBUF()->inbuf->u.refs++;   // increment reference count in inbuf.
 
     LIST->stat_fragnow++;        // stats
     if (LIST->stat_fragnow > LIST->stat_fragmax) {
@@ -277,8 +277,8 @@ void free_list(LIST_t * LIST, elem_t * elem)
             if (--(elem->refs)) {
                 return;    // stop at any point with additional refs
             }
-            assert(elem->u.f.inbuf->refs > 0);
-            if (--(elem->u.f.inbuf->refs) == 0) {
+            assert(elem->u.f.inbuf->u.refs > 0);
+            if (--(elem->u.f.inbuf->u.refs) == 0) {
                 free_inbuf(INBUF(), elem->u.f.inbuf);
             }
             LIST->stat_fragnow--;    // maintain stats
@@ -475,7 +475,7 @@ void fraglist2shortstr(LIST_t * LIST, int slen, elem_t * string)
         assert(frag->type == (char)FRAGELEM);
         assert(frag->refs == 1);
         nextfrag = frag->u.f.next;
-        (frag->u.f.inbuf->refs)--;
+        (frag->u.f.inbuf->u.refs)--;
         for (i = frag->len, src = frag->u.f.frag; i; --i) {
             *dst++ = *src++;
         }

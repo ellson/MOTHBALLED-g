@@ -38,16 +38,15 @@ inbufelem_t * new_inbuf(INBUF_t *INBUF)
         int i = INBUFALLOCNUM;
         while (i--) {
             inbuf = nextinbuf++;
-            inbuf->nextinbuf = nextinbuf;
+            inbuf->u.nextinbuf = nextinbuf;
         }
-        inbuf->nextinbuf = NULL;    // terminate last inbuf
+        inbuf->u.nextinbuf = NULL;    // terminate last inbuf
 
     }
     inbuf = INBUF->free_inbuf_list;    // use first inbuf from free_inbuf_list
-    INBUF->free_inbuf_list = inbuf->nextinbuf; // point to next available
+    INBUF->free_inbuf_list = inbuf->u.nextinbuf; // point to next available
 
-    inbuf->nextinbuf = NULL;
-    inbuf->refs = 0;
+    inbuf->u.nextinbuf = NULL;  // also initializes: inbuf->u.refs = 0;
 
     INBUF->stat_inbufnow++;    // stats
     if (INBUF->stat_inbufnow > INBUF->stat_inbufmax) {
@@ -67,7 +66,7 @@ void free_inbuf(INBUF_t * INBUF, inbufelem_t * inbuf)
     assert(inbuf);
 
     // insert inbuf into inbuf_freelist
-    inbuf->nextinbuf = INBUF->free_inbuf_list;
+    inbuf->u.nextinbuf = INBUF->free_inbuf_list;
     INBUF->free_inbuf_list = inbuf;
 
     INBUF->stat_inbufnow--;    // stats

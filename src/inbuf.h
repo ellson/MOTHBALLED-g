@@ -25,13 +25,15 @@ extern "C" {
 // small inbufs have greater overhead ratio.
 
 // sizeof(inbufelem_t) = 1<<7  (128 bytes)
-// the contents size is sizeof(inbufelem_t) less the other bits  (~116 bytes)
-#define INBUFSIZE ((1<<7) - sizeof(inbufelem_t*) - sizeof(int))
+// the contents size is that less the max size of the union
+#define INBUFSIZE ((1<<7) - sizeof(inbufelem_t*))
 #define INBUFALLOCNUM 128
 
 struct inbufelem_s {
-    inbufelem_t *nextinbuf;
-    int refs;
+    union {
+        inbufelem_t *nextinbuf;
+        int refs;
+    } u;
     unsigned char buf[INBUFSIZE];
 };
 
