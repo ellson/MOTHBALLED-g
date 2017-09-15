@@ -40,7 +40,7 @@ codespell:
 
 .PHONY: test
 test:
-	-for t in tests/*g; do ./dotest.sh $$t; done
+	-for t in tests/*g; do src/dotest.sh $$t; done
 
 EXTRA_DIST = g.spec g.spec.in autogen.sh
 
