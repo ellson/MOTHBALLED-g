@@ -51,27 +51,28 @@ void merge(THREAD_t *THREAD, char *hash_A, char *hash_B)
     }
     *c = '\0';
 
+    char *contenthash = NULL;
     elem_t *key = new_list(LIST(), NODE);
     elem_t *attr = new_list(LIST(), NODE);
+    append_transfer(key, attr);
     elem_t *elem = new_shortstr(LIST(), NODE, merge_hash);
     append_transfer(attr, elem);
-    append_transfer(key, attr);
     elem_t *p = search_item(PROCESS->merge_cache, key->u.l.first);
     if (p) {
-P(p->u.t.key);
+        // FIXME - Really?!!
+        contenthash = (char*)p->u.t.key->u.l.next->u.l.last->u.s.str;
     } 
     else {
         // do merge
         elem_t *value = new_list(LIST(), NODE);
-        char *contenthash = "cool!";
+        append_transfer(key, value);
+        contenthash = "cool!";
         elem = new_shortstr(LIST(), NODE, contenthash);
         append_transfer(value, elem);
-        append_transfer(key, value);
-P(key);
         PROCESS->merge_cache =
             insert_item(LIST(), PROCESS->merge_cache, 
                     key->u.l.first, NULL, NULL);
     }
-//P(PROCESS->merge_cache);
+fprintf(stderr, "%s\n", contenthash);
     free_list(LIST(), key);
 }
