@@ -44,6 +44,8 @@ struct thread_s {
     TOKEN_t TOKEN;             // TOKEN context. May be cast from THREAD
     PROCESS_t *PROCESS;        // The PROCESS that started this THREAD
 
+    inbufelem_t *inbuf;        // the active input buffer
+
     int style;                 // degree of friendliness in print outputs
     char sep;                  // the next separator
                                // (either 0, or ' ' if following a IDENTIFIER or VSTRING that

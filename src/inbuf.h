@@ -38,7 +38,6 @@ struct inbufelem_s {
 };
 
 struct inbuf_s {
-    inbufelem_t *inbuf;            // the active input buffer
     inbufelem_t *free_inbuf_list;  // linked list of unused inbufs
     long stat_inbufmalloc;
     long stat_inbufmax;
