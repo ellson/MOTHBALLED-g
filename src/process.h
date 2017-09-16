@@ -32,6 +32,8 @@ struct process_s {
 
     elem_t *identifiers;       // tree of identifiers  - requires mutex when accessing from threads
 
+    ikea_store_t *ikea_store;  // persistency - may require mutex ??  depends, I think, on if rename() is atomic
+
     // info collected by session();
     char *progname;
     char *username;

@@ -57,7 +57,7 @@ elem_t * container(THREAD_t * THREAD)
     // preserve in ikea storage
     if (container.nodes) {
         IO()->out_disc = &ikea_disc;
-        IO()->out_chan = IO()->out_disc->out_open_fn( IO()->ikea_store, NULL);
+        IO()->out_chan = IO()->out_disc->out_open_fn( THREAD->PROCESS->ikea_store, NULL);
         printt(IO(), container.nodes);
         if (container.edges) {
             printt(IO(), container.edges);

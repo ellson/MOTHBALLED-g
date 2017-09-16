@@ -38,8 +38,6 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     thread.TOKEN.IO.argv = argv;
     thread.TOKEN.IO.acts = PROCESS->acts;
 
-    thread.TOKEN.IO.ikea_store = ikea_store_open( NULL );
-
 // FIXME - fork() here ??
     // run until completion
     elem_t *content = container(&thread);
@@ -56,7 +54,7 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
  
     char buf[1024];
     FILE *fh = ikea_box_fopen(
-            thread.TOKEN.IO.ikea_store,
+            PROCESS->ikea_store,
             thread.TOKEN.IO.contenthash, "r");
     if (fh) {
         size_t len;
@@ -65,9 +63,6 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
         }
         fclose(fh);
     }
-
-    ikea_store_snapshot(thread.TOKEN.IO.ikea_store);
-    ikea_store_close(thread.TOKEN.IO.ikea_store);
 
 // FIXME - do this only if we are the last thread exiting ...
     free_tree(LIST(), PROCESS->identifiers);

@@ -92,6 +92,14 @@ void process(int *pargc, char *argv[], int optind, int flags, char *acts)
     process.flags = flags;
     process.acts = acts;
 
+    // open a store for content from all threads
+    process.ikea_store = ikea_store_open( NULL );
+
     // run a THREAD to process the input
     process.THREAD = thread(&process, pargc, argv, optind);
+
+    // archive and close the store
+    ikea_store_snapshot(process.ikea_store);
+    ikea_store_close(process.ikea_store);
+
 }
