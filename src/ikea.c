@@ -130,9 +130,13 @@ static void base64(unsigned char *ip, size_t ic, char *op, size_t oc)
 }
 
 /**
- * open a container
+ * open a new box in the ikea store in which to write content
+ *
+ * @param ikea_store - point to store to hold the box
+ * @param mode - currently ignored  ( for arglist compat with fopen() )
+ * @return - pointer to new open box
  */
-ikea_box_t* ikea_box_open( ikea_store_t * ikea_store, const char *appends_content )
+ikea_box_t* ikea_box_open( ikea_store_t * ikea_store, const char *mode )
 {
     ikea_box_t *ikea_box;
     int fd;
@@ -180,7 +184,7 @@ void ikea_box_append(ikea_box_t* ikea_box, const unsigned char *data, size_t dat
 }
 
 
-// FIXME - probably just ikea_box_close needs LOCKs becase of the rename operation.
+// FIXME - probably just ikea_box_close needs LOCKs because of the rename operation.
 
 void ikea_box_close(ikea_box_t* ikea_box, char *contenthash, int contenthashsz) 
 {
@@ -212,6 +216,32 @@ void ikea_box_close(ikea_box_t* ikea_box, char *contenthash, int contenthashsz)
     free(ikea_box);
 }
 
+/**
+ * open an existing ikea_box for regular file reading
+ *
+ * NB: use regular fread(), fclose(), on handle after opening
+ *
+ * @param ikea_store - pointer to store that holds the box
+ * @param contenthash - the name of the box
+ * @param mode - currently ignored  ( for arglist compat with fopen() )
+ * @return - FILE pointer to opened box
+ */
+FILE* ikea_box_fopen( ikea_store_t * ikea_store, const char *contenthash, const char *mode )
+{
+    FILE *fh;
+    char contentpathname[sizeof(tempdir_template) +1 +sizeof(contenthash) +2 +1];
+
+    // compose the file path
+    strcpy(contentpathname, ikea_store->tempdir);
+    strcat(contentpathname, "/");
+    strcat(contentpathname, contenthash);
+    strcat(contentpathname, ".g");
+
+    if ( ! (fh = fopen(contentpathname, "r")) )
+        FATAL("fopen()");
+
+    return fh;
+}
 
 //  FIXME - avoid globals
 static gzFile gzf;

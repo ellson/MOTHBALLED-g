@@ -29,7 +29,7 @@
  * This function attempts to document and enforce the structure of tuples.
  *
  * @param LIST context for list functions
- * @param schema, where schema[0] is the state_t for the resulting tuple
+ * @param schema[] - where schema[0] is the state_t for the resulting tuple
  * @param count of fields
  * @param ... elem_t*
  * @return an elem containing the specified field elems
