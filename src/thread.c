@@ -37,57 +37,42 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     thread.TOKEN.IO.pargc = pargc;
     thread.TOKEN.IO.argv = argv;
     thread.TOKEN.IO.acts = PROCESS->acts;
-    thread.TOKEN.IO.ikea_store = ikea_store_open( NULL ); // FIXME - belongs in process?
+
+    thread.TOKEN.IO.ikea_store = ikea_store_open( NULL );
 
 // FIXME - fork() here ??
     // run until completion
     elem_t *content = container(&thread);
 //P(content);
+    free_list(LIST(), content);  // FIXME content not used
 
-#if 0
-    // write to stdout
-    elem_t *nodes = content->u.l.first;
-    elem_t *edges = nodes->u.l.next;
-    elem_t *tree = nodes->u.l.first;
-    if (tree) {
-        IO()->flags = THREAD->PROCESS->flags;
-        IO()->out_disc = &stdout_disc;
-        IO()->out_chan = IO()->out_disc->out_open_fn( NULL, NULL );
-        printt(IO(), tree);
-        free_tree(LIST(), tree);
-        nodes->u.l.first = NULL;
 
-        tree = edges->u.l.first;
-        if (tree) {
-            printt(IO(), tree);
-            free_tree(LIST(), tree);
-            edges->u.l.first = NULL;
-        }
+    // Print the top container
 
-        IO()->out_disc->out_flush_fn(IO());
-        IO()->out_disc->out_close_fn(IO());
-    }
-#else
-    // FIXME - do this properly!
+    // do this for canonical g output
+    // alternatively (based on command line options),
+    // process through parser
+    // and pretty printer, or gv converter
  
-    char buf[10000];
-    FILE *fh = ikea_box_fopen(thread.TOKEN.IO.ikea_store, thread.TOKEN.IO.contenthash, "r");
+    char buf[1024];
+    FILE *fh = ikea_box_fopen(
+            thread.TOKEN.IO.ikea_store,
+            thread.TOKEN.IO.contenthash, "r");
     if (fh) {
-        size_t len = fread(buf, 1, sizeof(buf), fh);
-        (void) fwrite(buf, 1, len, stdout);
+        size_t len;
+        while ( (len = fread(buf, 1, sizeof(buf), fh)) ) {
+            (void) fwrite(buf, 1, len, stdout);
+        }
         fclose(fh);
     }
 
-#endif
-
-    free_list(LIST(), content);
-
-    ikea_store_snapshot(thread.TOKEN.IO.ikea_store);   // FIXME - belongs in process?
-    ikea_store_close(thread.TOKEN.IO.ikea_store);      // FIXME - belongs in process?
+    ikea_store_snapshot(thread.TOKEN.IO.ikea_store);
+    ikea_store_close(thread.TOKEN.IO.ikea_store);
 
 // FIXME - do this only if we are the last thread exiting ...
     free_tree(LIST(), PROCESS->identifiers);
 
+    // check that everything has been freed
     if (LIST()->stat_elemnow != 0) {
         E();
         assert(0);
