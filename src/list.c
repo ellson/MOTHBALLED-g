@@ -36,16 +36,17 @@
  */
 static elem_t *new_elem_sub(LIST_t * LIST)
 {
+    PROC_LIST_t * PROC_LIST = LIST->PROC_LIST;
     elem_t *elem, *nextelem;
 
-    if (!LIST->free_elem_list) {    // if no elems in free_elem_list
+    if (!PROC_LIST->free_elem_list) {    // if no elems in free_elem_list
 
-        LIST->free_elem_list = malloc(LISTALLOCNUM * sizeof(elem_t));
-        if (!LIST->free_elem_list)
+        PROC_LIST->free_elem_list = malloc(LISTALLOCNUM * sizeof(elem_t));
+        if (!PROC_LIST->free_elem_list)
             FATAL("malloc()");
-        LIST->stat_elemmalloc++;
+        PROC_LIST->stat_elemmalloc++;
 
-        nextelem = LIST->free_elem_list;    // link the new elems into free_elem_list
+        nextelem = PROC_LIST->free_elem_list;    // link the new elems into free_elem_list
         int i = LISTALLOCNUM;
         while (i--) {
             elem = nextelem++;
@@ -54,12 +55,12 @@ static elem_t *new_elem_sub(LIST_t * LIST)
         elem->u.l.next = NULL;    // terminate last elem
 
     }
-    elem = LIST->free_elem_list;    // use first elem from free_elem_list
-    LIST->free_elem_list = elem->u.l.next; // update list to point to next available
+    elem = PROC_LIST->free_elem_list;    // use first elem from free_elem_list
+    PROC_LIST->free_elem_list = elem->u.l.next; // update list to point to next available
 
-    LIST->stat_elemnow++;        // stats
-    if (LIST->stat_elemnow > LIST->stat_elemmax) {
-        LIST->stat_elemmax = LIST->stat_elemnow;
+    PROC_LIST->stat_elemnow++;        // stats
+    if (PROC_LIST->stat_elemnow > PROC_LIST->stat_elemmax) {
+        PROC_LIST->stat_elemmax = PROC_LIST->stat_elemnow;
     }
 
     // N.B. elem is uninitialized
@@ -128,9 +129,10 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
 
     INBUF()->inbuf->u.refs++;   // increment reference count in inbuf.
 
-    LIST->stat_fragnow++;        // stats
-    if (LIST->stat_fragnow > LIST->stat_fragmax) {
-        LIST->stat_fragmax = LIST->stat_fragnow;
+    PROC_LIST_t * PROC_LIST = LIST->PROC_LIST;
+    PROC_LIST->stat_fragnow++;        // stats
+    if (PROC_LIST->stat_fragnow > PROC_LIST->stat_fragmax) {
+        PROC_LIST->stat_fragmax = PROC_LIST->stat_fragnow;
     }
     return elem;
 }
@@ -209,10 +211,11 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
  */
 static void free_elem(LIST_t *LIST, elem_t *elem)
 {
-    elem->u.l.next = LIST->free_elem_list;
-    LIST->free_elem_list = elem;
-    LIST->stat_elemnow--;    // maintain stats
-    assert(LIST->stat_elemnow >= 0);
+    PROC_LIST_t * PROC_LIST = LIST->PROC_LIST;
+    elem->u.l.next = PROC_LIST->free_elem_list;
+    PROC_LIST->free_elem_list = elem;
+    PROC_LIST->stat_elemnow--;    // maintain stats
+    assert(PROC_LIST->stat_elemnow >= 0);
 }
 
 /**
@@ -256,10 +259,11 @@ static void free_list_r(LIST_t * LIST, elem_t * list)
  */
 void free_list(LIST_t * LIST, elem_t * elem)
 {
+    PROC_LIST_t * PROC_LIST = LIST->PROC_LIST;
     elem_t *nextelem;
 
     while (elem) {
-        assert(LIST->stat_elemnow > 0);
+        assert(PROC_LIST->stat_elemnow > 0);
         assert(elem->refs > 0);
         nextelem = elem->u.l.next;
         switch ((elemtype_t)elem->type) {
@@ -277,7 +281,7 @@ void free_list(LIST_t * LIST, elem_t * elem)
             if (--(elem->u.f.inbuf->u.refs) == 0) {
                 free_inbuf(INBUF(), elem->u.f.inbuf);
             }
-            LIST->stat_fragnow--;    // maintain stats
+            PROC_LIST->stat_fragnow--;    // maintain stats
             break;
         case SHORTSTRELEM:
             // these are self contained singletons,  nothing else to clean up
@@ -457,6 +461,7 @@ void remove_next_from_list(LIST_t * LIST, elem_t * list, elem_t *elem)
  */
 void fraglist2shortstr(LIST_t * LIST, int slen, elem_t * string)
 {
+    PROC_LIST_t * PROC_LIST = LIST->PROC_LIST;
     elem_t *frag, *nextfrag;
     unsigned char *src, *dst;
     int i;
@@ -476,8 +481,8 @@ void fraglist2shortstr(LIST_t * LIST, int slen, elem_t * string)
             *dst++ = *src++;
         }
         free_elem(LIST, frag);
-        LIST->stat_fragnow--;    // maintain stats
-        assert(LIST->stat_fragnow >= 0);
+        PROC_LIST->stat_fragnow--;    // maintain stats
+        assert(PROC_LIST->stat_fragnow >= 0);
         frag = nextfrag;
     }
     string->type = SHORTSTRELEM; // frag is now shortstr

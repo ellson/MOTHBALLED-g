@@ -33,7 +33,7 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
 
     thread.PROCESS = PROCESS;
     thread.TOKEN.IO.LIST.INBUF.PROC_INBUF = &(PROCESS->PROC_INBUF);
-//    thread.TOKEN.IO.nINBUF = &(PROCESS->INBUF);
+    thread.TOKEN.IO.LIST.PROC_LIST = &(PROCESS->PROC_LIST);
     thread.TOKEN.IO.out = stdout;
     thread.TOKEN.IO.err = stderr;
     thread.TOKEN.IO.pargc = pargc;
@@ -68,7 +68,7 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     free_tree(LIST(), PROCESS->identifiers);
 
     // check that everything has been freed
-    if (LIST()->stat_elemnow != 0) {
+    if (LIST()->PROC_LIST->stat_elemnow != 0) {
         E();
         assert(0);
     }

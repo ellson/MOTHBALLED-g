@@ -32,7 +32,7 @@ struct process_s {
 
     // the following require mutex to allow sharing from threads
     PROC_INBUF_t PROC_INBUF; // inbuf free_list and stats
-//    LIST_t LIST;     // elem free_list and stats
+    PROC_LIST_t PROC_LIST;   // elem free_list and stats
     elem_t *identifiers; // tree of identifiers
     ikea_store_t *ikea_store; // persistency 
 

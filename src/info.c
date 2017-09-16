@@ -148,7 +148,7 @@ void info_thread(THREAD_t * THREAD)
 #endif
 
     itot = PROCESS->PROC_INBUF.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbufelem_t);
-    etot = LIST()->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
+    etot = PROCESS->PROC_LIST.stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
     lend = (IO()->stat_lfcount ? IO()->stat_lfcount : IO()->stat_crcount);
     istr = TOKEN()->stat_instringshort + TOKEN()->stat_instringlong; 
     sprintf(percent,"%lu%%", (long)(TOKEN()->stat_instringshort * 100)/ istr);
@@ -163,12 +163,12 @@ void info_thread(THREAD_t * THREAD)
     Au("charpersecond",         IO()->stat_incharcount+TEN9/runtime);
     Au("containdepth",          THREAD->stat_containdepth);
     Au("containdepthmax",       THREAD->stat_containdepthmax);
-    Au("elemmalloccount",       LIST()->stat_elemmalloc);
+    Au("elemmalloccount",       PROCESS->PROC_LIST.stat_elemmalloc);
     Au("elemmalloctotal",       etot);
-    Au("elemmax",               LIST()->stat_elemmax);
-    Au("elemnow",               LIST()->stat_elemnow);
-    Au("fragmax",               LIST()->stat_fragmax);
-    Au("fragnow",               LIST()->stat_fragnow);
+    Au("elemmax",               PROCESS->PROC_LIST.stat_elemmax);
+    Au("elemnow",               PROCESS->PROC_LIST.stat_elemnow);
+    Au("fragmax",               PROCESS->PROC_LIST.stat_fragmax);
+    Au("fragnow",               PROCESS->PROC_LIST.stat_fragnow);
     Au("inactcount",            THREAD->stat_inactcount);
     Au("inactspersecond",       THREAD->stat_inactcount*TEN9/runtime);
     Au("inbufmalloccount",      PROCESS->PROC_INBUF.stat_inbufmalloc);
