@@ -313,7 +313,7 @@ void free_tree_item(LIST_t *LIST, elem_t * p)
     elem_t *k = p->u.t.key;
 
     assert(k);
-    switch ((elemtype_t)(k->type)) {
+    switch ((elemtype_t)k->type) {
         case LISTELEM:
            free_list(LIST, k);
            break;

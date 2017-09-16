@@ -138,19 +138,19 @@ out_disc_t stdout_disc = {
 //===================================
 
 static void* file_open(void *descriptor, char *mode) {
-    return fopen((char*)(descriptor), mode);
+    return fopen((char*)descriptor, mode);
 }
 
 static size_t file_write(IO_t *IO, unsigned char *cp, size_t len) {
-    return fwrite(cp, len, 1, (FILE*)(IO->out_chan));
+    return fwrite(cp, len, 1, (FILE*)IO->out_chan);
 }
 
 static void file_flush(IO_t *IO) {
-    fflush((FILE*)(IO->out_chan));
+    fflush((FILE*)IO->out_chan);
 }
 
 static void file_close(IO_t *IO) {
-    fclose((FILE*)(IO->out_chan));
+    fclose((FILE*)IO->out_chan);
 }
 
 // discipline for writing to a file

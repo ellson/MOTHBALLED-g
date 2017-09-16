@@ -44,7 +44,7 @@ elem_t * tuple(LIST_t *LIST, state_t schema[], size_t count, ...)
     for (int i = 1; i < count; i++) {
         elem_t *field = va_arg(args, elem_t*);
         if (field) { // allow fields to be null - is this what we want??
-            assert(schema[i] == (state_t)(field->state));
+            assert(schema[i] == (state_t)field->state);
             append_transfer(tuple, field);
         }
     }

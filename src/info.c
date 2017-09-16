@@ -151,7 +151,7 @@ void info_thread(THREAD_t * THREAD)
     etot = PROCESS->PROC_LIST.stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
     lend = (IO()->stat_lfcount ? IO()->stat_lfcount : IO()->stat_crcount);
     istr = TOKEN()->stat_instringshort + TOKEN()->stat_instringlong; 
-    sprintf(percent,"%lu%%", (long)(TOKEN()->stat_instringshort * 100)/ istr);
+    sprintf(percent,"%lu%%", (long)TOKEN()->stat_instringshort * 100 / istr);
   
     // write in canonical g format
     // - minimal spacing - one SUBJECT per line

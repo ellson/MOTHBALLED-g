@@ -576,7 +576,7 @@ static void* ikea_open(void* descriptor, char *mode) {
 }
 
 static void ikea_flush(IO_t *IO) {
-    ikea_box_append((ikea_box_t*)(IO->out_chan), IO->buf, IO->pos);
+    ikea_box_append((ikea_box_t*)IO->out_chan, IO->buf, IO->pos);
     IO->pos = 0;
 }
 
@@ -594,9 +594,9 @@ static size_t ikea_write(IO_t *IO, unsigned char *cp, size_t size)
 }
 
 static void ikea_close(IO_t *IO) {
-    ikea_box_close ( (ikea_box_t*)(IO->out_chan),
+    ikea_box_close ((ikea_box_t*)IO->out_chan,
             IO->contenthash,
-            sizeof(IO->contenthash) );
+            sizeof(IO->contenthash));
 }
 
 // FIXME - require locks when writing a box that  maybe read or modified by other threads.
