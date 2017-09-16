@@ -145,12 +145,8 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
                 // recursively process contained ACTIVITY in to its own root
                 //    this leaves THREAD->contenthash
                 //    which is taken by reduce()
-                elem_t * content = container(THREAD);
-                if (content) {
-                    rc = SUCCESS;
-//P(content);
-                    free_list(LIST(), content);
-                }
+                rc = container(THREAD);
+
                 bi = TOKEN()->insi; // The char class that terminates the ACTIVITY
                 goto done;
             }

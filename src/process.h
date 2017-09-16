@@ -34,7 +34,7 @@ struct process_s {
 
     ikea_store_t *ikea_store;  // persistency - may require mutex ??  depends, I think, on if rename() is atomic
 
-    // info collected by session();
+    // info collected by process();
     char *progname;
     char *username;
     char *hostname;          

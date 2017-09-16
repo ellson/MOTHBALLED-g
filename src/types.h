@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef struct process_s PROCESS_t;       // session.h
+typedef struct process_s PROCESS_t;       // process.h
 
 // THREAD_t TOKEN_t IO_t LIST_t INBUF_t are inter-castable
 //   from since all 5 structs share the same start

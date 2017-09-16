@@ -21,13 +21,13 @@
 
 /**
  * @param THREAD context   
- * @return content
+ * @return SUCCESS or FAIL
  */
-elem_t * container(THREAD_t * THREAD)
+success_t container(THREAD_t * THREAD)
 {
     CONTAINER_t container = { 0 };
-    elem_t *root, *content = NULL, *nodes = NULL, *edges = NULL;
-    success_t rc;
+    elem_t *root;
+    success_t rc = FAIL;
 
 
 // FIXME need to maintain the pathname of the container.
@@ -68,19 +68,9 @@ elem_t * container(THREAD_t * THREAD)
 
     THREAD->stat_containdepth--;
 
-    content = new_list(LIST(), ACTIVITY);
-    nodes = new_list(LIST(), NODES);
-    edges = new_list(LIST(), EDGES);
-    if (container.nodes) {
-        append_transfer(nodes, container.nodes);
-        if (container.edges) {
-            append_transfer(edges, container.edges);
-        }
-    }
-    append_transfer(content, nodes);
-    append_transfer(content, edges);
-
     free_list(LIST(), root);
+    free_list(LIST(), container.nodes);
+    free_list(LIST(), container.edges);
     free_list(LIST(), container.previous);
 
 // Some elem's are retained by the attrid tree
@@ -94,5 +84,5 @@ elem_t * container(THREAD_t * THREAD)
         info_thread(THREAD);
     }
 
-    return content;
+    return rc;
 }

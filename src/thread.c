@@ -40,10 +40,8 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
 
 // FIXME - fork() here ??
     // run until completion
-    elem_t *content = container(&thread);
-//P(content);
-    free_list(LIST(), content);  // FIXME content not used
 
+    (void) container(&thread);
 
     // Print the top container
 
