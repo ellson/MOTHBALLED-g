@@ -12,8 +12,10 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <time.h>
 #include <sys/types.h>
+#include <string.h>
 #include <assert.h>
 
 #include "thread.h"
@@ -24,8 +26,52 @@
  *
  * @param THREAD context
  * @param hash_A - first content
- * @param hash_A - second content
+ * @param hash_B - second content
  */
 void merge(THREAD_t *THREAD, char *hash_A, char *hash_B)
 {
+    PROCESS_t *PROCESS = THREAD->PROCESS;
+
+    assert(hash_A);
+    assert(hash_B);
+
+    int lenA = strlen(hash_A);
+    int lenB = strlen(hash_B);
+
+    assert(lenA && lenA == lenB);
+
+    char *merge_hash = malloc(lenA + lenB + 1);
+    if (!merge_hash)
+        FATAL("malloc()")
+
+    char *a = hash_A, *b = hash_B, *c = merge_hash;
+    while (*a) {
+        *c++ = *a++;
+        *c++ = *b++;
+    }
+    *c = '\0';
+
+    elem_t *key = new_list(LIST(), NODE);
+    elem_t *attr = new_list(LIST(), NODE);
+    elem_t *elem = new_shortstr(LIST(), NODE, merge_hash);
+    append_transfer(attr, elem);
+    append_transfer(key, attr);
+    elem_t *p = search_item(PROCESS->merge_cache, key->u.l.first);
+    if (p) {
+P(p->u.t.key);
+    } 
+    else {
+        // do merge
+        elem_t *value = new_list(LIST(), NODE);
+        char *contenthash = "cool!";
+        elem = new_shortstr(LIST(), NODE, contenthash);
+        append_transfer(value, elem);
+        append_transfer(key, value);
+P(key);
+        PROCESS->merge_cache =
+            insert_item(LIST(), PROCESS->merge_cache, 
+                    key->u.l.first, NULL, NULL);
+    }
+//P(PROCESS->merge_cache);
+    free_list(LIST(), key);
 }

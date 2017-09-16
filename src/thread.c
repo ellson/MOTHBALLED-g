@@ -16,6 +16,7 @@
 #include <assert.h>
 
 #include "thread.h"
+#include "merge.h"
 
 THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
 {
@@ -45,6 +46,12 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
 
     (void) container(&thread);
 
+#if 0
+    merge(THREAD, "12345", "abcde");
+    merge(THREAD, "98765", "zyxwv");
+    merge(THREAD, "12345", "abcde");
+    merge(THREAD, "98765", "zyxwv");
+#endif
     // Print the top container
 
     // do this for canonical g output
@@ -65,6 +72,7 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     }
 
 // FIXME - do this only if we are the last thread exiting ...
+    free_tree(LIST(), PROCESS->merge_cache);
     free_tree(LIST(), PROCESS->identifiers);
 
     // check that everything has been freed

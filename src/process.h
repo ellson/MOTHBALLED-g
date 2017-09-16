@@ -35,6 +35,7 @@ struct process_s {
     PROC_LIST_t PROC_LIST;   // elem free_list and stats
     elem_t *identifiers; // tree of identifiers
     ikea_store_t *ikea_store; // persistency 
+    elem_t *merge_cache;  // cache of hashes from previous merges
 
     // info collected by process();
     char *progname;
