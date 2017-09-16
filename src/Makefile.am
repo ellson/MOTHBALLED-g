@@ -32,6 +32,7 @@ noinst_HEADERS = \
     io.h \
     iter.h \
     list.h \
+    merge.h \
     parse.h \
     print.h \
     reduce.h \
@@ -64,6 +65,7 @@ libg_C_la_SOURCES = \
     io.c \
     iter.c \
     list.c \
+    merge.c \
     parse.c \
     print.c \
     reduce.c \
