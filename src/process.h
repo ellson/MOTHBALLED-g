@@ -31,8 +31,8 @@ struct process_s {
     char *acts;      // g snippet from command line
 
     // the following require mutex to allow sharing from threads
-    INBUF_t INBUF;   // inbuf free_list and stats
-    LIST_t LIST;     // elem free_list and stats
+    PROC_INBUF_t PROC_INBUF; // inbuf free_list and stats
+//    LIST_t LIST;     // elem free_list and stats
     elem_t *identifiers; // tree of identifiers
     ikea_store_t *ikea_store; // persistency 
 

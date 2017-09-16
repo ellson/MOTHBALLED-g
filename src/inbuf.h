@@ -37,11 +37,17 @@ struct inbufelem_s {
     unsigned char buf[INBUFSIZE];
 };
 
-struct inbuf_s {
+struct proc_inbuf_s {
     inbufelem_t *free_inbuf_list;  // linked list of unused inbufs
     long stat_inbufmalloc;
     long stat_inbufmax;
     long stat_inbufnow;
+};
+
+struct inbuf_s {
+    inbufelem_t *inbuf;        // the active input buffer
+
+    PROC_INBUF_t *PROC_INBUF;  // shared inbuf data
 };
 
 inbufelem_t * new_inbuf(INBUF_t * INBUF);

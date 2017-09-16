@@ -21,20 +21,21 @@
 /**
  * allocate an inbuf for g input (takes from freelist if possible)
  *
- * @param INBUF context
+ * @param INBUF thread context
  */
 inbufelem_t * new_inbuf(INBUF_t *INBUF)
 {
+    PROC_INBUF_t *PROC_INBUF = INBUF->PROC_INBUF;
     inbufelem_t *inbuf, *nextinbuf;
 
-    if (!INBUF->free_inbuf_list) {    // if no inbufs in free_inbuf_list
+    if (!PROC_INBUF->free_inbuf_list) {    // if no inbufs in free_inbuf_list
 
-        INBUF->free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbufelem_t));
-        if (!INBUF->free_inbuf_list) 
+        PROC_INBUF->free_inbuf_list = malloc(INBUFALLOCNUM * sizeof(inbufelem_t));
+        if (!PROC_INBUF->free_inbuf_list) 
             FATAL("malloc()");
-        INBUF->stat_inbufmalloc++;
+        PROC_INBUF->stat_inbufmalloc++;
 
-        nextinbuf = INBUF->free_inbuf_list;    // link the new inbufs into free_inbuf_list
+        nextinbuf = PROC_INBUF->free_inbuf_list;    // link the new inbufs into free_inbuf_list
         int i = INBUFALLOCNUM;
         while (i--) {
             inbuf = nextinbuf++;
@@ -43,14 +44,14 @@ inbufelem_t * new_inbuf(INBUF_t *INBUF)
         inbuf->u.nextinbuf = NULL;    // terminate last inbuf
 
     }
-    inbuf = INBUF->free_inbuf_list;    // use first inbuf from free_inbuf_list
-    INBUF->free_inbuf_list = inbuf->u.nextinbuf; // point to next available
+    inbuf = PROC_INBUF->free_inbuf_list;    // use first inbuf from free_inbuf_list
+    PROC_INBUF->free_inbuf_list = inbuf->u.nextinbuf; // point to next available
 
     inbuf->u.nextinbuf = NULL;  // also initializes: inbuf->u.refs = 0;
 
-    INBUF->stat_inbufnow++;    // stats
-    if (INBUF->stat_inbufnow > INBUF->stat_inbufmax) {
-        INBUF->stat_inbufmax = INBUF->stat_inbufnow;
+    PROC_INBUF->stat_inbufnow++;    // stats
+    if (PROC_INBUF->stat_inbufnow > PROC_INBUF->stat_inbufmax) {
+        PROC_INBUF->stat_inbufmax = PROC_INBUF->stat_inbufnow;
     }
     return inbuf;
 }
@@ -58,16 +59,17 @@ inbufelem_t * new_inbuf(INBUF_t *INBUF)
 /**
  * free an inbuf (not really freed, maintains freelist for reuse)
  *
- * @param INBUF context
+ * @param INBUF thread context
  * @param inbuf
  */
 void free_inbuf(INBUF_t * INBUF, inbufelem_t * inbuf)
 {
+    PROC_INBUF_t *PROC_INBUF = INBUF->PROC_INBUF;
     assert(inbuf);
 
     // insert inbuf into inbuf_freelist
-    inbuf->u.nextinbuf = INBUF->free_inbuf_list;
-    INBUF->free_inbuf_list = inbuf;
+    inbuf->u.nextinbuf = PROC_INBUF->free_inbuf_list;
+    PROC_INBUF->free_inbuf_list = inbuf;
 
-    INBUF->stat_inbufnow--;    // stats
+    PROC_INBUF->stat_inbufnow--;    // stats
 }

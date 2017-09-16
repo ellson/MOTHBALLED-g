@@ -90,19 +90,19 @@ void info_process(THREAD_t * THREAD)
     Au("elemmallocsize",        LISTALLOCNUM * sizeof(elem_t));
     Au("elempermalloc",         LISTALLOCNUM);
     Au("elemsize",              sizeof(elem_t));
-    As("hostname",              PROCESS->hostname);  // FIXME - TMI ?
+    As("hostname",              PROCESS->hostname);
     Au("inbufcapacity",         INBUFSIZE);
     Au("inbufmallocsize",       INBUFALLOCNUM * sizeof(inbufelem_t));
     Au("inbufpermalloc",        INBUFALLOCNUM);
     Au("inbufsize",             sizeof(inbufelem_t));
-    As("osmachine",             PROCESS->osmachine); // FIXME - TMI ?
-    As("osname",                PROCESS->osname);    // FIXME - TMI ?
-    As("osrelease",             PROCESS->osrelease); // FIXME - TMI ?
-    Au("pid",                   PROCESS->pid);       // FIXME - TMI ?
-    As("progname",              PROCESS->progname);  // FIXME - TMI ?
+    As("osmachine",             PROCESS->osmachine);
+    As("osname",                PROCESS->osname);
+    As("osrelease",             PROCESS->osrelease);
+    Au("pid",                   PROCESS->pid);
+    As("progname",              PROCESS->progname);
     Au("starttime",             PROCESS->starttime);
     Au("uptime",                PROCESS->uptime);
-    As("username",              PROCESS->username);  // FIXME - TMI ?
+    As("username",              PROCESS->username);
     As("version",               PACKAGE_VERSION);
     Au("voidptrsize",           sizeof(void*));
     append_token   (THREAD, &pos, ']');
@@ -147,7 +147,7 @@ void info_thread(THREAD_t * THREAD)
             - (PROCESS->uptime * TEN9 + PROCESS->uptime_nsec);
 #endif
 
-    itot = INBUF()->stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbufelem_t);
+    itot = PROCESS->PROC_INBUF.stat_inbufmalloc * INBUFALLOCNUM * sizeof(inbufelem_t);
     etot = LIST()->stat_elemmalloc * LISTALLOCNUM * sizeof(elem_t);
     lend = (IO()->stat_lfcount ? IO()->stat_lfcount : IO()->stat_crcount);
     istr = TOKEN()->stat_instringshort + TOKEN()->stat_instringlong; 
@@ -171,10 +171,10 @@ void info_thread(THREAD_t * THREAD)
     Au("fragnow",               LIST()->stat_fragnow);
     Au("inactcount",            THREAD->stat_inactcount);
     Au("inactspersecond",       THREAD->stat_inactcount*TEN9/runtime);
-    Au("inbufmalloccount",      INBUF()->stat_inbufmalloc);
+    Au("inbufmalloccount",      PROCESS->PROC_INBUF.stat_inbufmalloc);
     Au("inbufmalloctotal",      itot);
-    Au("inbufmax",              INBUF()->stat_inbufmax);
-    Au("inbufnow",              INBUF()->stat_inbufnow);
+    Au("inbufmax",              PROCESS->PROC_INBUF.stat_inbufmax);
+    Au("inbufnow",              PROCESS->PROC_INBUF.stat_inbufnow);
     Au("incharcount",           IO()->stat_incharcount);
     Au("infilecount",           IO()->stat_infilecount);
     Au("infragcount",           TOKEN()->stat_infragcount);

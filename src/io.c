@@ -35,23 +35,23 @@ success_t input(IO_t * IO)
 {
     int size, avail;
 
-    if (IO->inbuf) {        // if there is an existing active-inbuf
-        if (IO->in == (IO->inbuf->buf + INBUFSIZE)) {    // if it is full
-            if ((--(IO->inbuf->u.refs)) == 0) {    // dereference active-inbuf
-                free_inbuf(INBUF(), IO->inbuf);    // free if no refs left
+    if (INBUF()->inbuf) {        // if there is an existing active-inbuf
+        if (IO->in == (INBUF()->inbuf->buf + INBUFSIZE)) {    // if it is full
+            if ((--(INBUF()->inbuf->u.refs)) == 0) {    // dereference active-inbuf
+                free_inbuf(INBUF(), INBUF()->inbuf);    // free if no refs left
                          // can happen it held only framents that were ignore, or
                          // which were copied out into SHORTSTRELEM
             }
-            IO->inbuf = new_inbuf(INBUF());    // get new
-            assert(IO->inbuf);
-            IO->inbuf->u.refs = 1;    // add active-inbuf reference
-            IO->in = IO->inbuf->buf;    // point to beginning of buffer
+            INBUF()->inbuf = new_inbuf(INBUF());    // get new
+            assert(INBUF()->inbuf);
+            INBUF()->inbuf->u.refs = 1;    // add active-inbuf reference
+            IO->in = INBUF()->inbuf->buf;    // point to beginning of buffer
         }
     } else {        // no inbuf, implies just starting
-        IO->inbuf = new_inbuf(INBUF());    // get new
-        assert(IO->inbuf);
-        IO->inbuf->u.refs = 1;    // add active-inbuf reference
-        IO->in = IO->inbuf->buf;
+        INBUF()->inbuf = new_inbuf(INBUF());    // get new
+        assert(INBUF()->inbuf);
+        INBUF()->inbuf->u.refs = 1;    // add active-inbuf reference
+        IO->in = INBUF()->inbuf->buf;
     }
     if (IO->file) {        // if there is an existing active input file
         if (IO->in == IO->end && feof(IO->file)) {    //    if it is at EOF
@@ -95,7 +95,7 @@ success_t input(IO_t * IO)
     }
 // FIXME  -- or slurp in data from acts
     // slurp in data from file stream
-    avail = IO->inbuf->buf + INBUFSIZE - IO->in;
+    avail = INBUF()->inbuf->buf + INBUFSIZE - IO->in;
     size = fread(IO->in, 1, avail, IO->file);
     IO->end = IO->in + size;
 

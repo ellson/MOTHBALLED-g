@@ -90,7 +90,7 @@ success_t parse(CONTAINER_t * CONTAINER, elem_t *root, state_t si, unsigned char
     nest++;
     assert(nest >= 0);            // catch overflows
 
-    if (! IO()->inbuf) {       // state_machine just started
+    if (! INBUF()->inbuf) {       // state_machine just started
         bi = WS;                  // pretend preceded by WS to satisfy toplevel SREP or REP
                                   // (Note, first REP of a sequence *can* be preceded
                                   // by WS, just not the rest of the REPs. )

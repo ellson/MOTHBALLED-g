@@ -27,6 +27,8 @@ typedef struct io_s IO_t;                 // input.h
 typedef struct list_s LIST_t;             // list.h
 typedef struct inbuf_s INBUF_t;           // inbuf.h
 
+typedef struct proc_inbuf_s PROC_INBUF_t; // shared data
+
 typedef struct elem_s elem_t;             // list.h
 typedef struct inbufelem_s inbufelem_t;   // inbuf.h
 

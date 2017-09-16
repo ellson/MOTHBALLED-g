@@ -109,8 +109,8 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
 {
     elem_t *elem;
 
-    assert(IO()->inbuf);
-    assert(IO()->inbuf->u.refs >= 0);
+    assert(INBUF()->inbuf);
+    assert(INBUF()->inbuf->u.refs >= 0);
     assert(frag);
     assert(len > 0);
 
@@ -120,13 +120,13 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
     elem->type = FRAGELEM;  // type
     elem->state = state;    // state_machine state that created this frag
     elem->u.f.next = NULL;  // clear next
-    elem->u.f.inbuf = IO()->inbuf; // record inbuf for ref counting
+    elem->u.f.inbuf = INBUF()->inbuf; // record inbuf for ref counting
     elem->u.f.frag = frag;  // pointer to start of frag in inbuf
     elem->len = len;        // length of frag
     elem->refs = 1;         // initial ref count
     elem->height = 0;       // notused
 
-    IO()->inbuf->u.refs++;   // increment reference count in inbuf.
+    INBUF()->inbuf->u.refs++;   // increment reference count in inbuf.
 
     LIST->stat_fragnow++;        // stats
     if (LIST->stat_fragnow > LIST->stat_fragmax) {
