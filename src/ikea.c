@@ -136,7 +136,7 @@ static void base64(unsigned char *ip, size_t ic, char *op, size_t oc)
  * @param mode - currently ignored  ( for arglist compat with fopen() )
  * @return - pointer to new open box
  */
-ikea_box_t* ikea_box_open( ikea_store_t * ikea_store, const char *mode )
+static ikea_box_t* ikea_box_open( ikea_store_t * ikea_store, const char *mode )
 {
     ikea_box_t *ikea_box;
     int fd;
@@ -175,7 +175,7 @@ ikea_box_t* ikea_box_open( ikea_store_t * ikea_store, const char *mode )
     return ikea_box;
 }
 
-void ikea_box_append(ikea_box_t* ikea_box, const unsigned char *data, size_t data_len)
+static void ikea_box_append(ikea_box_t* ikea_box, const unsigned char *data, size_t data_len)
 {
     if (fwrite(data, 1, data_len, ikea_box->fh) != data_len)
         FATAL("fwrite()");
@@ -186,7 +186,7 @@ void ikea_box_append(ikea_box_t* ikea_box, const unsigned char *data, size_t dat
 
 // FIXME - probably just ikea_box_close needs LOCKs because of the rename operation.
 
-void ikea_box_close(ikea_box_t* ikea_box, char *contenthash, int contenthashsz) 
+static void ikea_box_close(ikea_box_t* ikea_box, char *contenthash, int contenthashsz) 
 {
     assert(contenthashsz >= (((EVP_MAX_MD_SIZE+1)*8/6)+1));   // =87, last time I checked
 
@@ -239,7 +239,7 @@ FILE* ikea_box_fopen( ikea_store_t * ikea_store, const char *contenthash, const 
     return (fopen(contentpathname, "r"));
 }
 
-//  FIXME - avoid globals
+//  FIXME - avoid globals - not while this is only used in the main thread, in process()
 static gzFile gzf;
 
 /**
