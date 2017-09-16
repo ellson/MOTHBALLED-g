@@ -38,6 +38,11 @@ struct io_s {
 
     FILE *out, *err;           // output files
 
+    LIST_t *nLIST;
+    INBUF_t *nINBUF;
+
+    inbufelem_t *inbuf;        // the active input buffer
+
     unsigned char *in;         // next character to be processed
     unsigned char *end;        // one past the last character
     char *filename;            // name of file currently being processed,

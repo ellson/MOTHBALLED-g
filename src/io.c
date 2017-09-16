@@ -16,14 +16,14 @@
 #include <string.h>
 #include <assert.h>
 
-#include "thread.h"
-#undef INBUF
-#undef LIST
-#undef THREAD
+
+#include "types.h"
+#include "fatal.h"
+#include "inbuf.h"
+#include "list.h"
+#include "io.h"
 
 #define INBUF() ((INBUF_t*)IO)
-#define LIST() ((LIST_t*)IO)
-#define THREAD() ((THREAD_t*)IO)
 
 /**
  * fill buffers from input files
@@ -35,23 +35,23 @@ success_t input(IO_t * IO)
 {
     int size, avail;
 
-    if (THREAD()->inbuf) {        // if there is an existing active-inbuf
-        if (IO->in == (THREAD()->inbuf->buf + INBUFSIZE)) {    // if it is full
-            if ((--(THREAD()->inbuf->u.refs)) == 0) {    // dereference active-inbuf
-                free_inbuf(INBUF(), THREAD()->inbuf);    // free if no refs left
+    if (IO->inbuf) {        // if there is an existing active-inbuf
+        if (IO->in == (IO->inbuf->buf + INBUFSIZE)) {    // if it is full
+            if ((--(IO->inbuf->u.refs)) == 0) {    // dereference active-inbuf
+                free_inbuf(INBUF(), IO->inbuf);    // free if no refs left
                          // can happen it held only framents that were ignore, or
                          // which were copied out into SHORTSTRELEM
             }
-            THREAD()->inbuf = new_inbuf(INBUF());    // get new
-            assert(THREAD()->inbuf);
-            THREAD()->inbuf->u.refs = 1;    // add active-inbuf reference
-            IO->in = THREAD()->inbuf->buf;    // point to beginning of buffer
+            IO->inbuf = new_inbuf(INBUF());    // get new
+            assert(IO->inbuf);
+            IO->inbuf->u.refs = 1;    // add active-inbuf reference
+            IO->in = IO->inbuf->buf;    // point to beginning of buffer
         }
     } else {        // no inbuf, implies just starting
-        THREAD()->inbuf = new_inbuf(INBUF());    // get new
-        assert(THREAD()->inbuf);
-        THREAD()->inbuf->u.refs = 1;    // add active-inbuf reference
-        IO->in = THREAD()->inbuf->buf;
+        IO->inbuf = new_inbuf(INBUF());    // get new
+        assert(IO->inbuf);
+        IO->inbuf->u.refs = 1;    // add active-inbuf reference
+        IO->in = IO->inbuf->buf;
     }
     if (IO->file) {        // if there is an existing active input file
         if (IO->in == IO->end && feof(IO->file)) {    //    if it is at EOF
@@ -95,7 +95,7 @@ success_t input(IO_t * IO)
     }
 // FIXME  -- or slurp in data from acts
     // slurp in data from file stream
-    avail = THREAD()->inbuf->buf + INBUFSIZE - IO->in;
+    avail = IO->inbuf->buf + INBUFSIZE - IO->in;
     size = fread(IO->in, 1, avail, IO->file);
     IO->end = IO->in + size;
 

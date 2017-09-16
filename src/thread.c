@@ -32,6 +32,8 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     }
 
     thread.PROCESS = PROCESS;
+    thread.TOKEN.IO.nLIST = &(PROCESS->LIST);
+    thread.TOKEN.IO.nINBUF = &(PROCESS->INBUF);
     thread.TOKEN.IO.out = stdout;
     thread.TOKEN.IO.err = stderr;
     thread.TOKEN.IO.pargc = pargc;

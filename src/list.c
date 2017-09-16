@@ -15,12 +15,15 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "thread.h"
-#undef INBUF
-#undef THREAD
 
+#include "types.h"
+#include "fatal.h"
+#include "inbuf.h"
+#include "list.h"
+#include "io.h"
+
+#define IO() ((IO_t*)LIST)
 #define INBUF() ((INBUF_t*)LIST)
-#define THREAD() ((THREAD_t*)LIST)
 
 /**
  * Private function to manage the allocation an elem_t
@@ -106,8 +109,8 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
 {
     elem_t *elem;
 
-    assert(THREAD()->inbuf);
-    assert(THREAD()->inbuf->u.refs >= 0);
+    assert(IO()->inbuf);
+    assert(IO()->inbuf->u.refs >= 0);
     assert(frag);
     assert(len > 0);
 
@@ -117,13 +120,13 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
     elem->type = FRAGELEM;  // type
     elem->state = state;    // state_machine state that created this frag
     elem->u.f.next = NULL;  // clear next
-    elem->u.f.inbuf = THREAD()->inbuf; // record inbuf for ref counting
+    elem->u.f.inbuf = IO()->inbuf; // record inbuf for ref counting
     elem->u.f.frag = frag;  // pointer to start of frag in inbuf
     elem->len = len;        // length of frag
     elem->refs = 1;         // initial ref count
     elem->height = 0;       // notused
 
-    THREAD()->inbuf->u.refs++;   // increment reference count in inbuf.
+    IO()->inbuf->u.refs++;   // increment reference count in inbuf.
 
     LIST->stat_fragnow++;        // stats
     if (LIST->stat_fragnow > LIST->stat_fragmax) {
@@ -257,11 +260,7 @@ void free_list(LIST_t * LIST, elem_t * elem)
 
     while (elem) {
         assert(LIST->stat_elemnow > 0);
-        if (elem->refs <= 0) {   // try to identify before crashing
-            THREAD_t *THREAD = (THREAD_t*)LIST;
-            S(elem->state);
-            assert(elem->refs > 0);
-        }
+        assert(elem->refs > 0);
         nextelem = elem->u.l.next;
         switch ((elemtype_t)elem->type) {
         case LISTELEM:

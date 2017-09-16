@@ -101,5 +101,4 @@ void process(int *pargc, char *argv[], int optind, int flags, char *acts)
     // archive and close the store
     ikea_store_snapshot(process.ikea_store);
     ikea_store_close(process.ikea_store);
-
 }
