@@ -30,9 +30,11 @@ struct process_s {
     int flags;       // -s = 1, -p = 2, -c = 4, -g = 8
     char *acts;      // g snippet from command line
 
-    elem_t *identifiers;       // tree of identifiers  - requires mutex when accessing from threads
-
-    ikea_store_t *ikea_store;  // persistency - may require mutex ??  depends, I think, on if rename() is atomic
+    // the following require mutex to allow sharing from threads
+    INBUF_t INBUF;   // inbuf free_list and stats
+    LIST_t LIST;     // elem free_list and stats
+    elem_t *identifiers; // tree of identifiers
+    ikea_store_t *ikea_store; // persistency 
 
     // info collected by process();
     char *progname;
