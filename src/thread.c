@@ -44,6 +44,7 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     elem_t *content = container(&thread);
 //P(content);
 
+#if 0
     // write to stdout
     elem_t *nodes = content->u.l.first;
     elem_t *edges = nodes->u.l.next;
@@ -66,6 +67,18 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
         IO()->out_disc->out_flush_fn(IO());
         IO()->out_disc->out_close_fn(IO());
     }
+#else
+    // FIXME - do this properly!
+ 
+    char buf[10000];
+    FILE *fh = ikea_box_fopen(thread.TOKEN.IO.ikea_store, thread.TOKEN.IO.contenthash, "r");
+    if (fh) {
+        size_t len = fread(buf, 1, sizeof(buf), fh);
+        (void) fwrite(buf, 1, len, stdout);
+        fclose(fh);
+    }
+
+#endif
 
     free_list(LIST(), content);
 

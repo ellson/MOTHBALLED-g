@@ -224,11 +224,10 @@ void ikea_box_close(ikea_box_t* ikea_box, char *contenthash, int contenthashsz)
  * @param ikea_store - pointer to store that holds the box
  * @param contenthash - the name of the box
  * @param mode - currently ignored  ( for arglist compat with fopen() )
- * @return - FILE pointer to opened box
+ * @return - FILE pointer to opened box (or NULL if error)
  */
 FILE* ikea_box_fopen( ikea_store_t * ikea_store, const char *contenthash, const char *mode )
 {
-    FILE *fh;
     char contentpathname[sizeof(tempdir_template) +1 +sizeof(contenthash) +2 +1];
 
     // compose the file path
@@ -237,10 +236,7 @@ FILE* ikea_box_fopen( ikea_store_t * ikea_store, const char *contenthash, const 
     strcat(contentpathname, contenthash);
     strcat(contentpathname, ".g");
 
-    if ( ! (fh = fopen(contentpathname, "r")) )
-        FATAL("fopen()");
-
-    return fh;
+    return (fopen(contentpathname, "r"));
 }
 
 //  FIXME - avoid globals
