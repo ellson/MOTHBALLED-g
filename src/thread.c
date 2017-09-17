@@ -44,28 +44,6 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
 // FIXME - fork() here ??
     // run until completion
 
-<<<<<<< HEAD
-    // write to stdout
-    elem_t *elem = content->u.l.first;
-    elem_t *nodes = elem->u.l.first;
-    if (nodes) {
-        elem_t *edges = elem->u.l.next->u.l.first;
-
-        IO()->flags = THREAD->PROCESS->flags;
-        IO()->out_disc = &stdout_disc;
-        IO()->out_chan = IO()->out_disc->out_open_fn( NULL, NULL );
-        printt(IO(), nodes);
-        if (edges) {
-            printt(IO(), edges);
-        }
-        IO()->out_disc->out_flush_fn(IO());
-        IO()->out_disc->out_close_fn(IO());
-    }
-    free_list(LIST(), content);
-
-    ikea_store_snapshot(thread.TOKEN.IO.ikea_store);   // FIXME - belongs in process?
-    ikea_store_close(thread.TOKEN.IO.ikea_store);      // FIXME - belongs in process?
-=======
     (void) container(&thread);
 
 #if 0
@@ -92,7 +70,6 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
         }
         fclose(fh);
     }
->>>>>>> ebc44e44da366f1220c165c767a78805f6b59b14
 
 // FIXME - do this only if we are the last thread exiting ...
     free_tree(LIST(), PROCESS->merge_cache);
