@@ -100,7 +100,7 @@ static void print_frags(FILE * chan, state_t state, elem_t * elem, char *sep)
  */
 static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
 {
-    assert(elem->type == (char)SHORTSTRELEM);
+    assert(elem->type == SHORTSTRELEM || elem->type == REFERSTRELEM);
     assert(sep);
 
     if (*sep) {
@@ -109,7 +109,7 @@ static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
     if (elem->state == DQT) {
         putc('"', chan);
     }
-    print_one_frag(chan, elem->len, elem->u.s.str);
+    print_one_frag(chan, elem->len, elem->u.s.str);  // cheating - should be u.r.str for REFERSTRELEM
     if (elem->state == DQT) {
         putc('"', chan);
     }
@@ -152,6 +152,7 @@ static void print_tree(THREAD_t * THREAD, elem_t * p, int *cnt, int indent)
             print_frags(chan, 0, key->u.l.first->u.l.first, sep);
             break;
         case SHORTSTRELEM:
+        case REFERSTRELEM:
             print_shortstr(chan, key, sep);
             break;
         default:
@@ -205,6 +206,7 @@ void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
             }
             break;
         case SHORTSTRELEM:
+        case REFERSTRELEM:
             putc(' ', chan);
             print_len_frag(chan, NAMEP(elem->state));
             print_shortstr(chan, elem, sep);

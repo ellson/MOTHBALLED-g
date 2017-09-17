@@ -27,12 +27,7 @@ success_t container(THREAD_t * THREAD)
 {
     CONTAINER_t container = { 0 };
     elem_t *root;
-    success_t rc = FAIL;
-
-
-// FIXME need to maintain the pathname of the container.
-//      pathname and content hash need to be stored in ikea
-//      when opening a container, initialize with content from ikea
+    success_t rc;
 
     root = new_list(LIST(), ACTIVITY);
 
@@ -94,7 +89,11 @@ success_t container(THREAD_t * THREAD)
  */
 success_t kid_container(THREAD_t * THREAD, elem_t *kid)
 {
-    success_t rc = SUCCESS;
-//    P(kid);
+    success_t rc;
+
+//    rc = container(THREAD);
+
+    rc = SUCCESS;
+
     return rc;
 }

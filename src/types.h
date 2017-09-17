@@ -17,6 +17,10 @@
 extern "C" {
 #endif
 
+// Preparation for multithreading and mutexes
+#define DUMMY_LOCK()
+#define DUMMY_UNLOCK()
+
 typedef struct process_s PROCESS_t;       // process.h
 
 // THREAD_t TOKEN_t IO_t LIST_t INBUF_t are inter-castable

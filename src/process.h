@@ -20,9 +20,6 @@ extern "C" {
 #define TEN9 1000000000
 #define TEN3 1000
 
-#define DUMMY_LOCK()
-#define DUMMY_UNLOCK()
-
 struct process_s {
     THREAD_t *THREAD;          // THREADs in this PROCESS
 

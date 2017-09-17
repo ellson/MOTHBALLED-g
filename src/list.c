@@ -13,8 +13,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
-
 
 #include "types.h"
 #include "fatal.h"
@@ -38,6 +38,8 @@ static elem_t *new_elem_sub(LIST_t * LIST)
 {
     PROC_LIST_t * PROC_LIST = LIST->PROC_LIST;
     elem_t *elem, *nextelem;
+
+    DUMMY_LOCK();  // FIXME
 
     if (!PROC_LIST->free_elem_list) {    // if no elems in free_elem_list
 
@@ -63,8 +65,32 @@ static elem_t *new_elem_sub(LIST_t * LIST)
         PROC_LIST->stat_elemmax = PROC_LIST->stat_elemnow;
     }
 
+    DUMMY_UNLOCK();  // FIXME
+
     // N.B. elem is uninitialized
     return elem;
+}
+
+/**
+ * Private function to free an elem
+ *
+ *   "free" means insert elem at beginning of freelist
+ *
+ * @param LIST the top-level context in which all lists are managed
+ * @param elem the elem being "freed"
+ */
+static void free_elem(LIST_t *LIST, elem_t *elem)
+{
+    PROC_LIST_t * PROC_LIST = LIST->PROC_LIST;
+
+    DUMMY_LOCK();   // FIXME
+
+    elem->u.l.next = PROC_LIST->free_elem_list;
+    PROC_LIST->free_elem_list = elem;
+    PROC_LIST->stat_elemnow--;    // maintain stats
+    assert(PROC_LIST->stat_elemnow >= 0);
+
+    DUMMY_UNLOCK(); // FIXME
 }
 
 /**
@@ -77,11 +103,8 @@ static elem_t *new_elem_sub(LIST_t * LIST)
  */
 elem_t *new_list(LIST_t * LIST, char state)
 {
-    elem_t *elem;
+    elem_t *elem = new_elem_sub(LIST);
 
-    elem = new_elem_sub(LIST);
-
-    assert(elem);
     // complete elem initialization
     elem->type = LISTELEM;
     elem->state = state;    // state_machine state that created this frag
@@ -108,14 +131,12 @@ elem_t *new_list(LIST_t * LIST, char state)
  */
 elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
 {
-    elem_t *elem;
-
     assert(INBUF()->inbuf);
     assert(INBUF()->inbuf->u.refs >= 0);
     assert(frag);
     assert(len > 0);
 
-    elem = new_elem_sub(LIST);
+    elem_t *elem = new_elem_sub(LIST);
 
     // complete frag elem initialization
     elem->type = FRAGELEM;  // type
@@ -139,40 +160,59 @@ elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag)
 
 /**
  * Return a pointer to an elem_t which holds a shortstr
- * (suitable for use as a hash name for hubs)
  * The string is stored in the struct.  Maximum length sizeof(void*)*3
  * The stored string is *not* NUL terminated;
  *
  * @param LIST the top-level context in which all lists are managed
  * @param state a one character value stored with the elem, no internal meaning
- * @param str string to be stored in elem, max 12 chars on 32 bit machines
+ * @param str string to be stored in elem (nul terminated) max 12 chars on 32 bit machines
  * @return a new initialized elem_t
  */
 elem_t * new_shortstr(LIST_t * LIST, char state, char * str)
 {
-    elem_t *elem;
+    elem_t *elem = new_elem_sub(LIST);
     int len = 0;
-
-    elem = new_elem_sub(LIST);
 
     // complete shortstr elem initialization
     elem->type = SHORTSTRELEM; // type
     elem->state = state;       // ABC or DQT for strings
-    if (str) {  // Allow NULL for external string copying
+    if (str) {  // copy string into internal buffer
         char c;
         while (len < sizeof(((elem_t*)0)->u.s.str) && (c = str[len]) != '\0') {
             elem->u.s.str[len++] = c;
         }
     }
-    elem->len = len;        // length of the stored string
-    elem->refs = 1;         // initial ref count
-    elem->state = state;    // ABC or DQT for strings
-    elem->height = 0;       // notused
+    elem->len = len;           // length of the stored string
+    elem->refs = 1;            // initial ref count
+    elem->height = 0;          // notused
     return elem;
 }
 
 /**
- * Return a pointer to an elem_t which is a tree node with a key (reference too a list)
+ * Return a pointer to an elem_t which references a static string
+ *    The referenced static string is not freed when the elem is freed.
+ *
+ * @param LIST the top-level context in which all lists are managed
+ * @param state a one character value stored with the elem, no internal meaning
+ * @param str a static string to be referenced by elem.
+ * @return a new initialized elem_t
+ */
+elem_t * new_referstr(LIST_t * LIST, char state, char * str)
+{
+    elem_t *elem = new_elem_sub(LIST);
+
+    // complete shortstr elem initialization
+    elem->type = REFERSTRELEM; // type
+    elem->state = state;       // ABC or DQT for strings
+    elem->u.r.str = (unsigned char*)str;  // reference to static string
+    elem->len = strlen(str);   // length of the stored string
+    elem->refs = 1;            // initial ref count
+    elem->height = 0;          // notused
+    return elem;
+}
+
+/**
+ * Return a pointer to an elem_t which is a tree node with a key (reference to a list)
  * The elem_t is memory managed without caller involvement.
  *
  * @param LIST the top-level context in which all lists are managed
@@ -181,14 +221,12 @@ elem_t * new_shortstr(LIST_t * LIST, char state, char * str)
  */
 elem_t *new_tree(LIST_t * LIST, elem_t *key)
 {
-    elem_t *elem;
-
     assert(key);
 
     key->refs++;
     assert(key->refs > 0);
 
-    elem = new_elem_sub(LIST);
+    elem_t *elem = new_elem_sub(LIST);
 
     // complete elem initialization
     elem->type = TREEELEM;
@@ -201,21 +239,6 @@ elem_t *new_tree(LIST_t * LIST, elem_t *key)
     elem->len = 0;         // notused
 
     return elem;
-}
-
-/**
- *   "free" means insert elem at beginning of freelist
- *
- * @param LIST the top-level context in which all lists are managed
- * @param elem the elem being "freed"
- */
-static void free_elem(LIST_t *LIST, elem_t *elem)
-{
-    PROC_LIST_t * PROC_LIST = LIST->PROC_LIST;
-    elem->u.l.next = PROC_LIST->free_elem_list;
-    PROC_LIST->free_elem_list = elem;
-    PROC_LIST->stat_elemnow--;    // maintain stats
-    assert(PROC_LIST->stat_elemnow >= 0);
 }
 
 /**
@@ -259,11 +282,10 @@ static void free_list_r(LIST_t * LIST, elem_t * list)
  */
 void free_list(LIST_t * LIST, elem_t * elem)
 {
-    PROC_LIST_t * PROC_LIST = LIST->PROC_LIST;
     elem_t *nextelem;
 
     while (elem) {
-        assert(PROC_LIST->stat_elemnow > 0);
+        assert(LIST->PROC_LIST->stat_elemnow > 0);
         assert(elem->refs > 0);
         nextelem = elem->u.l.next;
         switch ((elemtype_t)elem->type) {
@@ -281,10 +303,13 @@ void free_list(LIST_t * LIST, elem_t * elem)
             if (--(elem->u.f.inbuf->u.refs) == 0) {
                 free_inbuf(INBUF(), elem->u.f.inbuf);
             }
-            PROC_LIST->stat_fragnow--;    // maintain stats
+            LIST->PROC_LIST->stat_fragnow--;    // maintain stats
             break;
         case SHORTSTRELEM:
-            // these are self contained singletons,  nothing else to clean up
+        case REFERSTRELEM:
+            // These are self contained singletons,  nothing else to clean up
+            // (The str in shortstring is in the elem, and so freed with the elem)
+            // (The str in referstring is external and assumed static, it is not freed.)
             if (--(elem->refs)) {
                 return;    // stop at any point with additional refs
             }
@@ -292,6 +317,9 @@ void free_list(LIST_t * LIST, elem_t * elem)
             break;
         case TREEELEM:
             // trees are not ref count, must be used exactly once.
+            // (They are not ref counted because the root elem of the tree can
+            //  change with balancing,  and so writing refs in root doesn't mean it will be
+            //  available in another.)
             free_tree(LIST, elem);
             return;
         }

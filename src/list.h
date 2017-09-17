@@ -21,10 +21,12 @@ typedef enum {
     LISTELEM = 0,           // must be 0 for static or calloc allocation of list headers
     FRAGELEM = 1,
     SHORTSTRELEM = 2,
-    TREEELEM = 3
+    REFERSTRELEM = 3,
+    TREEELEM = 4
 } elemtype_t;
 
-// common elem struct, with unions to reduce size.  Size is 32bytes on 64bit machines, and 20bytes on 32bit.
+// elem struct, with unions to reduce size.
+// Size is 32bytes on 64bit machines, and 20bytes on 32bit.
 struct elem_s { 
     union {
         struct {
@@ -41,23 +43,28 @@ struct elem_s {
             unsigned char str[sizeof(void*)*3]; // short string (24char on 64bit, 12char on 32bit machines)
         } s;
         struct {
+            unsigned char *str;  // reference to static string, any length
+        } r;
+        struct {
             elem_t *key;         // a list providing key and value
             elem_t *left;        // left elem of tree
             elem_t *right;       // left elem of tree
         } t;
     } u;
-    // N.B. 1) Just type *has* to be outside of union
+    // N.B. 1) Just type *must* be outside of union
     //    but moving the rest inside would increase the size of the struct.
     // N.B. 2) height and len could be a union, but that would
     //    not reduce the size of the struct on either 32 or 64 bit machines
     //    because of the rounding up of size to n* sizeof(void*).
-    uint16_t height;        // LISTELEM: not used
+    uint16_t height;        // TREEELEM: height of elem in tree
+                            // LISTELEM: not used
                             // FRAGELEM: not used
                             // SHORTSTR: not used
-                            // TREEELEM: height of elem in tree
-    uint16_t len;           // LISTELEM: number of elems between u.l.first and u.l.last
+                            // REFERSTR: not used
+    uint16_t len;           // LISTELEM: number of elems from u.l.first to u.l.last
                             // FRAGELEM: number of characters in u.f.frag
                             // SHORTSTR: number of characters in u.s.str
+                            // REFERSTR: number of characters in u.r.str
                             // TREEELEM: not used
     int16_t refs;           // don't free elem until refs == 0
     char state;             // state_machine state that generated this elem
@@ -85,6 +92,7 @@ elem_t *new_list(LIST_t * LIST, char state);
 elem_t *new_tree(LIST_t * LIST, elem_t *key);
 elem_t *new_frag(LIST_t * LIST, char state, uint16_t len, unsigned char *frag);
 elem_t *new_shortstr(LIST_t * LIST, char state, char *str);
+elem_t *new_referstr(LIST_t * LIST, char state, char *str);
 elem_t *ref_list(LIST_t * LIST, elem_t * list);
 void append_addref(elem_t * list, elem_t * elem);
 void append_transfer(elem_t * list, elem_t * elem);
