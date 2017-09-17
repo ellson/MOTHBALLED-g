@@ -10,23 +10,14 @@
  * Contributors: John Ellson <john.ellson@gmail.com>
  *************************************************************************/
 
-#ifndef IKEA_H
-#define IKEA_H
+#ifndef MERGE_H
+#define MERGE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-ikea_store_t * ikea_store_open( const char * oldstore );
-void ikea_store_snapshot ( ikea_store_t *ikea_store );
-void ikea_store_restore ( ikea_store_t *ikea_store );
-void ikea_store_close ( ikea_store_t *ikea_store );
-
-FILE* ikea_box_fopen( ikea_store_t * ikea_store, const char *contenthash, const char *mode );
-
-void sslhash_list(uint64_t *hash, elem_t *list);
-
-out_disc_t ikea_disc;
+void merge(THREAD_t *THREAD, char *hash_A, char *hash_B);
 
 #ifdef __cplusplus
 }

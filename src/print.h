@@ -33,7 +33,7 @@ void append_runtime(THREAD_t * THREAD, char **pos, uint64_t run_sec, uint64_t ru
 
 // macro to print current element count
    #define E() { \
-   fprintf(((IO_t*)THREAD)->out, "elemnow at %s:%d is %ld and fragnow is %ld\n", __FILE__, __LINE__, ((LIST_t*)THREAD)->stat_elemnow, ((LIST_t*)THREAD)->stat_fragnow);}
+   fprintf(((IO_t*)THREAD)->out, "elemnow at %s:%d is %ld and fragnow is %ld\n", __FILE__, __LINE__, ((LIST_t*)THREAD)->PROC_LIST->stat_elemnow, ((LIST_t*)THREAD)->PROC_LIST->stat_fragnow);}
 
 // macro to print a stat_t in is text form.
    #define S(state) { \

@@ -16,6 +16,7 @@
 #include <string.h>
 #include <assert.h>
 
+
 #include "types.h"
 #include "fatal.h"
 #include "inbuf.h"
@@ -23,7 +24,6 @@
 #include "io.h"
 
 #define INBUF() ((INBUF_t*)IO)
-#define LIST() ((LIST_t*)IO)
 
 /**
  * fill buffers from input files
@@ -37,20 +37,20 @@ success_t input(IO_t * IO)
 
     if (INBUF()->inbuf) {        // if there is an existing active-inbuf
         if (IO->in == (INBUF()->inbuf->buf + INBUFSIZE)) {    // if it is full
-            if ((--(INBUF()->inbuf->refs)) == 0) {    // dereference active-inbuf
+            if ((--(INBUF()->inbuf->u.refs)) == 0) {    // dereference active-inbuf
                 free_inbuf(INBUF(), INBUF()->inbuf);    // free if no refs left
                          // can happen it held only framents that were ignore, or
                          // which were copied out into SHORTSTRELEM
             }
             INBUF()->inbuf = new_inbuf(INBUF());    // get new
             assert(INBUF()->inbuf);
-            INBUF()->inbuf->refs = 1;    // add active-inbuf reference
+            INBUF()->inbuf->u.refs = 1;    // add active-inbuf reference
             IO->in = INBUF()->inbuf->buf;    // point to beginning of buffer
         }
     } else {        // no inbuf, implies just starting
         INBUF()->inbuf = new_inbuf(INBUF());    // get new
         assert(INBUF()->inbuf);
-        INBUF()->inbuf->refs = 1;    // add active-inbuf reference
+        INBUF()->inbuf->u.refs = 1;    // add active-inbuf reference
         IO->in = INBUF()->inbuf->buf;
     }
     if (IO->file) {        // if there is an existing active input file
@@ -138,19 +138,19 @@ out_disc_t stdout_disc = {
 //===================================
 
 static void* file_open(void *descriptor, char *mode) {
-    return fopen((char*)(descriptor), mode);
+    return fopen((char*)descriptor, mode);
 }
 
 static size_t file_write(IO_t *IO, unsigned char *cp, size_t len) {
-    return fwrite(cp, len, 1, (FILE*)(IO->out_chan));
+    return fwrite(cp, len, 1, (FILE*)IO->out_chan);
 }
 
 static void file_flush(IO_t *IO) {
-    fflush((FILE*)(IO->out_chan));
+    fflush((FILE*)IO->out_chan);
 }
 
 static void file_close(IO_t *IO) {
-    fclose((FILE*)(IO->out_chan));
+    fclose((FILE*)IO->out_chan);
 }
 
 // discipline for writing to a file

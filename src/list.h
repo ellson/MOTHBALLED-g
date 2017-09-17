@@ -64,14 +64,18 @@ struct elem_s {
     // N.B. 3) Using elemtype_t (int) would increase the size of the struct
 };
 
-struct list_s {             // LIST context
-    INBUF_t INBUF;          // INBUF context, may be cast from LIST
+struct proc_list_s {        // LIST shared data context
     elem_t *free_elem_list; // linked list of unused list elems
     long stat_elemmax;      // list stats
     long stat_elemnow;
     long stat_elemmalloc;
     long stat_fragnow;
     long stat_fragmax;
+};
+
+struct list_s {             // LIST context
+    INBUF_t INBUF;          // INBUF context, may be cast from LIST
+    PROC_LIST_t *PROC_LIST;
 };
 
 #define LISTALLOCNUM 512

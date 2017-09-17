@@ -16,6 +16,7 @@
 #include <assert.h>
 
 #include "thread.h"
+#include "merge.h"
 
 THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
 {
@@ -32,18 +33,18 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     }
 
     thread.PROCESS = PROCESS;
+    thread.TOKEN.IO.LIST.INBUF.PROC_INBUF = &(PROCESS->PROC_INBUF);
+    thread.TOKEN.IO.LIST.PROC_LIST = &(PROCESS->PROC_LIST);
     thread.TOKEN.IO.out = stdout;
     thread.TOKEN.IO.err = stderr;
     thread.TOKEN.IO.pargc = pargc;
     thread.TOKEN.IO.argv = argv;
     thread.TOKEN.IO.acts = PROCESS->acts;
-    thread.TOKEN.IO.ikea_store = ikea_store_open( NULL ); // FIXME - belongs in process?
 
 // FIXME - fork() here ??
     // run until completion
-    elem_t *content = container(&thread);
-//P(content);
 
+<<<<<<< HEAD
     // write to stdout
     elem_t *elem = content->u.l.first;
     elem_t *nodes = elem->u.l.first;
@@ -64,11 +65,41 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
 
     ikea_store_snapshot(thread.TOKEN.IO.ikea_store);   // FIXME - belongs in process?
     ikea_store_close(thread.TOKEN.IO.ikea_store);      // FIXME - belongs in process?
+=======
+    (void) container(&thread);
+
+#if 0
+    merge(THREAD, "12345", "abcde");
+    merge(THREAD, "98765", "zyxwv");
+    merge(THREAD, "12345", "abcde");
+    merge(THREAD, "98765", "zyxwv");
+#endif
+    // Print the top container
+
+    // do this for canonical g output
+    // alternatively (based on command line options),
+    // process through parser
+    // and pretty printer, or gv converter
+ 
+    char buf[1024];
+    FILE *fh = ikea_box_fopen(
+            PROCESS->ikea_store,
+            thread.TOKEN.IO.contenthash, "r");
+    if (fh) {
+        size_t len;
+        while ( (len = fread(buf, 1, sizeof(buf), fh)) ) {
+            (void) fwrite(buf, 1, len, stdout);
+        }
+        fclose(fh);
+    }
+>>>>>>> ebc44e44da366f1220c165c767a78805f6b59b14
 
 // FIXME - do this only if we are the last thread exiting ...
+    free_tree(LIST(), PROCESS->merge_cache);
     free_tree(LIST(), PROCESS->identifiers);
 
-    if (LIST()->stat_elemnow != 0) {
+    // check that everything has been freed
+    if (LIST()->PROC_LIST->stat_elemnow != 0) {
         E();
         assert(0);
     }

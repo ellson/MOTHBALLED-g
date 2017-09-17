@@ -30,9 +30,14 @@ struct process_s {
     int flags;       // -s = 1, -p = 2, -c = 4, -g = 8
     char *acts;      // g snippet from command line
 
-    elem_t *identifiers;       // tree of identifiers  - requires mutex when accessing from threads
+    // the following require mutex to allow sharing from threads
+    PROC_INBUF_t PROC_INBUF; // inbuf free_list and stats
+    PROC_LIST_t PROC_LIST;   // elem free_list and stats
+    elem_t *identifiers; // tree of identifiers
+    ikea_store_t *ikea_store; // persistency 
+    elem_t *merge_cache;  // cache of hashes from previous merges
 
-    // info collected by session();
+    // info collected by process();
     char *progname;
     char *username;
     char *hostname;          

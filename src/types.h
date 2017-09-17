@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef struct process_s PROCESS_t;       // session.h
+typedef struct process_s PROCESS_t;       // process.h
 
 // THREAD_t TOKEN_t IO_t LIST_t INBUF_t are inter-castable
 //   from since all 5 structs share the same start
@@ -26,6 +26,9 @@ typedef struct token_s TOKEN_t;           // token.h
 typedef struct io_s IO_t;                 // input.h
 typedef struct list_s LIST_t;             // list.h
 typedef struct inbuf_s INBUF_t;           // inbuf.h
+
+typedef struct proc_inbuf_s PROC_INBUF_t; // shared data
+typedef struct proc_list_s PROC_LIST_t; // shared data
 
 typedef struct elem_s elem_t;             // list.h
 typedef struct inbufelem_s inbufelem_t;   // inbuf.h

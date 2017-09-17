@@ -25,8 +25,6 @@ struct io_s {
     char **argv;
     char *acts;                // g snippet from command line
 
-    ikea_store_t *ikea_store;  // persistency
-
     int flags;
 
     unsigned char buf[1024];   // output buffering
