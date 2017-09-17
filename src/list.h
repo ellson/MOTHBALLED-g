@@ -24,6 +24,7 @@ typedef enum {
     TREEELEM = 3
 } elemtype_t;
 
+// common elem struct, with unions to reduce size.  Size is 32bytes on 64bit machines, and 20bytes on 32bit.
 struct elem_s { 
     union {
         struct {
