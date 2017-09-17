@@ -100,7 +100,7 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                             break;
                         case MUM:
                             // FIXME - route to ancestors and cousins
-                            // I think that drawng edges between cousins must be done by an ancestor that contains both (al) ends.
+                            // I think that drawng edges between cousins must be done by an ancestor that contains both (all?) ends.
                             // If there are three ends, but only one to a cousin, do we draw the other two and a hub?
                             fprintf(stdout, "One for you, Mum.\n");
                             free_list(LIST(), refepset);

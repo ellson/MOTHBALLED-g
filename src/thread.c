@@ -20,7 +20,7 @@
 
 THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
 {
-    THREAD_t thread = { 0 };      // FIXME - may need to calloced
+    THREAD_t thread = { 0 }; // includes castable: TOKEN_t, IO_t, LIST_t, INBUF_t
     THREAD_t *THREAD = &thread;    // needed for LIST() and E() macros.
 
     argv = &argv[optind];
@@ -58,6 +58,8 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
     // alternatively (based on command line options),
     // process through parser
     // and pretty printer, or gv converter
+
+    // FIXME - move this to a function in io.c, or ikea.c
  
     char buf[1024];
     FILE *fh = ikea_box_fopen(

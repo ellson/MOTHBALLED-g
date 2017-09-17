@@ -288,10 +288,12 @@ done: // State exit processing
             case PORTID:
             case DISAMBID:
             case ATTRID:
-                DUMMY_LOCK();
+
+                DUMMY_LOCK();  // FIXME
                 PROCESS->identifiers = insert_item(LIST(), PROCESS->identifiers, 
                     branch->u.l.first, merge_identifier, &newkey);
-                DUMMY_UNLOCK();
+                DUMMY_UNLOCK();  // FIXME
+
                 branch->u.l.first = newkey;
                 append_addref(root, branch); 
                 break;
@@ -312,8 +314,14 @@ done: // State exit processing
             case SCN:      // terminal
                 break;
     
+            case KID:
+                rc = kid_container(THREAD, branch);
+                append_addref(root, branch);
+                break;
 #if 0
-//no need to work so hard
+// no need to work so hard here, use default
+
+// FIXME - some of these must be dropable?
 
             case ACTIVITY:
             case SET:
@@ -321,7 +329,6 @@ done: // State exit processing
             case LEG:
             case ENDPOINT:
             case SIS:
-            case KID:
             case DISAMBIG:
             case ATTR:
             case VALUE:
@@ -340,7 +347,6 @@ done: // State exit processing
             case BSL:
             case TLD:
             case END:
-                // FIXME - some of these must be droppable?
 #else
             default:
 #endif

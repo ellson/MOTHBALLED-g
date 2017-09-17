@@ -107,7 +107,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
             // FIXME - deal with edges that require help from ancestors
             fprintf(stdout,"Need Mum's help\n");
         }
-        if (!verb) { // don't query or delete induced nodes
+        if (!verb) { // don't induce nodes from a query or delete ACT
             elem = nodes->u.l.first;
             while (elem) {
                 // inducing base nodes from NODEREFS - no attributes from these

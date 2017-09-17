@@ -86,3 +86,15 @@ success_t container(THREAD_t * THREAD)
 
     return rc;
 }
+
+/**
+ * @param THREAD context   
+ * @param kid
+ * @return SUCCESS or FAIL
+ */
+success_t kid_container(THREAD_t * THREAD, elem_t *kid)
+{
+    success_t rc = SUCCESS;
+//    P(kid);
+    return rc;
+}
