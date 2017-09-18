@@ -48,6 +48,10 @@ void process(int *pargc, char *argv[], int optind, int flags, char *acts)
     uid_t uid;
     pid_t pid;
 
+    LIST_t LIST;  // FIXME - ugly!
+    LIST.INBUF.PROC_INBUF = &(process.PROC_INBUF);
+    LIST.PROC_LIST = &(process.PROC_LIST);
+
 #if defined(HAVE_CLOCK_GETTIME)
     // Y2038-unsafe struct - but should be ok for uptime
     // ref: https://sourceware.org/glibc/wiki/Y2038ProofnessDesign
@@ -101,4 +105,11 @@ void process(int *pargc, char *argv[], int optind, int flags, char *acts)
     // archive and close the store
     ikea_store_snapshot(process.ikea_store);
     ikea_store_close(process.ikea_store);
+
+//P(PROCESS->merge_cache);
+    free_tree(&LIST, process.merge_cache);
+    free_tree(&LIST, process.identifiers);
+
+    // check that everything has been freed
+    assert(process.PROC_LIST.stat_elemnow == 0);
 }

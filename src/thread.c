@@ -73,15 +73,5 @@ THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
         fclose(fh);
     }
 
-// FIXME - do this only if we are the last thread exiting ...
-    free_tree(LIST(), PROCESS->merge_cache);
-    free_tree(LIST(), PROCESS->identifiers);
-
-    // check that everything has been freed
-    if (LIST()->PROC_LIST->stat_elemnow != 0) {
-        E();
-        assert(0);
-    }
-
     return NULL;   // FIXME - presumably some kind of thread handle...
 }

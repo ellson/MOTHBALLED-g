@@ -100,7 +100,7 @@ static void print_frags(FILE * chan, state_t state, elem_t * elem, char *sep)
  */
 static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
 {
-    assert(elem->type == SHORTSTRELEM || elem->type == REFERSTRELEM);
+    assert(elem->type == SHORTSTRELEM);
     assert(sep);
 
     if (*sep) {
@@ -109,7 +109,32 @@ static void print_shortstr(FILE * chan, elem_t *elem, char *sep)
     if (elem->state == DQT) {
         putc('"', chan);
     }
-    print_one_frag(chan, elem->len, elem->u.s.str);  // cheating - should be u.r.str for REFERSTRELEM
+    print_one_frag(chan, elem->len, elem->u.s.str);
+    if (elem->state == DQT) {
+        putc('"', chan);
+    }
+    *sep = ' ';
+}
+
+/**
+ * Print the string content of a REFERSTR elem
+ *
+ * @param chan FILE for output
+ * @param elem the referstring elem
+ * @param sep if not NULL then a character to be printed first
+ */
+static void print_referstr(FILE * chan, elem_t *elem, char *sep)
+{
+    assert(elem->type == REFERSTRELEM);
+    assert(sep);
+
+    if (*sep) {
+        putc(*sep, chan);
+    }
+    if (elem->state == DQT) {
+        putc('"', chan);
+    }
+    print_one_frag(chan, elem->len, elem->u.r.str);
     if (elem->state == DQT) {
         putc('"', chan);
     }
@@ -152,8 +177,10 @@ static void print_tree(THREAD_t * THREAD, elem_t * p, int *cnt, int indent)
             print_frags(chan, 0, key->u.l.first->u.l.first, sep);
             break;
         case SHORTSTRELEM:
-        case REFERSTRELEM:
             print_shortstr(chan, key, sep);
+            break;
+        case REFERSTRELEM:
+            print_referstr(chan, key, sep);
             break;
         default:
             assert(0);
@@ -206,10 +233,14 @@ void print_elem(THREAD_t * THREAD, elem_t * elem, int indent)
             }
             break;
         case SHORTSTRELEM:
-        case REFERSTRELEM:
             putc(' ', chan);
             print_len_frag(chan, NAMEP(elem->state));
             print_shortstr(chan, elem, sep);
+            break;
+        case REFERSTRELEM:
+            putc(' ', chan);
+            print_len_frag(chan, NAMEP(elem->state));
+            print_referstr(chan, elem, sep);
             break;
         case TREEELEM:
             cnt = 0;
