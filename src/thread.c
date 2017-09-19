@@ -21,7 +21,7 @@
 THREAD_t * thread(PROCESS_t *PROCESS, int *pargc, char *argv[], int optind)
 {
     THREAD_t thread = { 0 }; // includes castable: TOKEN_t, IO_t, LIST_t, INBUF_t
-    THREAD_t *THREAD = &thread;    // needed for LIST() and E() macros.
+//    THREAD_t *THREAD = &thread;    // needed for LIST() and E() macros.
 
     argv = &argv[optind];
     *pargc -= optind;

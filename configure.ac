@@ -126,6 +126,32 @@ AC_CHECK_FUNCS([ \
 # detect effect of api change in openssl-1.1.0 (fedora-26)
 AC_CHECK_FUNCS([EVP_MD_CTX_new])
 
+
+# debug
+AC_ARG_ENABLE([debug],
+    AS_HELP_STRING([--enable-debug],[Compile the debug version (default: disabled)]),
+        [enable_debug=$enableval],
+        [enable_debug=no])
+AM_CONDITIONAL([DEBUG], [test $enable_debug = "yes"])
+if test "x$enable_debug" = "xyes"; then
+    changequote({,})
+    CFLAGS=`echo "$CFLAGS" | $SED -e 's/-O[0-9s]*//g'`
+    CXXFLAGS=`echo "$CXXFLAGS" | $SED -e 's/-O[0-9s]*//g'`
+    CFLAGS=`echo "$CFLAGS" | $SED -e 's/-g//g'`
+    CXXFLAGS=`echo "$CXXFLAGS" | $SED -e 's/-g//g'`
+    changequote([,])
+#    dnl add -O0 only if GCC or ICC is used
+    if test "$GCC" = "yes" || test "$ICC" = "yes"; then
+        CFLAGS="$CFLAGS -g -O0 -Wall"
+        CXXFLAGS="$CXXFLAGS -g -O0 -Wall"
+    fi
+else
+    changequote({,})
+    CFLAGS=`echo "$CFLAGS" | $SED -e 's/-g//g'`
+    CXXFLAGS=`echo "$CXXFLAGS" | $SED -e 's/-g//g'`
+    changequote([,])
+fi
+
 AC_CONFIG_FILES([Makefile \
                  g.spec \
                  src/Makefile \
