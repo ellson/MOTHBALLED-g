@@ -68,40 +68,27 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                     elem_t *legp = ep->u.l.first;
                     switch ((state_t)legp->state) {
                         case SIS:
-                            // add NODEID (w.o. PORT) to node list
-                            np = ref_list(LIST(), legp->u.l.first);
+                            // add ENDPOINT (w PORT and/or KIDS) to nodes and to leg list
+                            np = ref_list(LIST(), ep);
                             np->state = NODE;
                             append_transfer(nodes, np);
-
-                            // add ENDPOINT (w PORT and/or KIDS) to leg list
                             pp = legp->u.l.next;
                             if (pp) {
-                                if ((state_t)pp->state == PORT) {
-                                    // port naming convention may provide enough info to compute end coordinate.
-                                    //   also need bb of node in this container level
                                     pp = ref_list(LIST(), ep);
                                     append_transfer(leg, pp);
-                                }
-                                else if ((state_t)pp->state == KID) {
-                                    fprintf(stdout, "Ahh, cute kid.\n");
-                                    // need help from content system to compute end coordinate
-                                    //   need bb of node in all container level
-                                    //   need scaling of each container
-                                    pp = ref_list(LIST(), ep);
-                                    append_transfer(leg, pp);
-                                }
                             }
                             else {
                                  // add NODEID (no PORT or KID) to leg list
                                  pp = ref_list(LIST(), legp);
-                                 pp->state = NODE;
                                  append_transfer(leg, pp);
                             }
                             break;
                         case MUM:
                             // FIXME - route to ancestors and cousins
-                            // I think that drawng edges between cousins must be done by an ancestor that contains both (all?) ends.
-                            // If there are three ends, but only one to a cousin, do we draw the other two and a hub?
+                            // I think that drawng edges between cousins must be done
+                            //    by an ancestor that contains both (all?) ends.
+                            // If there are three ends, but only one to a cousin,
+                            //    do we draw the other two and a hub?
                             fprintf(stdout, "One for you, Mum.\n");
                             free_list(LIST(), refepset);
                             goto doneleg;
