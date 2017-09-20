@@ -1,5 +1,5 @@
-# testing node with kids  (this will change later with playpen)
+# testing node with kids  (this will change with playpen())
 
-#out:a/b/c[d]
+#out:a
 
 a/b/c [d]

@@ -175,6 +175,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
                         break;
                     case NODE:
                     case PORT:
+//P(elem); FIXME - need to give elem to playpen() to deal with attributes
                         np = ref_list(LIST(),object->u.l.first);
                         np->state = NODE;  // was ENDPOINT
                         pp = np->u.l.first->u.l.next;
