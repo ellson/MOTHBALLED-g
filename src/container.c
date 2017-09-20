@@ -89,14 +89,17 @@ success_t container(THREAD_t * THREAD)
  */
 elem_t * playpen(THREAD_t * THREAD, elem_t *node)
 {
-    elem_t * newnode = new_list(LIST(), NODE);
-    elem_t * newsis = new_list(LIST(), SIS);
     elem_t * sis = node->u.l.first;
+    elem_t * kid = sis->u.l.next;
 
-//P(node);
-    append_transfer(newnode, newsis);
-    append_addref(newsis, sis->u.l.first);
+    if (kid && (state_t)kid->state == KID) {
+        elem_t * newnode = new_list(LIST(), NODE);
+        elem_t * newsis = new_list(LIST(), SIS);
+        append_transfer(newnode, newsis);
+        append_addref(newsis, sis->u.l.first);
 //P(newnode);
-    free_list(LIST(), node);
-    return newnode;
+        free_list(LIST(), node);
+        return newnode;
+    }
+    return node;
 }
