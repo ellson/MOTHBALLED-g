@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "thread.h"
 #include "container.h"
@@ -90,14 +91,23 @@ success_t container(THREAD_t * THREAD)
 elem_t * playpen(THREAD_t * THREAD, elem_t *node)
 {
     elem_t * sis = node->u.l.first;
-    elem_t * kid = sis->u.l.next;
+    elem_t * kid = sis->u.l.next; // might be a port
 
-    if (kid && (state_t)kid->state == KID) {
+    if (kid) {
         elem_t * newnode = new_list(LIST(), NODE);
         elem_t * newsis = new_list(LIST(), SIS);
         append_transfer(newnode, newsis);
-        append_addref(newsis, sis->u.l.first);
-//P(newnode);
+        switch ((state_t)kid->state) {
+            case KID:   // drop KID from NODE but put into a playpen
+                append_addref(newsis, sis->u.l.first);
+                // FIXME playpen recursion
+                break;
+            case PORT:  // drop PORT from NODE, whether induced or not
+                append_addref(newsis, sis->u.l.first);
+                break;
+            default:
+                assert(0);
+        }
         free_list(LIST(), node);
         return newnode;
     }
