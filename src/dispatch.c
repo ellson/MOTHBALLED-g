@@ -93,6 +93,7 @@ dispatch(CONTAINER_t * CONTAINER, elem_t * act, state_t verb, state_t mum)
     if (CONTAINER->has_node) {
         elem = nodes->u.l.first;
         while (elem) {
+//P(elem);
             if (disambig->u.l.first && !verb) {
                 new = assemble_act(THREAD, verb, elem, NULL, NULL);  // induce base node
                 append_transfer(newacts, new);
@@ -154,7 +155,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
         elem_t * attributes, elem_t * nodes, elem_t * edges)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *elem, *new, *object;
+    elem_t *elem, *new, *object, *np, *pp;
 
     assert(list->type == (char)LISTELEM);
 //E();
@@ -174,11 +175,22 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
                         break;
                     case NODE:
                     case PORT:
-                        new = ref_list(LIST(), object);
-                        append_transfer(nodes, new);
+                        np = ref_list(LIST(), object->u.l.first);
+                        np->state = NODE;  // was ENDPOINT
+                        pp = np->u.l.next;
+                        if (pp) {
+                            pp = ref_list(LIST(), pp);
+                        }
+                        else {
+                            pp = ref_list(LIST(), np);
+                        }
+                        append_transfer(nodes, pp);
+                        free_list(LIST(), np);
+//P(nodes);
                         break;
                     case EDGE:
                         expand(CONTAINER, object, nodes, edges);
+//P(nodes);
                         break;
                     default:
                         S((state_t)object->state);

@@ -71,17 +71,16 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                             // add ENDPOINT (w PORT and/or KIDS) to nodes and to leg list
                             np = ref_list(LIST(), ep);
                             np->state = NODE;
+//P(np);
                             append_transfer(nodes, np);
                             pp = legp->u.l.next;
-                            if (pp) {
-                                    pp = ref_list(LIST(), ep);
-                                    append_transfer(leg, pp);
+                            if (pp) { // add NODEID (w PORT and/or KIDS) to leg list
+                                pp = ref_list(LIST(), ep);
                             }
-                            else {
-                                 // add NODEID (no PORT or KID) to leg list
-                                 pp = ref_list(LIST(), legp);
-                                 append_transfer(leg, pp);
+                            else { // add NODEID (w/o PORT or KID) to leg list
+                                pp = ref_list(LIST(), legp);
                             }
+                            append_transfer(leg, pp);
                             break;
                         case MUM:
                             // FIXME - route to ancestors and cousins
