@@ -188,11 +188,16 @@ static void ikea_box_append(ikea_box_t* ikea_box, const unsigned char *data, siz
 
 static void ikea_box_close(ikea_box_t* ikea_box, char *contenthash, int contenthashsz) 
 {
-    assert(contenthashsz >= (((EVP_MAX_MD_SIZE+1)*8/6)+1));   // =87, last time I checked
+    assert(SIZEOFHASH >= (((EVP_MAX_MD_SIZE+1)*8/6)+1));   // =87, last time I checked
 
     unsigned char digest[EVP_MAX_MD_SIZE];  // contenthash digest 
     unsigned int digest_len = sizeof(digest); 
-    char contentpathname[sizeof(tempdir_template) +1 +sizeof(contenthash) +2 +1];
+//    fprintf(stderr,"(((EVP_MAX_MD_SIZE+1)*8/6)+1) = %d\n", (((EVP_MAX_MD_SIZE+1)*8/6)+1));
+//    fprintf(stderr,"sizeof(sizeof(tempdir_template)) = %ld\n", sizeof(tempdir_template));
+//    fprintf(stderr,"SIZEOFHASH = %d\n", SIZEOFHASH);
+//    fprintf(stderr,"sizeof(contenthash) = %ld\n", sizeof(contenthash));
+//    fprintf(stderr,"contenthashsz = %d\n", contenthashsz);
+    char contentpathname[sizeof(tempdir_template) +1 +SIZEOFHASH +2 +1];
     ikea_store_t * ikea_store = ikea_box->ikea_store;
 
     if (fclose(ikea_box->fh))
@@ -200,7 +205,7 @@ static void ikea_box_close(ikea_box_t* ikea_box, char *contenthash, int contenth
     if ((EVP_DigestFinal_ex(ikea_box->ctx, digest, &digest_len)) != 1)
         FATAL("EVP_DigestFinal_ex()");
     // convert to string suitable for filename
-    base64(digest, digest_len, contenthash, sizeof(contenthash));
+    base64(digest, digest_len, contenthash, contenthashsz);
 
     //compose the new filename
     strcpy(contentpathname, ikea_store->tempdir);
@@ -228,7 +233,7 @@ static void ikea_box_close(ikea_box_t* ikea_box, char *contenthash, int contenth
  */
 FILE* ikea_box_fopen( ikea_store_t * ikea_store, const char *contenthash, const char *mode )
 {
-    char contentpathname[sizeof(tempdir_template) +1 +sizeof(contenthash) +2 +1];
+    char contentpathname[sizeof(tempdir_template) +1 +SIZEOFHASH +2 +1];
 
     // compose the file path
     strcpy(contentpathname, ikea_store->tempdir);
@@ -596,7 +601,8 @@ static size_t ikea_write(IO_t *IO, unsigned char *cp, size_t size)
 static void ikea_close(IO_t *IO) {
     ikea_box_close ((ikea_box_t*)IO->out_chan,
             IO->contenthash,
-            sizeof(IO->contenthash));
+            SIZEOFHASH>SUFFICIENTHASH?SUFFICIENTHASH:SIZEOFHASH
+            );
 }
 
 // FIXME - require locks when writing a box that  maybe read or modified by other threads.

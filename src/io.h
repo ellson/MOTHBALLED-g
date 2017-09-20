@@ -17,6 +17,9 @@
 extern "C" {
 #endif
 
+#define SIZEOFHASH 128
+#define SUFFICIENTHASH 16
+
 struct io_s {
     LIST_t LIST;               // LIST context. Maybe cast from TOKEN
 
@@ -30,10 +33,10 @@ struct io_s {
     unsigned char buf[1024];   // output buffering
     int pos;
 
-    void *out_chan;                 // output FILE* or ikea_box_t*
+    void *out_chan;               // output FILE* or ikea_box_t*
     out_disc_t *out_disc;
 
-    char contenthash[128];     // big enough for content hash
+    char contenthash[SIZEOFHASH]; // big enough for content hash
                                // checked by assert in ikea_box_open()
 
     FILE *out, *err;           // output files
