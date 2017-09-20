@@ -84,16 +84,11 @@ success_t container(THREAD_t * THREAD)
 
 /**
  * @param THREAD context   
- * @param kid
- * @return SUCCESS or FAIL
+ * @param node with kid
+ * @return node with kid in playpen
  */
-success_t kid_container(THREAD_t * THREAD, elem_t *kid)
+elem_t * playpen(THREAD_t * THREAD, elem_t *node)
 {
-    success_t rc;
-
-//    rc = container(THREAD);
-
-    rc = SUCCESS;
-
-    return rc;
+//    P(node);
+    return node;
 }

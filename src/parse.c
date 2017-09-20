@@ -313,11 +313,6 @@ done: // State exit processing
             case CLN:      // prefixing PORT
             case SCN:      // terminal
                 break;
-    
-            case KID:
-                rc = kid_container(THREAD, branch);
-                append_addref(root, branch);
-                break;
 #if 0
 // no need to work so hard here, use default
 
@@ -329,6 +324,7 @@ done: // State exit processing
             case LEG:
             case ENDPOINT:
             case SIS:
+            case KID:
             case DISAMBIG:
             case ATTR:
             case VALUE:

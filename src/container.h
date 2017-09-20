@@ -40,7 +40,7 @@ struct container_s {      // CONTAINER context
 };
 
 success_t container(THREAD_t *THREAD);
-success_t kid_container(THREAD_t *THREAD, elem_t *branch);
+elem_t *playpen(THREAD_t *THREAD, elem_t *node);
 
 #ifdef __cplusplus
 }

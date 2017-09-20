@@ -175,22 +175,16 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
                         break;
                     case NODE:
                     case PORT:
-                        np = ref_list(LIST(), object->u.l.first);
+                        np = ref_list(LIST(),object->u.l.first);
                         np->state = NODE;  // was ENDPOINT
-                        pp = np->u.l.next;
+                        pp = np->u.l.first->u.l.next;
                         if (pp) {
-                            pp = ref_list(LIST(), pp);
+                            np = playpen(THREAD, np);
                         }
-                        else {
-                            pp = ref_list(LIST(), np);
-                        }
-                        append_transfer(nodes, pp);
-                        free_list(LIST(), np);
-//P(nodes);
+                        append_transfer(nodes, np);
                         break;
                     case EDGE:
                         expand(CONTAINER, object, nodes, edges);
-//P(nodes);
                         break;
                     default:
                         S((state_t)object->state);
