@@ -1,4 +1,4 @@
-# port - this will change when playpen() induces :p 
+# port used in edge - but no port in induced node
 
 #out:a
 #out:<a:p>
