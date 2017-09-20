@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 #define SIZEOFHASH 128
-#define SUFFICIENTHASH 16
+#define SUFFICIENTHASH 6
 
 struct io_s {
     LIST_t LIST;               // LIST context. Maybe cast from TOKEN
