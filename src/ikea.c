@@ -114,7 +114,7 @@ static void base64(unsigned char *ip, size_t ic, char *op, size_t oc)
     if (!op || !oc || !ip || !ic) return;
 
     oc--; // leave room for NUL
-    while (ic-- && oc--) {
+    while (ic-- && oc) {
         uint32_t d;
         // input 1 to 3 bytes each with 8-bits of value
                   d  = ((uint32_t)*ip++) << 16;
