@@ -51,6 +51,11 @@ EOF
 # need to be set during libtoolize
 export AR_FLAGS=crD 
 
+# config/missing is created by autoreconf,  but apparently not recreated if already there.
+# This breaks some builds from the graphviz.tar.gz sources.
+# Arguably this is an autoconf bug.
+rm -f config/missing
+
 autoreconf -v --install --force || exit 1
 
 # ensure config/depcomp exists even if still using automake-1.4
