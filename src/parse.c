@@ -320,11 +320,11 @@ done: // State exit processing
 
             case ACTIVITY:
             case SET:
-            case ENDPOINTSET:
-            case LEG:
             case ENDPOINT:
+            case ENDPOINTSET:
             case SIS:
             case KID:
+            case LEG:
             case DISAMBIG:
             case ATTR:
             case VALUE:

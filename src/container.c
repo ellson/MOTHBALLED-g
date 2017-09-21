@@ -113,3 +113,41 @@ elem_t * playpen(THREAD_t * THREAD, elem_t *node)
     }
     return node;
 }
+
+/**
+ * @param THREAD context   
+ * @param node with kid
+ * @return node with kid in playpen
+ */
+elem_t * playpen2(THREAD_t * THREAD, elem_t *subj)
+{
+//P(subj);
+#if 0
+    elem_t *node = subj->u.l.first->u.l.first;
+    elem_t *sis = node->u.l.first;
+    elem_t *kid = sis->u.l.next;
+    if (kid) {
+        elem_t * newsubj = new_list(LIST(), SUBJECT);
+        elem_t * newnode = new_list(LIST(), NODE);
+        append_transfer(newsubj, newnode);
+        elem_t * newendpoint = new_list(LIST(), ENDPOINT);
+        append_transfer(newnode, newendpoint);
+        elem_t * newsis = new_list(LIST(), SIS);
+        append_transfer(newendpoint, newsis);
+        switch ((state_t)kid->state) {
+            case KID:   // drop KID from NODE but put into a playpen
+                append_transfer(newsis, sis->u.l.first);
+                // FIXME playpen recursion
+                break;
+            case PORT:  // drop PORT from NODE, whether induced or not
+                append_transfer(newsis, sis->u.l.first);
+                break;
+            default:
+                assert(0);
+        }
+        return newsubj;
+//P(newsubf);
+    }
+#endif
+    return subj;
+}

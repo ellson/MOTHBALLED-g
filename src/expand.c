@@ -73,6 +73,7 @@ void expand(CONTAINER_t * CONTAINER, elem_t *list, elem_t *nodes, elem_t *edges)
                             np->state = NODE;
                             pp = legp->u.l.next;
                             if (pp) { // add NODEID (w PORT and/or KIDS) to leg list
+//P(np);
                                 np = playpen(THREAD, np);
                                 pp = ref_list(LIST(), ep);
                             }

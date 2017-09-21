@@ -41,6 +41,7 @@ struct container_s {      // CONTAINER context
 
 success_t container(THREAD_t *THREAD);
 elem_t *playpen(THREAD_t *THREAD, elem_t *node);
+elem_t *playpen2(THREAD_t *THREAD, elem_t *node);
 
 #ifdef __cplusplus
 }

@@ -155,7 +155,7 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
         elem_t * attributes, elem_t * nodes, elem_t * edges)
 {
     THREAD_t *THREAD = CONTAINER->THREAD;
-    elem_t *elem, *new, *object, *np, *pp;
+    elem_t *elem, *new, *object, *np;
 
     assert(list->type == (char)LISTELEM);
 //E();
@@ -175,13 +175,15 @@ dispatch_r(CONTAINER_t * CONTAINER, elem_t * list, elem_t *disambig,
                         break;
                     case NODE:
                     case PORT:
-//P(elem); FIXME - need to give elem to playpen() to deal with attributes
-                        np = ref_list(LIST(),object->u.l.first);
+                        // put any kids in their playpen
+//P(elem);
+//E();
+                        elem = playpen2(THREAD, elem);
+//P(elem);
+//E();
+                        np = ref_list(LIST(), elem->u.l.first->u.l.first);
                         np->state = NODE;  // was ENDPOINT
-                        pp = np->u.l.first->u.l.next;
-                        if (pp) {
-                            np = playpen(THREAD, np);
-                        }
+//P(np);
                         append_transfer(nodes, np);
                         break;
                     case EDGE:
